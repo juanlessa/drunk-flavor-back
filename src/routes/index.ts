@@ -1,10 +1,11 @@
 import { Router } from "express";
+import ingredientsRoutes from './ingredients.routes'
+import drinksRoutes from './drinks.routes'
 
-const routes = Router();
-const repositories = [{name: "ola server"}];
 
-routes.get("/repositories", (request, response) => {
-    return response.json(repositories);
-});
+const router = Router();
 
-export default routes;
+router.use("/ingredients", ingredientsRoutes);
+router.use("/drinks", drinksRoutes);
+
+export default router;

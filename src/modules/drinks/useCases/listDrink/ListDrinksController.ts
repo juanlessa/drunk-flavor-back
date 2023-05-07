@@ -9,9 +9,6 @@ type Drink = Prisma.DrinkCreateInput
 class ListDrinksController {
     async handle(request: Request, response: Response): Promise<Response> {
         
-        
-
-   
         const listDrinksService = container.resolve(ListDrinksService);
 
         const drinks = await listDrinksService.execute();
