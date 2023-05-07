@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Drink {
+  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  name              String              @unique
+  method            String
+  DrinkIngredient   DrinkIngredient[]   
+  created_at        DateTime            @default(now())
+
+  @@map("drinks")
+}
+
+model Ingredient {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  name            String    @unique
+  unity           String
+  category        String
+  isAlcoholic     Boolean
+  colorTheme      String
+  created_at      DateTime  @default(now())
+  DrinkIngredient DrinkIngredient[]
+
+  @@map("ingredients")
+}
+
+model DrinkIngredient {
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
+  drink_id      String      @db.ObjectId
+  drink         Drink       @relation(fields: [drink_id], references: [id])
+  ingredient_id String      @db.ObjectId
+  ingredient    Ingredient  @relation(fields: [ingredient_id], references: [id])
+  quantity      Float
+
+    @@map("drinkIngredients")
+}
