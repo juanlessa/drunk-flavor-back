@@ -2,8 +2,10 @@ import "reflect-metadata";
 import express, { Request, Response, NextFunction } from "express";
 import "express-async-errors";
 import cors from "cors";
-
 import routes from "./routes";
+import "@shared/container";
+import AppError from "@shared/errors/AppError";
+
 
 const app = express();
 
@@ -13,7 +15,6 @@ app.use(express.json()); //enable use of JSON
 app.use(routes);
 
 //errors middleware
-/*
 app.use(
     (err: Error, request: Request, response: Response, next: NextFunction) => {
         if (err instanceof AppError) {
@@ -30,7 +31,8 @@ app.use(
         });
     }
 );
-*/
+
+
 app.listen(3333, () => {
     console.log("🚀 Server started on port 3333");
 });
