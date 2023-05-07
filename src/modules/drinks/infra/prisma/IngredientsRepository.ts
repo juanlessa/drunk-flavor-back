@@ -23,6 +23,11 @@ class IngredientsRepository implements IIngredientsRepository {
        
     }
 
+    async findAll(): Promise<Ingredient[]> {
+        const results = await this.prismaClient.ingredient.findMany()
+        return results
+    }
+
 }
 
 export { IngredientsRepository };

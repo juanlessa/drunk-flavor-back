@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { CreateDrinkController } from '@modules/drinks/useCases/createDrink/CreateDrinkController'
-import { ListDrinksController } from '@modules/drinks/useCases/listDrink/ListDrinksController'
+import { ListDrinksController } from '@modules/drinks/useCases/listDrinks/ListDrinksController'
 
 
 const createDrinkController = new CreateDrinkController();
