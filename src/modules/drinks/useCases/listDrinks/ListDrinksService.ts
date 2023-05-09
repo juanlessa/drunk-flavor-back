@@ -1,4 +1,3 @@
-import { Prisma } from '@prisma/client'
 import { inject, injectable } from "tsyringe";
 import { IDrinksRepository } from "@modules/drinks/repositories/IDrinksRepository";
 import {IDrinkResponse} from '@modules/drinks/dtos/DrinksDTO'
