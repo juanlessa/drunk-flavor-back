@@ -1,20 +1,18 @@
 import { Prisma } from '@prisma/client'
 import { inject, injectable } from "tsyringe";
 import { IDrinksRepository } from "@modules/drinks/repositories/IDrinksRepository";
+import {IDrinkResponse} from '@modules/drinks/dtos/DrinksDTO'
 
-
-type Drink = Prisma.DrinkCreateInput
 
 @injectable()
 class ListDrinksService {
     constructor(
         @inject("DrinksRepository")
-        private drinksRepository: IDrinksRepository
+        private drinksRepository: IDrinksRepository,
     ) {}
 
-    async execute(): Promise<Drink[]> {    
-        const drinks = await this.drinksRepository.findAll();        
-    
+    async execute(): Promise<IDrinkResponse[]> {    
+        const drinks = await this.drinksRepository.findAllWithIngredientsDetails();  
         return drinks;
     }
 }

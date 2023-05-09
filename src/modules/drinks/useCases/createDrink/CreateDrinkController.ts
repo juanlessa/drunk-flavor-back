@@ -3,18 +3,21 @@ import { Request, Response } from "express";
 import { container } from "tsyringe";
 import { CreateDrinkService } from "./CreateDrinkService";
 
-type Drink = Prisma.DrinkCreateInput
-
+interface IRequest {
+    name: string,
+    method: string,
+    ingredients: { id: string, quantity: number}[]
+}
 
 class CreateDrinkController {
     async handle(request: Request, response: Response): Promise<Response> {
-        const { name, method }:Drink = request.body;
+        const { name, method, ingredients }:IRequest = request.body;
 
    
         const createDrinkService = container.resolve(CreateDrinkService);
 
         const drink = await createDrinkService.execute({
-            name, method
+            name, method, ingredients
         });
 
         return response.status(201).json(drink);

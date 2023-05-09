@@ -1,11 +1,13 @@
 import { Prisma } from '@prisma/client'
-
-type Drink = Prisma.DrinkCreateInput
-
+import { IDrink, IDrinkResponse } from '@modules/drinks/dtos/DrinksDTO';
 interface IDrinksRepository {
-    create(data: Drink): Promise<Drink>;
-    findByName(name: string): Promise<Drink[]>;
-    findAll(): Promise<Drink[]>;
+    create(data: IDrink): Promise<IDrink>;
+    findByName(name: string): Promise<IDrink>;
+    findById(id: string): Promise<IDrink>;
+    findAll(): Promise<IDrink[]>;
+    findByNameWithIngredientsDetails(name: string): Promise<IDrinkResponse[]>;
+    findByIdWithIngredientsDetails(id: string): Promise<IDrinkResponse[]>;
+    findAllWithIngredientsDetails(): Promise<IDrinkResponse[]>;
 }
 
 export { IDrinksRepository };
