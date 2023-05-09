@@ -14,11 +14,17 @@ model Drink {
   id                String              @id @default(auto()) @map("_id") @db.ObjectId
   name              String              @unique
   method            String
-  DrinkIngredient   DrinkIngredient[]   
+  ingredients       DrinkIngredient[]   
   created_at        DateTime            @default(now())
 
   @@map("drinks")
 }
+
+type DrinkIngredient {
+    ingredientId    String  @db.ObjectId
+    quantity        Float
+}
+
 
 model Ingredient {
   id              String    @id @default(auto()) @map("_id") @db.ObjectId
@@ -28,18 +34,7 @@ model Ingredient {
   isAlcoholic     Boolean
   colorTheme      String
   created_at      DateTime  @default(now())
-  DrinkIngredient DrinkIngredient[]
 
   @@map("ingredients")
 }
 
-model DrinkIngredient {
-  id            String     @id @default(auto()) @map("_id") @db.ObjectId
-  drink_id      String      @db.ObjectId
-  drink         Drink       @relation(fields: [drink_id], references: [id])
-  ingredient_id String      @db.ObjectId
-  ingredient    Ingredient  @relation(fields: [ingredient_id], references: [id])
-  quantity      Float
-
-    @@map("drinkIngredients")
-}
