@@ -3,6 +3,8 @@ interface IDrink{
     id?: string,
     name: string,
     method: string,
+    cover?: string,
+    thumbnail?: string,
     ingredients: {
         ingredientId: string,
         quantity: number
@@ -14,6 +16,8 @@ interface IDrinkResponse {
     id?: string,
     name: string,
     method: string,
+    cover?: string,
+    thumbnail?: string,
     ingredients: {
         ingredientId: string,
         quantity: number,

@@ -8,6 +8,8 @@ interface IDrinkAggregation {
     },
     name: string,
     method: string,
+    cover: string,
+    thumbnail: string,
     created_at: { 
         '$date': Date 
     },
@@ -44,6 +46,19 @@ class DrinksRepository implements IDrinksRepository {
     async create(data: IDrink): Promise<IDrink> {
         const drink = await this.prismaClient.drink.create({data})
 
+        return drink;
+    }
+    async update(data: IDrink): Promise<IDrink> {
+        const drink = await this.prismaClient.drink.update({
+            where: { id: data.id },
+            data: {
+                name: data.name,
+                method: data.method,
+                ingredients: data.ingredients,
+                cover: data.cover,
+                thumbnail: data.thumbnail
+            }
+        })
         return drink;
     }
 
@@ -159,6 +174,8 @@ const convertToDrinkResponse = (jsonObject:Prisma.JsonObject):IDrinkResponse[] =
             id: drinkAggregation._id.$oid,
             name: drinkAggregation.name,
             method: drinkAggregation.method,
+            cover: drinkAggregation.cover,
+            thumbnail: drinkAggregation.thumbnail,
             ingredients: drinkAggregation.ingredients.map((ing)=>{
                 return {
                     ingredientId: ing.ingredientId.$oid,

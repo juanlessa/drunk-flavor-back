@@ -14,6 +14,8 @@ model Drink {
   id                String              @id @default(auto()) @map("_id") @db.ObjectId
   name              String              @unique
   method            String
+  cover             String              @default("")
+  thumbnail         String              @default("")
   ingredients       DrinkIngredient[]   
   created_at        DateTime            @default(now())
 
