@@ -20,7 +20,6 @@ const uploadImage = multer(uploadConfig.upload("./tmp/drink"));
 drinksRoutes.post("/", createDrinkController.handle);
 drinksRoutes.get("/", listDrinksController.handle);
 drinksRoutes.get("/:id", getDrinkController.handle);
-drinksRoutes.patch("/thumbnail", getDrinkController.handle);
 drinksRoutes.patch("/:id/cover",uploadImage.single('cover'), updateDrinkCoverController.handle);
 drinksRoutes.patch("/:id/thumbnail",uploadImage.single('thumbnail'), updateDrinkThumbnailController.handle);
 
