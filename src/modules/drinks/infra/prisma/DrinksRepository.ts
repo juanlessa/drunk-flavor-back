@@ -18,20 +18,17 @@ interface IDrinkAggregation {
             '$oid': string 
         }, 
         quantity: number, 
-        ingredient: {
-            _id:{
-                '$oid': string 
-           },
-            name: string,
-            unity: string,
-            category: string,
-            isAlcoholic: boolean,
-            colorTheme: string,
-             created_at: { 
-                '$date': Date 
-            },
-        }
-         
+        _id:{
+            '$oid': string 
+        },
+        name: string,
+        unity: string,
+        category: string,
+        isAlcoholic: boolean,
+        colorTheme: string,
+        created_at: { 
+            '$date': Date 
+        },
     }[]
 }
 
@@ -76,90 +73,70 @@ class DrinksRepository implements IDrinksRepository {
     }
     async findByNameWithIngredientsDetails(name: string): Promise<IDrinkResponse[]> {
         const results = await this.prismaClient.drink.aggregateRaw({pipeline: 
-        [ 
-            { $match : { name : name } },
-            { $lookup: { from: 'ingredients', localField: 'ingredients.ingredientId', foreignField: '_id', as: 'ingredientDetail' } },
-            { $addFields: { ingredients: { $map: {
-                        input:"$ingredients",
-                        as:'ingredient',
-                        in: {
-                            $mergeObjects: [
-                                '$$ingredient',
-                                { ingredient: { $arrayElemAt: [ 
-                                    '$ingredientDetail',
-                                    { $indexOfArray: [ '$ingredients', '$$ingredient']
-                                }
-                            ]
-                        }
-                    }]
+            [ 
+                { $match : { name : name } },
+                { $lookup: { from: 'ingredients', localField: 'ingredients.ingredientId', foreignField: '_id', as: 'ingredientDetail' } },
+                { $set: {
+                    ingredients: {$map: {
+                        input: "$ingredients",
+                            in: {$mergeObjects: [
+                                "$$this",
+                                {$arrayElemAt: [
+                                    "$ingredientDetail",
+                                    {$indexOfArray: ["$ingredientDetail._id", "$$this.ingredientId"]}
+                                ]}
+                            ]}
+                        }}
                     }
-                  }
-                }
-              }
-            },
-            {
-              $unset:["ingredientDetail"]
-            }]
+                },
+                { $unset: "ingredientDetail"}
+            ]   
         })
         
         return convertToDrinkResponse(results)
     }
     async findByIdWithIngredientsDetails(id: string): Promise<IDrinkResponse[]> {
         const results = await this.prismaClient.drink.aggregateRaw({pipeline: 
-        [ 
-            { $match : { "_id": { "$oid": id }, } }, 
-            { $lookup: { from: 'ingredients', localField: 'ingredients.ingredientId', foreignField: '_id', as: 'ingredientDetail' } },
-            { $addFields: { ingredients: { $map: {
-                        input:"$ingredients",
-                        as:'ingredient',
-                        in: {
-                            $mergeObjects: [
-                                '$$ingredient',
-                                { ingredient: { $arrayElemAt: [ 
-                                    '$ingredientDetail',
-                                    { $indexOfArray: [ '$ingredients', '$$ingredient']
-                                }
-                            ]
-                        }
-                    }]
+            [    
+                { $match : { "_id": { "$oid": id }, } }, 
+                { $lookup: { from: 'ingredients', localField: 'ingredients.ingredientId', foreignField: '_id', as: 'ingredientDetail' } },
+                { $set: {
+                    ingredients: {$map: {
+                        input: "$ingredients",
+                            in: {$mergeObjects: [
+                                "$$this",
+                                {$arrayElemAt: [
+                                    "$ingredientDetail",
+                                    {$indexOfArray: ["$ingredientDetail._id", "$$this.ingredientId"]}
+                                ]}
+                            ]}
+                        }}
                     }
-                  }
-                }
-              }
-            },
-            {
-              $unset:["ingredientDetail"]
-            }]
+                },
+                { $unset: "ingredientDetail"}
+            ]   
         })
-        
         return convertToDrinkResponse(results)
     }
 
     async findAllWithIngredientsDetails(): Promise<IDrinkResponse[]> {
         const results = await this.prismaClient.drink.aggregateRaw({pipeline: 
-        [ 
-            { $lookup: { from: 'ingredients', localField: 'ingredients.ingredientId', foreignField: '_id', as: 'ingredientDetail' } },
-            { $addFields: { ingredients: { $map: {
-                        input:"$ingredients",
-                        as:'ingredient',
-                        in: {
-                            $mergeObjects: [
-                                '$$ingredient',
-                                { ingredient: { $arrayElemAt: [ 
-                                    '$ingredientDetail',
-                                    { $indexOfArray: [ '$ingredients', '$$ingredient']
-                                }
-                            ]
-                        }
-                    }]
-                    }
-                  }
-                }
-              }
-            },
-            {
-              $unset:["ingredientDetail"]
-            }]
+            [ 
+                { $lookup: { from: 'ingredients', localField: 'ingredients.ingredientId', foreignField: '_id', as: 'ingredientDetail' } },
+                { $set: {
+                    ingredients: {$map: {
+                        input: "$ingredients",
+                        in: {$mergeObjects: [
+                            "$$this",
+                            {$arrayElemAt: [
+                                "$ingredientDetail",
+                                {$indexOfArray: ["$ingredientDetail._id", "$$this.ingredientId"]}
+                            ]}
+                        ]}
+                    }}
+                }},
+                { $unset: "ingredientDetail"}
+            ]   
         })
         
         return convertToDrinkResponse(results)
@@ -180,12 +157,12 @@ const convertToDrinkResponse = (jsonObject:Prisma.JsonObject):IDrinkResponse[] =
                 return {
                     ingredientId: ing.ingredientId.$oid,
                     quantity: ing.quantity,
-                    name: ing.ingredient.name,
-                    unity: ing.ingredient.unity,
-                    category: ing.ingredient.category,
-                    isAlcoholic: ing.ingredient.isAlcoholic,
-                    colorTheme: ing.ingredient.colorTheme,
-                    created_at: ing.ingredient.created_at.$date
+                    name: ing.name,
+                    unity: ing.unity,
+                    category: ing.category,
+                    isAlcoholic: ing.isAlcoholic,
+                    colorTheme: ing.colorTheme,
+                    created_at: ing.created_at.$date
                 }
             })
         }
