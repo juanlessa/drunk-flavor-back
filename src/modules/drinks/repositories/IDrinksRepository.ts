@@ -9,6 +9,7 @@ interface IDrinksRepository {
     findByNameWithIngredientsDetails(name: string): Promise<IDrinkResponse[]>;
     findByIdWithIngredientsDetails(id: string): Promise<IDrinkResponse[]>;
     findAllWithIngredientsDetails(): Promise<IDrinkResponse[]>;
+    removeDeletedIngredient(deletedIngredientId: string): Promise<void>;
 }
 
 export { IDrinksRepository };

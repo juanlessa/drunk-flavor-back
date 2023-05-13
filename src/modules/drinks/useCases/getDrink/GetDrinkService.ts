@@ -16,6 +16,7 @@ class GetDrinkService {
         if(drinks.length !== 1){
             throw new AppError("Drink not found!");            
         }
+        
         return drinks[0];
     }
 }
