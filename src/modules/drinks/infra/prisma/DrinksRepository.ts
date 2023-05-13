@@ -82,8 +82,8 @@ class DrinksRepository implements IDrinksRepository {
         const results = await this.prismaClient.drink.findUnique({where: { name }})
         return results
     }
-    async findById(id: string): Promise<IDrink> {
-        const results = await this.prismaClient.drink.findUnique({where: { id }})
+    async findById(id: string): Promise<IDrink> {        
+        const results = await this.prismaClient.drink.findUnique({where: { id: id }})
         return results
     }
     async findAll(): Promise<IDrink[]> {
