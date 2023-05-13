@@ -8,10 +8,8 @@ type Ingredient = Prisma.IngredientCreateInput
 
 class CreateIngredientController {
     async handle(request: Request, response: Response): Promise<Response> {
-        const {name,        unity,      category,      isAlcoholic,     colorTheme
-        }:Ingredient = request.body;
+        const {name, unity, category, isAlcoholic, colorTheme }:Ingredient = request.body;
 
-   
         const createIngredientService = container.resolve(CreateIngredientService);
 
         const ingredient = await createIngredientService.execute({

@@ -16,6 +16,29 @@ class IngredientsRepository implements IIngredientsRepository {
 
         return ingredient;
     }
+    async update(data: Ingredient): Promise<Ingredient> {
+        const ingredient = await this.prismaClient.ingredient.update({
+            where: { id: data.id },
+            data: {
+                name: data.name,
+                category: data.category,
+                unity: data.unity,
+                colorTheme: data.colorTheme,
+                isAlcoholic: data.isAlcoholic
+            }
+        })
+
+        return ingredient;
+    }
+    
+    async delete(id: string): Promise<Ingredient> {
+        const ingredient = await this.prismaClient.ingredient.delete({
+            where: { id }
+        })
+
+        return ingredient;
+    }
+
 
     async findByName(name: string): Promise<Ingredient[]> {
         const results = await this.prismaClient.ingredient.findMany({where: { name }})

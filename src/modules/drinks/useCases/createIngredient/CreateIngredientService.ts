@@ -25,11 +25,7 @@ class CreateIngredientService {
         const {name, unity, category, isAlcoholic, colorTheme } = ingredientSchema.parse(data)
 
         const ingredientALreadyExists = await this.ingredientsRepository.findByName(name);
-        
-        console.log("ingredient exists");
-        console.log(ingredientALreadyExists);
-        console.log(ingredientALreadyExists? true: false );
-        
+          
         if (ingredientALreadyExists.length === 1) {
             throw new AppError("Ingredient already exists!");            
         }
