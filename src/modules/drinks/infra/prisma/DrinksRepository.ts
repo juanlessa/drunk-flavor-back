@@ -58,6 +58,16 @@ class DrinksRepository implements IDrinksRepository {
         })
         return drink;
     }
+    async delete(id: string): Promise<IDrink> {
+        const drink = await this.prismaClient.drink.delete({
+            where: { id }
+        })
+
+        return drink;
+    }
+
+
+
     async removeDeletedIngredient(deletedIngredientId: string): Promise<void> {
         // Find the drinks that contain the deletedIngredientId
         const drinks = await this.prismaClient.drink.findMany({
