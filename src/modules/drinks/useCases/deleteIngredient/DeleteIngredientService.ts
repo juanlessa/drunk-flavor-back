@@ -5,7 +5,7 @@ import AppError from "@shared/errors/AppError";
 import { IDrinksRepository } from "@modules/drinks/repositories/IDrinksRepository";
 
 const deleteIngredientSchema = z.object({
-    id: z.string({required_error: "Ingredient id is required"}).min(1, {message: "Ingredient does not exist."}),
+    id: z.string({required_error: "Ingredient id is required"}).length(24, {message: "Ingredient does not exist."}),
 })
 type IDeleteIngredient = z.infer<typeof deleteIngredientSchema>
 
@@ -22,8 +22,7 @@ class DeleteIngredientService {
         private drinksRepository: IDrinksRepository,
     ) {}
     async execute(data: IRequest): Promise<void> {
-        
-              
+               
         const result = deleteIngredientSchema.safeParse(data)
         if(!result.success){
             const { error } = result as SafeParseError<IDeleteIngredient>; 
@@ -31,8 +30,7 @@ class DeleteIngredientService {
         }
         const { id } = result.data
 
-
-        
+ 
         const ingredientExists = await this.ingredientsRepository.findById(id);
 
         if (!ingredientExists) {

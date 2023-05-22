@@ -8,7 +8,7 @@ interface IRequest {
 }
 
 const deleteDrinkSchema = z.object({
-    id: z.string({required_error: "Drink id is required"}).min(1, {message: "Drink does not exist."}),
+    id: z.string({required_error: "Drink id is required"}).length(24, {message: "Drink does not exist."}),
 })
 type IDeleteDrink = z.infer<typeof deleteDrinkSchema>
 

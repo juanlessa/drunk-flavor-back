@@ -3,6 +3,7 @@ import { container } from "tsyringe";
 import { GetDrinkService } from "./GetDrinkService";
 
 
+
 class GetDrinkController {
     async handle(request: Request, response: Response): Promise<Response> {
         const { id } = request.params;
@@ -11,7 +12,7 @@ class GetDrinkController {
         
 
 
-        const drink = await getDrinkService.execute(id);
+        const drink = await getDrinkService.execute({ id });
 
         return response.json(drink);
     }

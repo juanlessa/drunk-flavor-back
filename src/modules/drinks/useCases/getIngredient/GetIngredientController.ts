@@ -10,7 +10,7 @@ class GetIngredientController {
         const getIngredientService = container.resolve(GetIngredientService);
         
         
-        const ingredient = await getIngredientService.execute(id);
+        const ingredient = await getIngredientService.execute({ id });
 
         return response.json(ingredient);
     }

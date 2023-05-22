@@ -13,7 +13,7 @@ const createDrinkSchema = z.object({
     name: z.string().trim().toLowerCase().min(1, {message: "Drink must have a name."}).transform((val) => val.charAt(0).toLocaleUpperCase + val.slice(1)),
     method: z.string().trim().min(1, {message: "Drink must have a method."}),
     ingredients: z.array( z.object({
-        ingredientId: z.string().min(1),
+        ingredientId: z.string().length(24, {message:"Some ingredients don't exist!"}),
         quantity: z.number().gt(0)
     })).min(1, {message: "Drink must have ingredients."})
 })
@@ -45,7 +45,7 @@ class CreateDrinkService {
         
         const ingredientsExists = await this.ingredientsRepository.findByIdList(ingredients.map(i => i.ingredientId))
         if(ingredientsExists.length !== ingredients.length){
-            throw new AppError("Unable to create the drink, some ingredients don't exist!");
+            throw new AppError("Some ingredients don't exist!");
         }
 
         const ingredientsFormat = ingredients.map((ing)=>{
