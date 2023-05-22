@@ -1,5 +1,5 @@
 import { inject, injectable } from "tsyringe";
-import { SafeParseError, ZodError, z} from 'zod';
+import { SafeParseError, z} from 'zod';
 import { IIngredientsRepository } from "@modules/drinks/repositories/IIngredientsRepository";
 import AppError from '@shared/errors/AppError';
 
