@@ -40,15 +40,15 @@ class IngredientsRepository implements IIngredientsRepository {
     }
 
 
-    async findByName(name: string): Promise<Ingredient[]> {
-        const results = await this.prismaClient.ingredient.findMany({where: { name }})
-        return results
+    async findByName(name: string): Promise<Ingredient> {
+        const result = await this.prismaClient.ingredient.findUnique({where: { name }})
+        return result
        
     }
 
     async findById(id: string): Promise<Ingredient> {
-        const results = await this.prismaClient.ingredient.findFirst({where: { id }})
-        return results
+        const result = await this.prismaClient.ingredient.findUnique({where: { id }})
+        return result
        
     }
 

@@ -16,7 +16,7 @@ class DeleteIngredientController {
             DeleteIngredientService
         );
 
-        await deleteIngredientService.execute(id);
+        await deleteIngredientService.execute({ id });
 
         return response.status(204).send();
     }

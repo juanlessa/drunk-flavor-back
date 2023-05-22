@@ -1,25 +1,23 @@
-import { Prisma } from '@prisma/client'
 import { inject, injectable } from "tsyringe";
-import { z } from 'zod';
+import { SafeParseError, z } from 'zod';
 import { IDrinksRepository } from "@modules/drinks/repositories/IDrinksRepository";
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 import AppError from '@shared/errors/AppError';
 
 
-interface IResponse{
+interface IResponse {
     id: string
 }
 
-const drinkSchema = z.object({
-    name: z.string(),
-    method: z.string(),
+const createDrinkSchema = z.object({
+    name: z.string().trim().toLowerCase().min(1, {message: "Drink must have a name."}).transform((val) => val.charAt(0).toLocaleUpperCase + val.slice(1)),
+    method: z.string().trim().min(1, {message: "Drink must have a method."}),
     ingredients: z.array( z.object({
-        ingredientId: z.string(),
-        quantity: z.number()
-    }))
+        ingredientId: z.string().min(1),
+        quantity: z.number().gt(0)
+    })).min(1, {message: "Drink must have ingredients."})
 })
-type Drink = z.infer<typeof drinkSchema>
-
+type ICreateDrink = z.infer<typeof createDrinkSchema>
 
 @injectable()
 class CreateDrinkService {
@@ -30,9 +28,15 @@ class CreateDrinkService {
         private ingredientsRepository: IIngredientsRepository,
     ) {}
 
-    async execute(data:Drink): Promise<IResponse> {
+    async execute(data: ICreateDrink): Promise<IResponse> {
         
-        const {name, method, ingredients } = drinkSchema.parse(data)
+        const result = createDrinkSchema.safeParse(data)
+        if(!result.success){
+            const { error } = result as SafeParseError<ICreateDrink>; 
+            throw new AppError(error.issues[0].message)
+        }
+        
+        const { name, method, ingredients } = result.data
 
         const drinkALreadyExists = await this.drinksRepository.findByName(name);        
         if (drinkALreadyExists) {

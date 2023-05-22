@@ -16,7 +16,7 @@ class DeleteDrinkController {
             DeleteDrinkService
         );
 
-        await deleteDrinkService.execute(id);
+        await deleteDrinkService.execute({ id });
 
         return response.status(204).send();
     }
