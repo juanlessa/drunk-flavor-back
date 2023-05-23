@@ -7,8 +7,13 @@ class UpdateDrinkCoverController {
     async handle(request: Request, response: Response): Promise<Response> {
         const { id } = request.params;
         
-        const coverFile = request.file.filename;
 
+
+        let coverFile = request.file.key
+        if(!coverFile) {
+           coverFile = request.file.filename;
+        }
+        
         const updateDrinkCoverService = container.resolve(
             UpdateDrinkCoverService
         );

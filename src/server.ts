@@ -1,3 +1,5 @@
+import { resolve } from 'path';
+import * as dotenv from "dotenv";
 import "reflect-metadata";
 import express, { Request, Response, NextFunction } from "express";
 import "express-async-errors";
@@ -6,12 +8,13 @@ import routes from "./routes";
 import "@shared/container";
 import AppError from "@shared/errors/AppError";
 
+dotenv.config()
 
 const app = express();
 
 app.use(cors());
 app.use(express.json()); //enable use of JSON
-
+app.use('/files', express.static(resolve(__dirname,'..', 'tmp', 'drink')))
 app.use(routes);
 
 //errors middleware

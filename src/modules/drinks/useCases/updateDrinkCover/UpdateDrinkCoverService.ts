@@ -22,11 +22,10 @@ class UpdateDrinkCoverService {
 
 
         if (drink.cover) {
-            await deleteFile(`./tmp/drink/${drink.cover}`);
-        }
-        
+            await deleteFile(drink.cover);
+        }        
         drink.cover = coverFile;
-        console.log(drink);
+
 
 
         

@@ -22,12 +22,8 @@ class UpdateDrinkThumbnailService {
 
         if (drink.cover) {
             await deleteFile(`./tmp/drink/${drink.cover}`);
-        }
-        
+        }        
         drink.thumbnail = thumbnailFile;
-        console.log(drink);
-
-
         
         await this.drinksRepository.update(drink)
     }

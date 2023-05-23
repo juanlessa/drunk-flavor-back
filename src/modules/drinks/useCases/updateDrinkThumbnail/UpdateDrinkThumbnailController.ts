@@ -7,7 +7,11 @@ class UpdateDrinkThumbnailController {
     async handle(request: Request, response: Response): Promise<Response> {
         const { id } = request.params;
                 
-        const thumbnailFile = request.file.filename;
+        let thumbnailFile = request.file.key
+        if(!thumbnailFile) {
+            thumbnailFile = request.file.filename;
+        }
+
 
         const updateDrinkThumbnailService = container.resolve(
             UpdateDrinkThumbnailService

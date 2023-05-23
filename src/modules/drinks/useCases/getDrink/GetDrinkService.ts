@@ -3,6 +3,7 @@ import { IDrinksRepository } from "@modules/drinks/repositories/IDrinksRepositor
 import {IDrinkResponse} from '@modules/drinks/dtos/DrinksDTO'
 import AppError from "@shared/errors/AppError";
 import { SafeParseError, z } from 'zod';
+import { getFileURL } from '@utils/getFileURL'
 
 interface IRequest {
     id: string
@@ -34,8 +35,16 @@ class GetDrinkService {
         if(drinks.length !== 1){
             throw new AppError("Drink not found!");            
         }
-        
-        return drinks[0];
+        const drink = drinks[0]
+
+        if(drink.cover){
+            drink.cover = getFileURL(drink.cover)
+        }
+        if(drink.thumbnail){
+            drink.thumbnail = getFileURL(drink.thumbnail)
+        }
+
+        return drink;
     }
 }
 

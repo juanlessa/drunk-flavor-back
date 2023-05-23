@@ -19,7 +19,7 @@ const updateDrinkController = new UpdateDrinkController()
 const deleteDrinkController = new DeleteDrinkController();
 
 const drinksRoutes = Router();
-const uploadImage = multer(uploadConfig.upload("./tmp/drink"));
+const uploadImage = multer(uploadConfig.upload());
 
 
 drinksRoutes.post("/", createDrinkController.handle);
