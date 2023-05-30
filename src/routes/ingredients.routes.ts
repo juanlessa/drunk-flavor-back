@@ -4,6 +4,7 @@ import { ListIngredientsController } from '@modules/drinks/useCases/listIngredie
 import { UpdateIngredientController } from '@modules/drinks/useCases/updateIngredient/UpdateIngredientController'
 import { DeleteIngredientController } from '@modules/drinks/useCases/deleteIngredient/DeleteIngredientController'
 import { GetIngredientController } from '@modules/drinks/useCases/getIngredient/GetIngredientController'
+
 import {ensureAuthenticated} from '@shared/middlewares/ensureAuthenticated'
 const createIngredientController = new CreateIngredientController();
 const listIngredientsController = new ListIngredientsController();
