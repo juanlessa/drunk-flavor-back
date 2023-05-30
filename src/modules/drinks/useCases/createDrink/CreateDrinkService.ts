@@ -10,7 +10,7 @@ interface IResponse {
 }
 
 const createDrinkSchema = z.object({
-    name: z.string().trim().toLowerCase().min(1, {message: "Drink must have a name."}).transform((val) => val.charAt(0).toLocaleUpperCase + val.slice(1)),
+    name: z.string().trim().toLowerCase().min(1, {message: "Drink must have a name."}).transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`),
     method: z.string().trim().min(1, {message: "Drink must have a method."}),
     ingredients: z.array( z.object({
         ingredientId: z.string().length(24, {message:"Some ingredients don't exist!"}),

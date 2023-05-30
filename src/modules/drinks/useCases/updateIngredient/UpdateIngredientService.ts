@@ -6,7 +6,7 @@ import { SafeParseError, z} from 'zod';
 
 const updateIngredientSchema = z.object({
     id: z.string().length(24, {message:"Ingredient does not exist!"}),
-    name: z.string().trim().toLowerCase().min(1, {message: "Ingredient must have a name"}).transform((val) => val.charAt(0).toLocaleUpperCase + val.slice(1)),
+    name: z.string().trim().toLowerCase().min(1, {message: "Ingredient must have a name"}).transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`),
     unity: z.string().trim().toLowerCase().min(1, {message: "Ingredient must have an unity"}),
     category: z.string().trim().toLowerCase().min(1, {message: "Ingredient must have a category"}),
     isAlcoholic: z.boolean(),
