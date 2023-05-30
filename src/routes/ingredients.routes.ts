@@ -4,7 +4,7 @@ import { ListIngredientsController } from '@modules/drinks/useCases/listIngredie
 import { UpdateIngredientController } from '@modules/drinks/useCases/updateIngredient/UpdateIngredientController'
 import { DeleteIngredientController } from '@modules/drinks/useCases/deleteIngredient/DeleteIngredientController'
 import { GetIngredientController } from '@modules/drinks/useCases/getIngredient/GetIngredientController'
-
+import {ensureAuthenticated} from '@shared/middlewares/ensureAuthenticated'
 const createIngredientController = new CreateIngredientController();
 const listIngredientsController = new ListIngredientsController();
  const updateIngredientController = new UpdateIngredientController();
@@ -14,7 +14,7 @@ const listIngredientsController = new ListIngredientsController();
 const ingredientsRoutes = Router();
 
 ingredientsRoutes.post("/", createIngredientController.handle);
-ingredientsRoutes.get("/", listIngredientsController.handle);
+ingredientsRoutes.get("/", ensureAuthenticated, listIngredientsController.handle);
 ingredientsRoutes.get("/:id", getIngredientController.handle);
 ingredientsRoutes.patch("/", updateIngredientController.handle);
 ingredientsRoutes.delete("/", deleteIngredientController.handle);
