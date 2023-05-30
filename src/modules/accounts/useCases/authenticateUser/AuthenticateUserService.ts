@@ -16,8 +16,14 @@ interface IResponse {
         name: string;
         email: string;
     };
-    token: string;
-    refresh_token: string;
+    token: {
+        token: string;
+        expires: Date;
+    };
+    refresh_token: {
+        token: string;
+        expires: Date;
+    }
 }
 
 @injectable()
@@ -46,6 +52,10 @@ class AuthenticateUserService {
             subject: user.id,
             expiresIn: auth.expires_in_token,
         });
+        const token_expires_date = this.dateProvider.addMinutes(
+            1
+        );
+
 
         // create refresh token
         const refresh_token = sign({ email }, auth.secret_refresh_token, {
@@ -68,8 +78,14 @@ class AuthenticateUserService {
                 name: user.name,
                 email: user.email,
             },
-            token,
-            refresh_token,
+            token: {
+                token: token,
+                expires: token_expires_date
+            },
+            refresh_token:{
+                token: refresh_token,
+                expires: refresh_token_expires_date
+            },
         };
     }
 }

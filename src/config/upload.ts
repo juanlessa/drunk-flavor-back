@@ -42,7 +42,7 @@ const storageTypes = {
 export default {
     upload() {
         return {
-            storage: storageTypes['s3'],
+            storage: storageTypes[process.env.STORAGE_TYPE],
             limits: { fieldSize: 10 * 1024 * 1024 } //10MB
         };
     },

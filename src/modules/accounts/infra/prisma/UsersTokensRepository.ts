@@ -11,7 +11,7 @@ class UsersTokensRepository implements IUsersTokensRepository {
     }
 
     async create({ user_id, expires_date,refresh_token }: IUserToken): Promise<IUserToken> {
-        const userToken = this.prismaClient.userToken.create({
+        const userToken = await this.prismaClient.userToken.create({
             data: {
                 user_id,
                 expires_date,
@@ -19,6 +19,15 @@ class UsersTokensRepository implements IUsersTokensRepository {
             }
         });
         return userToken;
+    }
+    async findByUserIdAndRefreshToken(user_id: string, refresh_token: string): Promise<IUserToken>{
+        const userToken = await this.prismaClient.userToken.findUnique({ 
+            where: { refresh_token }
+        })
+        if (userToken && (userToken.user_id === user_id)) {
+            return userToken
+        }
+        return {} as IUserToken
     }
 
 }
