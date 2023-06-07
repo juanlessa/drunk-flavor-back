@@ -1,4 +1,3 @@
-import {  Prisma } from '@prisma/client'
 import { Request, Response } from "express";
 import { container } from "tsyringe";
 import { CreateDrinkService } from "./CreateDrinkService";

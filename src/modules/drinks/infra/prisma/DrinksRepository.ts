@@ -1,4 +1,5 @@
 import { PrismaClient, Prisma } from '@prisma/client'
+import { getPrismaClient } from '@shared/container/providers/prismaProvider'
 import { IDrinksRepository } from "@modules/drinks/repositories/IDrinksRepository";
 import {IDrinkResponse, IDrink } from '@modules/drinks/dtos/DrinksDTO'
 
@@ -36,7 +37,7 @@ class DrinksRepository implements IDrinksRepository {
     private prismaClient: PrismaClient;
 
     constructor() {
-        this.prismaClient =  new PrismaClient();
+        this.prismaClient = getPrismaClient();
     }
 
 

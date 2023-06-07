@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client'
+
 import { IDrink, IDrinkResponse } from '@modules/drinks/dtos/DrinksDTO';
 interface IDrinksRepository {
     create(data: IDrink): Promise<IDrink>;

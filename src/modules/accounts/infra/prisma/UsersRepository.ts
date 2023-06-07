@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import { getPrismaClient } from '@shared/container/providers/prismaProvider'
 import { IUsersRepository } from "@modules/accounts/repositories/IUsersRepository";
 import { IUser } from '@modules/accounts/dtos/UsersDTO';
 
@@ -7,7 +8,7 @@ class UsersRepository implements IUsersRepository {
     private prismaClient: PrismaClient;
 
     constructor() {
-        this.prismaClient =  new PrismaClient();
+        this.prismaClient = getPrismaClient();
     }
 
 

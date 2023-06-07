@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import { getPrismaClient } from '@shared/container/providers/prismaProvider'
 import { IUsersTokensRepository } from "@modules/accounts/repositories/IUsersTokensRepository";
 import { IUserToken } from '@modules/accounts/dtos/UsersTokensDTO';
 
@@ -7,7 +8,7 @@ class UsersTokensRepository implements IUsersTokensRepository {
     private prismaClient: PrismaClient;
 
     constructor() {
-        this.prismaClient =  new PrismaClient();
+        this.prismaClient = getPrismaClient();
     }
 
     async create({ user_id, expires_date,refresh_token }: IUserToken): Promise<IUserToken> {

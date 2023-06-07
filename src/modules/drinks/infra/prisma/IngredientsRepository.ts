@@ -1,4 +1,5 @@
 import { PrismaClient, Prisma } from '@prisma/client'
+import { getPrismaClient } from '@shared/container/providers/prismaProvider'
 import { IIngredientsRepository } from "@modules/drinks/repositories/IIngredientsRepository";
 
 type Ingredient = Prisma.IngredientCreateInput
@@ -7,7 +8,7 @@ class IngredientsRepository implements IIngredientsRepository {
     private prismaClient: PrismaClient;
 
     constructor() {
-        this.prismaClient =  new PrismaClient();
+        this.prismaClient =  getPrismaClient();
     }
 
 
