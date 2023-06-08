@@ -6,11 +6,14 @@ import AppError from "@errors/AppError";
 import { IUsersRepository } from "@modules/accounts/repositories/IUsersRepository";
 import { IUsersTokensRepository } from "@modules/accounts/repositories/IUsersTokensRepository";
 import { IDateProvider } from "@shared/container/providers/dateProvider/IDateProvider";
+import { SafeParseError, z } from "zod";
 
-interface IRequest {
-    email: string;
-    password: string;
-}
+const requestSchema = z.object({
+    email: z.string({required_error: "Email is required."}).email({message: "Email invalid."}),
+    password: z.string({required_error: "Password is required."}).min(8, {message: "Password must have a minimum of 8 characters"})
+}) 
+type IRequest = z.infer<typeof requestSchema>
+
 interface IResponse {
     user: {
         name: string;
@@ -36,7 +39,15 @@ class AuthenticateUserService {
         @inject("DayjsDateProvider")
         private dateProvider: IDateProvider
     ) {}
-    async execute({ email, password }: IRequest): Promise<IResponse> {
+    async execute(data: IRequest): Promise<IResponse> {
+
+        const result = requestSchema.safeParse(data)
+        if(!result.success){
+            const { error } = result as SafeParseError<IRequest>;
+            throw new AppError(error.issues[0].message)
+        }
+        const { email, password } = result.data
+
         const user = await this.usersRepository.findByEmail(email);
         if (!user) {
             throw new AppError("Email or password incorrect!");

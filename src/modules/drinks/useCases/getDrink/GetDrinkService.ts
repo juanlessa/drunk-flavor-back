@@ -5,9 +5,7 @@ import AppError from "@shared/errors/AppError";
 import { SafeParseError, z } from 'zod';
 import { getFileURL } from '@utils/getFileURL'
 
-interface IRequest {
-    id: string
-}
+
 
 const getDrinkSchema = z.object({
     id: z.string({required_error: "Drink id is required"}).length(24, {message: "Drink does not exist."}),
@@ -21,7 +19,7 @@ class GetDrinkService {
         private drinksRepository: IDrinksRepository,
     ) {}
 
-    async execute(data: IRequest): Promise<IDrinkResponse> {    
+    async execute(data: IGetDrink): Promise<IDrinkResponse> {    
             
         const result = getDrinkSchema.safeParse(data)
         if(!result.success){

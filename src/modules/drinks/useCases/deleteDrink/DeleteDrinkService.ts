@@ -3,9 +3,6 @@ import AppError from "@shared/errors/AppError";
 import { IDrinksRepository } from "@modules/drinks/repositories/IDrinksRepository";
 import { SafeParseError, z } from 'zod';
 
-interface IRequest {
-    id: string
-}
 
 const deleteDrinkSchema = z.object({
     id: z.string({required_error: "Drink id is required"}).length(24, {message: "Drink does not exist."}),
@@ -20,7 +17,7 @@ class DeleteDrinkService {
         @inject("DrinksRepository")
         private drinksRepository: IDrinksRepository,
     ) {}
-    async execute(data: IRequest): Promise<void> {
+    async execute(data: IDeleteDrink): Promise<void> {
         
         const result = deleteDrinkSchema.safeParse(data)
         if(!result.success){

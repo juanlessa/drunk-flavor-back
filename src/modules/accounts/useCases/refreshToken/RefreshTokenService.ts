@@ -4,6 +4,12 @@ import { IUsersTokensRepository } from "@modules/accounts/repositories/IUsersTok
 import auth from "@config/auth";
 import AppError from "@errors/AppError";
 import { IDateProvider } from "@shared/container/providers/dateProvider/IDateProvider";
+import { SafeParseError, z } from "zod";
+
+const requestSchema = z.object({
+    token: z.string({required_error: "Token is required."}).min(1, {message: "Invalid token!"})
+}) 
+type IRequest = z.infer<typeof requestSchema>
 
 interface IPayload {
     sub: string;
@@ -15,6 +21,8 @@ interface ITokenResponse {
     expires: Date;
 }
 
+
+
 @injectable()
 class RefreshTokenService {
     constructor(
@@ -24,7 +32,15 @@ class RefreshTokenService {
         private dateProvider: IDateProvider
     ) {}
 
-    async execute(token: string): Promise<ITokenResponse> {
+    async execute(data: IRequest): Promise<ITokenResponse> {
+
+        const result = requestSchema.safeParse(data)
+        if(!result.success){
+            const { error } = result as SafeParseError<IRequest>;
+            throw new AppError(error.issues[0].message)
+        }
+        const { token } = result.data
+
         let email = "";
         let user_id = "";
 

@@ -9,9 +9,6 @@ const deleteIngredientSchema = z.object({
 })
 type IDeleteIngredient = z.infer<typeof deleteIngredientSchema>
 
-interface IRequest{
-    id: string
-} 
 
 @injectable()
 class DeleteIngredientService {
@@ -21,7 +18,7 @@ class DeleteIngredientService {
         @inject("DrinksRepository")
         private drinksRepository: IDrinksRepository,
     ) {}
-    async execute(data: IRequest): Promise<void> {
+    async execute(data: IDeleteIngredient): Promise<void> {
                
         const result = deleteIngredientSchema.safeParse(data)
         if(!result.success){

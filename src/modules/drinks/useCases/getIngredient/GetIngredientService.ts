@@ -9,10 +9,6 @@ const getIngredientSchema = z.object({
 })
 type IGetIngredient = z.infer<typeof getIngredientSchema>
 
-interface IRequest{
-    id: string
-} 
-
 type Ingredient = Prisma.IngredientCreateInput
 
 @injectable()
@@ -22,7 +18,7 @@ class GetIngredientService {
         private ingredientsRepository: IIngredientsRepository
     ) {}
 
-    async execute(data: IRequest): Promise<Ingredient> {    
+    async execute(data: IGetIngredient): Promise<Ingredient> {    
         
         const result = getIngredientSchema.safeParse(data)
         if(!result.success){

@@ -31,9 +31,7 @@ class UpdateDrinkService {
             const { error } = result as SafeParseError<IUpdateDrink>; 
             throw new AppError(error.issues[0].message)
         }
-        
         const { id, name, method, ingredients } = result.data;        
-        
         
         const drink = await this.drinksRepository.findById(id);
         if(!drink) {
