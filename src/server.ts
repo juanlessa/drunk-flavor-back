@@ -35,7 +35,7 @@ app.use(
     }
 );
 
-
-app.listen(3333, () => {
-    console.log("🚀 Server started on port 3333");
+const serverPort = Number(process.env.APP_PORT)
+app.listen(serverPort, () => {
+    console.log(`🚀 Server started on port ${serverPort}`);
 });
