@@ -5,4 +5,11 @@ interface IUserToken {
     expires_date: Date;
     refresh_token: string;
 }
-export { IUserToken };
+interface ICreateRefreshToken {
+    userEmail: string;
+    userId: string;
+}
+interface ICreateToken {
+    userId: string;
+}
+export { IUserToken, ICreateRefreshToken, ICreateToken };

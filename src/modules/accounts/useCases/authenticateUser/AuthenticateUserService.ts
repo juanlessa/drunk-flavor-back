@@ -1,12 +1,12 @@
 import { inject, injectable } from "tsyringe";
-import { compare } from "bcrypt";
-import { sign } from "jsonwebtoken";
+import { SafeParseError, z } from "zod";
 import auth from "@config/auth";
 import AppError from "@errors/AppError";
 import { IUsersRepository } from "@modules/accounts/repositories/IUsersRepository";
 import { IUsersTokensRepository } from "@modules/accounts/repositories/IUsersTokensRepository";
 import { IDateProvider } from "@shared/container/providers/dateProvider/IDateProvider";
-import { SafeParseError, z } from "zod";
+import { IJwtProvider } from "@shared/container/providers/jwt/IJwtProvider";
+import { IEncryptionProvider } from "@shared/container/providers/encryption/IEncryptionProvider";
 
 const requestSchema = z.object({
     email: z.string({required_error: "Email is required."}).email({message: "Email invalid."}),
@@ -37,7 +37,11 @@ class AuthenticateUserService {
         @inject("UsersTokensRepository")
         private usersTokensRepository: IUsersTokensRepository,
         @inject("DayjsDateProvider")
-        private dateProvider: IDateProvider
+        private dateProvider: IDateProvider,
+        @inject("JsonwebtokenProvider")
+        private jwtProvider: IJwtProvider,
+        @inject("BcryptProvider")
+        private bcryptProvider: IEncryptionProvider
     ) {}
     async execute(data: IRequest): Promise<IResponse> {
 
@@ -53,27 +57,22 @@ class AuthenticateUserService {
             throw new AppError("Email or password incorrect!");
         }
 
-        const passwordMatch = await compare(password, user.password);
+        const passwordMatch = await this.bcryptProvider.compare(password, user.password);
         if (!passwordMatch) {
             throw new AppError("Email or password incorrect!");
         }
 
         // create token
-        const token = sign({}, auth.secret_token, {
-            subject: user.id,
-            expiresIn: auth.expires_in_token,
-        });
-        const token_expires_date = this.dateProvider.addMinutes(
-            1
+        const token = this.jwtProvider.createToken({ userId: user.id })
+        const token_expires_date = this.dateProvider.addHours(
+            auth.expires_token_hours
         );
 
-
         // create refresh token
-        const refresh_token = sign({ email }, auth.secret_refresh_token, {
-            subject: user.id,
-            expiresIn: auth.expires_in_refresh_token,
-        });
-
+        const refresh_token = this.jwtProvider.createRefreshToken({
+            userEmail: email,
+            userId: user.id 
+        })
         const refresh_token_expires_date = this.dateProvider.addDays(
             auth.expires_refresh_token_days
         );
