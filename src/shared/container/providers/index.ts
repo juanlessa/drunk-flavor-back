@@ -1,4 +1,4 @@
-import "./dateProvider";
-import "./prismaProvider"
-import "./jwt"
-import "./encryption"
+import './date';
+import './prisma';
+import './jwt';
+import './encryption';

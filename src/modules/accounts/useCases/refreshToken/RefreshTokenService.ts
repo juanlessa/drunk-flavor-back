@@ -2,7 +2,7 @@ import { inject, injectable } from 'tsyringe';
 import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokensRepository';
 import auth from '@config/auth';
 import AppError from '@errors/AppError';
-import { IDateProvider } from '@shared/container/providers/dateProvider/IDateProvider';
+import { IDateProvider } from '@shared/container/providers/date/IDateProvider';
 import { SafeParseError, z } from 'zod';
 import { IJwtProvider } from '@shared/container/providers/jwt/IJwtProvider';
 

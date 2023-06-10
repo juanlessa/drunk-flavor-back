@@ -4,7 +4,7 @@ import auth from '@config/auth';
 import AppError from '@errors/AppError';
 import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
 import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokensRepository';
-import { IDateProvider } from '@shared/container/providers/dateProvider/IDateProvider';
+import { IDateProvider } from '@shared/container/providers/date/IDateProvider';
 import { IJwtProvider } from '@shared/container/providers/jwt/IJwtProvider';
 import { IEncryptionProvider } from '@shared/container/providers/encryption/IEncryptionProvider';
 

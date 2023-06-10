@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { getPrismaClient } from '@shared/container/providers/prismaProvider';
+import { getPrismaClient } from '@shared/container/providers/prisma';
 import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
 import { IUser } from '@modules/accounts/dtos/UsersDTO';
 

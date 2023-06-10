@@ -1,17 +1,16 @@
-import { compare, hash } from "bcrypt";
-import { IEncryptionProvider } from '../IEncryptionProvider'
+import { compare, hash } from 'bcrypt';
+import { IEncryptionProvider } from '../IEncryptionProvider';
 
 class BcryptProvider implements IEncryptionProvider {
-    async hash(password: string): Promise<string> {
-        const passwordHash = await hash(password, 8);
-        return passwordHash
-    }
+	async hash(password: string): Promise<string> {
+		const passwordHash = await hash(password, 8);
+		return passwordHash;
+	}
 
-    async compare(password: string, encryptedPassword: string): Promise<boolean>  {
-        const passwordMatch = await compare(password, encryptedPassword);
-        return passwordMatch
-    }
-
+	async compare(password: string, encryptedPassword: string): Promise<boolean> {
+		const passwordMatch = await compare(password, encryptedPassword);
+		return passwordMatch;
+	}
 }
 
-export { BcryptProvider }
+export { BcryptProvider };

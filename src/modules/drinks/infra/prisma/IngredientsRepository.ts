@@ -1,5 +1,5 @@
 import { PrismaClient, Prisma } from '@prisma/client';
-import { getPrismaClient } from '@shared/container/providers/prismaProvider';
+import { getPrismaClient } from '@shared/container/providers/prisma';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 
 type Ingredient = Prisma.IngredientCreateInput;
