@@ -1,46 +1,53 @@
-import { inject, injectable } from "tsyringe";
-import { SafeParseError, z} from 'zod';
-import { IIngredientsRepository } from "@modules/drinks/repositories/IIngredientsRepository";
+import { inject, injectable } from 'tsyringe';
+import { SafeParseError, z } from 'zod';
+import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 import AppError from '@shared/errors/AppError';
 
 interface IResponse {
-    id: string
+	id: string;
 }
 const createIngredientSchema = z.object({
-    name: z.string().trim().toLowerCase().min(1, {message: "Ingredient must have a name"}).transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`),
-    unity: z.string().trim().toLowerCase().min(1, {message: "Ingredient must have an unity"}),
-    category: z.string().trim().toLowerCase().min(1, {message: "Ingredient must have a category"}),
-    isAlcoholic: z.boolean(),
-    colorTheme: z.string().trim().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, {message:" Ingredient must be a Hex color like #aabbcc"})
-}) 
+	name: z
+		.string()
+		.trim()
+		.toLowerCase()
+		.min(1, { message: 'Ingredient must have a name' })
+		.transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`),
+	unity: z.string().trim().toLowerCase().min(1, { message: 'Ingredient must have an unity' }),
+	category: z.string().trim().toLowerCase().min(1, { message: 'Ingredient must have a category' }),
+	isAlcoholic: z.boolean(),
+	colorTheme: z
+		.string()
+		.trim()
+		.regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, { message: ' Ingredient must be a Hex color like #aabbcc' })
+});
 
-type ICreateIngredient = z.infer<typeof createIngredientSchema>
+type ICreateIngredient = z.infer<typeof createIngredientSchema>;
 
 @injectable()
 class CreateIngredientService {
-    constructor(
-        @inject("IngredientsRepository")
-        private ingredientsRepository: IIngredientsRepository
-    ) {}
+	constructor(
+		@inject('IngredientsRepository')
+		private ingredientsRepository: IIngredientsRepository
+	) {}
 
-    async execute(data:ICreateIngredient): Promise<IResponse> {
-       
-        const result = createIngredientSchema.safeParse(data)
-        if(!result.success){
-            const { error } = result as SafeParseError<ICreateIngredient>;
-            throw new AppError(error.issues[0].message)
-        }
-       const { name, unity, category, isAlcoholic, colorTheme } = result.data
+	async execute(data: ICreateIngredient): Promise<IResponse> {
+		const result = createIngredientSchema.safeParse(data);
+		if (!result.success) {
+			const { error } = result as SafeParseError<ICreateIngredient>;
+			throw new AppError(error.issues[0].message);
+		}
+		const { name, unity, category, isAlcoholic, colorTheme } = result.data;
 
-        const ingredientALreadyExists = await this.ingredientsRepository.findByName(name);
-        if (ingredientALreadyExists) {
-            throw new AppError("Ingredient already exists!");            
-        }
+		const ingredientALreadyExists = await this.ingredientsRepository.findByName(name);
+		if (ingredientALreadyExists) {
+			throw new AppError('Ingredient already exists!');
+		}
 
-        const ingredient = await this.ingredientsRepository.create({name, unity, category, isAlcoholic, colorTheme });
+		const ingredient = await this.ingredientsRepository.create({ name, unity, category, isAlcoholic, colorTheme });
 
-        return {id: ingredient.id};
-    }
+		return { id: ingredient.id };
+	}
 }
 
 export { CreateIngredientService };

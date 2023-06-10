@@ -1,26 +1,22 @@
-import { Request, Response } from "express";
-import { container } from "tsyringe";
-import { UpdateDrinkThumbnailService } from "./UpdateDrinkThumbnailService";
-
+import { Request, Response } from 'express';
+import { container } from 'tsyringe';
+import { UpdateDrinkThumbnailService } from './UpdateDrinkThumbnailService';
 
 class UpdateDrinkThumbnailController {
-    async handle(request: Request, response: Response): Promise<Response> {
-        const { id } = request.params;
-                
-        let thumbnailFile = request.file.key
-        if(!thumbnailFile) {
-            thumbnailFile = request.file.filename;
-        }
+	async handle(request: Request, response: Response): Promise<Response> {
+		const { id } = request.params;
 
+		let thumbnailFile = request.file.key;
+		if (!thumbnailFile) {
+			thumbnailFile = request.file.filename;
+		}
 
-        const updateDrinkThumbnailService = container.resolve(
-            UpdateDrinkThumbnailService
-        );
+		const updateDrinkThumbnailService = container.resolve(UpdateDrinkThumbnailService);
 
-        await updateDrinkThumbnailService.execute({ drinkId: id, thumbnailFile: thumbnailFile });
+		await updateDrinkThumbnailService.execute({ drinkId: id, thumbnailFile: thumbnailFile });
 
-        return response.status(204).send();
-    }
+		return response.status(204).send();
+	}
 }
 
 export { UpdateDrinkThumbnailController };

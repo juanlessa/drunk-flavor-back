@@ -1,69 +1,66 @@
-import { PrismaClient, Prisma } from '@prisma/client'
-import { getPrismaClient } from '@shared/container/providers/prismaProvider'
-import { IIngredientsRepository } from "@modules/drinks/repositories/IIngredientsRepository";
+import { PrismaClient, Prisma } from '@prisma/client';
+import { getPrismaClient } from '@shared/container/providers/prismaProvider';
+import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 
-type Ingredient = Prisma.IngredientCreateInput
+type Ingredient = Prisma.IngredientCreateInput;
 
 class IngredientsRepository implements IIngredientsRepository {
-    private prismaClient: PrismaClient;
+	private prismaClient: PrismaClient;
 
-    constructor() {
-        this.prismaClient =  getPrismaClient();
-    }
+	constructor() {
+		this.prismaClient = getPrismaClient();
+	}
 
+	async create(data: Ingredient): Promise<Ingredient> {
+		const ingredient = await this.prismaClient.ingredient.create({ data });
 
-    async create(data: Ingredient): Promise<Ingredient> {
-        const ingredient = await this.prismaClient.ingredient.create({data})
+		return ingredient;
+	}
+	async update(data: Ingredient): Promise<Ingredient> {
+		const ingredient = await this.prismaClient.ingredient.update({
+			where: { id: data.id },
+			data: {
+				name: data.name,
+				category: data.category,
+				unity: data.unity,
+				colorTheme: data.colorTheme,
+				isAlcoholic: data.isAlcoholic
+			}
+		});
 
-        return ingredient;
-    }
-    async update(data: Ingredient): Promise<Ingredient> {
-        const ingredient = await this.prismaClient.ingredient.update({
-            where: { id: data.id },
-            data: {
-                name: data.name,
-                category: data.category,
-                unity: data.unity,
-                colorTheme: data.colorTheme,
-                isAlcoholic: data.isAlcoholic
-            }
-        })
+		return ingredient;
+	}
 
-        return ingredient;
-    }
-    
-    async delete(id: string): Promise<Ingredient> {
-        const ingredient = await this.prismaClient.ingredient.delete({
-            where: { id }
-        })
+	async delete(id: string): Promise<Ingredient> {
+		const ingredient = await this.prismaClient.ingredient.delete({
+			where: { id }
+		});
 
-        return ingredient;
-    }
+		return ingredient;
+	}
 
+	async findByName(name: string): Promise<Ingredient> {
+		const result = await this.prismaClient.ingredient.findUnique({ where: { name } });
+		return result;
+	}
 
-    async findByName(name: string): Promise<Ingredient> {
-        const result = await this.prismaClient.ingredient.findUnique({where: { name }})
-        return result
-       
-    }
+	async findById(id: string): Promise<Ingredient> {
+		const result = await this.prismaClient.ingredient.findUnique({ where: { id } });
+		return result;
+	}
 
-    async findById(id: string): Promise<Ingredient> {
-        const result = await this.prismaClient.ingredient.findUnique({where: { id }})
-        return result
-       
-    }
-
-    async findAll(): Promise<Ingredient[]> {
-        const results = await this.prismaClient.ingredient.findMany()
-        return results
-    }
-    async findByIdList(ids: string[]): Promise<Ingredient[]>{
-        const results = await this.prismaClient.ingredient.findMany({where: {
-            id: { in: ids }
-        }});
-        return results
-    }
-
+	async findAll(): Promise<Ingredient[]> {
+		const results = await this.prismaClient.ingredient.findMany();
+		return results;
+	}
+	async findByIdList(ids: string[]): Promise<Ingredient[]> {
+		const results = await this.prismaClient.ingredient.findMany({
+			where: {
+				id: { in: ids }
+			}
+		});
+		return results;
+	}
 }
 
 export { IngredientsRepository };

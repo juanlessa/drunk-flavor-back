@@ -1,35 +1,31 @@
-
-interface IDrink{
-    id?: string,
-    name: string,
-    method: string,
-    cover?: string,
-    thumbnail?: string,
-    ingredients: {
-        ingredientId: string,
-        quantity: number
-    }[]
+interface IDrink {
+	id?: string;
+	name: string;
+	method: string;
+	cover?: string;
+	thumbnail?: string;
+	ingredients: {
+		ingredientId: string;
+		quantity: number;
+	}[];
 }
-
 
 interface IDrinkResponse {
-    id?: string,
-    name: string,
-    method: string,
-    cover?: string,
-    thumbnail?: string,
-    ingredients: {
-        ingredientId: string,
-        quantity: number,
-        name: string,
-        unity: string,
-        category: string,
-        isAlcoholic: boolean,
-        colorTheme: string,
-        created_at: Date
-    
-    }[]
+	id?: string;
+	name: string;
+	method: string;
+	cover?: string;
+	thumbnail?: string;
+	ingredients: {
+		ingredientId: string;
+		quantity: number;
+		name: string;
+		unity: string;
+		category: string;
+		isAlcoholic: boolean;
+		colorTheme: string;
+		created_at: Date;
+	}[];
 }
 
-
-export {IDrink , IDrinkResponse };
+export { IDrink, IDrinkResponse };

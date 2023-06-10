@@ -1,16 +1,15 @@
-import { Request, Response } from "express";
-import { container } from "tsyringe";
-import { ListIngredientsService } from "./ListIngredientsService";
+import { Request, Response } from 'express';
+import { container } from 'tsyringe';
+import { ListIngredientsService } from './ListIngredientsService';
 
 class ListIngredientsController {
-    async handle(request: Request, response: Response): Promise<Response> {
-        
-        const listIngredientsService = container.resolve(ListIngredientsService);
+	async handle(request: Request, response: Response): Promise<Response> {
+		const listIngredientsService = container.resolve(ListIngredientsService);
 
-        const ingredients = await listIngredientsService.execute();
+		const ingredients = await listIngredientsService.execute();
 
-        return response.json(ingredients);
-    }
+		return response.json(ingredients);
+	}
 }
 
 export { ListIngredientsController };
