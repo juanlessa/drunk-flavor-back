@@ -1,41 +1,37 @@
-import { Request, Response, NextFunction } from "express";
-import { verify } from "jsonwebtoken";
-import { UsersRepository } from "@modules/accounts/infra/prisma/UsersRepository";
-import AppError from "@errors/AppError";
-import auth from "@config/auth";
+import { Request, Response, NextFunction } from 'express';
+import { verify } from 'jsonwebtoken';
+import { UsersRepository } from '@modules/accounts/infra/prisma/UsersRepository';
+import AppError from '@errors/AppError';
+import auth from '@config/auth';
 
 interface IPayload {
-    sub: string;
+	sub: string;
 }
 
-export async function ensureAuthenticated(
-    request: Request,
-    response: Response,
-    next: NextFunction
-) {
-    const authHeader = request.headers.authorization;
-    if (!authHeader) {
-        throw new AppError("token missing", 401);
-    }
+export async function ensureAuthenticated(request: Request, response: Response, next: NextFunction) {
+	const authHeader = request.headers.authorization;
+	if (!authHeader) {
+		throw new AppError('token missing', 401);
+	}
 
-    const [, token] = authHeader.split(" ");
+	const [, token] = authHeader.split(' ');
 
-    try {
-        const { sub: user_id } = verify(token, auth.secret_token) as IPayload;
+	try {
+		const { sub: user_id } = verify(token, auth.secret_token) as IPayload;
 
-        const usersRepository = new UsersRepository();
+		const usersRepository = new UsersRepository();
 
-        const user = usersRepository.findById(user_id);
-        if (!user) {
-            throw new AppError("User does not exist", 401);
-        }
+		const user = usersRepository.findById(user_id);
+		if (!user) {
+			throw new AppError('User does not exist', 401);
+		}
 
-        request.user = {
-            id: user_id,
-        };
+		request.user = {
+			id: user_id
+		};
 
-        next();
-    } catch {
-        throw new AppError("invalid token", 401);
-    }
+		next();
+	} catch {
+		throw new AppError('invalid token', 401);
+	}
 }
