@@ -1,0 +1,47 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { IUser } from '@modules/accounts/dtos/UsersDTO';
+import AppError from '@shared/errors/AppError';
+import 'reflect-metadata';
+import { ProfileUserService } from './ProfileUserService';
+import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
+
+const usersRepositoryMock = vi.hoisted<IUsersRepository>(() => {
+	return {
+		create: vi.fn(),
+		update: vi.fn(),
+		findByEmail: vi.fn(),
+		findById: vi.fn()
+	};
+});
+
+let profileUserService: ProfileUserService;
+
+describe('User Profile', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		profileUserService = new ProfileUserService(usersRepositoryMock);
+	});
+
+	it('should be able to find a user profile', async () => {
+		const userTest: IUser = {
+			id: '6461655e42134e25c583f4ed',
+			email: 'user@test.com',
+			password: '123456789',
+			name: 'User'
+		};
+		vi.mocked(usersRepositoryMock.findById).mockReturnValue(Promise.resolve(userTest));
+
+		const result = await profileUserService.execute(userTest.id);
+
+		expect(usersRepositoryMock.findById).toHaveBeenCalledTimes(1);
+		expect(usersRepositoryMock.findById).toHaveBeenCalledWith(userTest.id);
+		expect(result.id).toEqual(userTest.id);
+	});
+
+	it('Should not be able to find a inexistent user profile', async () => {
+		const invalidMockResult = null as IUser;
+		vi.mocked(usersRepositoryMock.findById).mockReturnValue(Promise.resolve(invalidMockResult));
+
+		await expect(profileUserService.execute('invalidId')).rejects.toEqual(new AppError('User does not exists!'));
+	});
+});
