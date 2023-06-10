@@ -1,24 +1,36 @@
-import { sign } from "jsonwebtoken";
+import { sign, verify } from "jsonwebtoken";
 import auth from "@config/auth";
 import { IJwtProvider } from "../IJwtProvider";
-import { ICreateRefreshToken, ICreateToken } from '@modules/accounts/dtos/UsersTokensDTO'
+import { ICreateRefreshToken, ICreateToken, IPayload, IVerifyRefreshToken } from '@modules/accounts/dtos/UsersTokensDTO'
+import AppError from "@shared/errors/AppError";
 
 class JsonwebtokenProvider implements IJwtProvider {
-
-    createToken({ userId }: ICreateToken): string {
-        const token = sign({}, auth.secret_token, {
+ 
+    createToken({ userId, secret, expiresIn }: ICreateToken): string {
+        const token = sign({}, secret, {
             subject: userId,
-            expiresIn: auth.expires_in_token,
+            expiresIn: expiresIn,
         });
         return token
     }
 
-    createRefreshToken({ userEmail, userId }: ICreateRefreshToken): string {
-        const refresh_token = sign({ userEmail }, auth.secret_refresh_token, {
+    createRefreshToken({ userEmail, userId, secret, expiresIn }: ICreateRefreshToken): string {
+        const refresh_token = sign({ userEmail }, secret, {
             subject: userId,
-            expiresIn: auth.expires_in_refresh_token,
+            expiresIn: expiresIn,
         });
         return refresh_token;
+    }
+
+    verifyRefreshToken({ refresh_token, secret }: IVerifyRefreshToken): IPayload {
+        let decode: IPayload
+        try {
+            decode = verify(refresh_token, secret) as IPayload;
+        } catch {
+            throw new AppError("Invalid token!", 401);
+        }
+
+        return decode
     }
 
 }

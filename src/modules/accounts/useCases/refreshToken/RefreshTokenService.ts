@@ -1,10 +1,10 @@
 import { inject, injectable } from "tsyringe";
-import { verify, sign } from "jsonwebtoken";
 import { IUsersTokensRepository } from "@modules/accounts/repositories/IUsersTokensRepository";
 import auth from "@config/auth";
 import AppError from "@errors/AppError";
 import { IDateProvider } from "@shared/container/providers/dateProvider/IDateProvider";
 import { SafeParseError, z } from "zod";
+import { IJwtProvider } from "@shared/container/providers/jwt/IJwtProvider";
 
 const requestSchema = z.object({
     token: z.string({required_error: "Token is required."}).min(1, {message: "Invalid token!"})
@@ -29,7 +29,9 @@ class RefreshTokenService {
         @inject("UsersTokensRepository")
         private usersTokensRepository: IUsersTokensRepository,
         @inject("DayjsDateProvider")
-        private dateProvider: IDateProvider
+        private dateProvider: IDateProvider,
+        @inject("JsonwebtokenProvider")
+        private jwtProvider: IJwtProvider
     ) {}
 
     async execute(data: IRequest): Promise<ITokenResponse> {
@@ -39,20 +41,13 @@ class RefreshTokenService {
             const { error } = result as SafeParseError<IRequest>;
             throw new AppError(error.issues[0].message)
         }
-        const { token } = result.data
+        const { token } = result.data  
 
-        let email = "";
-        let user_id = "";
-
-        try {
-            const decode = verify(token, auth.secret_refresh_token) as IPayload;
-
-            email = decode.email;
-            user_id = decode.sub;
-        } catch {
-            throw new AppError("Invalid token!", 401);
-        }
-
+        const { email, sub: user_id } = this.jwtProvider.verifyRefreshToken({
+            refresh_token: token,
+            secret: auth.secret_refresh_token
+        });
+     
         const userToken =
             await this.usersTokensRepository.findByUserIdAndRefreshToken(
                 user_id,
@@ -65,12 +60,13 @@ class RefreshTokenService {
 
 
         // create token
-        const newToken = sign({}, auth.secret_token, {
-            subject: user_id,
-            expiresIn: auth.expires_in_token,
-        });
-        const new_token_expires_date = this.dateProvider.addMinutes(
-            1
+        const newToken = this.jwtProvider.createToken({
+            userId: user_id, 
+            secret: auth.secret_token,
+            expiresIn: auth.expires_in_token
+        })
+        const new_token_expires_date = this.dateProvider.addHours(
+            auth.expires_token_hours
         );
 
         return {

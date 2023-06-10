@@ -8,8 +8,23 @@ interface IUserToken {
 interface ICreateRefreshToken {
     userEmail: string;
     userId: string;
+    secret: string;
+    expiresIn: string;
 }
 interface ICreateToken {
     userId: string;
+    secret: string;
+    expiresIn: string;
 }
-export { IUserToken, ICreateRefreshToken, ICreateToken };
+ 
+interface IVerifyRefreshToken{
+    refresh_token: string;
+    secret: string
+}
+
+
+interface IPayload {
+    sub: string;
+    email: string;
+}
+export { IUserToken, ICreateRefreshToken, ICreateToken, IPayload, IVerifyRefreshToken };

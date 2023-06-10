@@ -63,7 +63,11 @@ class AuthenticateUserService {
         }
 
         // create token
-        const token = this.jwtProvider.createToken({ userId: user.id })
+        const token = this.jwtProvider.createToken({
+            userId: user.id, 
+            secret: auth.secret_token,
+            expiresIn: auth.expires_in_token
+        })
         const token_expires_date = this.dateProvider.addHours(
             auth.expires_token_hours
         );
@@ -71,7 +75,9 @@ class AuthenticateUserService {
         // create refresh token
         const refresh_token = this.jwtProvider.createRefreshToken({
             userEmail: email,
-            userId: user.id 
+            userId: user.id,
+            secret: auth.secret_refresh_token,
+            expiresIn: auth.expires_in_refresh_token,
         })
         const refresh_token_expires_date = this.dateProvider.addDays(
             auth.expires_refresh_token_days
