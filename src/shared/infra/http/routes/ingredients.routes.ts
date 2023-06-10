@@ -5,7 +5,7 @@ import { UpdateIngredientController } from '@modules/drinks/useCases/updateIngre
 import { DeleteIngredientController } from '@modules/drinks/useCases/deleteIngredient/DeleteIngredientController';
 import { GetIngredientController } from '@modules/drinks/useCases/getIngredient/GetIngredientController';
 
-import { ensureAuthenticated } from '@shared/middlewares/ensureAuthenticated';
+import { ensureAuthenticated } from '@shared/infra/http/middlewares/ensureAuthenticated';
 const createIngredientController = new CreateIngredientController();
 const listIngredientsController = new ListIngredientsController();
 const updateIngredientController = new UpdateIngredientController();
