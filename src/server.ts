@@ -4,7 +4,7 @@ import 'reflect-metadata';
 import 'express-async-errors';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import routes from './routes';
+import routes from '@routes/index';
 import '@shared/container';
 import AppError from '@shared/errors/AppError';
 
