@@ -1,6 +1,6 @@
-import { inject, injectable } from 'tsyringe';
-import AppError from '@shared/errors/AppError';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
+import AppError from '@shared/errors/AppError';
+import { inject, injectable } from 'tsyringe';
 import { SafeParseError, z } from 'zod';
 
 const deleteDrinkSchema = z.object({
