@@ -18,6 +18,15 @@ let refreshTokenService: RefreshTokenService;
 let dayjsDateProvider: DayjsDateProvider;
 let jsonwebtokenProvider: JsonwebtokenProvider;
 
+// test constants
+const email = 'user@test.com';
+const id = 'userId000a0000000a000000';
+let refresh_token: string;
+let expires_date: Date;
+let testUserToken: IUserToken;
+let invalid_refresh_token: string;
+let invalidUserToken: IUserToken;
+
 describe('Refresh token', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -28,24 +37,31 @@ describe('Refresh token', () => {
 			dayjsDateProvider,
 			jsonwebtokenProvider
 		);
-	});
 
-	it('Should be able to refresh the token', async () => {
-		const email = 'user@test.com';
-		const id = 'userId000a0000000a000000';
-		const refresh_token = jsonwebtokenProvider.createRefreshToken({
+		// test constants
+		refresh_token = jsonwebtokenProvider.createRefreshToken({
 			userEmail: email,
 			userId: id,
 			secret: auth.secret_refresh_token,
 			expiresIn: auth.expires_in_refresh_token
 		});
-		const expires_date = dayjsDateProvider.addDays(auth.expires_refresh_token_days);
-		const testUserToken = {
+		expires_date = dayjsDateProvider.addDays(auth.expires_refresh_token_days);
+		testUserToken = {
 			id: 'userTokenId0000000000000',
 			user_id: id,
 			expires_date: expires_date,
 			refresh_token: refresh_token
 		};
+		invalid_refresh_token = jsonwebtokenProvider.createRefreshToken({
+			userEmail: email,
+			userId: id,
+			secret: 'incorrect secret refresh token',
+			expiresIn: auth.expires_in_refresh_token
+		});
+		invalidUserToken = null as IUserToken;
+	});
+
+	it('Should be able to refresh the token', async () => {
 		vi.mocked(usersTokensRepositoryMock.findByUserIdAndRefreshToken).mockReturnValue(
 			Promise.resolve(testUserToken)
 		);
@@ -60,30 +76,12 @@ describe('Refresh token', () => {
 	});
 
 	it('Should not be able to refresh a invalid token', async () => {
-		const email = 'user@test.com';
-		const id = 'userId000a0000000a000000';
-		const invalid_refresh_token = jsonwebtokenProvider.createRefreshToken({
-			userEmail: email,
-			userId: id,
-			secret: 'incorrect secret refresh token',
-			expiresIn: auth.expires_in_refresh_token
-		});
-
 		await expect(refreshTokenService.execute({ token: invalid_refresh_token })).rejects.toEqual(
 			new AppError('Invalid token!', 401)
 		);
 	});
 
 	it('Should not be to use a inexistent refresh token', async () => {
-		const email = 'user@test.com';
-		const id = 'userId000a0000000a000000';
-		const refresh_token = jsonwebtokenProvider.createRefreshToken({
-			userEmail: email,
-			userId: id,
-			secret: auth.secret_refresh_token,
-			expiresIn: auth.expires_in_refresh_token
-		});
-		const invalidUserToken = null as IUserToken;
 		vi.mocked(usersTokensRepositoryMock.findByUserIdAndRefreshToken).mockReturnValue(
 			Promise.resolve(invalidUserToken)
 		);
