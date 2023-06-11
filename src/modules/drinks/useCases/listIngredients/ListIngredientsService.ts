@@ -1,6 +1,6 @@
+import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 import { Prisma } from '@prisma/client';
 import { inject, injectable } from 'tsyringe';
-import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 
 type Ingredient = Prisma.IngredientCreateInput;
 
