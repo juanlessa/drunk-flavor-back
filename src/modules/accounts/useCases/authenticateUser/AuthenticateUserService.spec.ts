@@ -30,8 +30,17 @@ let dayjsDateProvider: DayjsDateProvider;
 let jsonwebtokenProvider: JsonwebtokenProvider;
 let bcryptProvider: BcryptProvider;
 
+// test constants
+const id = '6461655e42134e25c583f4ed';
+const email = 'user@test.com';
+const name = 'User';
+const planPassword = '123456789';
+const invalidUserTest: IUser = null as IUser;
+let encryptedPassword: string;
+let userTest: IUser;
+
 describe('Authenticate User', () => {
-	beforeEach(() => {
+	beforeEach(async () => {
 		vi.clearAllMocks();
 		dayjsDateProvider = new DayjsDateProvider();
 		jsonwebtokenProvider = new JsonwebtokenProvider();
@@ -43,21 +52,22 @@ describe('Authenticate User', () => {
 			jsonwebtokenProvider,
 			bcryptProvider
 		);
+
+		// test constants
+		encryptedPassword = await bcryptProvider.hash(planPassword);
+		userTest = {
+			id,
+			email,
+			password: encryptedPassword,
+			name
+		};
 	});
 
 	it('should be able to authenticate an user', async () => {
-		const planPassword = '123456789';
-		const encryptedPassword = await bcryptProvider.hash(planPassword);
-		const userTest: IUser = {
-			id: '6461655e42134e25c583f4ed',
-			email: 'user@test.com',
-			password: encryptedPassword,
-			name: 'User'
-		};
 		vi.mocked(usersRepositoryMock.findByEmail).mockReturnValue(Promise.resolve(userTest));
 
 		const result = await authenticateUserService.execute({
-			email: userTest.email,
+			email: email,
 			password: planPassword
 		});
 
@@ -66,8 +76,7 @@ describe('Authenticate User', () => {
 	});
 
 	it('should not be able to authenticate an nonexistent user', async () => {
-		const userTest: IUser = null as IUser;
-		vi.mocked(usersRepositoryMock.findByEmail).mockReturnValue(Promise.resolve(userTest));
+		vi.mocked(usersRepositoryMock.findByEmail).mockReturnValue(Promise.resolve(invalidUserTest));
 
 		await expect(
 			authenticateUserService.execute({
@@ -78,19 +87,11 @@ describe('Authenticate User', () => {
 	});
 
 	it('should not be able to authenticate with incorrect password', async () => {
-		const planPassword = '123456789';
-		const encryptedPassword = await bcryptProvider.hash(planPassword);
-		const userTest: IUser = {
-			id: '6461655e42134e25c583f4ed',
-			email: 'user@test.com',
-			password: encryptedPassword,
-			name: 'User'
-		};
 		vi.mocked(usersRepositoryMock.findByEmail).mockReturnValue(Promise.resolve(userTest));
 
 		await expect(
 			authenticateUserService.execute({
-				email: userTest.email,
+				email: email,
 				password: 'incorrectPassword'
 			})
 		).rejects.toEqual(new AppError('Email or password incorrect!'));
