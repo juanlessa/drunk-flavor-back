@@ -215,13 +215,14 @@ class DrinksRepository implements IDrinksRepository {
 
 const convertToDrinkResponse = (jsonObject: Prisma.JsonObject): IDrinkResponse[] => {
 	const drinksAggregationList = (jsonObject as Object).valueOf() as IDrinkAggregation[];
-	const drinkResponse = drinksAggregationList.map((drinkAggregation) => {
+	const drinkResponse: IDrinkResponse[] = drinksAggregationList.map((drinkAggregation) => {
 		return {
 			id: drinkAggregation._id.$oid,
 			name: drinkAggregation.name,
 			method: drinkAggregation.method,
 			cover: drinkAggregation.cover,
 			thumbnail: drinkAggregation.thumbnail,
+			created_at: new Date(drinkAggregation.created_at.$date),
 			ingredients: drinkAggregation.ingredients.map((ing) => {
 				return {
 					ingredientId: ing.ingredientId.$oid,
@@ -231,7 +232,7 @@ const convertToDrinkResponse = (jsonObject: Prisma.JsonObject): IDrinkResponse[]
 					category: ing.category,
 					isAlcoholic: ing.isAlcoholic,
 					colorTheme: ing.colorTheme,
-					created_at: ing.created_at.$date
+					created_at: new Date(ing.created_at.$date)
 				};
 			})
 		};

@@ -1,9 +1,9 @@
-import { inject, injectable } from 'tsyringe';
+import { IDrinkResponse } from '@modules/drinks/dtos/Drinks';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
-import { IDrinkResponse } from '@modules/drinks/dtos/DrinksDTO';
 import AppError from '@shared/errors/AppError';
-import { SafeParseError, z } from 'zod';
 import { getFileURL } from '@utils/getFileURL';
+import { inject, injectable } from 'tsyringe';
+import { SafeParseError, z } from 'zod';
 
 const getDrinkSchema = z.object({
 	id: z.string({ required_error: 'Drink id is required' }).length(24, { message: 'Drink does not exist.' })
@@ -27,7 +27,7 @@ class GetDrinkService {
 
 		const drinks = await this.drinksRepository.findByIdWithIngredientsDetails(id);
 		if (drinks.length !== 1) {
-			throw new AppError('Drink not found!');
+			throw new AppError('Drink not found');
 		}
 		const drink = drinks[0];
 

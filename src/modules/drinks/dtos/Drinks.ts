@@ -16,6 +16,7 @@ interface IDrinkResponse {
 	method: string;
 	cover?: string;
 	thumbnail?: string;
+	created_at?: Date;
 	ingredients: {
 		ingredientId: string;
 		quantity: number;
@@ -24,7 +25,7 @@ interface IDrinkResponse {
 		category: string;
 		isAlcoholic: boolean;
 		colorTheme: string;
-		created_at: Date;
+		created_at?: Date;
 	}[];
 }
 
