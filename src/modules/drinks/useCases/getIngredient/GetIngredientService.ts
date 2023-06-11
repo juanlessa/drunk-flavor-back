@@ -1,8 +1,8 @@
-import { Prisma } from '@prisma/client';
-import { inject, injectable } from 'tsyringe';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
-import { SafeParseError, z } from 'zod';
+import { Prisma } from '@prisma/client';
 import AppError from '@shared/errors/AppError';
+import { inject, injectable } from 'tsyringe';
+import { SafeParseError, z } from 'zod';
 
 const getIngredientSchema = z.object({
 	id: z.string({ required_error: 'Ingredient id is required' }).length(24, { message: 'Ingredient does not exist.' })
@@ -27,6 +27,10 @@ class GetIngredientService {
 		const { id } = result.data;
 
 		const ingredient = await this.ingredientsRepository.findById(id);
+
+		if (!ingredient) {
+			throw new AppError('Ingredient not found');
+		}
 
 		return ingredient;
 	}
