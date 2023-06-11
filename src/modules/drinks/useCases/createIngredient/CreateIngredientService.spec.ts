@@ -19,7 +19,7 @@ const ingredientsRepository = vi.hoisted<IIngredientsRepository>(() => {
 
 let createIngredientService: CreateIngredientService;
 
-describe('Create Drink', () => {
+describe('Create Ingredient', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		createIngredientService = new CreateIngredientService(ingredientsRepository);

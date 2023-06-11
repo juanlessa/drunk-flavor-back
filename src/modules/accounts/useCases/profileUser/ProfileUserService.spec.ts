@@ -1,9 +1,9 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { IUser } from '@modules/accounts/dtos/UsersDTO';
+import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
 import AppError from '@shared/errors/AppError';
 import 'reflect-metadata';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ProfileUserService } from './ProfileUserService';
-import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
 
 const usersRepositoryMock = vi.hoisted<IUsersRepository>(() => {
 	return {

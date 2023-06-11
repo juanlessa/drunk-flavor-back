@@ -1,13 +1,13 @@
-import 'reflect-metadata';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import AppError from '@errors/AppError';
-import { DayjsDateProvider } from '@shared/container/providers/date/implementations/DayjsDateProvider';
-import { JsonwebtokenProvider } from '@shared/container/providers/jwt/implementations/JsonwebtokenProvider';
-import { BcryptProvider } from '@shared/container/providers/encryption/implementations/BcryptProvider';
-import { AuthenticateUserService } from './AuthenticateUserService';
 import { IUser } from '@modules/accounts/dtos/UsersDTO';
 import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
 import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokensRepository';
+import { DayjsDateProvider } from '@shared/container/providers/date/implementations/DayjsDateProvider';
+import { BcryptProvider } from '@shared/container/providers/encryption/implementations/BcryptProvider';
+import { JsonwebtokenProvider } from '@shared/container/providers/jwt/implementations/JsonwebtokenProvider';
+import 'reflect-metadata';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { AuthenticateUserService } from './AuthenticateUserService';
 
 const usersRepositoryMock = vi.hoisted<IUsersRepository>(() => {
 	return {

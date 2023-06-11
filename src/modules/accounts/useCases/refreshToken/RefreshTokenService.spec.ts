@@ -18,7 +18,7 @@ let refreshTokenService: RefreshTokenService;
 let dayjsDateProvider: DayjsDateProvider;
 let jsonwebtokenProvider: JsonwebtokenProvider;
 
-describe('User Profile', () => {
+describe('Refresh token', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		dayjsDateProvider = new DayjsDateProvider();
