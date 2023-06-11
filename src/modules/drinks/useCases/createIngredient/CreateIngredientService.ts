@@ -1,7 +1,7 @@
-import { inject, injectable } from 'tsyringe';
-import { SafeParseError, z } from 'zod';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 import AppError from '@shared/errors/AppError';
+import { inject, injectable } from 'tsyringe';
+import { SafeParseError, z } from 'zod';
 
 interface IResponse {
 	id: string;
@@ -41,7 +41,7 @@ class CreateIngredientService {
 
 		const ingredientALreadyExists = await this.ingredientsRepository.findByName(name);
 		if (ingredientALreadyExists) {
-			throw new AppError('Ingredient already exists!');
+			throw new AppError('Ingredient already exists');
 		}
 
 		const ingredient = await this.ingredientsRepository.create({ name, unity, category, isAlcoholic, colorTheme });
