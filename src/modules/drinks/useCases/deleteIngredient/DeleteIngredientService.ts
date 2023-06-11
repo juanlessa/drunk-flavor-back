@@ -1,8 +1,8 @@
-import { inject, injectable } from 'tsyringe';
-import { SafeParseError, z } from 'zod';
+import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 import AppError from '@shared/errors/AppError';
-import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
+import { inject, injectable } from 'tsyringe';
+import { SafeParseError, z } from 'zod';
 
 const deleteIngredientSchema = z.object({
 	id: z.string({ required_error: 'Ingredient id is required' }).length(24, { message: 'Ingredient does not exist.' })
