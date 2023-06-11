@@ -16,6 +16,15 @@ const usersRepositoryMock = vi.hoisted<IUsersRepository>(() => {
 
 let profileUserService: ProfileUserService;
 
+// test constants
+const userTest: IUser = {
+	id: '6461655e42134e25c583f4ed',
+	email: 'user@test.com',
+	password: '123456789',
+	name: 'User'
+};
+const invalidUserTest = null as IUser;
+
 describe('User Profile', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -23,12 +32,6 @@ describe('User Profile', () => {
 	});
 
 	it('should be able to find a user profile', async () => {
-		const userTest: IUser = {
-			id: '6461655e42134e25c583f4ed',
-			email: 'user@test.com',
-			password: '123456789',
-			name: 'User'
-		};
 		vi.mocked(usersRepositoryMock.findById).mockReturnValue(Promise.resolve(userTest));
 
 		const result = await profileUserService.execute(userTest.id);
@@ -39,8 +42,7 @@ describe('User Profile', () => {
 	});
 
 	it('Should not be able to find a inexistent user profile', async () => {
-		const invalidMockResult = null as IUser;
-		vi.mocked(usersRepositoryMock.findById).mockReturnValue(Promise.resolve(invalidMockResult));
+		vi.mocked(usersRepositoryMock.findById).mockReturnValue(Promise.resolve(invalidUserTest));
 
 		await expect(profileUserService.execute('invalidId')).rejects.toEqual(new AppError('User does not exists!'));
 	});
