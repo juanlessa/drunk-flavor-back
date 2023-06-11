@@ -5,7 +5,7 @@ import 'reflect-metadata';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CreateIngredientService } from './CreateIngredientService';
 
-const ingredientsRepository = vi.hoisted<IIngredientsRepository>(() => {
+const ingredientsRepositoryMock = vi.hoisted<IIngredientsRepository>(() => {
 	return {
 		create: vi.fn(),
 		update: vi.fn(),
@@ -19,53 +19,40 @@ const ingredientsRepository = vi.hoisted<IIngredientsRepository>(() => {
 
 let createIngredientService: CreateIngredientService;
 
+// test constants
+const id = '00000a000a0000000a000000';
+const name = 'Ingredient test';
+const category = 'test';
+const unity = 'ml';
+const colorTheme = '#000000';
+const isAlcoholic = true;
+const ingredientTest: IIngredient = {
+	name,
+	category,
+	unity,
+	colorTheme,
+	isAlcoholic
+};
+
 describe('Create Ingredient', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		createIngredientService = new CreateIngredientService(ingredientsRepository);
+		createIngredientService = new CreateIngredientService(ingredientsRepositoryMock);
 	});
 	it('should be able to create a new ingredient', async () => {
-		const id = '00000a000a0000000a000000';
-		const name = 'Ingredient test';
-		const category = 'test';
-		const unity = 'ml';
-		const colorTheme = '#000000';
-		const isAlcoholic = true;
-		const ingredientTest: IIngredient = {
-			name,
-			category,
-			unity,
-			colorTheme,
-			isAlcoholic
-		};
-
-		vi.mocked(ingredientsRepository.findByName).mockReturnValue(Promise.resolve(null as IIngredient));
-		vi.mocked(ingredientsRepository.create).mockReturnValue(Promise.resolve({ ...ingredientTest, id }));
+		vi.mocked(ingredientsRepositoryMock.findByName).mockReturnValue(Promise.resolve(null as IIngredient));
+		vi.mocked(ingredientsRepositoryMock.create).mockReturnValue(Promise.resolve({ ...ingredientTest, id }));
 
 		const createdIngredientId = await createIngredientService.execute(ingredientTest);
 
-		expect(ingredientsRepository.create).toHaveBeenCalledTimes(1);
-		expect(ingredientsRepository.create).toHaveBeenCalledWith(ingredientTest);
+		expect(ingredientsRepositoryMock.create).toHaveBeenCalledTimes(1);
+		expect(ingredientsRepositoryMock.create).toHaveBeenCalledWith(ingredientTest);
 		expect(createdIngredientId).toHaveProperty('id');
 		expect(createdIngredientId.id).toEqual(id);
 	});
 
 	it('should not be able to create a ingredient with an existing name', async () => {
-		const id = '00000a000a0000000a000000';
-		const name = 'Ingredient test';
-		const category = 'test';
-		const unity = 'ml';
-		const colorTheme = '#000000';
-		const isAlcoholic = true;
-		const ingredientTest: IIngredient = {
-			name,
-			category,
-			unity,
-			colorTheme,
-			isAlcoholic
-		};
-
-		vi.mocked(ingredientsRepository.findByName).mockReturnValue(Promise.resolve({ ...ingredientTest, id }));
+		vi.mocked(ingredientsRepositoryMock.findByName).mockReturnValue(Promise.resolve({ ...ingredientTest, id }));
 
 		await expect(createIngredientService.execute(ingredientTest)).rejects.toEqual(
 			new AppError('Ingredient already exists')
