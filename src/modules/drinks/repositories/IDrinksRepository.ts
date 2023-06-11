@@ -1,4 +1,4 @@
-import { IDrink, IDrinkResponse } from '@modules/drinks/dtos/DrinksDTO';
+import { IDrink, IDrinkResponse } from '@modules/drinks/dtos/Drinks';
 interface IDrinksRepository {
 	create(data: IDrink): Promise<IDrink>;
 	update(data: IDrink): Promise<IDrink>;
