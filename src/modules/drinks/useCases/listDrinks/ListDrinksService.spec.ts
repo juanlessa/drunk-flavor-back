@@ -1,10 +1,9 @@
-import AppError from '@errors/AppError';
 import { IDrinkResponse } from '@modules/drinks/dtos/Drinks';
 import { IIngredient } from '@modules/drinks/dtos/ingredients';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { GetDrinkService } from './GetDrinkService';
+import { ListDrinksService } from './ListDrinksService';
 
 const drinksRepositoryMock = vi.hoisted<IDrinksRepository>(() => {
 	return {
@@ -21,7 +20,7 @@ const drinksRepositoryMock = vi.hoisted<IDrinksRepository>(() => {
 	};
 });
 
-let getDrinkService: GetDrinkService;
+let listDrinksService: ListDrinksService;
 
 // test constants
 const name = 'Test drink name';
@@ -72,28 +71,19 @@ const drinkTest: IDrinkResponse = {
 	]
 };
 
-describe('Get Drink', () => {
+describe('List Drinks', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
-		getDrinkService = new GetDrinkService(drinksRepositoryMock);
+		listDrinksService = new ListDrinksService(drinksRepositoryMock);
 	});
 
-	it('should be able to find a drink', async () => {
-		vi.mocked(drinksRepositoryMock.findByIdWithIngredientsDetails).mockReturnValue(
+	it('should be able to list all drinks', async () => {
+		vi.mocked(drinksRepositoryMock.findAllWithIngredientsDetails).mockReturnValue(
 			Promise.resolve([{ ...drinkTest, id: testId }])
 		);
 
-		const result = await getDrinkService.execute({ id: testId });
+		const drinksFound = await listDrinksService.execute();
 
-		expect(drinksRepositoryMock.findByIdWithIngredientsDetails).toHaveBeenCalledTimes(1);
-		expect(drinksRepositoryMock.findByIdWithIngredientsDetails).toHaveBeenCalledWith(testId);
-		expect(result).toHaveProperty('id');
-		expect(result.id).toEqual(testId);
-	});
-
-	it('should not be able to find a nonexistent drink', async () => {
-		vi.mocked(drinksRepositoryMock.findByIdWithIngredientsDetails).mockReturnValue(Promise.resolve([]));
-
-		await expect(getDrinkService.execute({ id: testId })).rejects.toEqual(new AppError('Drink not found'));
+		expect(drinksRepositoryMock.findAllWithIngredientsDetails).toHaveBeenCalledTimes(1);
 	});
 });

@@ -1,4 +1,3 @@
-import AppError from '@errors/AppError';
 import { IIngredient } from '@modules/drinks/dtos/ingredients';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 import 'reflect-metadata';
