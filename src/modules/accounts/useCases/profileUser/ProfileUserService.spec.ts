@@ -41,7 +41,7 @@ describe('User Profile', () => {
 		expect(result.id).toEqual(userTest.id);
 	});
 
-	it('Should not be able to find a inexistent user profile', async () => {
+	it('Should not be able to find a nonexistent user profile', async () => {
 		vi.mocked(usersRepositoryMock.findById).mockReturnValue(Promise.resolve(invalidUserTest));
 
 		await expect(profileUserService.execute('invalidId')).rejects.toEqual(new AppError('User does not exists!'));

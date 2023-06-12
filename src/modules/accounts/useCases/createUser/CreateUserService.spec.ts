@@ -53,7 +53,7 @@ describe('Create User', () => {
 		expect(usersRepositoryMock.create).toHaveBeenCalledTimes(1);
 	});
 
-	it('Should not be able to create a user with existent email', async () => {
+	it('Should not be able to create an user with an existing email', async () => {
 		vi.mocked(usersRepositoryMock.findByEmail).mockReturnValue(Promise.resolve(userTest));
 
 		await expect(

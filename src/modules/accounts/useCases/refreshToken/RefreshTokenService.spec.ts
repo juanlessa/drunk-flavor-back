@@ -81,7 +81,7 @@ describe('Refresh token', () => {
 		);
 	});
 
-	it('Should not be to use a inexistent refresh token', async () => {
+	it('Should not be able to use a nonexistent refresh token', async () => {
 		vi.mocked(usersTokensRepositoryMock.findByUserIdAndRefreshToken).mockReturnValue(
 			Promise.resolve(invalidUserToken)
 		);

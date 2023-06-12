@@ -86,7 +86,7 @@ describe('Authenticate User', () => {
 		).rejects.toEqual(new AppError('Email or password incorrect!'));
 	});
 
-	it('should not be able to authenticate with incorrect password', async () => {
+	it('should not be able to authenticate an user with incorrect password', async () => {
 		vi.mocked(usersRepositoryMock.findByEmail).mockReturnValue(Promise.resolve(userTest));
 
 		await expect(
