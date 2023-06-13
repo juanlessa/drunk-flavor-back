@@ -1,6 +1,6 @@
-import { inject, injectable } from 'tsyringe';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 import AppError from '@shared/errors/AppError';
+import { inject, injectable } from 'tsyringe';
 import { SafeParseError, z } from 'zod';
 
 const updateIngredientSchema = z.object({
@@ -41,7 +41,7 @@ class UpdateIngredientService {
 		}
 		const ingredientNameALreadyExists = await this.ingredientsRepository.findByName(name);
 		if (ingredientNameALreadyExists && ingredientExists.id !== ingredientNameALreadyExists.id) {
-			throw new AppError('Ingredient name already exists!');
+			throw new AppError('Ingredient name already exists');
 		}
 
 		await this.ingredientsRepository.update({
