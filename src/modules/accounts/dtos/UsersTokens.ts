@@ -1,9 +1,9 @@
-interface IUserToken {
-	id?: string;
+interface ICreateUserToken {
 	user_id: string;
 	expires_date: Date;
 	refresh_token: string;
 }
+
 interface ICreateRefreshToken {
 	userEmail: string;
 	userId: string;
@@ -25,4 +25,4 @@ interface IPayload {
 	sub: string;
 	email: string;
 }
-export { IUserToken, ICreateRefreshToken, ICreateToken, IPayload, IVerifyRefreshToken };
+export { ICreateUserToken, ICreateRefreshToken, ICreateToken, IPayload, IVerifyRefreshToken };

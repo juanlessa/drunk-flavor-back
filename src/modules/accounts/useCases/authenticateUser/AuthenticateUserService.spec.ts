@@ -1,5 +1,5 @@
 import AppError from '@errors/AppError';
-import { IUser } from '@modules/accounts/dtos/UsersDTO';
+import User from '@modules/accounts/entities/User';
 import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
 import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokensRepository';
 import { DayjsDateProvider } from '@shared/container/providers/date/implementations/DayjsDateProvider';
@@ -8,63 +8,48 @@ import { JsonwebtokenProvider } from '@shared/container/providers/jwt/implementa
 import 'reflect-metadata';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthenticateUserService } from './AuthenticateUserService';
+import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory/UsersRepository';
+import { UsersTokensRepositoryInMemory } from '@modules/accounts/repositories/inMemory/UsersTokensRepository';
+import { ICreateUser } from '@modules/accounts/dtos/Users';
 
-const usersRepositoryMock = vi.hoisted<IUsersRepository>(() => {
-	return {
-		create: vi.fn(),
-		update: vi.fn(),
-		findByEmail: vi.fn(),
-		findById: vi.fn()
-	};
-});
-
-const usersTokensRepositoryMock = vi.hoisted<IUsersTokensRepository>(() => {
-	return {
-		create: vi.fn(),
-		findByUserIdAndRefreshToken: vi.fn()
-	};
-});
-
+let usersRepositoryInMemory: UsersRepositoryInMemory;
+let usersTokensRepositoryInMemory: UsersTokensRepositoryInMemory;
 let authenticateUserService: AuthenticateUserService;
 let dayjsDateProvider: DayjsDateProvider;
 let jsonwebtokenProvider: JsonwebtokenProvider;
 let bcryptProvider: BcryptProvider;
 
 // test constants
-const id = '6461655e42134e25c583f4ed';
 const email = 'user@test.com';
 const name = 'User';
+const surname = 'Test';
 const planPassword = '123456789';
-const invalidUserTest: IUser = null as IUser;
 let encryptedPassword: string;
-let userTest: IUser;
+let userTest: ICreateUser;
 
 describe('Authenticate User', () => {
 	beforeEach(async () => {
-		vi.clearAllMocks();
+		usersRepositoryInMemory = new UsersRepositoryInMemory();
+		usersTokensRepositoryInMemory = new UsersTokensRepositoryInMemory();
 		dayjsDateProvider = new DayjsDateProvider();
 		jsonwebtokenProvider = new JsonwebtokenProvider();
 		bcryptProvider = new BcryptProvider();
 		authenticateUserService = new AuthenticateUserService(
-			usersRepositoryMock,
-			usersTokensRepositoryMock,
+			usersRepositoryInMemory,
+			usersTokensRepositoryInMemory,
 			dayjsDateProvider,
 			jsonwebtokenProvider,
 			bcryptProvider
 		);
-
-		// test constants
-		encryptedPassword = await bcryptProvider.hash(planPassword);
-		userTest = {
-			id,
-			email,
-			password: encryptedPassword,
-			name
-		};
 	});
 
 	it('should be able to authenticate an user', async () => {
-		vi.mocked(usersRepositoryMock.findByEmail).mockReturnValue(Promise.resolve(userTest));
+		await usersRepositoryInMemory.create({
+			name,
+			surname,
+			email,
+			password: await bcryptProvider.hash(planPassword)
+		});
 
 		const result = await authenticateUserService.execute({
 			email: email,
@@ -76,24 +61,27 @@ describe('Authenticate User', () => {
 	});
 
 	it('should not be able to authenticate an nonexistent user', async () => {
-		vi.mocked(usersRepositoryMock.findByEmail).mockReturnValue(Promise.resolve(invalidUserTest));
-
 		await expect(
 			authenticateUserService.execute({
-				email: 'false@email.com',
-				password: '123456789'
+				email,
+				password: planPassword
 			})
-		).rejects.toEqual(new AppError('Email or password incorrect!'));
+		).rejects.toEqual(new AppError('Email or password incorrect'));
 	});
 
 	it('should not be able to authenticate an user with incorrect password', async () => {
-		vi.mocked(usersRepositoryMock.findByEmail).mockReturnValue(Promise.resolve(userTest));
+		await usersRepositoryInMemory.create({
+			name,
+			surname,
+			email,
+			password: await bcryptProvider.hash(planPassword)
+		});
 
 		await expect(
 			authenticateUserService.execute({
 				email: email,
 				password: 'incorrectPassword'
 			})
-		).rejects.toEqual(new AppError('Email or password incorrect!'));
+		).rejects.toEqual(new AppError('Email or password incorrect'));
 	});
 });

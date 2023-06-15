@@ -9,9 +9,9 @@ import { IJwtProvider } from '@shared/container/providers/jwt/IJwtProvider';
 import { IEncryptionProvider } from '@shared/container/providers/encryption/IEncryptionProvider';
 
 const requestSchema = z.object({
-	email: z.string({ required_error: 'Email is required.' }).email({ message: 'Email invalid.' }),
+	email: z.string({ required_error: 'Email is required.' }).email({ message: 'Email invalid' }),
 	password: z
-		.string({ required_error: 'Password is required.' })
+		.string({ required_error: 'Password is required' })
 		.min(8, { message: 'Password must have a minimum of 8 characters' })
 });
 type IRequest = z.infer<typeof requestSchema>;
@@ -55,12 +55,12 @@ class AuthenticateUserService {
 
 		const user = await this.usersRepository.findByEmail(email);
 		if (!user) {
-			throw new AppError('Email or password incorrect!');
+			throw new AppError('Email or password incorrect');
 		}
 
 		const passwordMatch = await this.bcryptProvider.compare(password, user.password);
 		if (!passwordMatch) {
-			throw new AppError('Email or password incorrect!');
+			throw new AppError('Email or password incorrect');
 		}
 
 		// create token
