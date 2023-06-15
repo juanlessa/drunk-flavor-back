@@ -1,16 +1,13 @@
 import AppError from '@errors/AppError';
-import User from '@modules/accounts/entities/User';
-import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
-import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokensRepository';
+import { ICreateUser } from '@modules/accounts/dtos/Users';
+import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory/UsersRepository';
+import { UsersTokensRepositoryInMemory } from '@modules/accounts/repositories/inMemory/UsersTokensRepository';
 import { DayjsDateProvider } from '@shared/container/providers/date/implementations/DayjsDateProvider';
 import { BcryptProvider } from '@shared/container/providers/encryption/implementations/BcryptProvider';
 import { JsonwebtokenProvider } from '@shared/container/providers/jwt/implementations/JsonwebtokenProvider';
 import 'reflect-metadata';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { AuthenticateUserService } from './AuthenticateUserService';
-import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory/UsersRepository';
-import { UsersTokensRepositoryInMemory } from '@modules/accounts/repositories/inMemory/UsersTokensRepository';
-import { ICreateUser } from '@modules/accounts/dtos/Users';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
 let usersTokensRepositoryInMemory: UsersTokensRepositoryInMemory;

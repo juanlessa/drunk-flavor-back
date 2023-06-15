@@ -1,12 +1,7 @@
 import { sign, verify } from 'jsonwebtoken';
 import auth from '@config/auth';
 import { IJwtProvider } from '../IJwtProvider';
-import {
-	ICreateRefreshToken,
-	ICreateToken,
-	IPayload,
-	IVerifyRefreshToken
-} from '@modules/accounts/dtos/UsersTokensDTO';
+import { ICreateRefreshToken, ICreateToken, IPayload, IVerifyRefreshToken } from '@modules/accounts/dtos/UsersTokens';
 import AppError from '@shared/errors/AppError';
 
 class JsonwebtokenProvider implements IJwtProvider {
@@ -31,7 +26,7 @@ class JsonwebtokenProvider implements IJwtProvider {
 		try {
 			decode = verify(refresh_token, secret) as IPayload;
 		} catch {
-			throw new AppError('Invalid token!', 401);
+			throw new AppError('Invalid token', 401);
 		}
 
 		return decode;

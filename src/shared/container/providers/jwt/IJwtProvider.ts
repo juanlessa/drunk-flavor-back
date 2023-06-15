@@ -1,9 +1,4 @@
-import {
-	ICreateRefreshToken,
-	ICreateToken,
-	IPayload,
-	IVerifyRefreshToken
-} from '@modules/accounts/dtos/UsersTokensDTO';
+import { ICreateRefreshToken, ICreateToken, IPayload, IVerifyRefreshToken } from '@modules/accounts/dtos/UsersTokens';
 
 interface IJwtProvider {
 	createToken(data: ICreateToken): string;

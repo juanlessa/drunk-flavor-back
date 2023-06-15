@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { verify } from 'jsonwebtoken';
-import { UsersRepository } from '@modules/accounts/infra/prisma/UsersRepository';
+import { UsersRepository } from '@modules/accounts/infra/prisma/repositories/UsersRepository';
 import AppError from '@errors/AppError';
 import auth from '@config/auth';
 
