@@ -42,7 +42,7 @@ describe('Create User', () => {
 	});
 
 	it('Should not be able to create an user with an existing email', async () => {
-		usersRepositoryInMemory.create({
+		await usersRepositoryInMemory.create({
 			name,
 			surname,
 			email,
