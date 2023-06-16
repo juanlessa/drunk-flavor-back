@@ -1,8 +1,9 @@
-import { inject, injectable } from 'tsyringe';
+import { ICreateUser } from '@modules/accounts/dtos/Users';
 import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
-import AppError from '@shared/errors/AppError';
-import { SafeParseError, z } from 'zod';
 import { IEncryptionProvider } from '@shared/container/providers/encryption/IEncryptionProvider';
+import AppError from '@shared/errors/AppError';
+import { inject, injectable } from 'tsyringe';
+import { SafeParseError, z } from 'zod';
 
 const createUserSchema = z.object({
 	name: z
@@ -22,7 +23,6 @@ const createUserSchema = z.object({
 		.string({ required_error: 'Password is required' })
 		.min(8, { message: 'Password must have a minimum of 8 characters' })
 });
-type ICreateUser = z.infer<typeof createUserSchema>;
 
 @injectable()
 class CreateUserService {

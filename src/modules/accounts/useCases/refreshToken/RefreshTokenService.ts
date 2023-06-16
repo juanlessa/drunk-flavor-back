@@ -11,11 +11,6 @@ const requestSchema = z.object({
 });
 type IRequest = z.infer<typeof requestSchema>;
 
-interface IPayload {
-	sub: string;
-	email: string;
-}
-
 interface ITokenResponse {
 	token: string;
 	expires: Date;
