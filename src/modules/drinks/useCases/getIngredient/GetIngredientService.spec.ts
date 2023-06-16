@@ -1,58 +1,51 @@
+import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import AppError from '@errors/AppError';
-import { IIngredient } from '@modules/drinks/dtos/ingredients';
+
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { GetIngredientService } from './GetIngredientService';
+import { ObjectId } from 'bson';
 
-const ingredientsRepositoryMock = vi.hoisted<IIngredientsRepository>(() => {
-	return {
-		create: vi.fn(),
-		update: vi.fn(),
-		delete: vi.fn(),
-		findByName: vi.fn(),
-		findById: vi.fn(),
-		findAll: vi.fn(),
-		findByIdList: vi.fn()
-	};
-});
-
+let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;
 let getIngredientService: GetIngredientService;
 
 // test constants
-const id = '00000a000a0000000a000000';
 const name = 'Ingredient test';
 const category = 'test';
 const unity = 'ml';
 const colorTheme = '#000000';
 const isAlcoholic = true;
-const ingredientTest: IIngredient = {
-	name,
-	category,
-	unity,
-	colorTheme,
-	isAlcoholic
-};
 
 describe('Get Ingredient', () => {
 	beforeEach(() => {
-		vi.clearAllMocks();
-		getIngredientService = new GetIngredientService(ingredientsRepositoryMock);
+		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory();
+		getIngredientService = new GetIngredientService(ingredientsRepositoryInMemory);
 	});
 	it('should be able to find an ingredient', async () => {
-		vi.mocked(ingredientsRepositoryMock.findById).mockReturnValue(Promise.resolve({ ...ingredientTest, id }));
+		const createdIngredient = await ingredientsRepositoryInMemory.create({
+			name,
+			category,
+			unity,
+			isAlcoholic,
+			colorTheme
+		});
 
-		const ingredientFound = await getIngredientService.execute({ id });
+		const ingredientFound = await getIngredientService.execute({ id: createdIngredient.id });
 
-		expect(ingredientsRepositoryMock.findById).toHaveBeenCalledTimes(1);
-		expect(ingredientsRepositoryMock.findById).toHaveBeenCalledWith(id);
-		expect(ingredientFound).toHaveProperty('id');
-		expect(ingredientFound.id).toEqual(id);
+		expect(ingredientFound.id).toEqual(createdIngredient.id);
+		expect(ingredientFound.name).toEqual(createdIngredient.name);
+		expect(ingredientFound.category).toEqual(createdIngredient.category);
+		expect(ingredientFound.unity).toEqual(createdIngredient.unity);
+		expect(ingredientFound.colorTheme).toEqual(createdIngredient.colorTheme);
+		expect(ingredientFound.isAlcoholic).toEqual(createdIngredient.isAlcoholic);
 	});
 
 	it('should not be able to find a nonexistent ingredient', async () => {
-		vi.mocked(ingredientsRepositoryMock.findById).mockReturnValue(Promise.resolve(null as IIngredient));
+		const nonexistentId = new ObjectId().toString();
 
-		await expect(getIngredientService.execute({ id })).rejects.toEqual(new AppError('Ingredient not found'));
+		await expect(getIngredientService.execute({ id: nonexistentId })).rejects.toEqual(
+			new AppError('Ingredient not found')
+		);
 	});
 });

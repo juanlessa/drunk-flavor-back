@@ -17,5 +17,8 @@ interface IUpdateIngredient {
 interface IDeleteIngredient {
 	id: string;
 }
+interface IGetIngredient {
+	id: string;
+}
 
-export { ICreateIngredient, IUpdateIngredient, IDeleteIngredient };
+export { ICreateIngredient, IUpdateIngredient, IDeleteIngredient, IGetIngredient };

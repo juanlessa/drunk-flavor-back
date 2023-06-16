@@ -3,13 +3,12 @@ import { Prisma } from '@prisma/client';
 import AppError from '@shared/errors/AppError';
 import { inject, injectable } from 'tsyringe';
 import { SafeParseError, z } from 'zod';
+import { IGetIngredient } from '@modules/drinks/dtos/ingredients';
+import Ingredient from '@modules/drinks/entities/Ingredient';
 
 const getIngredientSchema = z.object({
 	id: z.string({ required_error: 'Ingredient id is required' }).length(24, { message: 'Ingredient does not exist.' })
 });
-type IGetIngredient = z.infer<typeof getIngredientSchema>;
-
-type Ingredient = Prisma.IngredientCreateInput;
 
 @injectable()
 class GetIngredientService {
