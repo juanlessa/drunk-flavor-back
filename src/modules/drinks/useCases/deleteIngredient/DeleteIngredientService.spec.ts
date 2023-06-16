@@ -1,77 +1,70 @@
 import AppError from '@errors/AppError';
-import { IIngredient } from '@modules/drinks/dtos/ingredients';
-import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DeleteIngredientService } from './DeleteIngredientService';
+import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
+import { DrinksRepositoryInMemory } from '@modules/drinks/repositories/inMemory/DrinksRepository';
+import { ObjectId } from 'bson';
 
-const drinksRepositoryMock = vi.hoisted<IDrinksRepository>(() => {
-	return {
-		create: vi.fn(),
-		update: vi.fn(),
-		delete: vi.fn(),
-		findByName: vi.fn(),
-		findById: vi.fn(),
-		findAll: vi.fn(),
-		findByNameWithIngredientsDetails: vi.fn(),
-		findByIdWithIngredientsDetails: vi.fn(),
-		findAllWithIngredientsDetails: vi.fn(),
-		removeDeletedIngredient: vi.fn()
-	};
-});
-const ingredientsRepositoryMock = vi.hoisted<IIngredientsRepository>(() => {
-	return {
-		create: vi.fn(),
-		update: vi.fn(),
-		delete: vi.fn(),
-		findByName: vi.fn(),
-		findById: vi.fn(),
-		findAll: vi.fn(),
-		findByIdList: vi.fn()
-	};
-});
-
+let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;
+let drinksRepositoryInMemory: DrinksRepositoryInMemory;
 let deleteIngredientService: DeleteIngredientService;
 
 // test constants
-const id = '00000a000a0000000a000000';
 const name = 'Ingredient test';
 const category = 'test';
 const unity = 'ml';
 const colorTheme = '#000000';
 const isAlcoholic = true;
-const ingredientTest: IIngredient = {
-	name,
-	category,
-	unity,
-	colorTheme,
-	isAlcoholic
-};
 
 describe('Delete Ingredient', () => {
 	beforeEach(() => {
-		vi.clearAllMocks();
-		deleteIngredientService = new DeleteIngredientService(ingredientsRepositoryMock, drinksRepositoryMock);
+		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory();
+		drinksRepositoryInMemory = new DrinksRepositoryInMemory(ingredientsRepositoryInMemory);
+		deleteIngredientService = new DeleteIngredientService(ingredientsRepositoryInMemory, drinksRepositoryInMemory);
 	});
 	it('should be able to delete an ingredient', async () => {
-		vi.mocked(ingredientsRepositoryMock.findById).mockReturnValue(Promise.resolve({ ...ingredientTest, id }));
-		vi.mocked(ingredientsRepositoryMock.delete).mockReturnValue(Promise.resolve({ ...ingredientTest, id }));
-		vi.mocked(drinksRepositoryMock.removeDeletedIngredient).mockReturnValue(Promise.resolve());
+		const createdIngredient = await ingredientsRepositoryInMemory.create({
+			name,
+			category,
+			unity,
+			isAlcoholic,
+			colorTheme
+		});
 
-		await deleteIngredientService.execute({ id });
+		await deleteIngredientService.execute({ id: createdIngredient.id });
 
-		expect(ingredientsRepositoryMock.delete).toHaveBeenCalledTimes(1);
-		expect(ingredientsRepositoryMock.delete).toHaveBeenCalledWith(id);
-		expect(drinksRepositoryMock.removeDeletedIngredient).toHaveBeenCalledTimes(1);
-		expect(drinksRepositoryMock.removeDeletedIngredient).toHaveBeenCalledWith(id);
+		const findDeledIngredient = await ingredientsRepositoryInMemory.findById(createdIngredient.id);
+
+		expect(findDeledIngredient).toBeUndefined();
 	});
 
 	it('should not be able to delete a nonexistent ingredient', async () => {
-		vi.mocked(ingredientsRepositoryMock.findById).mockReturnValue(Promise.resolve(null as IIngredient));
-
-		await expect(deleteIngredientService.execute({ id })).rejects.toEqual(
+		const nonexistentId = new ObjectId().toString();
+		await expect(deleteIngredientService.execute({ id: nonexistentId })).rejects.toEqual(
 			new AppError('Ingredient does not exist')
 		);
+	});
+
+	it('should delete the ingredient from the existing drinks', async () => {
+		const createdIngredient = await ingredientsRepositoryInMemory.create({
+			name,
+			category,
+			unity,
+			isAlcoholic,
+			colorTheme
+		});
+		let createdDrink = await drinksRepositoryInMemory.create({
+			name: 'Drink',
+			method: 'test',
+			ingredients: [{ ingredientId: createdIngredient.id, quantity: 1 }]
+		});
+
+		await deleteIngredientService.execute({ id: createdIngredient.id });
+
+		createdDrink = await drinksRepositoryInMemory.findById(createdDrink.id);
+
+		expect(createdDrink.ingredients.length).toEqual(0);
 	});
 });

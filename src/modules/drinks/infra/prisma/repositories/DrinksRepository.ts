@@ -1,7 +1,8 @@
 import { PrismaClient, Prisma } from '@prisma/client';
 import { getPrismaClient } from '@shared/container/providers/prisma';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
-import { IDrinkResponse, IDrink } from '@modules/drinks/dtos/Drinks';
+import { IDrinkResponse, ICreateDrink, IUpdateDrink } from '@modules/drinks/dtos/Drinks';
+import Drink from '@modules/drinks/entities/Drink';
 
 interface IDrinkAggregation {
 	_id: {
@@ -40,12 +41,12 @@ class DrinksRepository implements IDrinksRepository {
 		this.prismaClient = getPrismaClient();
 	}
 
-	async create(data: IDrink): Promise<IDrink> {
+	async create(data: ICreateDrink): Promise<Drink> {
 		const drink = await this.prismaClient.drink.create({ data });
 
 		return drink;
 	}
-	async update(data: IDrink): Promise<IDrink> {
+	async update(data: IUpdateDrink): Promise<Drink> {
 		const drink = await this.prismaClient.drink.update({
 			where: { id: data.id },
 			data: {
@@ -58,7 +59,7 @@ class DrinksRepository implements IDrinksRepository {
 		});
 		return drink;
 	}
-	async delete(id: string): Promise<IDrink> {
+	async delete(id: string): Promise<Drink> {
 		const drink = await this.prismaClient.drink.delete({
 			where: { id }
 		});
@@ -77,6 +78,7 @@ class DrinksRepository implements IDrinksRepository {
 				}
 			}
 		});
+
 		// Remove the deletedIngredientId from these drinks.
 		drinks.forEach(async (d) => {
 			const ingredients = d.ingredients.filter((ing) => {
@@ -86,18 +88,21 @@ class DrinksRepository implements IDrinksRepository {
 		});
 	}
 
-	async findByName(name: string): Promise<IDrink> {
+	async findByName(name: string): Promise<Drink> {
 		const results = await this.prismaClient.drink.findUnique({ where: { name } });
 		return results;
 	}
-	async findById(id: string): Promise<IDrink> {
+
+	async findById(id: string): Promise<Drink> {
 		const results = await this.prismaClient.drink.findUnique({ where: { id: id } });
 		return results;
 	}
-	async findAll(): Promise<IDrink[]> {
+
+	async findAll(): Promise<Drink[]> {
 		const results = await this.prismaClient.drink.findMany();
 		return results;
 	}
+
 	async findByNameWithIngredientsDetails(name: string): Promise<IDrinkResponse[]> {
 		const results = await this.prismaClient.drink.aggregateRaw({
 			pipeline: [
@@ -136,6 +141,7 @@ class DrinksRepository implements IDrinksRepository {
 
 		return convertToDrinkResponse(results);
 	}
+
 	async findByIdWithIngredientsDetails(id: string): Promise<IDrinkResponse[]> {
 		const results = await this.prismaClient.drink.aggregateRaw({
 			pipeline: [

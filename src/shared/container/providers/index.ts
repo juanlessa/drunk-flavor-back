@@ -1,4 +1,4 @@
 import './date';
-import '../../infra/prisma';
+import './prisma';
 import './jwt';
 import './encryption';

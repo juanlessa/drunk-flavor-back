@@ -14,4 +14,8 @@ interface IUpdateIngredient {
 	colorTheme: string;
 }
 
-export { ICreateIngredient, IUpdateIngredient };
+interface IDeleteIngredient {
+	id: string;
+}
+
+export { ICreateIngredient, IUpdateIngredient, IDeleteIngredient };

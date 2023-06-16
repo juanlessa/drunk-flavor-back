@@ -1,5 +1,13 @@
-interface IDrink {
-	id?: string;
+interface ICreateDrink {
+	name: string;
+	method: string;
+	ingredients: {
+		ingredientId: string;
+		quantity: number;
+	}[];
+}
+interface IUpdateDrink {
+	id: string;
 	name: string;
 	method: string;
 	cover?: string;
@@ -29,4 +37,4 @@ interface IDrinkResponse {
 	}[];
 }
 
-export { IDrink, IDrinkResponse };
+export { ICreateDrink, IUpdateDrink, IDrinkResponse };
