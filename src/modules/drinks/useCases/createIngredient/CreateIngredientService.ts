@@ -2,6 +2,7 @@ import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredient
 import AppError from '@shared/errors/AppError';
 import { inject, injectable } from 'tsyringe';
 import { SafeParseError, z } from 'zod';
+import { ICreateIngredient } from '@modules/drinks/dtos/ingredients';
 
 interface IResponse {
 	id: string;
@@ -21,8 +22,6 @@ const createIngredientSchema = z.object({
 		.trim()
 		.regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, { message: ' Ingredient must be a Hex color like #aabbcc' })
 });
-
-type ICreateIngredient = z.infer<typeof createIngredientSchema>;
 
 @injectable()
 class CreateIngredientService {

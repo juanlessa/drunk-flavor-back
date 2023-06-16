@@ -1,8 +1,8 @@
-import { PrismaClient, Prisma } from '@prisma/client';
-import { getPrismaClient } from '@shared/container/providers/prisma';
+import { ICreateIngredient, IUpdateIngredient } from '@modules/drinks/dtos/ingredients';
+import Ingredient from '@modules/drinks/entities/Ingredient';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
-
-type Ingredient = Prisma.IngredientCreateInput;
+import { PrismaClient } from '@prisma/client';
+import { getPrismaClient } from '@shared/infra/prisma';
 
 class IngredientsRepository implements IIngredientsRepository {
 	private prismaClient: PrismaClient;
@@ -11,23 +11,21 @@ class IngredientsRepository implements IIngredientsRepository {
 		this.prismaClient = getPrismaClient();
 	}
 
-	async create(data: Ingredient): Promise<Ingredient> {
+	async create(data: ICreateIngredient): Promise<Ingredient> {
 		const ingredient = await this.prismaClient.ingredient.create({ data });
-
 		return ingredient;
 	}
-	async update(data: Ingredient): Promise<Ingredient> {
+	async update({ id, name, category, unity, colorTheme, isAlcoholic }: IUpdateIngredient): Promise<Ingredient> {
 		const ingredient = await this.prismaClient.ingredient.update({
-			where: { id: data.id },
+			where: { id },
 			data: {
-				name: data.name,
-				category: data.category,
-				unity: data.unity,
-				colorTheme: data.colorTheme,
-				isAlcoholic: data.isAlcoholic
+				name,
+				category,
+				unity,
+				colorTheme,
+				isAlcoholic
 			}
 		});
-
 		return ingredient;
 	}
 
@@ -35,7 +33,6 @@ class IngredientsRepository implements IIngredientsRepository {
 		const ingredient = await this.prismaClient.ingredient.delete({
 			where: { id }
 		});
-
 		return ingredient;
 	}
 

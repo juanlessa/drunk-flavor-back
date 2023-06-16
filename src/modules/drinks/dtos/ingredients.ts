@@ -1,11 +1,17 @@
-interface IIngredient {
-	id?: string;
+interface ICreateIngredient {
 	name: string;
 	unity: string;
 	category: string;
 	isAlcoholic: boolean;
 	colorTheme: string;
-	created_at?: Date;
+}
+interface IUpdateIngredient {
+	id: string;
+	name: string;
+	unity: string;
+	category: string;
+	isAlcoholic: boolean;
+	colorTheme: string;
 }
 
-export { IIngredient };
+export { ICreateIngredient, IUpdateIngredient };
