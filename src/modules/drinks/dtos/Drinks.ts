@@ -18,6 +18,10 @@ interface IUpdateDrink {
 	}[];
 }
 
+interface IDeleteDrink {
+	id: string;
+}
+
 interface IDrinkResponse {
 	id?: string;
 	name: string;
@@ -37,4 +41,4 @@ interface IDrinkResponse {
 	}[];
 }
 
-export { ICreateDrink, IUpdateDrink, IDrinkResponse };
+export { ICreateDrink, IUpdateDrink, IDeleteDrink, IDrinkResponse };
