@@ -1,3 +1,4 @@
+import { IUpdateIngredient } from '@modules/drinks/dtos/ingredients';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 import AppError from '@shared/errors/AppError';
 import { inject, injectable } from 'tsyringe';
@@ -20,7 +21,6 @@ const updateIngredientSchema = z.object({
 		.regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, { message: ' Ingredient must be a Hex color like #aabbcc' })
 });
 
-type IUpdateIngredient = z.infer<typeof updateIngredientSchema>;
 @injectable()
 class UpdateIngredientService {
 	constructor(
