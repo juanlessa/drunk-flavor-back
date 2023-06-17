@@ -1,8 +1,9 @@
-import { inject, injectable } from 'tsyringe';
-import { SafeParseError, z } from 'zod';
+import { ICreateDrink } from '@modules/drinks/dtos/Drinks';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 import AppError from '@shared/errors/AppError';
+import { inject, injectable } from 'tsyringe';
+import { SafeParseError, z } from 'zod';
 
 interface IResponse {
 	id: string;
@@ -25,7 +26,6 @@ const createDrinkSchema = z.object({
 		)
 		.min(1, { message: 'Drink must have ingredients.' })
 });
-type ICreateDrink = z.infer<typeof createDrinkSchema>;
 
 @injectable()
 class CreateDrinkService {
