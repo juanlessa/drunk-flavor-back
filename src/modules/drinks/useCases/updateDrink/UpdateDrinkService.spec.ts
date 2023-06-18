@@ -46,8 +46,7 @@ describe('Update Drink', () => {
 			ingredients: [{ ingredientId: createdIngredient.id, quantity: 15 }]
 		});
 
-		const result = await drinksRepositoryInMemory.findByIdWithIngredientsDetails(createdDrink.id);
-		const updatedDrink = result[0];
+		const updatedDrink = await drinksRepositoryInMemory.findById(createdDrink.id);
 
 		expect(updatedDrink.name).toEqual(updatedName);
 		expect(updatedDrink.method).toEqual(updatedMethod);

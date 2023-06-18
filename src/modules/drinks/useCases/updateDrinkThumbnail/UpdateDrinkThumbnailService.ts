@@ -1,11 +1,11 @@
-import { inject, injectable } from 'tsyringe';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
-import { deleteFile } from '@utils/file';
 import AppError from '@shared/errors/AppError';
+import { deleteFile } from '@utils/file';
+import { inject, injectable } from 'tsyringe';
 import { SafeParseError, z } from 'zod';
 
 const requestSchema = z.object({
-	drinkId: z.string().length(24, { message: 'Drink does not exist!' }),
+	drinkId: z.string().length(24, { message: 'Drink does not exist' }),
 	thumbnailFile: z.string().min(1, { message: 'thumbnail file must have a name' })
 });
 
@@ -30,8 +30,8 @@ class UpdateDrinkThumbnailService {
 			throw new AppError('Drink does not exit');
 		}
 
-		if (drink.cover) {
-			await deleteFile(`./tmp/drink/${drink.cover}`);
+		if (drink.thumbnail) {
+			await deleteFile(drink.thumbnail);
 		}
 		drink.thumbnail = thumbnailFile;
 

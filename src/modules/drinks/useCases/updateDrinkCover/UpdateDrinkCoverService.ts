@@ -1,11 +1,11 @@
-import { inject, injectable } from 'tsyringe';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
-import { deleteFile } from '@utils/file';
 import AppError from '@shared/errors/AppError';
+import { deleteFile } from '@utils/file';
+import { inject, injectable } from 'tsyringe';
 import { SafeParseError, z } from 'zod';
 
 const requestSchema = z.object({
-	drinkId: z.string().length(24, { message: 'Drink does not exist!' }),
+	drinkId: z.string().length(24, { message: 'Drink does not exist' }),
 	coverFile: z.string().min(1, { message: 'cover file must have a name' })
 });
 
