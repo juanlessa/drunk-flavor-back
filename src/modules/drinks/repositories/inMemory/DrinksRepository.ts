@@ -72,18 +72,28 @@ class DrinksRepositoryInMemory implements IDrinksRepository {
 
 	async findByNameWithIngredientsDetails(name: string): Promise<IDrinkResponse[]> {
 		const drink = this.drinks.find((d) => d.name === name);
-		const result = await this.convertToDrinkResponse([drink]);
+		let result: IDrinkResponse[] = [];
+		if (drink) {
+			result = await this.convertToDrinkResponse([drink]);
+		}
 		return result;
 	}
 
 	async findByIdWithIngredientsDetails(id: string): Promise<IDrinkResponse[]> {
 		const drink = this.drinks.find((d) => d.id === id);
-		const result = await this.convertToDrinkResponse([drink]);
+		let result: IDrinkResponse[] = [];
+		if (drink) {
+			result = await this.convertToDrinkResponse([drink]);
+		}
 		return result;
 	}
 
 	async findAllWithIngredientsDetails(): Promise<IDrinkResponse[]> {
-		const result = await this.convertToDrinkResponse([...this.drinks]);
+		const drinks = [...this.drinks];
+		let result: IDrinkResponse[] = [];
+		if (drinks) {
+			result = await this.convertToDrinkResponse(drinks);
+		}
 		return result;
 	}
 
@@ -111,7 +121,7 @@ class DrinksRepositoryInMemory implements IDrinksRepository {
 				thumbnail: drink.thumbnail,
 				created_at: drink.created_at,
 				ingredients: drink.ingredients.map((ing) => {
-					const ingredientFullInfo = ingredientsMap[ing.ingredientId];
+					const ingredientFullInfo = ingredientsMap.get(ing.ingredientId);
 					return {
 						ingredientId: ing.ingredientId,
 						quantity: ing.quantity,

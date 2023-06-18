@@ -22,6 +22,10 @@ interface IDeleteDrink {
 	id: string;
 }
 
+interface IGetDrink {
+	id: string;
+}
+
 interface IDrinkResponse {
 	id?: string;
 	name: string;
@@ -41,4 +45,4 @@ interface IDrinkResponse {
 	}[];
 }
 
-export { ICreateDrink, IUpdateDrink, IDeleteDrink, IDrinkResponse };
+export { ICreateDrink, IUpdateDrink, IDeleteDrink, IGetDrink, IDrinkResponse };

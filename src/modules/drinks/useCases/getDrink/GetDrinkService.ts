@@ -4,11 +4,11 @@ import AppError from '@shared/errors/AppError';
 import { getFileURL } from '@utils/getFileURL';
 import { inject, injectable } from 'tsyringe';
 import { SafeParseError, z } from 'zod';
+import { IGetDrink } from '@modules/drinks/dtos/Drinks';
 
 const getDrinkSchema = z.object({
 	id: z.string({ required_error: 'Drink id is required' }).length(24, { message: 'Drink does not exist.' })
 });
-type IGetDrink = z.infer<typeof getDrinkSchema>;
 
 @injectable()
 class GetDrinkService {
