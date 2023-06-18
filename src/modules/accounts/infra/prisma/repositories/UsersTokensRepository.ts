@@ -1,7 +1,8 @@
+import { ICreateUserToken } from '@modules/accounts/dtos/UsersTokens';
+import UserToken from '@modules/accounts/entities/UserToken';
+import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokensRepository';
 import { PrismaClient } from '@prisma/client';
 import { getPrismaClient } from '@shared/container/providers/prisma';
-import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokensRepository';
-import { IUserToken } from '@modules/accounts/dtos/UsersTokensDTO';
 
 class UsersTokensRepository implements IUsersTokensRepository {
 	private prismaClient: PrismaClient;
@@ -10,7 +11,7 @@ class UsersTokensRepository implements IUsersTokensRepository {
 		this.prismaClient = getPrismaClient();
 	}
 
-	async create({ user_id, expires_date, refresh_token }: IUserToken): Promise<IUserToken> {
+	async create({ user_id, expires_date, refresh_token }: ICreateUserToken): Promise<UserToken> {
 		const userToken = await this.prismaClient.userToken.create({
 			data: {
 				user_id,
@@ -20,14 +21,14 @@ class UsersTokensRepository implements IUsersTokensRepository {
 		});
 		return userToken;
 	}
-	async findByUserIdAndRefreshToken(user_id: string, refresh_token: string): Promise<IUserToken> {
+	async findByUserIdAndRefreshToken(user_id: string, refresh_token: string): Promise<UserToken> {
 		const userToken = await this.prismaClient.userToken.findUnique({
 			where: { refresh_token }
 		});
 		if (userToken && userToken.user_id === user_id) {
 			return userToken;
 		}
-		return {} as IUserToken;
+		return null as UserToken;
 	}
 }
 

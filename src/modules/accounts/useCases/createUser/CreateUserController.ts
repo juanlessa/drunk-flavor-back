@@ -4,18 +4,20 @@ import { CreateUserService } from './CreateUserService';
 
 interface IRequest {
 	name: string;
+	surname: string;
 	email: string;
 	password: string;
 }
 
 class CreateUserController {
 	async handle(request: Request, response: Response): Promise<Response> {
-		const { name, email, password }: IRequest = request.body;
+		const { name, surname, email, password }: IRequest = request.body;
 		const createUserService = container.resolve(CreateUserService);
 
 		await createUserService.execute({
 			name,
 			email,
+			surname,
 			password
 		});
 

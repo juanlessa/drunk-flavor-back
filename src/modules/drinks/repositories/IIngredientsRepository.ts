@@ -1,10 +1,8 @@
-import { Prisma } from '@prisma/client';
-
-type Ingredient = Prisma.IngredientCreateInput;
-
+import Ingredient from '@modules/drinks/entities/Ingredient';
+import { ICreateIngredient, IUpdateIngredient } from '@modules/drinks/dtos/ingredients';
 interface IIngredientsRepository {
-	create(data: Ingredient): Promise<Ingredient>;
-	update(data: Ingredient): Promise<Ingredient>;
+	create(data: ICreateIngredient): Promise<Ingredient>;
+	update(data: IUpdateIngredient): Promise<Ingredient>;
 	delete(id: string): Promise<Ingredient>;
 	findByName(name: string): Promise<Ingredient>;
 	findById(id: string): Promise<Ingredient>;

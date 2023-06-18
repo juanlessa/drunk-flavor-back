@@ -1,12 +1,12 @@
-import { inject, injectable } from 'tsyringe';
-import AppError from '@shared/errors/AppError';
+import { IDeleteDrink } from '@modules/drinks/dtos/Drinks';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
+import AppError from '@shared/errors/AppError';
+import { inject, injectable } from 'tsyringe';
 import { SafeParseError, z } from 'zod';
 
 const deleteDrinkSchema = z.object({
 	id: z.string({ required_error: 'Drink id is required' }).length(24, { message: 'Drink does not exist.' })
 });
-type IDeleteDrink = z.infer<typeof deleteDrinkSchema>;
 
 @injectable()
 class DeleteDrinkService {

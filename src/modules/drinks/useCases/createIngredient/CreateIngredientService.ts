@@ -1,7 +1,8 @@
-import { inject, injectable } from 'tsyringe';
-import { SafeParseError, z } from 'zod';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 import AppError from '@shared/errors/AppError';
+import { inject, injectable } from 'tsyringe';
+import { SafeParseError, z } from 'zod';
+import { ICreateIngredient } from '@modules/drinks/dtos/ingredients';
 
 interface IResponse {
 	id: string;
@@ -22,8 +23,6 @@ const createIngredientSchema = z.object({
 		.regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, { message: ' Ingredient must be a Hex color like #aabbcc' })
 });
 
-type ICreateIngredient = z.infer<typeof createIngredientSchema>;
-
 @injectable()
 class CreateIngredientService {
 	constructor(
@@ -41,7 +40,7 @@ class CreateIngredientService {
 
 		const ingredientALreadyExists = await this.ingredientsRepository.findByName(name);
 		if (ingredientALreadyExists) {
-			throw new AppError('Ingredient already exists!');
+			throw new AppError('Ingredient already exists');
 		}
 
 		const ingredient = await this.ingredientsRepository.create({ name, unity, category, isAlcoholic, colorTheme });

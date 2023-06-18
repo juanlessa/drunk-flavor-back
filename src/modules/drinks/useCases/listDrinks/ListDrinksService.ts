@@ -1,7 +1,7 @@
-import { inject, injectable } from 'tsyringe';
+import { IDrinkResponse } from '@modules/drinks/dtos/Drinks';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
-import { IDrinkResponse } from '@modules/drinks/dtos/DrinksDTO';
 import { getFileURL } from '@utils/getFileURL';
+import { inject, injectable } from 'tsyringe';
 
 @injectable()
 class ListDrinksService {

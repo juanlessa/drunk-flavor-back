@@ -1,6 +1,6 @@
 import { inject, injectable } from 'tsyringe';
 import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
-import { IUserProfileResponse } from '@modules/accounts/dtos/UsersDTO';
+import { IUserProfileResponse } from '@modules/accounts/dtos/Users';
 import { UserMap } from '@modules/accounts/mapper/UserMap';
 import AppError from '@shared/errors/AppError';
 
@@ -14,7 +14,7 @@ class ProfileUserService {
 		const user = await this.usersRepository.findById(id);
 
 		if (!user) {
-			throw new AppError('User does not exists!');
+			throw new AppError('User does not exists');
 		}
 
 		return UserMap.toDTO(user);

@@ -1,5 +1,13 @@
-interface IDrink {
-	id?: string;
+interface ICreateDrink {
+	name: string;
+	method: string;
+	ingredients: {
+		ingredientId: string;
+		quantity: number;
+	}[];
+}
+interface IUpdateDrink {
+	id: string;
 	name: string;
 	method: string;
 	cover?: string;
@@ -8,6 +16,14 @@ interface IDrink {
 		ingredientId: string;
 		quantity: number;
 	}[];
+}
+
+interface IDeleteDrink {
+	id: string;
+}
+
+interface IGetDrink {
+	id: string;
 }
 
 interface IDrinkResponse {
@@ -16,6 +32,7 @@ interface IDrinkResponse {
 	method: string;
 	cover?: string;
 	thumbnail?: string;
+	created_at?: Date;
 	ingredients: {
 		ingredientId: string;
 		quantity: number;
@@ -24,8 +41,8 @@ interface IDrinkResponse {
 		category: string;
 		isAlcoholic: boolean;
 		colorTheme: string;
-		created_at: Date;
+		created_at?: Date;
 	}[];
 }
 
-export { IDrink, IDrinkResponse };
+export { ICreateDrink, IUpdateDrink, IDeleteDrink, IGetDrink, IDrinkResponse };

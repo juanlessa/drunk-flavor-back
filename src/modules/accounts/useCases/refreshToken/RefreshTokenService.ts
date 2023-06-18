@@ -1,20 +1,15 @@
-import { inject, injectable } from 'tsyringe';
-import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokensRepository';
 import auth from '@config/auth';
 import AppError from '@errors/AppError';
+import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokensRepository';
 import { IDateProvider } from '@shared/container/providers/date/IDateProvider';
-import { SafeParseError, z } from 'zod';
 import { IJwtProvider } from '@shared/container/providers/jwt/IJwtProvider';
+import { inject, injectable } from 'tsyringe';
+import { SafeParseError, z } from 'zod';
 
 const requestSchema = z.object({
-	token: z.string({ required_error: 'Token is required.' }).min(1, { message: 'Invalid token!' })
+	token: z.string({ required_error: 'Token is required' }).min(1, { message: 'Invalid token' })
 });
 type IRequest = z.infer<typeof requestSchema>;
-
-interface IPayload {
-	sub: string;
-	email: string;
-}
 
 interface ITokenResponse {
 	token: string;
@@ -48,7 +43,7 @@ class RefreshTokenService {
 		const userToken = await this.usersTokensRepository.findByUserIdAndRefreshToken(user_id, token);
 
 		if (!userToken) {
-			throw new AppError('Refresh Token does not exists!');
+			throw new AppError('Refresh Token does not exists');
 		}
 
 		// create token

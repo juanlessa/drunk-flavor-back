@@ -5,7 +5,7 @@ import { CreateDrinkService } from './CreateDrinkService';
 interface IRequest {
 	name: string;
 	method: string;
-	ingredients: { id: string; quantity: number }[];
+	ingredients: { ingredientId: string; quantity: number }[];
 }
 
 class CreateDrinkController {

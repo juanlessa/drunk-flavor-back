@@ -1,29 +1,28 @@
-import { inject, injectable } from 'tsyringe';
+import { IUpdateDrink } from '@modules/drinks/dtos/Drinks';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
-import AppError from '@shared/errors/AppError';
-import { IDrink } from '@modules/drinks/dtos/DrinksDTO';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
+import AppError from '@shared/errors/AppError';
+import { inject, injectable } from 'tsyringe';
 import { SafeParseError, z } from 'zod';
 
 const updateDrinkSchema = z.object({
-	id: z.string().length(24, { message: 'Drink does not exist!' }),
+	id: z.string().length(24, { message: 'Drink does not exist' }),
 	name: z
 		.string()
 		.trim()
 		.toLowerCase()
-		.min(1, { message: 'Drink must have a name.' })
+		.min(1, { message: 'Drink must have a name' })
 		.transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`),
-	method: z.string().trim().min(1, { message: 'Drink must have a method.' }),
+	method: z.string().trim().min(1, { message: 'Drink must have a method' }),
 	ingredients: z
 		.array(
 			z.object({
-				ingredientId: z.string().length(24, { message: "Some ingredients don't exist!" }),
+				ingredientId: z.string().length(24, { message: "Some ingredients don't exist" }),
 				quantity: z.number().gt(0)
 			})
 		)
-		.min(1, { message: 'Drink must have ingredients.' })
+		.min(1, { message: 'Drink must have ingredients' })
 });
-type IUpdateDrink = z.infer<typeof updateDrinkSchema>;
 
 @injectable()
 class UpdateDrinkService {
@@ -33,7 +32,7 @@ class UpdateDrinkService {
 		@inject('IngredientsRepository')
 		private ingredientsRepository: IIngredientsRepository
 	) {}
-	async execute(data: IDrink): Promise<void> {
+	async execute(data: IUpdateDrink): Promise<void> {
 		const result = updateDrinkSchema.safeParse(data);
 		if (!result.success) {
 			const { error } = result as SafeParseError<IUpdateDrink>;
@@ -43,17 +42,17 @@ class UpdateDrinkService {
 
 		const drink = await this.drinksRepository.findById(id);
 		if (!drink) {
-			throw new AppError('Drink does not exit!');
+			throw new AppError('Drink does not exit');
 		}
 
 		const drinkNameALreadyExists = await this.drinksRepository.findByName(name);
 		if (drinkNameALreadyExists && drinkNameALreadyExists.id !== drink.id) {
-			throw new AppError('Drink name already exists!');
+			throw new AppError('Drink name already exists');
 		}
 
 		const ingredientsExists = await this.ingredientsRepository.findByIdList(ingredients.map((i) => i.ingredientId));
 		if (ingredientsExists.length !== ingredients.length) {
-			throw new AppError("Some ingredients don't exist!");
+			throw new AppError("Some ingredients don't exist");
 		}
 
 		drink.name = name;

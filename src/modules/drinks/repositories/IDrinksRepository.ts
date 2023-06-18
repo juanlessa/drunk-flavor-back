@@ -1,11 +1,12 @@
-import { IDrink, IDrinkResponse } from '@modules/drinks/dtos/DrinksDTO';
+import Drink from '@modules/drinks/entities/Drink';
+import { ICreateDrink, IDrinkResponse, IUpdateDrink } from '@modules/drinks/dtos/Drinks';
 interface IDrinksRepository {
-	create(data: IDrink): Promise<IDrink>;
-	update(data: IDrink): Promise<IDrink>;
-	delete(id: string): Promise<IDrink>;
-	findByName(name: string): Promise<IDrink>;
-	findById(id: string): Promise<IDrink>;
-	findAll(): Promise<IDrink[]>;
+	create(data: ICreateDrink): Promise<Drink>;
+	update(data: IUpdateDrink): Promise<Drink>;
+	delete(id: string): Promise<Drink>;
+	findByName(name: string): Promise<Drink>;
+	findById(id: string): Promise<Drink>;
+	findAll(): Promise<Drink[]>;
 	findByNameWithIngredientsDetails(name: string): Promise<IDrinkResponse[]>;
 	findByIdWithIngredientsDetails(id: string): Promise<IDrinkResponse[]>;
 	findAllWithIngredientsDetails(): Promise<IDrinkResponse[]>;

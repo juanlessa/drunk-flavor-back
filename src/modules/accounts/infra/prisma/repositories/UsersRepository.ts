@@ -1,7 +1,8 @@
+import { ICreateUser, IUpdateUser } from '@modules/accounts/dtos/Users';
+import User from '@modules/accounts/entities/User';
+import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
 import { PrismaClient } from '@prisma/client';
 import { getPrismaClient } from '@shared/container/providers/prisma';
-import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
-import { IUser } from '@modules/accounts/dtos/UsersDTO';
 
 class UsersRepository implements IUsersRepository {
 	private prismaClient: PrismaClient;
@@ -10,11 +11,11 @@ class UsersRepository implements IUsersRepository {
 		this.prismaClient = getPrismaClient();
 	}
 
-	async create(data: IUser): Promise<IUser> {
+	async create(data: ICreateUser): Promise<User> {
 		const user = await this.prismaClient.user.create({ data });
 		return user;
 	}
-	async update(data: IUser): Promise<IUser> {
+	async update(data: IUpdateUser): Promise<User> {
 		const user = await this.prismaClient.user.update({
 			where: { id: data.id },
 			data: {
@@ -26,11 +27,11 @@ class UsersRepository implements IUsersRepository {
 		return user;
 	}
 
-	async findById(id: string): Promise<IUser> {
+	async findById(id: string): Promise<User> {
 		const results = await this.prismaClient.user.findUnique({ where: { id } });
 		return results;
 	}
-	async findByEmail(email: string): Promise<IUser> {
+	async findByEmail(email: string): Promise<User> {
 		const results = await this.prismaClient.user.findUnique({ where: { email } });
 		return results;
 	}

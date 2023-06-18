@@ -1,6 +1,7 @@
-import { inject, injectable } from 'tsyringe';
+import { IUpdateIngredient } from '@modules/drinks/dtos/ingredients';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 import AppError from '@shared/errors/AppError';
+import { inject, injectable } from 'tsyringe';
 import { SafeParseError, z } from 'zod';
 
 const updateIngredientSchema = z.object({
@@ -20,7 +21,6 @@ const updateIngredientSchema = z.object({
 		.regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, { message: ' Ingredient must be a Hex color like #aabbcc' })
 });
 
-type IUpdateIngredient = z.infer<typeof updateIngredientSchema>;
 @injectable()
 class UpdateIngredientService {
 	constructor(
@@ -41,7 +41,7 @@ class UpdateIngredientService {
 		}
 		const ingredientNameALreadyExists = await this.ingredientsRepository.findByName(name);
 		if (ingredientNameALreadyExists && ingredientExists.id !== ingredientNameALreadyExists.id) {
-			throw new AppError('Ingredient name already exists!');
+			throw new AppError('Ingredient name already exists');
 		}
 
 		await this.ingredientsRepository.update({
