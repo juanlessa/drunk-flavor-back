@@ -31,7 +31,7 @@ describe('Get Drink', () => {
 
 	it('should be able to find a drink', async () => {
 		const createdIngredient = await ingredientsRepositoryInMemory.create(testIngredient1);
-		let createdDrink = await drinksRepositoryInMemory.create({
+		const createdDrink = await drinksRepositoryInMemory.create({
 			name,
 			method,
 			ingredients: [{ ingredientId: createdIngredient.id, quantity: 60 }]

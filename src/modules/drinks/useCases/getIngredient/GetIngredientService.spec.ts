@@ -1,11 +1,9 @@
-import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import AppError from '@errors/AppError';
-
-import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
-import 'reflect-metadata';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { GetIngredientService } from './GetIngredientService';
+import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { ObjectId } from 'bson';
+import 'reflect-metadata';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { GetIngredientService } from './GetIngredientService';
 
 let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;
 let getIngredientService: GetIngredientService;
