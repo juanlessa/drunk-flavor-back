@@ -1,6 +1,6 @@
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
 import AppError from '@shared/errors/AppError';
-import { deleteFile } from '@utils/file';
+import { deleteFile } from '@utils/deleteFile';
 import { inject, injectable } from 'tsyringe';
 import { SafeParseError, z } from 'zod';
 

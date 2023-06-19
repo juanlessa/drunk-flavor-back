@@ -1,7 +1,7 @@
+import { DeleteObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import * as dotenv from 'dotenv';
-dotenv.config();
-import { S3, S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import fs from 'fs';
+dotenv.config();
 
 const s3 = new S3Client({
 	region: process.env.AWS_DEFAULT_REGION,
@@ -12,6 +12,7 @@ const s3 = new S3Client({
 });
 
 export const deleteFile = async (fileName: string): Promise<void> => {
+	// STORAGE_TYPE === 'local'
 	if (process.env.STORAGE_TYPE === 'local') {
 		fileName = `./tmp/drink/${fileName}`;
 		try {
@@ -23,11 +24,13 @@ export const deleteFile = async (fileName: string): Promise<void> => {
 		await fs.promises.unlink(fileName);
 		return;
 	}
+	// STORAGE_TYPE === 's3'
+	const command = new DeleteObjectCommand({
+		Bucket: process.env.AWS_S3_BUCKET_NAME,
+		Key: fileName
+	});
+
 	try {
-		const command = new DeleteObjectCommand({
-			Bucket: process.env.AWS_S3_BUCKET_NAME,
-			Key: fileName
-		});
 		await s3.send(command);
 	} catch (error) {
 		console.error('delete file error');
