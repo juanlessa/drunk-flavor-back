@@ -1,8 +1,8 @@
 node_modules
+.vscode
 *.log*
 .env
 dist
-.DS_Store
-.vscode
+.DS_StoreÞ
 tmp/*
 !tmp/.gitkeep
