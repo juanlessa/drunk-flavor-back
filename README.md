@@ -9,4 +9,9 @@ Feel free to suggest improvements and report possible bugs, if you are a softwar
 * Frontend: https://github.com/juanlessa/drunk-flavor-front
 ## Backend
 
+## setup
+To run the Drunkflavor backend locally, you must have an instance of MongoDB.  
+To install MongoDB on macOS, execute the command below.  
+    brew install mongodb-community@6.0  
+If you are using a different operating system, please refer to the installation guide on the [MongoDB website](https://www.mongodb.com) for instructions.
 ## Frontend
