@@ -148,6 +148,28 @@ Now your environment setup is ready.
 
 ## Dev
 
+Once your setup is ready, you are able to run the drunkflavor API in development mode by using the command below.
+
+```shell
+npm run dev
+```
+
+You can also run in watch mode to automatically rerun on file changes:
+
+```shell
+npm run dev:debug
+```
+
+**Note:** make sure that when running the commands above, your MongoDB instance is available.
+
+On macOS, you can execute the command below to start the MongoDB service.
+
+```shell
+brew services start mongodb-community@6.0     
+```
+
+If you are using a different operating system, please refer to the documentation on the [MongoDB website](https://www.mongodb.com).
+
 ## Testing
 
 ## Build
