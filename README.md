@@ -15,10 +15,9 @@ Feel free to suggest improvements and report possible bugs, if you are a softwar
 ## Backend
 
 - [Setup](#setup)
-  - [Database](#database)
-  - [API](#api)
-    - [node.js](#nodejs)
-    - [dotenv](#dotenv)
+  - [mongodb](#mongodb)
+  - [node.js](#nodejs)
+  - [dotenv](#dotenv)
 - [Dev](#dev)
 - [Testing](#dev)
 - [Build](#build)
@@ -26,7 +25,7 @@ Feel free to suggest improvements and report possible bugs, if you are a softwar
 
 ## Setup
 
-### Database
+### mongodb
 
 To run the Drunkflavor backend locally, you must have an instance of MongoDB.  
 To install MongoDB on macOS, execute the command below.
@@ -54,7 +53,7 @@ Make sure to enable the replica set option in your MongoDB single node by follow
 
 3. In the MongoDB shell, initiate the replica set by running the following command:
 
-    ```shell
+    ```mongo
     rs.initiate({
         _id : "rs0",
         members: [ 
@@ -65,21 +64,19 @@ Make sure to enable the replica set option in your MongoDB single node by follow
 
 4. Now, you can add the current node to the replica set by executing the following command:
 
-    ```shell
+    ```mongo
     rs.add("localhost:27017")
     ```
 
 5. Verify the replica set status to ensure that everything is configured correctly.
 
-     ```shell
+     ```mongo
     rs.status()
     ```
 
 Now your database environment is ready.
 
-### API
-
-#### node.js
+### node.js
 
 To run our API locally, you will need to have Node.js 16 or higher installed on your machine.
 To install MongoDB on macOS, execute the command below.
@@ -108,7 +105,9 @@ Finally run the command bellow to install the project dependencies.
 npm install
 ````
 
-#### dotenv
+Now your node.js setup is ready.
+
+### dotenv
 
 To execute the Node.js API, you need to add a file named ```.env``` at the root project folder, containing the environment variables.
 You can use the [```.env.example```](https://github.com/juanlessa/drunk-flavor-back/blob/master/.env.example) file and add the corresponding values for your environment, or simply copy the sample below:
@@ -144,6 +143,8 @@ REFRESH_TOKEN_EXPIRES_DAYS='15'
 
 * This sample is considering that you did the MongoDB default installation. If this is not the case for you, please modify the ```# MongoBD``` variables to match with your database information's.
 * We do recommend you change the ```TOKEN_SECRET``` and the ```REFRESH_TOKEN_SECRET``` values, you can just generate to random strings and place there
+
+Now your environment setup is ready.
 
 ## Dev
 
