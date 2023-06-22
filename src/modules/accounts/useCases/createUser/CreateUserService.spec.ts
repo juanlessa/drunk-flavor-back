@@ -32,7 +32,7 @@ describe('Create User', () => {
 		createUserService = new CreateUserService(usersRepositoryInMemory, bcryptProvider);
 	});
 
-	it('Should be able to create a user', async () => {
+	it('Should be able to create an user', async () => {
 		await createUserService.execute(createTestUser);
 
 		const verifyUser = await usersRepositoryInMemory.findByEmail(email);

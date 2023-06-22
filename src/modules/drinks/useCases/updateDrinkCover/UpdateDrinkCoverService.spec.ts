@@ -23,7 +23,7 @@ const testIngredient1: ICreateIngredient = {
 	isAlcoholic: true
 };
 
-describe('Update Drink cover', () => {
+describe('Update Drink Cover', () => {
 	beforeEach(() => {
 		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory();
 		drinksRepositoryInMemory = new DrinksRepositoryInMemory(ingredientsRepositoryInMemory);
@@ -49,7 +49,7 @@ describe('Update Drink cover', () => {
 		expect(updatedDrink.id).toEqual(createdDrink.id);
 	});
 
-	it('should not be able to update cover of a nonexistent drink', async () => {
+	it('should not be able to update the cover of a nonexistent drink', async () => {
 		const nonexistentDrinkId = new ObjectId().toString();
 
 		await expect(
