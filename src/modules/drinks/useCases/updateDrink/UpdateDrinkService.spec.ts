@@ -63,7 +63,7 @@ describe('Update Drink', () => {
 				method: updatedMethod,
 				ingredients: [{ ingredientId: createdIngredient.id, quantity: 12 }]
 			})
-		).rejects.toEqual(new AppError('Drink does not exit'));
+		).rejects.toEqual(new AppError('Drink does not exist'));
 	});
 
 	it('should not be able to update drink name to an already existing name', async () => {

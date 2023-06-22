@@ -42,7 +42,7 @@ class UpdateDrinkService {
 
 		const drink = await this.drinksRepository.findById(id);
 		if (!drink) {
-			throw new AppError('Drink does not exit');
+			throw new AppError('Drink does not exist');
 		}
 
 		const drinkNameALreadyExists = await this.drinksRepository.findByName(name);
