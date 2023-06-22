@@ -21,7 +21,12 @@ const createUserSchema = z.object({
 	email: z.string({ required_error: 'Email is required' }).email({ message: 'Email invalid' }),
 	password: z
 		.string({ required_error: 'Password is required' })
-		.min(8, { message: 'Password must have a minimum of 8 characters' })
+		.min(8, { message: 'Password must have a minimum of 8 characters' }),
+	role: z
+		.string({ required_error: 'Role is required' })
+		.trim()
+		.toLowerCase()
+		.min(1, { message: 'User must have a role' })
 });
 
 @injectable()
@@ -38,7 +43,7 @@ class CreateUserService {
 			const { error } = result as SafeParseError<ICreateUser>;
 			throw new AppError(error.issues[0].message);
 		}
-		const { name, surname, password, email } = result.data;
+		const { name, surname, password, email, role } = result.data;
 
 		const userAlreadyExists = await this.usersRepository.findByEmail(email);
 
@@ -52,7 +57,8 @@ class CreateUserService {
 			name,
 			password: passwordHash,
 			surname,
-			email
+			email,
+			role
 		});
 	}
 }

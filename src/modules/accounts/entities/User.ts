@@ -4,6 +4,7 @@ type User = {
 	surname: string;
 	email: string;
 	password: string;
+	role: string;
 	created_at: Date;
 };
 export default User;

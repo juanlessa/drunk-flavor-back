@@ -1,5 +1,6 @@
 import { ICreateUser } from '@modules/accounts/dtos/Users';
 import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory/UsersRepository';
+import { ROLES } from '@modules/accounts/types/roles';
 import { BcryptProvider } from '@shared/container/providers/encryption/implementations/BcryptProvider';
 import AppError from '@shared/errors/AppError';
 import 'reflect-metadata';
@@ -15,9 +16,11 @@ const planPassword = '123456789';
 const email = 'user@test.com';
 const name = 'User';
 const surname = 'Test';
+const role = ROLES.admin;
 let createTestUser: ICreateUser = {
 	name,
 	surname,
+	role,
 	email,
 	password: planPassword
 };
@@ -46,6 +49,7 @@ describe('Create User', () => {
 			name,
 			surname,
 			email,
+			role,
 			password: await bcryptProvider.hash(planPassword)
 		});
 

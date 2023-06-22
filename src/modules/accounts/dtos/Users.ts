@@ -3,6 +3,7 @@ interface ICreateUser {
 	surname: string;
 	email: string;
 	password: string;
+	role: string;
 }
 
 interface IUpdateUser {
@@ -11,6 +12,11 @@ interface IUpdateUser {
 	surname: string;
 	email: string;
 	password: string;
+	role?: string;
+}
+
+interface IDeleteUser {
+	id: string;
 }
 
 interface IUserProfileResponse {
@@ -18,6 +24,7 @@ interface IUserProfileResponse {
 	name: string;
 	surname: string;
 	email: string;
+	role: string;
 }
 
-export { ICreateUser, IUpdateUser, IUserProfileResponse };
+export { ICreateUser, IUpdateUser, IDeleteUser, IUserProfileResponse };

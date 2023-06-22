@@ -21,9 +21,18 @@ class UsersRepository implements IUsersRepository {
 			data: {
 				name: data.name,
 				email: data.email,
-				password: data.password
+				password: data.password,
+				role: data.role
 			}
 		});
+		return user;
+	}
+
+	async delete(id: string): Promise<User> {
+		const user = await this.prismaClient.user.delete({
+			where: { id }
+		});
+
 		return user;
 	}
 

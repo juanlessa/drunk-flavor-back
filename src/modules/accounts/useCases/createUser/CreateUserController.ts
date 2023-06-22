@@ -7,18 +7,20 @@ interface IRequest {
 	surname: string;
 	email: string;
 	password: string;
+	role: string;
 }
 
 class CreateUserController {
 	async handle(request: Request, response: Response): Promise<Response> {
-		const { name, surname, email, password }: IRequest = request.body;
+		const { name, surname, email, password, role }: IRequest = request.body;
 		const createUserService = container.resolve(CreateUserService);
 
 		await createUserService.execute({
 			name,
 			email,
 			surname,
-			password
+			password,
+			role
 		});
 
 		return response.status(201).send();
