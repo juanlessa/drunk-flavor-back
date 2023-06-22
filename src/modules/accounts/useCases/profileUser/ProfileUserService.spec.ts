@@ -3,6 +3,8 @@ import AppError from '@shared/errors/AppError';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ProfileUserService } from './ProfileUserService';
+import { ROLES } from '@modules/accounts/types/roles';
+import { ObjectId } from 'bson';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
 let profileUserService: ProfileUserService;
@@ -12,6 +14,7 @@ const email = 'user@test.com';
 const password = '123456789';
 const name = 'User';
 const surname = 'Test';
+const role = ROLES.partner;
 
 describe('User Profile', () => {
 	beforeEach(() => {
@@ -20,7 +23,7 @@ describe('User Profile', () => {
 	});
 
 	it('should be able to find a user profile', async () => {
-		await usersRepositoryInMemory.create({ name, surname, email, password });
+		await usersRepositoryInMemory.create({ name, surname, email, password, role });
 		const userTest = await usersRepositoryInMemory.findByEmail(email);
 
 		const result = await profileUserService.execute(userTest.id);
@@ -29,9 +32,11 @@ describe('User Profile', () => {
 		expect(result.email).toEqual(userTest.email);
 		expect(result.name).toEqual(userTest.name);
 		expect(result.surname).toEqual(userTest.surname);
+		expect(result.role).toEqual(userTest.role);
 	});
 
 	it('Should not be able to find a nonexistent user profile', async () => {
-		await expect(profileUserService.execute('invalidId')).rejects.toEqual(new AppError('User does not exists'));
+		const nonexistentId = new ObjectId().toString();
+		await expect(profileUserService.execute(nonexistentId)).rejects.toEqual(new AppError('User does not exists'));
 	});
 });
