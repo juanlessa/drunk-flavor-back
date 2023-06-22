@@ -44,6 +44,10 @@ class UsersRepository implements IUsersRepository {
 		const results = await this.prismaClient.user.findUnique({ where: { email } });
 		return results;
 	}
+	async findAll(): Promise<User[]> {
+		const results = await this.prismaClient.user.findMany();
+		return results;
+	}
 }
 
 export { UsersRepository };
