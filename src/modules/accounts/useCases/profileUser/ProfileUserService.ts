@@ -1,7 +1,7 @@
 import { inject, injectable } from 'tsyringe';
 import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
 import { IUserProfileResponse } from '@modules/accounts/dtos/Users';
-import { UserMap } from '@modules/accounts/mapper/UserMap';
+import { UserMap } from '@modules/accounts/mappers/UserMap';
 import AppError from '@shared/errors/AppError';
 
 @injectable()
