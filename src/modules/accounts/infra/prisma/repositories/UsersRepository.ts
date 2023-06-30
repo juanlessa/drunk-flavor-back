@@ -2,7 +2,7 @@ import { ICreateUser, IUpdateUser } from '@modules/accounts/dtos/Users';
 import User from '@modules/accounts/entities/User';
 import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
 import { PrismaClient } from '@prisma/client';
-import { getPrismaClient } from '@shared/container/providers/prisma';
+import { getPrismaClient } from '@shared/infra/prisma';
 
 class UsersRepository implements IUsersRepository {
 	private prismaClient: PrismaClient;

@@ -1,5 +1,5 @@
 import { PrismaClient, Prisma } from '@prisma/client';
-import { getPrismaClient } from '@shared/container/providers/prisma';
+import { getPrismaClient } from '@shared/infra/prisma';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
 import { IDrinkResponse, ICreateDrink, IUpdateDrink } from '@modules/drinks/dtos/Drinks';
 import Drink from '@modules/drinks/entities/Drink';

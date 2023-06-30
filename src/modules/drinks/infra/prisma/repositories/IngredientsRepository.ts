@@ -2,7 +2,7 @@ import { ICreateIngredient, IUpdateIngredient } from '@modules/drinks/dtos/ingre
 import Ingredient from '@modules/drinks/entities/Ingredient';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 import { PrismaClient } from '@prisma/client';
-import { getPrismaClient } from '@shared/container/providers/prisma';
+import { getPrismaClient } from '@shared/infra/prisma';
 
 class IngredientsRepository implements IIngredientsRepository {
 	private prismaClient: PrismaClient;
