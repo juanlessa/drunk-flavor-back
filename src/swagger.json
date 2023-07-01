@@ -1,0 +1,1364 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "DrunkFlavor Documentation",
+        "description": "Welcome to the drunkflavor API documentation! This page serves as a comprehensive reference for developers who want to integrate and leverage the functionality of our backend services. Our API follow the RESTful principles and provides a set of well-defined endpoints to access and manipulate data related to alcoholic drink recipes.",
+        "version": "1.0.0",
+        "contact": {
+            "name": "Juan Lessa",
+            "email": "juanvlessa@ua.pt"
+        }
+    },
+    "paths": {
+        "/ingredients": {
+            "post": {
+                "tags": [
+                    "Ingredient"
+                ],
+                "summary": "Create ingredient",
+                "description": "Create a new ingredient",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "category": {
+                                        "type": "string"
+                                    },
+                                    "unity": {
+                                        "type": "string"
+                                    },
+                                    "colorTheme": {
+                                        "type": "string"
+                                    },
+                                    "isAlcoholic": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "example": {
+                                    "name": "simple syrup",
+                                    "unity": "ml",
+                                    "category": "syrup",
+                                    "isAlcoholic": false,
+                                    "colorTheme": "#980f62"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Ingredient already exists"
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Ingredient"
+                ],
+                "summary": "List ingredients",
+                "description": "List all ingredients",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "category": {
+                                                "type": "string"
+                                            },
+                                            "unity": {
+                                                "type": "string"
+                                            },
+                                            "colorTheme": {
+                                                "type": "string"
+                                            },
+                                            "isAlcoholic": {
+                                                "type": "boolean"
+                                            },
+                                            "created_at": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "example": {
+                                            "id": "646246ece2f22cce7ebdfc21",
+                                            "name": "Simple syrup",
+                                            "unity": "ml",
+                                            "category": "syrup",
+                                            "isAlcoholic": false,
+                                            "colorTheme": "#980f62",
+                                            "created_at": "2023-05-15T14:51:24.616Z"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Ingredient"
+                ],
+                "summary": "Delete ingredient",
+                "description": "Delete an ingredient",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "example": {
+                                    "id": "646246ece2f22cce7ebdfc21"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "400": {
+                        "description": "Ingredient does not exist"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Ingredient"
+                ],
+                "summary": "Update ingredient",
+                "description": "Update an ingredient",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "category": {
+                                        "type": "string"
+                                    },
+                                    "unity": {
+                                        "type": "string"
+                                    },
+                                    "colorTheme": {
+                                        "type": "string"
+                                    },
+                                    "isAlcoholic": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "example": {
+                                    "id": "646246ece2f22cce7ebdfc21",
+                                    "name": "simple syrup",
+                                    "unity": "ml",
+                                    "category": "syrup",
+                                    "isAlcoholic": false,
+                                    "colorTheme": "#980f62"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "Updated"
+                    },
+                    "400": {
+                        "description": "Ingredient does not exist"
+                    }
+                }
+            }
+        },
+        "/ingredients/{id}": {
+            "get": {
+                "tags": [
+                    "Ingredient"
+                ],
+                "summary": "Get ingredient",
+                "description": "Get an ingredient",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Ingredient id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "646246ece2f22cce7ebdfc21"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "category": {
+                                            "type": "string"
+                                        },
+                                        "unity": {
+                                            "type": "string"
+                                        },
+                                        "colorTheme": {
+                                            "type": "string"
+                                        },
+                                        "isAlcoholic": {
+                                            "type": "boolean"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "id": "646246ece2f22cce7ebdfc21",
+                                        "name": "Simple syrup",
+                                        "unity": "ml",
+                                        "category": "syrup",
+                                        "isAlcoholic": false,
+                                        "colorTheme": "#980f62",
+                                        "created_at": "2023-05-15T14:51:24.616Z"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Ingredient not found"
+                    }
+                }
+            }
+        },
+        "/drinks": {
+            "post": {
+                "tags": [
+                    "Drink"
+                ],
+                "summary": "Create drink",
+                "description": "Create a new drink",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "method": {
+                                        "type": "string"
+                                    },
+                                    "ingredients": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "ingredientId": {
+                                                    "type": "string"
+                                                },
+                                                "quantity": {
+                                                    "type": "number"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "name": "Cuba livre",
+                                    "method": "Fill a highball glass with ice cubes. Add the lime juice. Pour the rum. Top it off with cola, leaving some space at the top of the glass for garnish. Stir gently to mix the ingredients together. Garnish with a lime wedge. Serve and enjoy!",
+                                    "ingredients": [
+                                        {
+                                            "ingredientId": "645b95880f6f4bbcfbba5f3a",
+                                            "quantity": 60
+                                        },
+                                        {
+                                            "ingredientId": "645b95a20f6f4bbcfbba5f3b",
+                                            "quantity": 15
+                                        },
+                                        {
+                                            "ingredientId": "645b95a20f6f4bbcfbba5f3c",
+                                            "quantity": 150
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Drink already exists"
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Drink"
+                ],
+                "summary": "List drinks",
+                "description": "List all drinks",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "method": {
+                                                "type": "string"
+                                            },
+                                            "cover": {
+                                                "type": "string"
+                                            },
+                                            "thumbnail": {
+                                                "type": "string"
+                                            },
+                                            "ingredients": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "ingredientId": {
+                                                            "type": "string"
+                                                        },
+                                                        "quantity": {
+                                                            "type": "number"
+                                                        },
+                                                        "name": {
+                                                            "type": "string"
+                                                        },
+                                                        "category": {
+                                                            "type": "string"
+                                                        },
+                                                        "unity": {
+                                                            "type": "string"
+                                                        },
+                                                        "colorTheme": {
+                                                            "type": "string"
+                                                        },
+                                                        "isAlcoholic": {
+                                                            "type": "boolean"
+                                                        },
+                                                        "created_at": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "created_at": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "example": {
+                                            "id": "646d1f52f0b839f97aa7024f",
+                                            "name": "Cuba livre",
+                                            "method": "Fill a highball glass with ice cubes. Add the lime juice. Pour the rum. Top it off with cola, leaving some space at the top of the glass for garnish. Stir gently to mix the ingredients together. Garnish with a lime wedge. Serve and enjoy!",
+                                            "cover": "http://localhost:3333/files/f0a90d821a6d2249520878d563d120r3cuba-livre-cover.png",
+                                            "thumbnail": "http://localhost:3333/files/f0a90d821a6d2249520878d563d120f4cuba-livre-thumbnail.png",
+                                            "ingredients": [
+                                                {
+                                                    "ingredientId": "645b95880f6f4bbcfbba5f3a",
+                                                    "quantity": 60,
+                                                    "name": "Rum",
+                                                    "unity": "ml",
+                                                    "category": "rum",
+                                                    "isAlcoholic": true,
+                                                    "colorTheme": "#f3e2f0",
+                                                    "created_at": "2023-05-24T14:16:57.487Z"
+                                                },
+                                                {
+                                                    "ingredientId": "645b95a20f6f4bbcfbba5f3b",
+                                                    "quantity": 15,
+                                                    "name": "Lime juice",
+                                                    "unity": "ml",
+                                                    "category": "juice",
+                                                    "isAlcoholic": false,
+                                                    "colorTheme": "#3aee58",
+                                                    "created_at": "2023-05-14T22:49:02.445Z"
+                                                },
+                                                {
+                                                    "ingredientId": "645b95a20f6f4bbcfbba5f3c",
+                                                    "quantity": 150,
+                                                    "name": "Cola",
+                                                    "unity": "ml",
+                                                    "category": "soft drink",
+                                                    "isAlcoholic": false,
+                                                    "colorTheme": "#022c30",
+                                                    "created_at": "2023-05-13T23:06:18.243Z"
+                                                }
+                                            ],
+                                            "created_at": "2023-05-23T20:17:22.673Z"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Drink"
+                ],
+                "summary": "Delete drink",
+                "description": "Delete a drink",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "example": {
+                                    "id": "646d1f52f0b839f97aa7024f"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "400": {
+                        "description": "Drink does not exist"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Drink"
+                ],
+                "summary": "Update drink",
+                "description": "Update a drink",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "method": {
+                                        "type": "string"
+                                    },
+                                    "ingredients": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "ingredientId": {
+                                                    "type": "string"
+                                                },
+                                                "quantity": {
+                                                    "type": "number"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "example": {
+                                    "id": "646d1f52f0b839f97aa7024f",
+                                    "name": "Cuba livre",
+                                    "method": "Fill a highball glass with ice cubes. Add the lime juice. Pour the rum. Top it off with cola, leaving some space at the top of the glass for garnish. Stir gently to mix the ingredients together. Garnish with a lime wedge. Serve and enjoy!",
+                                    "ingredients": [
+                                        {
+                                            "ingredientId": "645b95880f6f4bbcfbba5f3a",
+                                            "quantity": 60
+                                        },
+                                        {
+                                            "ingredientId": "645b95a20f6f4bbcfbba5f3b",
+                                            "quantity": 15
+                                        },
+                                        {
+                                            "ingredientId": "645b95a20f6f4bbcfbba5f3c",
+                                            "quantity": 150
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "Updated"
+                    },
+                    "400": {
+                        "description": "Drink does not exist"
+                    }
+                }
+            }
+        },
+        "/drinks/{id}": {
+            "get": {
+                "tags": [
+                    "Drink"
+                ],
+                "summary": "Get drink",
+                "description": "Get a drink",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Drink id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "646d1f52f0b839f97aa7024f"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "method": {
+                                            "type": "string"
+                                        },
+                                        "cover": {
+                                            "type": "string"
+                                        },
+                                        "thumbnail": {
+                                            "type": "string"
+                                        },
+                                        "ingredients": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "ingredientId": {
+                                                        "type": "string"
+                                                    },
+                                                    "quantity": {
+                                                        "type": "number"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "category": {
+                                                        "type": "string"
+                                                    },
+                                                    "unity": {
+                                                        "type": "string"
+                                                    },
+                                                    "colorTheme": {
+                                                        "type": "string"
+                                                    },
+                                                    "isAlcoholic": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "id": "646d1f52f0b839f97aa7024f",
+                                        "name": "Cuba livre",
+                                        "method": "Fill a highball glass with ice cubes. Add the lime juice. Pour the rum. Top it off with cola, leaving some space at the top of the glass for garnish. Stir gently to mix the ingredients together. Garnish with a lime wedge. Serve and enjoy!",
+                                        "cover": "http://localhost:3333/files/f0a90d821a6d2249520878d563d120r3cuba-livre-cover.png",
+                                        "thumbnail": "http://localhost:3333/files/f0a90d821a6d2249520878d563d120f4cuba-livre-thumbnail.png",
+                                        "ingredients": [
+                                            {
+                                                "ingredientId": "645b95880f6f4bbcfbba5f3a",
+                                                "quantity": 60,
+                                                "name": "Rum",
+                                                "unity": "ml",
+                                                "category": "rum",
+                                                "isAlcoholic": true,
+                                                "colorTheme": "#f3e2f0",
+                                                "created_at": "2023-05-24T14:16:57.487Z"
+                                            },
+                                            {
+                                                "ingredientId": "645b95a20f6f4bbcfbba5f3b",
+                                                "quantity": 15,
+                                                "name": "Lime juice",
+                                                "unity": "ml",
+                                                "category": "juice",
+                                                "isAlcoholic": false,
+                                                "colorTheme": "#3aee58",
+                                                "created_at": "2023-05-14T22:49:02.445Z"
+                                            },
+                                            {
+                                                "ingredientId": "645b95a20f6f4bbcfbba5f3c",
+                                                "quantity": 150,
+                                                "name": "Cola",
+                                                "unity": "ml",
+                                                "category": "soft drink",
+                                                "isAlcoholic": false,
+                                                "colorTheme": "#022c30",
+                                                "created_at": "2023-05-13T23:06:18.243Z"
+                                            }
+                                        ],
+                                        "created_at": "2023-05-23T20:17:22.673Z"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Drink not found"
+                    }
+                }
+            }
+        },
+        "/drinks/{id}/cover": {
+            "patch": {
+                "tags": [
+                    "Drink"
+                ],
+                "summary": "Update drink cover",
+                "description": "Upload the drink cover image",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Drink id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "646d1f52f0b839f97aa7024f"
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "images": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "Updated"
+                    },
+                    "400": {
+                        "description": "Drink does not exist"
+                    }
+                }
+            }
+        },
+        "/drinks/{id}/thumbnail": {
+            "patch": {
+                "tags": [
+                    "Drink"
+                ],
+                "summary": "Update drink thumbnail",
+                "description": "Upload the drink thumbnail image",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Drink id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "646d1f52f0b839f97aa7024f"
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "images": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "Updated"
+                    },
+                    "400": {
+                        "description": "Drink does not exist"
+                    }
+                }
+            }
+        },
+        "/sessions": {
+            "post": {
+                "tags": [
+                    "Authenticate"
+                ],
+                "summary": "Authenticate user",
+                "description": "Authenticate an user",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    }
+                                },
+                                "example": {
+                                    "email": "user@example.com",
+                                    "password": "user_password"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "user": {
+                                            "type": "object",
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "email": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        "token": {
+                                            "type": "object",
+                                            "properties": {
+                                                "token": {
+                                                    "type": "string"
+                                                },
+                                                "expires": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        "refresh_token": {
+                                            "type": "object",
+                                            "properties": {
+                                                "token": {
+                                                    "type": "string"
+                                                },
+                                                "expires": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "example": {
+                                        "user": {
+                                            "name": "User",
+                                            "email": "user@example.com"
+                                        },
+                                        "token": {
+                                            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2ODgyMDgzNzEsImV4cCI6MTY4ODIyMjc3MSwic3ViIjoiNjRhMDAzYjlmY2U5YWJiOGEyZTM2MTNlIn5.j4tVH1bRBBRvsJCz_WgTPGtQW2uDmj8WzX1yvgVgdcc",
+                                            "expires": "2023-07-01T14:46:11.277Z"
+                                        },
+                                        "refresh_token": {
+                                            "token": "eyJhbGcfOiJIUzI1NiIsIrR5cCI6IkpXVCJ9.eyJ1c2VyRW1haWwiOiJqdWFudmxlc3NhQHVhLnB0IiwiaWF0IjoxNjg4MjA4MzcxLCJleHAiOjE2ODk1MDQzNzEsInN1YiI6IjY0YTAwM2I9ZmNlOWFiYjhhMmVjNjEzZSJ9.b1huHZ9E7oCSEKSKQwZPJO6w4M1vXlT96bsbQSHJI1g",
+                                            "expires": "2023-07-16T10:46:11.278Z"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Email or password incorrect"
+                    }
+                }
+            }
+        },
+        "/refresh-token": {
+            "post": {
+                "tags": [
+                    "Authenticate"
+                ],
+                "summary": "Refresh token",
+                "description": "Refresh token",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "token": {
+                                        "type": "string"
+                                    }
+                                },
+                                "example": {
+                                    "token": "eyJhbGcfOiJIUzI1NiIsIrR5cCI6IkpXVCJ9.eyJ1c2VyRW1haWwiOiJqdWFudmxlc3NhQHVhLnB0IiwiaWF0IjoxNjg4MjA4MzcxLCJleHAiOjE2ODk1MDQzNzEsInN1YiI6IjY0YTAwM2I9ZmNlOWFiYjhhMmVjNjEzZSJ9.b1huHZ9E7oCSEKSKQwZPJO6w4M1vXlT96bsbQSHJI1g"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "token": {
+                                            "type": "object",
+                                            "properties": {
+                                                "token": {
+                                                    "type": "string"
+                                                },
+                                                "expires": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "example": {
+                                        "token": {
+                                            "token": "eyJsbYci7iHIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2ODgyMDgzNzEsImV4cCI6MTY4ODIyMjc3MRwic3ViIjoiNjRhMDAzYjlmY2U5YWJiOGEyZTM2MTNlIn5.j4tVH1bRBBRvsJCz_WgTPGtQW2uDmj8WzX1yvgVgdcc",
+                                            "expires": "2023-08-01T14:46:11.277Z"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Refresh Token does not exists"
+                    }
+                }
+            }
+        },
+        "/users": {
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Create user",
+                "description": "Create a new user",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "surname": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    },
+                                    "role": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "example": {
+                                    "email": "user@example.com",
+                                    "name": "User",
+                                    "surname": "Example",
+                                    "password": "user_password",
+                                    "role": "admin"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "User already exists"
+                    },
+                    "403": {
+                        "description": "Invalid permission"
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "List users",
+                "description": "List all users",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "surname": {
+                                                "type": "string"
+                                            },
+                                            "email": {
+                                                "type": "string"
+                                            },
+                                            "role": {
+                                                "type": "string"
+                                            },
+                                            "created_at": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "example": {
+                                            "id": "646246ece2f22cce7ebdfd34",
+                                            "name": "User",
+                                            "surname": "Example",
+                                            "email": "user@example.com",
+                                            "role": "admin"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Delete user",
+                "description": "Delete an user",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "example": {
+                                    "id": "646246ece2f22cce7ebdfd34"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "400": {
+                        "description": "User does not exist"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update profile",
+                "description": "Update the user profile",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "surname": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    }
+                                },
+                                "example": {
+                                    "email": "user@example.com",
+                                    "name": "User",
+                                    "surname": "Example",
+                                    "password": "user_password"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "Updated"
+                    },
+                    "400": {
+                        "description": "User does not exist"
+                    }
+                }
+            }
+        },
+        "/users/role": {
+            "patch": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update user role",
+                "description": "Update an user role",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "role": {
+                                        "type": "string"
+                                    }
+                                },
+                                "example": {
+                                    "id": "646246ece2f22cce7ebdfd34",
+                                    "role": "partner"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "Updated"
+                    },
+                    "400": {
+                        "description": "User does not exist"
+                    }
+                }
+            }
+        },
+        "/users/profile": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "User profile",
+                "description": "Get user profile",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "surname": {
+                                            "type": "string"
+                                        },
+                                        "email": {
+                                            "type": "string"
+                                        },
+                                        "role": {
+                                            "type": "string"
+                                        },
+                                        "created_at": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": {
+                                        "id": "646246ece2f22cce7ebdfd34",
+                                        "name": "User",
+                                        "surname": "Example",
+                                        "email": "user@example.com",
+                                        "role": "admin"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Ingredient": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "unity": {
+                    "type": "string"
+                },
+                "colorTheme": {
+                    "type": "string"
+                },
+                "isAlcoholic": {
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "Drink": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "ingredients": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "ingredientId": {
+                                "type": "string"
+                            },
+                            "quantity": {
+                                "type": "number"
+                            }
+                        }
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "User": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "surname": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    }
+}
