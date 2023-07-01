@@ -20,7 +20,7 @@ export async function isUserAdmin(request: Request, response: Response, next: Ne
 	}
 
 	if (user.role !== roles.ADMIN) {
-		throw new AppError('invalid permissions', 403);
+		throw new AppError('Invalid permission', 403);
 	}
 	next();
 }
