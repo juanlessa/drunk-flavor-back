@@ -1,7 +1,7 @@
 import AppError from '@errors/AppError';
-import { ICreateUser } from '@modules/accounts/dtos/Users';
 import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory/UsersRepository';
 import { UsersTokensRepositoryInMemory } from '@modules/accounts/repositories/inMemory/UsersTokensRepository';
+import { ROLES } from '@modules/accounts/types/roles';
 import { DayjsDateProvider } from '@shared/container/providers/date/implementations/DayjsDateProvider';
 import { BcryptProvider } from '@shared/container/providers/encryption/implementations/BcryptProvider';
 import { JsonwebtokenProvider } from '@shared/container/providers/jwt/implementations/JsonwebtokenProvider';
@@ -21,8 +21,6 @@ const email = 'user@test.com';
 const name = 'User';
 const surname = 'Test';
 const planPassword = '123456789';
-let encryptedPassword: string;
-let userTest: ICreateUser;
 
 describe('Authenticate User', () => {
 	beforeEach(async () => {
@@ -45,7 +43,8 @@ describe('Authenticate User', () => {
 			name,
 			surname,
 			email,
-			password: await bcryptProvider.hash(planPassword)
+			password: await bcryptProvider.hash(planPassword),
+			role: ROLES.partner
 		});
 
 		const result = await authenticateUserService.execute({
@@ -71,7 +70,8 @@ describe('Authenticate User', () => {
 			name,
 			surname,
 			email,
-			password: await bcryptProvider.hash(planPassword)
+			password: await bcryptProvider.hash(planPassword),
+			role: ROLES.partner
 		});
 
 		await expect(
