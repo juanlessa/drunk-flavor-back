@@ -1,7 +1,13 @@
 import { sign, verify } from 'jsonwebtoken';
 import auth from '@config/auth';
 import { IJwtProvider } from '../IJwtProvider';
-import { ICreateRefreshToken, ICreateToken, IPayload, IVerifyRefreshToken } from '@modules/accounts/dtos/UsersTokens';
+import {
+	ICreateRefreshToken,
+	ICreateToken,
+	IPayload,
+	IVerifyRefreshToken,
+	IVerifyToken
+} from '@modules/accounts/dtos/UsersTokens';
 import AppError from '@shared/errors/AppError';
 
 class JsonwebtokenProvider implements IJwtProvider {
@@ -25,6 +31,17 @@ class JsonwebtokenProvider implements IJwtProvider {
 		let decode: IPayload;
 		try {
 			decode = verify(refresh_token, secret) as IPayload;
+		} catch {
+			throw new AppError('Invalid token', 401);
+		}
+
+		return decode;
+	}
+
+	verifyToken({ token, secret }: IVerifyToken): IPayload {
+		let decode: IPayload;
+		try {
+			decode = verify(token, secret) as IPayload;
 		} catch {
 			throw new AppError('Invalid token', 401);
 		}
