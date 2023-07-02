@@ -17,6 +17,14 @@ interface IUpdateDrink {
 		quantity: number;
 	}[];
 }
+interface IUpdateDrinkCover {
+	drinkId: string;
+	coverFile: string;
+}
+interface IUpdateDrinkThumbnail {
+	drinkId: string;
+	thumbnailFile: string;
+}
 
 interface IDeleteDrink {
 	id: string;
@@ -45,4 +53,12 @@ interface IDrinkResponse {
 	}[];
 }
 
-export { ICreateDrink, IUpdateDrink, IDeleteDrink, IGetDrink, IDrinkResponse };
+export {
+	ICreateDrink,
+	IUpdateDrink,
+	IUpdateDrinkCover,
+	IUpdateDrinkThumbnail,
+	IDeleteDrink,
+	IGetDrink,
+	IDrinkResponse
+};
