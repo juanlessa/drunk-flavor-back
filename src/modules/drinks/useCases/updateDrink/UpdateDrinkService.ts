@@ -1,28 +1,10 @@
 import { IUpdateDrink } from '@modules/drinks/dtos/Drinks';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
+import { updateDrinkSchema } from '@modules/drinks/validations/drinks';
 import AppError from '@shared/errors/AppError';
 import { inject, injectable } from 'tsyringe';
-import { SafeParseError, z } from 'zod';
-
-const updateDrinkSchema = z.object({
-	id: z.string().length(24, { message: 'Drink does not exist' }),
-	name: z
-		.string()
-		.trim()
-		.toLowerCase()
-		.min(1, { message: 'Drink must have a name' })
-		.transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`),
-	method: z.string().trim().min(1, { message: 'Drink must have a method' }),
-	ingredients: z
-		.array(
-			z.object({
-				ingredientId: z.string().length(24, { message: "Some ingredients don't exist" }),
-				quantity: z.number().gt(0)
-			})
-		)
-		.min(1, { message: 'Drink must have ingredients' })
-});
+import { SafeParseError } from 'zod';
 
 @injectable()
 class UpdateDrinkService {

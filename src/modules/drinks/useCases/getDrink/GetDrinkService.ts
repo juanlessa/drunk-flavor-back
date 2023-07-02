@@ -1,14 +1,10 @@
-import { IDrinkResponse } from '@modules/drinks/dtos/Drinks';
+import { IDrinkResponse, IGetDrink } from '@modules/drinks/dtos/Drinks';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
+import { getDrinkSchema } from '@modules/drinks/validations/drinks';
 import AppError from '@shared/errors/AppError';
 import { getFileURL } from '@utils/getFileURL';
 import { inject, injectable } from 'tsyringe';
-import { SafeParseError, z } from 'zod';
-import { IGetDrink } from '@modules/drinks/dtos/Drinks';
-
-const getDrinkSchema = z.object({
-	id: z.string({ required_error: 'Drink id is required' }).length(24, { message: 'Drink does not exist.' })
-});
+import { SafeParseError } from 'zod';
 
 @injectable()
 class GetDrinkService {
