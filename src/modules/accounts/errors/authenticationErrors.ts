@@ -1,4 +1,5 @@
 const AUTHENTICATION_ERRORS = {
+	missing_token: 'Token is missing',
 	required_token: 'Token is required',
 	invalid_token: 'Invalid token',
 	required_refresh_token: 'Refresh token is required',
