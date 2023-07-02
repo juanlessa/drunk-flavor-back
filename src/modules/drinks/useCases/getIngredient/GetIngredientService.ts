@@ -1,5 +1,6 @@
 import { IGetIngredient } from '@modules/drinks/dtos/ingredients';
 import Ingredient from '@modules/drinks/entities/Ingredient';
+import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredientErrors';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 import { getIngredientSchema } from '@modules/drinks/validations/ingredients';
 import AppError from '@shared/errors/AppError';
@@ -24,7 +25,7 @@ class GetIngredientService {
 		const ingredient = await this.ingredientsRepository.findById(id);
 
 		if (!ingredient) {
-			throw new AppError('Ingredient not found');
+			throw new AppError(INGREDIENT_ERRORS.not_found);
 		}
 
 		return ingredient;

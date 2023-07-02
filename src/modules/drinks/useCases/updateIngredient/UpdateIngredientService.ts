@@ -1,4 +1,5 @@
 import { IUpdateIngredient } from '@modules/drinks/dtos/ingredients';
+import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredientErrors';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 import { updateIngredientSchema } from '@modules/drinks/validations/ingredients';
 import AppError from '@shared/errors/AppError';
@@ -21,11 +22,11 @@ class UpdateIngredientService {
 
 		const ingredientExists = await this.ingredientsRepository.findById(id);
 		if (!ingredientExists) {
-			throw new AppError('Ingredient does not exist');
+			throw new AppError(INGREDIENT_ERRORS.not_exist);
 		}
 		const ingredientNameALreadyExists = await this.ingredientsRepository.findByName(name);
 		if (ingredientNameALreadyExists && ingredientExists.id !== ingredientNameALreadyExists.id) {
-			throw new AppError('Ingredient name already exists');
+			throw new AppError(INGREDIENT_ERRORS.already_exist);
 		}
 
 		await this.ingredientsRepository.update({

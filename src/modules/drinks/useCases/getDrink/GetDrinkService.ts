@@ -1,4 +1,5 @@
 import { IDrinkResponse, IGetDrink } from '@modules/drinks/dtos/Drinks';
+import { DRINK_ERRORS } from '@modules/drinks/errors/drinkErrors';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
 import { getDrinkSchema } from '@modules/drinks/validations/drinks';
 import AppError from '@shared/errors/AppError';
@@ -23,7 +24,7 @@ class GetDrinkService {
 
 		const drinks = await this.drinksRepository.findByIdWithIngredientsDetails(id);
 		if (drinks.length !== 1) {
-			throw new AppError('Drink not found');
+			throw new AppError(DRINK_ERRORS.not_found);
 		}
 		const drink = drinks[0];
 

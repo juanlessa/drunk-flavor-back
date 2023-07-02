@@ -1,4 +1,5 @@
 import AppError from '@errors/AppError';
+import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredientErrors';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { ObjectId } from 'bson';
 import 'reflect-metadata';
@@ -43,7 +44,7 @@ describe('Get Ingredient', () => {
 		const nonexistentId = new ObjectId().toString();
 
 		await expect(getIngredientService.execute({ id: nonexistentId })).rejects.toEqual(
-			new AppError('Ingredient not found')
+			new AppError(INGREDIENT_ERRORS.not_found)
 		);
 	});
 });

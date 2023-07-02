@@ -1,4 +1,5 @@
 import { IUpdateDrinkThumbnail } from '@modules/drinks/dtos/Drinks';
+import { DRINK_ERRORS } from '@modules/drinks/errors/drinkErrors';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
 import { updateDrinkThumbnailSchema } from '@modules/drinks/validations/drinks';
 import AppError from '@shared/errors/AppError';
@@ -22,7 +23,7 @@ class UpdateDrinkThumbnailService {
 
 		const drink = await this.drinksRepository.findById(drinkId);
 		if (!drink) {
-			throw new AppError('Drink does not exit');
+			throw new AppError(DRINK_ERRORS.not_exist);
 		}
 
 		if (drink.thumbnail) {

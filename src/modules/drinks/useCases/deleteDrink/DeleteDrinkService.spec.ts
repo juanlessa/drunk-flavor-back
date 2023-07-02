@@ -6,6 +6,7 @@ import { ObjectId } from 'bson';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { DeleteDrinkService } from './DeleteDrinkService';
+import { DRINK_ERRORS } from '@modules/drinks/errors/drinkErrors';
 
 let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;
 let drinksRepositoryInMemory: DrinksRepositoryInMemory;
@@ -46,7 +47,7 @@ describe('Delete Drink', () => {
 	it('should not be able to delete a nonexistent drink', async () => {
 		const nonexistentId = new ObjectId().toString();
 		await expect(deleteDrinkService.execute({ id: nonexistentId })).rejects.toEqual(
-			new AppError('Drink does not exist')
+			new AppError(DRINK_ERRORS.not_exist)
 		);
 	});
 });

@@ -1,5 +1,6 @@
 import AppError from '@errors/AppError';
 import { ICreateIngredient } from '@modules/drinks/dtos/ingredients';
+import { DRINK_ERRORS } from '@modules/drinks/errors/drinkErrors';
 import { DrinksRepositoryInMemory } from '@modules/drinks/repositories/inMemory/DrinksRepository';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { ObjectId } from 'bson';
@@ -46,6 +47,8 @@ describe('Get Drink', () => {
 
 	it('should not be able to find a nonexistent drink', async () => {
 		const nonexistentId = new ObjectId().toString();
-		await expect(getDrinkService.execute({ id: nonexistentId })).rejects.toEqual(new AppError('Drink not found'));
+		await expect(getDrinkService.execute({ id: nonexistentId })).rejects.toEqual(
+			new AppError(DRINK_ERRORS.not_found)
+		);
 	});
 });

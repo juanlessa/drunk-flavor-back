@@ -1,4 +1,5 @@
 import { ICreateIngredient } from '@modules/drinks/dtos/ingredients';
+import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredientErrors';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 import { createIngredientSchema } from '@modules/drinks/validations/ingredients';
 import AppError from '@shared/errors/AppError';
@@ -26,7 +27,7 @@ class CreateIngredientService {
 
 		const ingredientALreadyExists = await this.ingredientsRepository.findByName(name);
 		if (ingredientALreadyExists) {
-			throw new AppError('Ingredient already exists');
+			throw new AppError(INGREDIENT_ERRORS.already_exist);
 		}
 
 		const ingredient = await this.ingredientsRepository.create({ name, unity, category, isAlcoholic, colorTheme });

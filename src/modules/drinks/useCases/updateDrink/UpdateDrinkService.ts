@@ -1,4 +1,5 @@
 import { IUpdateDrink } from '@modules/drinks/dtos/Drinks';
+import { DRINK_ERRORS } from '@modules/drinks/errors/drinkErrors';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 import { updateDrinkSchema } from '@modules/drinks/validations/drinks';
@@ -24,17 +25,17 @@ class UpdateDrinkService {
 
 		const drink = await this.drinksRepository.findById(id);
 		if (!drink) {
-			throw new AppError('Drink does not exist');
+			throw new AppError(DRINK_ERRORS.not_exist);
 		}
 
 		const drinkNameALreadyExists = await this.drinksRepository.findByName(name);
 		if (drinkNameALreadyExists && drinkNameALreadyExists.id !== drink.id) {
-			throw new AppError('Drink name already exists');
+			throw new AppError(DRINK_ERRORS.name_already_exit);
 		}
 
 		const ingredientsExists = await this.ingredientsRepository.findByIdList(ingredients.map((i) => i.ingredientId));
 		if (ingredientsExists.length !== ingredients.length) {
-			throw new AppError("Some ingredients don't exist");
+			throw new AppError(DRINK_ERRORS.some_ingredients_not_exist);
 		}
 
 		drink.name = name;

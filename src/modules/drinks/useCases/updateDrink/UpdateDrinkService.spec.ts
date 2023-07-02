@@ -1,11 +1,12 @@
 import AppError from '@errors/AppError';
-import 'reflect-metadata';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { UpdateDrinkService } from './UpdateDrinkService';
+import { ICreateIngredient } from '@modules/drinks/dtos/ingredients';
+import { DRINK_ERRORS } from '@modules/drinks/errors/drinkErrors';
 import { DrinksRepositoryInMemory } from '@modules/drinks/repositories/inMemory/DrinksRepository';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
-import { ICreateIngredient } from '@modules/drinks/dtos/ingredients';
 import { ObjectId } from 'bson';
+import 'reflect-metadata';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { UpdateDrinkService } from './UpdateDrinkService';
 
 let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;
 let drinksRepositoryInMemory: DrinksRepositoryInMemory;
@@ -63,7 +64,7 @@ describe('Update Drink', () => {
 				method: updatedMethod,
 				ingredients: [{ ingredientId: createdIngredient.id, quantity: 12 }]
 			})
-		).rejects.toEqual(new AppError('Drink does not exist'));
+		).rejects.toEqual(new AppError(DRINK_ERRORS.not_exist));
 	});
 
 	it('should not be able to update drink name to an already existing name', async () => {
@@ -86,7 +87,7 @@ describe('Update Drink', () => {
 				method: updatedMethod,
 				ingredients: [{ ingredientId: createdIngredient.id, quantity: 12 }]
 			})
-		).rejects.toEqual(new AppError('Drink name already exists'));
+		).rejects.toEqual(new AppError(DRINK_ERRORS.name_already_exit));
 	});
 
 	it('should not be able to update a drink to add a nonexistent ingredient', async () => {
@@ -105,6 +106,6 @@ describe('Update Drink', () => {
 				method: updatedMethod,
 				ingredients: [{ ingredientId: nonexistentIngredientId, quantity: 12 }]
 			})
-		).rejects.toEqual(new AppError("Some ingredients don't exist"));
+		).rejects.toEqual(new AppError(DRINK_ERRORS.some_ingredients_not_exist));
 	});
 });

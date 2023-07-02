@@ -1,5 +1,6 @@
 import AppError from '@errors/AppError';
 import { ICreateIngredient } from '@modules/drinks/dtos/ingredients';
+import { DRINK_ERRORS } from '@modules/drinks/errors/drinkErrors';
 import { DrinksRepositoryInMemory } from '@modules/drinks/repositories/inMemory/DrinksRepository';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { ObjectId } from 'bson';
@@ -61,7 +62,7 @@ describe('Create Drink', () => {
 				method,
 				ingredients: [{ ingredientId: createdIngredient.id, quantity: 60 }]
 			})
-		).rejects.toEqual(new AppError('Drink already exists'));
+		).rejects.toEqual(new AppError(DRINK_ERRORS.already_exist));
 	});
 
 	it('should not be able to create a drink with a nonexistent ingredient', async () => {
@@ -71,6 +72,6 @@ describe('Create Drink', () => {
 				method,
 				ingredients: [{ ingredientId: new ObjectId().toString(), quantity: 60 }]
 			})
-		).rejects.toEqual(new AppError("Some ingredients don't exist"));
+		).rejects.toEqual(new AppError(DRINK_ERRORS.some_ingredients_not_exist));
 	});
 });

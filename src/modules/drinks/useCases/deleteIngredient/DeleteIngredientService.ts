@@ -1,4 +1,5 @@
 import { IDeleteIngredient } from '@modules/drinks/dtos/ingredients';
+import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredientErrors';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 import { deleteIngredientSchema } from '@modules/drinks/validations/ingredients';
@@ -25,7 +26,7 @@ class DeleteIngredientService {
 		const ingredientExists = await this.ingredientsRepository.findById(id);
 
 		if (!ingredientExists) {
-			throw new AppError('Ingredient does not exist');
+			throw new AppError(INGREDIENT_ERRORS.not_exist);
 		}
 
 		await this.ingredientsRepository.delete(id);
