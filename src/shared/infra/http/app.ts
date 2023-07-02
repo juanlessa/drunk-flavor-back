@@ -2,13 +2,13 @@ import { resolve } from 'path';
 import * as dotenv from 'dotenv';
 import 'reflect-metadata';
 import 'express-async-errors';
-import express, { Request, Response, NextFunction } from 'express';
+import express from 'express';
 import cors from 'cors';
 import routes from '@routes/index';
 import swaggerFile from '../../../swagger.json';
 import swaggerUi from 'swagger-ui-express';
 import '@shared/container';
-import AppError from '@shared/errors/AppError';
+import { errorMiddleware } from '@middlewares/errorMiddleware';
 
 dotenv.config();
 
@@ -19,21 +19,6 @@ app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 app.use('/files', express.static(resolve(__dirname, '..', 'tmp', 'drink')));
 app.use(routes);
-
-//errors middleware
-app.use((err: Error, request: Request, response: Response, next: NextFunction) => {
-	if (err instanceof AppError) {
-		return response.status(err.statusCode).json({
-			status: 'error',
-			message: err.message
-		});
-	}
-	console.error(err);
-
-	return response.status(500).json({
-		status: 'error',
-		message: 'Internal server error.'
-	});
-});
+app.use(errorMiddleware);
 
 export { app };
