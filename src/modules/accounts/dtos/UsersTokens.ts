@@ -20,9 +20,13 @@ interface IVerifyRefreshToken {
 	refresh_token: string;
 	secret: string;
 }
+interface IVerifyToken {
+	token: string;
+	secret: string;
+}
 
 interface IPayload {
 	sub: string;
 	email: string;
 }
-export { ICreateUserToken, ICreateRefreshToken, ICreateToken, IPayload, IVerifyRefreshToken };
+export { ICreateUserToken, ICreateRefreshToken, ICreateToken, IPayload, IVerifyRefreshToken, IVerifyToken };
