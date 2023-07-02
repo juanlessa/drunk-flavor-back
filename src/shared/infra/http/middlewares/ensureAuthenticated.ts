@@ -1,29 +1,29 @@
-import { Request, Response, NextFunction } from 'express';
-import { verify } from 'jsonwebtoken';
-import { UsersRepository } from '@modules/accounts/infra/prisma/repositories/UsersRepository';
-import AppError from '@errors/AppError';
 import auth from '@config/auth';
-
-interface IPayload {
-	sub: string;
-}
+import AppError from '@errors/AppError';
+import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authenticationErrors';
+import { USER_ERRORS } from '@modules/accounts/errors/userErrors';
+import { UsersRepository } from '@modules/accounts/infra/prisma/repositories/UsersRepository';
+import { JsonwebtokenProvider } from '@shared/container/providers/jwt/implementations/JsonwebtokenProvider';
+import { NextFunction, Request, Response } from 'express';
 
 export async function ensureAuthenticated(request: Request, response: Response, next: NextFunction) {
 	const authHeader = request.headers.authorization;
 	if (!authHeader) {
-		throw new AppError('token missing', 401);
+		throw new AppError(AUTHENTICATION_ERRORS.missing_token, 401);
 	}
 
 	const [, token] = authHeader.split(' ');
 
 	try {
-		const { sub: user_id } = verify(token, auth.secret_token) as IPayload;
+		const jsonwebtokenProvider = new JsonwebtokenProvider();
+
+		const { sub: user_id } = jsonwebtokenProvider.verifyToken({ token, secret: auth.secret_token });
 
 		const usersRepository = new UsersRepository();
 
 		const user = await usersRepository.findById(user_id);
 		if (!user) {
-			throw new AppError('User does not exist', 401);
+			throw new AppError(USER_ERRORS.not_exist, 401);
 		}
 
 		request.user = {
@@ -32,6 +32,6 @@ export async function ensureAuthenticated(request: Request, response: Response, 
 
 		next();
 	} catch {
-		throw new AppError('invalid token', 401);
+		throw new AppError(AUTHENTICATION_ERRORS.invalid_token, 401);
 	}
 }
