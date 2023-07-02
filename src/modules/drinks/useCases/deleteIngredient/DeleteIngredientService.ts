@@ -1,13 +1,10 @@
+import { IDeleteIngredient } from '@modules/drinks/dtos/ingredients';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
+import { deleteIngredientSchema } from '@modules/drinks/validations/ingredients';
 import AppError from '@shared/errors/AppError';
 import { inject, injectable } from 'tsyringe';
-import { SafeParseError, z } from 'zod';
-import { IDeleteIngredient } from '@modules/drinks/dtos/ingredients';
-
-const deleteIngredientSchema = z.object({
-	id: z.string({ required_error: 'Ingredient id is required' }).length(24, { message: 'Ingredient does not exist.' })
-});
+import { SafeParseError } from 'zod';
 
 @injectable()
 class DeleteIngredientService {
