@@ -1,12 +1,10 @@
 import { IDeleteUser } from '@modules/accounts/dtos/Users';
+import { USER_ERRORS } from '@modules/accounts/errors/userErrors';
 import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
+import { deleteUserSchema } from '@modules/accounts/validations/users';
 import AppError from '@shared/errors/AppError';
 import { inject, injectable } from 'tsyringe';
-import { SafeParseError, z } from 'zod';
-
-const deleteUserSchema = z.object({
-	id: z.string({ required_error: 'Drink id is required' }).length(24, { message: 'Drink does not exist.' })
-});
+import { SafeParseError } from 'zod';
 
 @injectable()
 class DeleteUserService {
@@ -24,7 +22,7 @@ class DeleteUserService {
 
 		const user = await this.usersRepository.findById(id);
 		if (!user) {
-			throw new AppError('User does not exist');
+			throw new AppError(USER_ERRORS.not_exist);
 		}
 
 		await this.usersRepository.delete(id);

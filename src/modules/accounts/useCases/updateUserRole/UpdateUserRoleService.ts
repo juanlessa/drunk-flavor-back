@@ -1,15 +1,10 @@
-import { IUpdateUser } from '@modules/accounts/dtos/Users';
+import { IUpdateUserRole } from '@modules/accounts/dtos/Users';
+import { USER_ERRORS } from '@modules/accounts/errors/userErrors';
 import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
+import { updateUserRoleSchema } from '@modules/accounts/validations/users';
 import AppError from '@shared/errors/AppError';
 import { inject, injectable } from 'tsyringe';
-import { SafeParseError, z } from 'zod';
-
-const requestSchema = z.object({
-	userId: z.string().length(24, { message: 'User does not exist' }),
-	role: z.string().min(1, { message: 'Role is required' })
-});
-
-type IRequest = z.infer<typeof requestSchema>;
+import { SafeParseError } from 'zod';
 
 @injectable()
 class UpdateUserRoleService {
@@ -17,17 +12,17 @@ class UpdateUserRoleService {
 		@inject('UsersRepository')
 		private usersRepository: IUsersRepository
 	) {}
-	async execute(data: IRequest): Promise<void> {
-		const result = requestSchema.safeParse(data);
+	async execute(data: IUpdateUserRole): Promise<void> {
+		const result = updateUserRoleSchema.safeParse(data);
 		if (!result.success) {
-			const { error } = result as SafeParseError<IRequest>;
+			const { error } = result as SafeParseError<IUpdateUserRole>;
 			throw new AppError(error.issues[0].message);
 		}
 		const { userId, role } = result.data;
 
 		const user = await this.usersRepository.findById(userId);
 		if (!user) {
-			throw new AppError('User does not exist');
+			throw new AppError(USER_ERRORS.not_exist);
 		}
 
 		user.role = role;

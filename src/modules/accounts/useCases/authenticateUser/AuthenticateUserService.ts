@@ -1,35 +1,15 @@
-import { inject, injectable } from 'tsyringe';
-import { SafeParseError, z } from 'zod';
 import auth from '@config/auth';
 import AppError from '@errors/AppError';
+import { IAuthenticateUser, IAuthenticateUserResponse } from '@modules/accounts/dtos/Users';
+import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authenticationErrors';
 import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
 import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokensRepository';
+import { authenticateUserSchema } from '@modules/accounts/validations/users';
 import { IDateProvider } from '@shared/container/providers/date/IDateProvider';
-import { IJwtProvider } from '@shared/container/providers/jwt/IJwtProvider';
 import { IEncryptionProvider } from '@shared/container/providers/encryption/IEncryptionProvider';
-
-const requestSchema = z.object({
-	email: z.string({ required_error: 'Email is required.' }).email({ message: 'Email invalid' }),
-	password: z
-		.string({ required_error: 'Password is required' })
-		.min(8, { message: 'Password must have a minimum of 8 characters' })
-});
-type IRequest = z.infer<typeof requestSchema>;
-
-interface IResponse {
-	user: {
-		name: string;
-		email: string;
-	};
-	token: {
-		token: string;
-		expires: Date;
-	};
-	refresh_token: {
-		token: string;
-		expires: Date;
-	};
-}
+import { IJwtProvider } from '@shared/container/providers/jwt/IJwtProvider';
+import { inject, injectable } from 'tsyringe';
+import { SafeParseError } from 'zod';
 
 @injectable()
 class AuthenticateUserService {
@@ -45,22 +25,22 @@ class AuthenticateUserService {
 		@inject('BcryptProvider')
 		private bcryptProvider: IEncryptionProvider
 	) {}
-	async execute(data: IRequest): Promise<IResponse> {
-		const result = requestSchema.safeParse(data);
+	async execute(data: IAuthenticateUser): Promise<IAuthenticateUserResponse> {
+		const result = authenticateUserSchema.safeParse(data);
 		if (!result.success) {
-			const { error } = result as SafeParseError<IRequest>;
+			const { error } = result as SafeParseError<IAuthenticateUser>;
 			throw new AppError(error.issues[0].message);
 		}
 		const { email, password } = result.data;
 
 		const user = await this.usersRepository.findByEmail(email);
 		if (!user) {
-			throw new AppError('Email or password incorrect');
+			throw new AppError(AUTHENTICATION_ERRORS.invalid_credentials);
 		}
 
 		const passwordMatch = await this.bcryptProvider.compare(password, user.password);
 		if (!passwordMatch) {
-			throw new AppError('Email or password incorrect');
+			throw new AppError(AUTHENTICATION_ERRORS.invalid_credentials);
 		}
 
 		// create token
