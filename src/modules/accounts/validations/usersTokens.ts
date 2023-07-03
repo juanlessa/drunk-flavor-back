@@ -1,4 +1,3 @@
-import { USER_ERRORS } from '@modules/accounts/errors/userErrors';
 import { z } from 'zod';
 import { AUTHENTICATION_ERRORS } from '../errors/authenticationErrors';
 
@@ -8,8 +7,8 @@ const tokenValidation = z
 	.min(1, { message: AUTHENTICATION_ERRORS.invalid_token });
 
 // schemas
-
 const refreshTokenSchema = z.object({
 	token: tokenValidation
 });
+
 export { refreshTokenSchema };
