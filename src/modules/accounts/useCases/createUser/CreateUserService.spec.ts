@@ -6,6 +6,7 @@ import AppError from '@shared/errors/AppError';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CreateUserService } from './CreateUserService';
+import { USER_ERRORS } from '@modules/accounts/errors/userErrors';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
 let createUserService: CreateUserService;
@@ -53,6 +54,8 @@ describe('Create User', () => {
 			password: await bcryptProvider.hash(planPassword)
 		});
 
-		await expect(createUserService.execute(createTestUser)).rejects.toEqual(new AppError('User already exists'));
+		await expect(createUserService.execute(createTestUser)).rejects.toEqual(
+			new AppError(USER_ERRORS.already_exist)
+		);
 	});
 });

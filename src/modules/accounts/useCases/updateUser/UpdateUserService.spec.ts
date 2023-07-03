@@ -1,3 +1,4 @@
+import { USER_ERRORS } from '@modules/accounts/errors/userErrors';
 import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory/UsersRepository';
 import { ROLES } from '@modules/accounts/types/roles';
 import { BcryptProvider } from '@shared/container/providers/encryption/implementations/BcryptProvider';
@@ -78,7 +79,7 @@ describe('Update User', () => {
 				email: updatedEmail,
 				password: updatedPlanPassword
 			})
-		).rejects.toEqual(new AppError('The email is already in use'));
+		).rejects.toEqual(new AppError(USER_ERRORS.already_exist));
 	});
 
 	it('should not be able to update a nonexistent user', async () => {
@@ -91,6 +92,6 @@ describe('Update User', () => {
 				email: updatedEmail,
 				password: updatedPlanPassword
 			})
-		).rejects.toEqual(new AppError('User does not exist'));
+		).rejects.toEqual(new AppError(USER_ERRORS.not_exist));
 	});
 });

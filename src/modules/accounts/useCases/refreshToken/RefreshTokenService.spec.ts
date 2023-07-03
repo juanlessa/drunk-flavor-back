@@ -1,4 +1,5 @@
 import auth from '@config/auth';
+import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authenticationErrors';
 import { UsersTokensRepositoryInMemory } from '@modules/accounts/repositories/inMemory/UsersTokensRepository';
 import { DayjsDateProvider } from '@shared/container/providers/date/implementations/DayjsDateProvider';
 import { JsonwebtokenProvider } from '@shared/container/providers/jwt/implementations/JsonwebtokenProvider';
@@ -64,13 +65,13 @@ describe('Refresh token', () => {
 
 	it('Should not be able to refresh a invalid token', async () => {
 		await expect(refreshTokenService.execute({ token: invalid_refresh_token })).rejects.toEqual(
-			new AppError('Invalid token', 401)
+			new AppError(AUTHENTICATION_ERRORS.invalid_token, 401)
 		);
 	});
 
 	it('Should not be able to use a nonexistent refresh token', async () => {
 		await expect(refreshTokenService.execute({ token: refresh_token })).rejects.toEqual(
-			new AppError('Refresh Token does not exists')
+			new AppError(AUTHENTICATION_ERRORS.not_exist_refresh_token)
 		);
 	});
 });

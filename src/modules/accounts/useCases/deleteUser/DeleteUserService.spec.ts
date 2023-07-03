@@ -1,5 +1,6 @@
 import AppError from '@errors/AppError';
 import { ICreateUser } from '@modules/accounts/dtos/Users';
+import { USER_ERRORS } from '@modules/accounts/errors/userErrors';
 import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory/UsersRepository';
 import { ROLES } from '@modules/accounts/types/roles';
 import { ObjectId } from 'bson';
@@ -28,6 +29,7 @@ describe('Delete User', () => {
 		usersRepositoryInMemory = new UsersRepositoryInMemory();
 		deleteUserService = new DeleteUserService(usersRepositoryInMemory);
 	});
+
 	it('should be able to delete an user', async () => {
 		const createdUser = await usersRepositoryInMemory.create(createTestUser);
 
@@ -41,7 +43,7 @@ describe('Delete User', () => {
 	it('should not be able to delete a nonexistent user', async () => {
 		const nonexistentId = new ObjectId().toString();
 		await expect(deleteUserService.execute({ id: nonexistentId })).rejects.toEqual(
-			new AppError('User does not exist')
+			new AppError(USER_ERRORS.not_exist)
 		);
 	});
 });

@@ -1,10 +1,11 @@
+import { USER_ERRORS } from '@modules/accounts/errors/userErrors';
 import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory/UsersRepository';
+import { ROLES } from '@modules/accounts/types/roles';
 import AppError from '@shared/errors/AppError';
+import { ObjectId } from 'bson';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ProfileUserService } from './ProfileUserService';
-import { ROLES } from '@modules/accounts/types/roles';
-import { ObjectId } from 'bson';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
 let profileUserService: ProfileUserService;
@@ -26,7 +27,7 @@ describe('User Profile', () => {
 		await usersRepositoryInMemory.create({ name, surname, email, password, role });
 		const userTest = await usersRepositoryInMemory.findByEmail(email);
 
-		const result = await profileUserService.execute(userTest.id);
+		const result = await profileUserService.execute({ id: userTest.id });
 
 		expect(result.id).toEqual(userTest.id);
 		expect(result.email).toEqual(userTest.email);
@@ -37,6 +38,8 @@ describe('User Profile', () => {
 
 	it('Should not be able to find a nonexistent user profile', async () => {
 		const nonexistentId = new ObjectId().toString();
-		await expect(profileUserService.execute(nonexistentId)).rejects.toEqual(new AppError('User does not exists'));
+		await expect(profileUserService.execute({ id: nonexistentId })).rejects.toEqual(
+			new AppError(USER_ERRORS.not_exist)
+		);
 	});
 });
