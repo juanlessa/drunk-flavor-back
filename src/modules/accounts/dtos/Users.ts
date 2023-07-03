@@ -18,6 +18,13 @@ interface IUpdateUser {
 interface IDeleteUser {
 	id: string;
 }
+interface IProfileUser {
+	id: string;
+}
+interface IUpdateUserRole {
+	userId: string;
+	role: string;
+}
 
 interface IUserProfileResponse {
 	id: string;
@@ -27,4 +34,33 @@ interface IUserProfileResponse {
 	role: string;
 }
 
-export { ICreateUser, IUpdateUser, IDeleteUser, IUserProfileResponse };
+interface IAuthenticateUser {
+	email: string;
+	password: string;
+}
+
+interface IAuthenticateUserResponse {
+	user: {
+		name: string;
+		email: string;
+	};
+	token: {
+		token: string;
+		expires: Date;
+	};
+	refresh_token: {
+		token: string;
+		expires: Date;
+	};
+}
+
+export {
+	ICreateUser,
+	IProfileUser,
+	IUpdateUserRole,
+	IUpdateUser,
+	IDeleteUser,
+	IUserProfileResponse,
+	IAuthenticateUser,
+	IAuthenticateUserResponse
+};

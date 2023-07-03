@@ -16,6 +16,14 @@ interface ICreateToken {
 	expiresIn: string;
 }
 
+interface IRefreshToken {
+	token: string;
+}
+interface IRefreshTokenResponse {
+	token: string;
+	expires: Date;
+}
+
 interface IVerifyRefreshToken {
 	refresh_token: string;
 	secret: string;
@@ -29,4 +37,13 @@ interface IPayload {
 	sub: string;
 	email: string;
 }
-export { ICreateUserToken, ICreateRefreshToken, ICreateToken, IPayload, IVerifyRefreshToken, IVerifyToken };
+export {
+	ICreateUserToken,
+	ICreateRefreshToken,
+	ICreateToken,
+	IRefreshToken,
+	IRefreshTokenResponse,
+	IPayload,
+	IVerifyRefreshToken,
+	IVerifyToken
+};
