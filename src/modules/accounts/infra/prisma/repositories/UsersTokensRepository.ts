@@ -21,6 +21,7 @@ class UsersTokensRepository implements IUsersTokensRepository {
 		});
 		return userToken;
 	}
+
 	async findByUserIdAndRefreshToken(user_id: string, refresh_token: string): Promise<UserToken> {
 		const userToken = await this.prismaClient.userToken.findUnique({
 			where: { refresh_token }
