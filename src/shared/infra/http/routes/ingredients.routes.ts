@@ -14,10 +14,10 @@ const getIngredientController = new GetIngredientController();
 
 const ingredientsRoutes = Router();
 
-ingredientsRoutes.post('/', createIngredientController.handle);
+ingredientsRoutes.post('/', ensureAuthenticated, createIngredientController.handle);
 ingredientsRoutes.get('/', ensureAuthenticated, listIngredientsController.handle);
-ingredientsRoutes.get('/:id', getIngredientController.handle);
-ingredientsRoutes.patch('/', updateIngredientController.handle);
-ingredientsRoutes.delete('/', deleteIngredientController.handle);
+ingredientsRoutes.get('/:id', ensureAuthenticated, getIngredientController.handle);
+ingredientsRoutes.patch('/', ensureAuthenticated, updateIngredientController.handle);
+ingredientsRoutes.delete('/', ensureAuthenticated, deleteIngredientController.handle);
 
 export default ingredientsRoutes;

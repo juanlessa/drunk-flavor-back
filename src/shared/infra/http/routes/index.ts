@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import ingredientsRoutes from './ingredients.routes';
-import drinksRoutes from './drinks.routes';
-import usersRoutes from './users.routes';
 import authenticateRoutes from './authenticate.routes';
+import drinksRoutes from './drinks.routes';
+import ingredientsRoutes from './ingredients.routes';
+import usersRoutes from './users.routes';
 
 const router = Router();
 

@@ -1,12 +1,12 @@
-import { Router } from 'express';
-import { CreateUserController } from '@modules/accounts/useCases/createUser/CreateUserController';
-import { ProfileUserController } from '@modules/accounts/useCases/profileUser/ProfileUserController';
-import { ensureAuthenticated } from '@shared/infra/http/middlewares/ensureAuthenticated';
-import { DeleteUserController } from '@modules/accounts/useCases/deleteUser/DeleteUserController';
+import { ensureAuthenticated } from '@middlewares/ensureAuthenticated';
 import { isUserAdmin } from '@middlewares/isAdminUser';
+import { CreateUserController } from '@modules/accounts/useCases/createUser/CreateUserController';
+import { DeleteUserController } from '@modules/accounts/useCases/deleteUser/DeleteUserController';
+import { ListUsersController } from '@modules/accounts/useCases/listUsers/ListUsersController';
+import { ProfileUserController } from '@modules/accounts/useCases/profileUser/ProfileUserController';
 import { UpdateUserController } from '@modules/accounts/useCases/updateUser/UpdateUserController';
 import { UpdateUserRoleController } from '@modules/accounts/useCases/updateUserRole/UpdateUserRoleController';
-import { ListUsersController } from '@modules/accounts/useCases/listUsers/ListUsersController';
+import { Router } from 'express';
 
 const createUserController = new CreateUserController();
 const profileUserController = new ProfileUserController();
