@@ -1,31 +1,15 @@
 import { ICreateDrink } from '@modules/drinks/dtos/Drinks';
+import { DRINK_ERRORS } from '@modules/drinks/errors/drinkErrors';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
+import { createDrinkSchema } from '@modules/drinks/validations/drinks';
 import AppError from '@shared/errors/AppError';
 import { inject, injectable } from 'tsyringe';
-import { SafeParseError, z } from 'zod';
+import { SafeParseError } from 'zod';
 
 interface IResponse {
 	id: string;
 }
-
-const createDrinkSchema = z.object({
-	name: z
-		.string()
-		.trim()
-		.toLowerCase()
-		.min(1, { message: 'Drink must have a name' })
-		.transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`),
-	method: z.string().trim().min(1, { message: 'Drink must have a method' }),
-	ingredients: z
-		.array(
-			z.object({
-				ingredientId: z.string().length(24, { message: "Some ingredients don't exist" }),
-				quantity: z.number().gt(0)
-			})
-		)
-		.min(1, { message: 'Drink must have ingredients.' })
-});
 
 @injectable()
 class CreateDrinkService {
@@ -47,12 +31,12 @@ class CreateDrinkService {
 
 		const drinkALreadyExists = await this.drinksRepository.findByName(name);
 		if (drinkALreadyExists) {
-			throw new AppError('Drink already exists');
+			throw new AppError(DRINK_ERRORS.already_exist);
 		}
 
 		const ingredientsExists = await this.ingredientsRepository.findByIdList(ingredients.map((i) => i.ingredientId));
 		if (ingredientsExists.length !== ingredients.length) {
-			throw new AppError("Some ingredients don't exist");
+			throw new AppError(DRINK_ERRORS.some_ingredients_not_exist);
 		}
 
 		const ingredientsFormat = ingredients.map((ing) => {

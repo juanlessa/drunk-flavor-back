@@ -6,6 +6,7 @@ import { ObjectId } from 'bson';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateDrinkThumbnailService } from './UpdateDrinkThumbnailService';
+import { DRINK_ERRORS } from '@modules/drinks/errors/drinkErrors';
 
 let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;
 let drinksRepositoryInMemory: DrinksRepositoryInMemory;
@@ -57,6 +58,6 @@ describe('Update Drink Thumbnail', () => {
 				drinkId: nonexistentDrinkId,
 				thumbnailFile: thumbnailFileName
 			})
-		).rejects.toEqual(new AppError('Drink does not exit'));
+		).rejects.toEqual(new AppError(DRINK_ERRORS.not_exist));
 	});
 });

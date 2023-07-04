@@ -1,12 +1,10 @@
 import { IDeleteDrink } from '@modules/drinks/dtos/Drinks';
+import { DRINK_ERRORS } from '@modules/drinks/errors/drinkErrors';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
+import { deleteDrinkSchema } from '@modules/drinks/validations/drinks';
 import AppError from '@shared/errors/AppError';
 import { inject, injectable } from 'tsyringe';
-import { SafeParseError, z } from 'zod';
-
-const deleteDrinkSchema = z.object({
-	id: z.string({ required_error: 'Drink id is required' }).length(24, { message: 'Drink does not exist.' })
-});
+import { SafeParseError } from 'zod';
 
 @injectable()
 class DeleteDrinkService {
@@ -25,7 +23,7 @@ class DeleteDrinkService {
 		const drinkExists = await this.drinksRepository.findById(id);
 
 		if (!drinkExists) {
-			throw new AppError('Drink does not exist');
+			throw new AppError(DRINK_ERRORS.not_exist);
 		}
 
 		await this.drinksRepository.delete(id);

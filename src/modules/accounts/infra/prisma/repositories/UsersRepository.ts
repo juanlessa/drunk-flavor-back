@@ -15,6 +15,7 @@ class UsersRepository implements IUsersRepository {
 		const user = await this.prismaClient.user.create({ data });
 		return user;
 	}
+
 	async update(data: IUpdateUser): Promise<User> {
 		const user = await this.prismaClient.user.update({
 			where: { id: data.id },
@@ -40,10 +41,12 @@ class UsersRepository implements IUsersRepository {
 		const results = await this.prismaClient.user.findUnique({ where: { id } });
 		return results;
 	}
+
 	async findByEmail(email: string): Promise<User> {
 		const results = await this.prismaClient.user.findUnique({ where: { email } });
 		return results;
 	}
+
 	async findAll(): Promise<User[]> {
 		const results = await this.prismaClient.user.findMany();
 		return results;

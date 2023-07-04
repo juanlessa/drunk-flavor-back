@@ -1,4 +1,5 @@
 import AppError from '@errors/AppError';
+import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authenticationErrors';
 import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory/UsersRepository';
 import { UsersTokensRepositoryInMemory } from '@modules/accounts/repositories/inMemory/UsersTokensRepository';
 import { ROLES } from '@modules/accounts/types/roles';
@@ -62,7 +63,7 @@ describe('Authenticate User', () => {
 				email,
 				password: planPassword
 			})
-		).rejects.toEqual(new AppError('Email or password incorrect'));
+		).rejects.toEqual(new AppError(AUTHENTICATION_ERRORS.invalid_credentials));
 	});
 
 	it('should not be able to authenticate an user with incorrect password', async () => {
@@ -79,6 +80,6 @@ describe('Authenticate User', () => {
 				email: email,
 				password: 'incorrectPassword'
 			})
-		).rejects.toEqual(new AppError('Email or password incorrect'));
+		).rejects.toEqual(new AppError(AUTHENTICATION_ERRORS.invalid_credentials));
 	});
 });

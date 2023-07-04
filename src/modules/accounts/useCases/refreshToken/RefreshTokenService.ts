@@ -1,20 +1,13 @@
 import auth from '@config/auth';
 import AppError from '@errors/AppError';
+import { IRefreshToken, IRefreshTokenResponse } from '@modules/accounts/dtos/UsersTokens';
+import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authenticationErrors';
 import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokensRepository';
+import { refreshTokenSchema } from '@modules/accounts/validations/usersTokens';
 import { IDateProvider } from '@shared/container/providers/date/IDateProvider';
 import { IJwtProvider } from '@shared/container/providers/jwt/IJwtProvider';
 import { inject, injectable } from 'tsyringe';
-import { SafeParseError, z } from 'zod';
-
-const requestSchema = z.object({
-	token: z.string({ required_error: 'Token is required' }).min(1, { message: 'Invalid token' })
-});
-type IRequest = z.infer<typeof requestSchema>;
-
-interface ITokenResponse {
-	token: string;
-	expires: Date;
-}
+import { SafeParseError } from 'zod';
 
 @injectable()
 class RefreshTokenService {
@@ -27,15 +20,15 @@ class RefreshTokenService {
 		private jwtProvider: IJwtProvider
 	) {}
 
-	async execute(data: IRequest): Promise<ITokenResponse> {
-		const result = requestSchema.safeParse(data);
+	async execute(data: IRefreshToken): Promise<IRefreshTokenResponse> {
+		const result = refreshTokenSchema.safeParse(data);
 		if (!result.success) {
-			const { error } = result as SafeParseError<IRequest>;
+			const { error } = result as SafeParseError<IRefreshToken>;
 			throw new AppError(error.issues[0].message);
 		}
 		const { token } = result.data;
 
-		const { email, sub: user_id } = this.jwtProvider.verifyRefreshToken({
+		const { sub: user_id } = this.jwtProvider.verifyRefreshToken({
 			refresh_token: token,
 			secret: auth.secret_refresh_token
 		});
@@ -43,7 +36,7 @@ class RefreshTokenService {
 		const userToken = await this.usersTokensRepository.findByUserIdAndRefreshToken(user_id, token);
 
 		if (!userToken) {
-			throw new AppError('Refresh Token does not exists');
+			throw new AppError(AUTHENTICATION_ERRORS.not_exist_refresh_token);
 		}
 
 		// create token

@@ -1,33 +1,11 @@
 import { ICreateUser } from '@modules/accounts/dtos/Users';
+import { USER_ERRORS } from '@modules/accounts/errors/userErrors';
 import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
+import { createUserSchema } from '@modules/accounts/validations/users';
 import { IEncryptionProvider } from '@shared/container/providers/encryption/IEncryptionProvider';
 import AppError from '@shared/errors/AppError';
 import { inject, injectable } from 'tsyringe';
-import { SafeParseError, z } from 'zod';
-
-const createUserSchema = z.object({
-	name: z
-		.string({ required_error: 'Name is required' })
-		.trim()
-		.toLowerCase()
-		.min(1, { message: 'User must have a name' })
-		.transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`),
-	surname: z
-		.string({ required_error: 'Surname is required' })
-		.trim()
-		.toLowerCase()
-		.min(1, { message: 'User must have a surname' })
-		.transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`),
-	email: z.string({ required_error: 'Email is required' }).email({ message: 'Email invalid' }),
-	password: z
-		.string({ required_error: 'Password is required' })
-		.min(8, { message: 'Password must have a minimum of 8 characters' }),
-	role: z
-		.string({ required_error: 'Role is required' })
-		.trim()
-		.toLowerCase()
-		.min(1, { message: 'User must have a role' })
-});
+import { SafeParseError } from 'zod';
 
 @injectable()
 class CreateUserService {
@@ -48,7 +26,7 @@ class CreateUserService {
 		const userAlreadyExists = await this.usersRepository.findByEmail(email);
 
 		if (userAlreadyExists) {
-			throw new AppError('User already exists');
+			throw new AppError(USER_ERRORS.already_exist);
 		}
 
 		const passwordHash = await this.bcryptProvider.hash(password);

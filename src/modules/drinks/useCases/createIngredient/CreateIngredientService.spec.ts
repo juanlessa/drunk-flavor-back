@@ -1,4 +1,5 @@
 import AppError from '@errors/AppError';
+import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredientErrors';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -56,6 +57,6 @@ describe('Create Ingredient', () => {
 				isAlcoholic,
 				colorTheme
 			})
-		).rejects.toEqual(new AppError('Ingredient already exists'));
+		).rejects.toEqual(new AppError(INGREDIENT_ERRORS.already_exist));
 	});
 });

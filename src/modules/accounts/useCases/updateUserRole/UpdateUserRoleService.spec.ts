@@ -1,11 +1,12 @@
+import { USER_ERRORS } from '@modules/accounts/errors/userErrors';
 import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory/UsersRepository';
 import { ROLES } from '@modules/accounts/types/roles';
 import { BcryptProvider } from '@shared/container/providers/encryption/implementations/BcryptProvider';
 import AppError from '@shared/errors/AppError';
+import { ObjectId } from 'bson';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateUserRoleService } from './UpdateUserRoleService';
-import { ObjectId } from 'bson';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
 let updateUserRoleService: UpdateUserRoleService;
@@ -47,6 +48,6 @@ describe('Update User Role', () => {
 				userId: nonexistentId,
 				role: ROLES.admin
 			})
-		).rejects.toEqual(new AppError('User does not exist'));
+		).rejects.toEqual(new AppError(USER_ERRORS.not_exist));
 	});
 });

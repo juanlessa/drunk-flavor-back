@@ -4,6 +4,7 @@ import { ObjectId } from 'bson';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateIngredientService } from './UpdateIngredientService';
+import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredientErrors';
 
 let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;
 let updateIngredientService: UpdateIngredientService;
@@ -62,7 +63,7 @@ describe('Update Ingredient', () => {
 				colorTheme: updatedColorTheme,
 				isAlcoholic: updatedIsAlcoholic
 			})
-		).rejects.toEqual(new AppError('Ingredient does not exist'));
+		).rejects.toEqual(new AppError(INGREDIENT_ERRORS.not_exist));
 	});
 
 	it('should not be able to update an ingredient name to an existing name', async () => {
@@ -90,6 +91,6 @@ describe('Update Ingredient', () => {
 				colorTheme: updatedColorTheme,
 				isAlcoholic: updatedIsAlcoholic
 			})
-		).rejects.toEqual(new AppError('Ingredient name already exists'));
+		).rejects.toEqual(new AppError(INGREDIENT_ERRORS.already_exist));
 	});
 });

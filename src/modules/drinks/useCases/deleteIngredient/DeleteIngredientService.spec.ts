@@ -6,6 +6,7 @@ import { DeleteIngredientService } from './DeleteIngredientService';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { DrinksRepositoryInMemory } from '@modules/drinks/repositories/inMemory/DrinksRepository';
 import { ObjectId } from 'bson';
+import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredientErrors';
 
 let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;
 let drinksRepositoryInMemory: DrinksRepositoryInMemory;
@@ -43,7 +44,7 @@ describe('Delete Ingredient', () => {
 	it('should not be able to delete a nonexistent ingredient', async () => {
 		const nonexistentId = new ObjectId().toString();
 		await expect(deleteIngredientService.execute({ id: nonexistentId })).rejects.toEqual(
-			new AppError('Ingredient does not exist')
+			new AppError(INGREDIENT_ERRORS.not_exist)
 		);
 	});
 

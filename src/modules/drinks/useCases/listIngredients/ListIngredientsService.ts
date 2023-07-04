@@ -1,7 +1,6 @@
-import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
-import { Prisma } from '@prisma/client';
-import { inject, injectable } from 'tsyringe';
 import Ingredient from '@modules/drinks/entities/Ingredient';
+import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
+import { inject, injectable } from 'tsyringe';
 
 @injectable()
 class ListIngredientsService {
