@@ -1,10 +1,13 @@
+import Category from '@modules/drinks/entities/Category';
+
 type Ingredient = {
 	id: string;
 	name: string;
-	unity: string;
-	category: string;
+	unitySingular: string;
+	unityPlural: string;
+	categoryId: string;
+	category?: Category;
 	isAlcoholic: boolean;
-	colorTheme: string;
 	created_at: Date;
 };
 
