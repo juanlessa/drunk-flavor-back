@@ -1,38 +1,8 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { getPrismaClient } from '@shared/infra/prisma';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
-import { IDrinkResponse, ICreateDrink, IUpdateDrink } from '@modules/drinks/dtos/Drinks';
 import Drink from '@modules/drinks/entities/Drink';
-
-interface IDrinkAggregation {
-	_id: {
-		$oid: string;
-	};
-	name: string;
-	method: string;
-	cover: string;
-	thumbnail: string;
-	created_at: {
-		$date: Date;
-	};
-	ingredients: {
-		ingredientId: {
-			$oid: string;
-		};
-		quantity: number;
-		_id: {
-			$oid: string;
-		};
-		name: string;
-		unity: string;
-		category: string;
-		isAlcoholic: boolean;
-		colorTheme: string;
-		created_at: {
-			$date: Date;
-		};
-	}[];
-}
+import { ICreateDrink, IUpdateDrink } from '@modules/drinks/dtos/Drinks';
 
 class DrinksRepository implements IDrinksRepository {
 	private prismaClient: PrismaClient;
@@ -41,20 +11,32 @@ class DrinksRepository implements IDrinksRepository {
 		this.prismaClient = getPrismaClient();
 	}
 
-	async create(data: ICreateDrink): Promise<Drink> {
-		const drink = await this.prismaClient.drink.create({ data });
+	async create({ name, method, ingredients }: ICreateDrink): Promise<Drink> {
+		const drink = await this.prismaClient.drink.create({
+			data: {
+				name,
+				method,
+				ingredients: {
+					create: ingredients
+				}
+			},
+			include: { ingredients: { include: { ingredient: true } } }
+		});
 
 		return drink;
 	}
-	async update(data: IUpdateDrink): Promise<Drink> {
+	async update({ id, name, method, cover, thumbnail, ingredients }: IUpdateDrink): Promise<Drink> {
 		const drink = await this.prismaClient.drink.update({
-			where: { id: data.id },
+			where: { id },
 			data: {
-				name: data.name,
-				method: data.method,
-				ingredients: data.ingredients,
-				cover: data.cover,
-				thumbnail: data.thumbnail
+				name,
+				method,
+				cover,
+				thumbnail,
+				ingredients: {
+					delete: {},
+					create: ingredients
+				}
 			}
 		});
 		return drink;
@@ -65,27 +47,6 @@ class DrinksRepository implements IDrinksRepository {
 		});
 
 		return drink;
-	}
-
-	async removeDeletedIngredient(deletedIngredientId: string): Promise<void> {
-		// Find the drinks that contain the deletedIngredientId
-		const drinks = await this.prismaClient.drink.findMany({
-			where: {
-				ingredients: {
-					some: {
-						ingredientId: deletedIngredientId
-					}
-				}
-			}
-		});
-
-		// Remove the deletedIngredientId from these drinks.
-		drinks.forEach(async (d) => {
-			const ingredients = d.ingredients.filter((ing) => {
-				return ing.ingredientId !== deletedIngredientId;
-			});
-			await this.prismaClient.drink.update({ where: { id: d.id }, data: { ingredients } });
-		});
 	}
 
 	async findByName(name: string): Promise<Drink> {
@@ -103,148 +64,61 @@ class DrinksRepository implements IDrinksRepository {
 		return results;
 	}
 
-	async findByNameWithIngredientsDetails(name: string): Promise<IDrinkResponse[]> {
-		const results = await this.prismaClient.drink.aggregateRaw({
-			pipeline: [
-				{ $match: { name: name } },
-				{
-					$lookup: {
-						from: 'ingredients',
-						localField: 'ingredients.ingredientId',
-						foreignField: '_id',
-						as: 'ingredientDetail'
+	async findByNameWithIngredientsDetails(name: string): Promise<Drink> {
+		const result = await this.prismaClient.drink.findUnique({
+			where: { name },
+			include: {
+				ingredients: {
+					select: {
+						ingredient: { include: { category: true } },
+						quantity: true,
+						id: false,
+						ingredientId: false,
+						drinkId: false
 					}
-				},
-				{
-					$set: {
-						ingredients: {
-							$map: {
-								input: '$ingredients',
-								in: {
-									$mergeObjects: [
-										'$$this',
-										{
-											$arrayElemAt: [
-												'$ingredientDetail',
-												{ $indexOfArray: ['$ingredientDetail._id', '$$this.ingredientId'] }
-											]
-										}
-									]
-								}
-							}
-						}
-					}
-				},
-				{ $unset: 'ingredientDetail' }
-			]
+				}
+			}
 		});
 
-		return convertToDrinkResponse(results);
+		return result;
 	}
 
-	async findByIdWithIngredientsDetails(id: string): Promise<IDrinkResponse[]> {
-		const results = await this.prismaClient.drink.aggregateRaw({
-			pipeline: [
-				{ $match: { _id: { $oid: id } } },
-				{
-					$lookup: {
-						from: 'ingredients',
-						localField: 'ingredients.ingredientId',
-						foreignField: '_id',
-						as: 'ingredientDetail'
+	async findByIdWithIngredientsDetails(id: string): Promise<Drink> {
+		const result = await this.prismaClient.drink.findUnique({
+			where: { id },
+			include: {
+				ingredients: {
+					select: {
+						ingredient: { include: { category: true } },
+						quantity: true,
+						id: false,
+						ingredientId: false,
+						drinkId: false
 					}
-				},
-				{
-					$set: {
-						ingredients: {
-							$map: {
-								input: '$ingredients',
-								in: {
-									$mergeObjects: [
-										'$$this',
-										{
-											$arrayElemAt: [
-												'$ingredientDetail',
-												{ $indexOfArray: ['$ingredientDetail._id', '$$this.ingredientId'] }
-											]
-										}
-									]
-								}
-							}
-						}
-					}
-				},
-				{ $unset: 'ingredientDetail' }
-			]
+				}
+			}
 		});
-		return convertToDrinkResponse(results);
+
+		return result;
 	}
 
-	async findAllWithIngredientsDetails(): Promise<IDrinkResponse[]> {
-		const results = await this.prismaClient.drink.aggregateRaw({
-			pipeline: [
-				{
-					$lookup: {
-						from: 'ingredients',
-						localField: 'ingredients.ingredientId',
-						foreignField: '_id',
-						as: 'ingredientDetail'
+	async findAllWithIngredientsDetails(): Promise<Drink[]> {
+		const result = await this.prismaClient.drink.findMany({
+			include: {
+				ingredients: {
+					select: {
+						ingredient: { include: { category: true } },
+						quantity: true,
+						id: false,
+						ingredientId: false,
+						drinkId: false
 					}
-				},
-				{
-					$set: {
-						ingredients: {
-							$map: {
-								input: '$ingredients',
-								in: {
-									$mergeObjects: [
-										'$$this',
-										{
-											$arrayElemAt: [
-												'$ingredientDetail',
-												{ $indexOfArray: ['$ingredientDetail._id', '$$this.ingredientId'] }
-											]
-										}
-									]
-								}
-							}
-						}
-					}
-				},
-				{ $unset: 'ingredientDetail' }
-			]
+				}
+			}
 		});
 
-		return convertToDrinkResponse(results);
+		return result;
 	}
 }
-
-const convertToDrinkResponse = (jsonObject: Prisma.JsonObject): IDrinkResponse[] => {
-	const drinksAggregationList = (jsonObject as Object).valueOf() as IDrinkAggregation[];
-	const drinkResponse: IDrinkResponse[] = drinksAggregationList.map((drinkAggregation) => {
-		return {
-			id: drinkAggregation._id.$oid,
-			name: drinkAggregation.name,
-			method: drinkAggregation.method,
-			cover: drinkAggregation.cover,
-			thumbnail: drinkAggregation.thumbnail,
-			created_at: new Date(drinkAggregation.created_at.$date),
-			ingredients: drinkAggregation.ingredients.map((ing) => {
-				return {
-					ingredientId: ing.ingredientId.$oid,
-					quantity: ing.quantity,
-					name: ing.name,
-					unity: ing.unity,
-					category: ing.category,
-					isAlcoholic: ing.isAlcoholic,
-					colorTheme: ing.colorTheme,
-					created_at: new Date(ing.created_at.$date)
-				};
-			})
-		};
-	});
-
-	return drinkResponse;
-};
 
 export { DrinksRepository };
