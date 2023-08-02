@@ -1,22 +1,24 @@
 interface ICreateIngredient {
 	name: string;
-	unity: string;
-	category: string;
+	unitySingular: string;
+	unityPlural: string;
+	categoryId: string;
 	isAlcoholic: boolean;
-	colorTheme: string;
 }
+
 interface IUpdateIngredient {
 	id: string;
 	name: string;
-	unity: string;
-	category: string;
+	unitySingular: string;
+	unityPlural: string;
+	categoryId: string;
 	isAlcoholic: boolean;
-	colorTheme: string;
 }
 
 interface IDeleteIngredient {
 	id: string;
 }
+
 interface IGetIngredient {
 	id: string;
 }
