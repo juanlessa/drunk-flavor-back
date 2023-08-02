@@ -7,10 +7,6 @@ import AppError from '@shared/errors/AppError';
 import { inject, injectable } from 'tsyringe';
 import { SafeParseError } from 'zod';
 
-interface IResponse {
-	id: string;
-}
-
 @injectable()
 class CreateDrinkService {
 	constructor(
@@ -20,7 +16,7 @@ class CreateDrinkService {
 		private ingredientsRepository: IIngredientsRepository
 	) {}
 
-	async execute(data: ICreateDrink): Promise<IResponse> {
+	async execute(data: ICreateDrink): Promise<void> {
 		const result = createDrinkSchema.safeParse(data);
 		if (!result.success) {
 			const { error } = result as SafeParseError<ICreateDrink>;
@@ -29,7 +25,7 @@ class CreateDrinkService {
 
 		const { name, method, ingredients } = result.data;
 
-		const drinkALreadyExists = await this.drinksRepository.findByName(name);
+		const drinkALreadyExists = await this.drinksRepository.findByNameWithIngredientsDetails(name);
 		if (drinkALreadyExists) {
 			throw new AppError(DRINK_ERRORS.already_exist);
 		}
@@ -45,9 +41,8 @@ class CreateDrinkService {
 				quantity: ing.quantity
 			};
 		});
-		const drink = await this.drinksRepository.create({ name, method, ingredients: ingredientsFormat });
 
-		return { id: drink.id };
+		await this.drinksRepository.create({ name, method, ingredients: ingredientsFormat });
 	}
 }
 

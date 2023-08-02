@@ -7,7 +7,11 @@ import { ObjectId } from 'bson';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CreateDrinkService } from './CreateDrinkService';
+import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/CategoriesRepository';
+import Category from '@modules/drinks/entities/Category';
+import Ingredient from '@modules/drinks/entities/Ingredient';
 
+let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
 let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;
 let drinksRepositoryInMemory: DrinksRepositoryInMemory;
 let createDrinkService: CreateDrinkService;
@@ -15,33 +19,41 @@ let createDrinkService: CreateDrinkService;
 // test constants
 const name = 'Drink test name';
 const method = 'drink recept...';
-const testIngredient1: ICreateIngredient = {
-	name: 'Ingredient 1',
-	category: 'Test',
-	unity: 'ml',
-	colorTheme: '#000000',
-	isAlcoholic: true
-};
+const ingredientName = 'Ingredient test';
+const ingredientCategoryName = 'Category test';
+const ingredientUnitySingular = 'ml';
+const ingredientUnityPlural = 'ml';
+const ingredientIsAlcoholic = true;
+let createdCategory: Category;
+let createdIngredient: Ingredient;
 
 describe('Create Drink', () => {
-	beforeEach(() => {
-		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory();
+	beforeEach(async () => {
+		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
+		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory(categoriesRepositoryInMemory);
 		drinksRepositoryInMemory = new DrinksRepositoryInMemory(ingredientsRepositoryInMemory);
 		createDrinkService = new CreateDrinkService(drinksRepositoryInMemory, ingredientsRepositoryInMemory);
+
+		// test constants
+		createdCategory = await categoriesRepositoryInMemory.create({ name: ingredientCategoryName });
+		createdIngredient = await ingredientsRepositoryInMemory.create({
+			name: ingredientName,
+			categoryId: createdCategory.id,
+			unitySingular: ingredientUnitySingular,
+			unityPlural: ingredientUnityPlural,
+			isAlcoholic: ingredientIsAlcoholic
+		});
 	});
 
 	it('should be able to create a new drink', async () => {
-		const createdIngredient = await ingredientsRepositoryInMemory.create(testIngredient1);
-
-		const createdDrinkId = await createDrinkService.execute({
+		await createDrinkService.execute({
 			name,
 			method,
 			ingredients: [{ ingredientId: createdIngredient.id, quantity: 60 }]
 		});
 
-		const createdDrink = await drinksRepositoryInMemory.findById(createdDrinkId.id);
+		const createdDrink = await drinksRepositoryInMemory.findByNameWithIngredientsDetails(name);
 
-		expect(createdDrinkId).toHaveProperty('id');
 		expect(createdDrink).toHaveProperty('id');
 		expect(createdDrink.name).toEqual(name);
 		expect(createdDrink.method).toEqual(method);
@@ -49,7 +61,6 @@ describe('Create Drink', () => {
 	});
 
 	it('should not be able to create a drink with an existing name', async () => {
-		const createdIngredient = await ingredientsRepositoryInMemory.create(testIngredient1);
 		await drinksRepositoryInMemory.create({
 			name,
 			method,
