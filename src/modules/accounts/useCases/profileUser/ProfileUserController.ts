@@ -8,7 +8,7 @@ class ProfileUserController {
 		const { id } = request.user;
 		const profileUserService = container.resolve(ProfileUserService);
 
-		const user = await profileUserService.execute(id);
+		const user = await profileUserService.execute({ id });
 		return response.json(user);
 	}
 }
