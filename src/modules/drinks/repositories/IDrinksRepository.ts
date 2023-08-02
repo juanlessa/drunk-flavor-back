@@ -1,5 +1,6 @@
 import Drink from '@modules/drinks/entities/Drink';
-import { ICreateDrink, IDrinkResponse, IUpdateDrink } from '@modules/drinks/dtos/Drinks';
+import { ICreateDrink, IUpdateDrink } from '@modules/drinks/dtos/Drinks';
+
 interface IDrinksRepository {
 	create(data: ICreateDrink): Promise<Drink>;
 	update(data: IUpdateDrink): Promise<Drink>;
@@ -7,10 +8,9 @@ interface IDrinksRepository {
 	findByName(name: string): Promise<Drink>;
 	findById(id: string): Promise<Drink>;
 	findAll(): Promise<Drink[]>;
-	findByNameWithIngredientsDetails(name: string): Promise<IDrinkResponse[]>;
-	findByIdWithIngredientsDetails(id: string): Promise<IDrinkResponse[]>;
-	findAllWithIngredientsDetails(): Promise<IDrinkResponse[]>;
-	removeDeletedIngredient(deletedIngredientId: string): Promise<void>;
+	findByNameWithIngredientsDetails(name: string): Promise<Drink>;
+	findByIdWithIngredientsDetails(id: string): Promise<Drink>;
+	findAllWithIngredientsDetails(): Promise<Drink[]>;
 }
 
 export { IDrinksRepository };
