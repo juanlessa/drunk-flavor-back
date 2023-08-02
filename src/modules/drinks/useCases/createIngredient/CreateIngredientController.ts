@@ -1,25 +1,23 @@
-import { Prisma } from '@prisma/client';
+import Ingredient from '@modules/drinks/entities/Ingredient';
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
 import { CreateIngredientService } from './CreateIngredientService';
 
-type Ingredient = Prisma.IngredientCreateInput;
-
 class CreateIngredientController {
 	async handle(request: Request, response: Response): Promise<Response> {
-		const { name, unity, category, isAlcoholic, colorTheme }: Ingredient = request.body;
+		const { name, unitySingular, unityPlural, categoryId, isAlcoholic }: Ingredient = request.body;
 
 		const createIngredientService = container.resolve(CreateIngredientService);
 
-		const ingredient = await createIngredientService.execute({
+		await createIngredientService.execute({
 			name,
-			unity,
-			category,
-			isAlcoholic,
-			colorTheme
+			unitySingular,
+			unityPlural,
+			categoryId,
+			isAlcoholic
 		});
 
-		return response.status(201).json(ingredient);
+		return response.status(201).send();
 	}
 }
 
