@@ -6,12 +6,12 @@ const INGREDIENT_ERRORS = {
 	invalid_id_format: 'id invalid',
 	required_name: 'name is required',
 	invalid_name_format: 'name must have a minimum of 1 character',
-	required_category: 'category is required',
-	invalid_category_format: 'category must have a minimum of 1 character',
-	required_unity: 'unity is required',
-	invalid_unity_format: 'unity must have a minimum of 1 character',
-	required_color_theme: 'colorTheme is required',
-	invalid_color_theme_format: 'colorTheme must be a Hex color like #aabbcc',
+	required_category_id: 'categoryId is required',
+	invalid_category_id_format: 'categoryId invalid',
+	required_unity_plural: 'unityPlural is required',
+	invalid_unity_plural_format: 'unityPlural must have a minimum of 1 character',
+	required_unity_singular: 'unitySingular is required',
+	invalid_unity_singular_format: 'unitySingular must have a minimum of 1 character',
 	required_is_alcoholic: 'isAlcoholic is required'
 };
 
