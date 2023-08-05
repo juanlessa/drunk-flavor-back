@@ -1,4 +1,4 @@
-import { IDrinkResponse } from '@modules/drinks/dtos/Drinks';
+import Drink from '@modules/drinks/entities/Drink';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
 import { getFileURL } from '@utils/getFileURL';
 import { inject, injectable } from 'tsyringe';
@@ -10,7 +10,7 @@ class ListDrinksService {
 		private drinksRepository: IDrinksRepository
 	) {}
 
-	async execute(): Promise<IDrinkResponse[]> {
+	async execute(): Promise<Drink[]> {
 		const drinks = await this.drinksRepository.findAllWithIngredientsDetails();
 
 		const drinksWithImagesURL = drinks.map((d) => {
