@@ -1,37 +1,41 @@
 import AppError from '@errors/AppError';
-import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
-import 'reflect-metadata';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DeleteIngredientService } from './DeleteIngredientService';
-import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
-import { DrinksRepositoryInMemory } from '@modules/drinks/repositories/inMemory/DrinksRepository';
-import { ObjectId } from 'bson';
+import Category from '@modules/drinks/entities/Category';
 import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredientErrors';
+import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/CategoriesRepository';
+import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
+import { ObjectId } from 'bson';
+import 'reflect-metadata';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { DeleteIngredientService } from './DeleteIngredientService';
 
+let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
 let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;
-let drinksRepositoryInMemory: DrinksRepositoryInMemory;
 let deleteIngredientService: DeleteIngredientService;
 
 // test constants
 const name = 'Ingredient test';
-const category = 'test';
-const unity = 'ml';
-const colorTheme = '#000000';
+const categoryName = 'Category test';
+const unitySingular = 'ml';
+const unityPlural = 'ml';
 const isAlcoholic = true;
+let createdCategory: Category;
 
 describe('Delete Ingredient', () => {
-	beforeEach(() => {
-		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory();
-		drinksRepositoryInMemory = new DrinksRepositoryInMemory(ingredientsRepositoryInMemory);
-		deleteIngredientService = new DeleteIngredientService(ingredientsRepositoryInMemory, drinksRepositoryInMemory);
+	beforeEach(async () => {
+		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
+		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory(categoriesRepositoryInMemory);
+		deleteIngredientService = new DeleteIngredientService(ingredientsRepositoryInMemory);
+
+		// test constants
+		createdCategory = await categoriesRepositoryInMemory.create({ name: categoryName });
 	});
 	it('should be able to delete an ingredient', async () => {
 		const createdIngredient = await ingredientsRepositoryInMemory.create({
 			name,
-			category,
-			unity,
-			isAlcoholic,
-			colorTheme
+			categoryId: createdCategory.id,
+			unitySingular,
+			unityPlural,
+			isAlcoholic
 		});
 
 		await deleteIngredientService.execute({ id: createdIngredient.id });
@@ -46,26 +50,5 @@ describe('Delete Ingredient', () => {
 		await expect(deleteIngredientService.execute({ id: nonexistentId })).rejects.toEqual(
 			new AppError(INGREDIENT_ERRORS.not_exist)
 		);
-	});
-
-	it('should delete the ingredient from the existing drinks', async () => {
-		const createdIngredient = await ingredientsRepositoryInMemory.create({
-			name,
-			category,
-			unity,
-			isAlcoholic,
-			colorTheme
-		});
-		let createdDrink = await drinksRepositoryInMemory.create({
-			name: 'Drink',
-			method: 'test',
-			ingredients: [{ ingredientId: createdIngredient.id, quantity: 1 }]
-		});
-
-		await deleteIngredientService.execute({ id: createdIngredient.id });
-
-		createdDrink = await drinksRepositoryInMemory.findById(createdDrink.id);
-
-		expect(createdDrink.ingredients.length).toEqual(0);
 	});
 });

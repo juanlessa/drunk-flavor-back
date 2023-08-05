@@ -1,6 +1,5 @@
 import { IDeleteIngredient } from '@modules/drinks/dtos/ingredients';
 import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredientErrors';
-import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
 import { deleteIngredientSchema } from '@modules/drinks/validations/ingredients';
 import AppError from '@shared/errors/AppError';
@@ -11,9 +10,7 @@ import { SafeParseError } from 'zod';
 class DeleteIngredientService {
 	constructor(
 		@inject('IngredientsRepository')
-		private ingredientsRepository: IIngredientsRepository,
-		@inject('DrinksRepository')
-		private drinksRepository: IDrinksRepository
+		private ingredientsRepository: IIngredientsRepository
 	) {}
 	async execute(data: IDeleteIngredient): Promise<void> {
 		const result = deleteIngredientSchema.safeParse(data);
@@ -30,7 +27,6 @@ class DeleteIngredientService {
 		}
 
 		await this.ingredientsRepository.delete(id);
-		await this.drinksRepository.removeDeletedIngredient(id);
 	}
 }
 
