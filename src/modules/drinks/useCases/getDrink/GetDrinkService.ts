@@ -1,4 +1,5 @@
-import { IDrinkResponse, IGetDrink } from '@modules/drinks/dtos/Drinks';
+import { IGetDrink } from '@modules/drinks/dtos/Drinks';
+import Drink from '@modules/drinks/entities/Drink';
 import { DRINK_ERRORS } from '@modules/drinks/errors/drinkErrors';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
 import { getDrinkSchema } from '@modules/drinks/validations/drinks';
@@ -14,7 +15,7 @@ class GetDrinkService {
 		private drinksRepository: IDrinksRepository
 	) {}
 
-	async execute(data: IGetDrink): Promise<IDrinkResponse> {
+	async execute(data: IGetDrink): Promise<Drink> {
 		const result = getDrinkSchema.safeParse(data);
 		if (!result.success) {
 			const { error } = result as SafeParseError<IGetDrink>;
@@ -22,11 +23,10 @@ class GetDrinkService {
 		}
 		const { id } = result.data;
 
-		const drinks = await this.drinksRepository.findByIdWithIngredientsDetails(id);
-		if (drinks.length !== 1) {
+		const drink = await this.drinksRepository.findByIdWithIngredientsDetails(id);
+		if (!drink) {
 			throw new AppError(DRINK_ERRORS.not_found);
 		}
-		const drink = drinks[0];
 
 		if (drink.cover) {
 			drink.cover = getFileURL(drink.cover);
