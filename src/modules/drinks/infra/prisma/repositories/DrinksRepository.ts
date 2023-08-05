@@ -34,7 +34,7 @@ class DrinksRepository implements IDrinksRepository {
 				cover,
 				thumbnail,
 				ingredients: {
-					delete: {},
+					deleteMany: {},
 					create: ingredients
 				}
 			}
