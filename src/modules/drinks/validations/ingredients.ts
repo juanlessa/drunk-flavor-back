@@ -13,31 +13,30 @@ const nameValidation = z
 	.min(1, { message: INGREDIENT_ERRORS.invalid_name_format })
 	.transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`);
 
-const categoryValidation = z
-	.string({ required_error: INGREDIENT_ERRORS.required_category })
+const unitySingularValidation = z
+	.string({ required_error: INGREDIENT_ERRORS.required_unitySingular })
 	.trim()
 	.toLowerCase()
-	.min(1, { message: INGREDIENT_ERRORS.invalid_category_format });
+	.min(1, { message: INGREDIENT_ERRORS.invalid_unitySingular_format });
 
-const unityValidation = z
-	.string({ required_error: INGREDIENT_ERRORS.required_unity })
+const unityPluralValidation = z
+	.string({ required_error: INGREDIENT_ERRORS.required_unityPlural })
 	.trim()
 	.toLowerCase()
-	.min(1, { message: INGREDIENT_ERRORS.invalid_unity_format });
+	.min(1, { message: INGREDIENT_ERRORS.invalid_unityPlural_format });
 
-const colorThemeValidation = z
-	.string({ required_error: INGREDIENT_ERRORS.required_color_theme })
-	.trim()
-	.regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, { message: INGREDIENT_ERRORS.invalid_color_theme_format });
+const categoryIdValidation = z
+	.string({ required_error: INGREDIENT_ERRORS.required_categoryId })
+	.length(24, { message: INGREDIENT_ERRORS.invalid_categoryId_format });
 
 const isAlcoholicValidation = z.boolean({ required_error: INGREDIENT_ERRORS.required_is_alcoholic });
 
 // schemas
 const createIngredientSchema = z.object({
 	name: nameValidation,
-	category: categoryValidation,
-	unity: unityValidation,
-	colorTheme: colorThemeValidation,
+	categoryId: categoryIdValidation,
+	unitySingular: unitySingularValidation,
+	unityPlural: unityPluralValidation,
 	isAlcoholic: isAlcoholicValidation
 });
 
@@ -47,10 +46,10 @@ const deleteIngredientSchema = z.object({
 
 const updateIngredientSchema = z.object({
 	id: idValidation,
-	category: categoryValidation,
 	name: nameValidation,
-	unity: unityValidation,
-	colorTheme: colorThemeValidation,
+	categoryId: categoryIdValidation,
+	unitySingular: unitySingularValidation,
+	unityPlural: unityPluralValidation,
 	isAlcoholic: isAlcoholicValidation
 });
 
