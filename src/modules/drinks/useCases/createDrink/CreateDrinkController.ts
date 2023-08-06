@@ -14,13 +14,13 @@ class CreateDrinkController {
 
 		const createDrinkService = container.resolve(CreateDrinkService);
 
-		await createDrinkService.execute({
+		const drinkId = await createDrinkService.execute({
 			name,
 			method,
 			ingredients
 		});
 
-		return response.status(201).send();
+		return response.status(201).json(drinkId);
 	}
 }
 

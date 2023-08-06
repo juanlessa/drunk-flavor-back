@@ -7,6 +7,10 @@ import AppError from '@shared/errors/AppError';
 import { inject, injectable } from 'tsyringe';
 import { SafeParseError } from 'zod';
 
+interface IResponse {
+	id: string;
+}
+
 @injectable()
 class CreateDrinkService {
 	constructor(
@@ -16,7 +20,7 @@ class CreateDrinkService {
 		private ingredientsRepository: IIngredientsRepository
 	) {}
 
-	async execute(data: ICreateDrink): Promise<void> {
+	async execute(data: ICreateDrink): Promise<IResponse> {
 		const result = createDrinkSchema.safeParse(data);
 		if (!result.success) {
 			const { error } = result as SafeParseError<ICreateDrink>;
@@ -42,7 +46,9 @@ class CreateDrinkService {
 			};
 		});
 
-		await this.drinksRepository.create({ name, method, ingredients: ingredientsFormat });
+		const drink = await this.drinksRepository.create({ name, method, ingredients: ingredientsFormat });
+
+		return { id: drink.id };
 	}
 }
 
