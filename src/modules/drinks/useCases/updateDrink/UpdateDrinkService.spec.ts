@@ -7,7 +7,10 @@ import { ObjectId } from 'bson';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateDrinkService } from './UpdateDrinkService';
+import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/CategoriesRepository';
+import { Category, Ingredient } from '@prisma/client';
 
+let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
 let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;
 let drinksRepositoryInMemory: DrinksRepositoryInMemory;
 let updateDrinkService: UpdateDrinkService;
@@ -15,25 +18,35 @@ let updateDrinkService: UpdateDrinkService;
 // test constants
 const name = 'Drink test name';
 const method = 'drink recept...';
-const testIngredient1: ICreateIngredient = {
-	name: 'Ingredient 1',
-	category: 'Test',
-	unity: 'ml',
-	colorTheme: '#000000',
-	isAlcoholic: true
-};
+const ingredientName = 'Ingredient test';
+const ingredientCategoryName = 'Category test';
+const ingredientUnitySingular = 'ml';
+const ingredientUnityPlural = 'ml';
+const ingredientIsAlcoholic = true;
 const updatedName = 'Updated drink name';
 const updatedMethod = 'Updated drink recept ...';
+let createdCategory: Category;
+let createdIngredient: Ingredient;
 
 describe('Update Drink', () => {
-	beforeEach(() => {
-		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory();
+	beforeEach(async () => {
+		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
+		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory(categoriesRepositoryInMemory);
 		drinksRepositoryInMemory = new DrinksRepositoryInMemory(ingredientsRepositoryInMemory);
 		updateDrinkService = new UpdateDrinkService(drinksRepositoryInMemory, ingredientsRepositoryInMemory);
+
+		// test constants
+		createdCategory = await categoriesRepositoryInMemory.create({ name: ingredientCategoryName });
+		createdIngredient = await ingredientsRepositoryInMemory.create({
+			name: ingredientName,
+			categoryId: createdCategory.id,
+			unitySingular: ingredientUnitySingular,
+			unityPlural: ingredientUnityPlural,
+			isAlcoholic: ingredientIsAlcoholic
+		});
 	});
 
 	it('should be able to update a drink', async () => {
-		const createdIngredient = await ingredientsRepositoryInMemory.create(testIngredient1);
 		const createdDrink = await drinksRepositoryInMemory.create({
 			name,
 			method,
@@ -47,14 +60,13 @@ describe('Update Drink', () => {
 			ingredients: [{ ingredientId: createdIngredient.id, quantity: 15 }]
 		});
 
-		const updatedDrink = await drinksRepositoryInMemory.findById(createdDrink.id);
+		const findUpdatedDrink = await drinksRepositoryInMemory.findById(createdDrink.id);
 
-		expect(updatedDrink.name).toEqual(updatedName);
-		expect(updatedDrink.method).toEqual(updatedMethod);
+		expect(findUpdatedDrink.name).toEqual(updatedName);
+		expect(findUpdatedDrink.method).toEqual(updatedMethod);
 	});
 
 	it('should not be able to update a nonexistent drink', async () => {
-		const createdIngredient = await ingredientsRepositoryInMemory.create(testIngredient1);
 		const nonexistentDrinkId = new ObjectId().toString();
 
 		await expect(
@@ -68,7 +80,6 @@ describe('Update Drink', () => {
 	});
 
 	it('should not be able to update drink name to an already existing name', async () => {
-		const createdIngredient = await ingredientsRepositoryInMemory.create(testIngredient1);
 		const createdDrink = await drinksRepositoryInMemory.create({
 			name,
 			method,
@@ -91,7 +102,6 @@ describe('Update Drink', () => {
 	});
 
 	it('should not be able to update a drink to add a nonexistent ingredient', async () => {
-		const createdIngredient = await ingredientsRepositoryInMemory.create(testIngredient1);
 		const createdDrink = await drinksRepositoryInMemory.create({
 			name,
 			method,

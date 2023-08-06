@@ -38,11 +38,15 @@ class UpdateDrinkService {
 			throw new AppError(DRINK_ERRORS.some_ingredients_not_exist);
 		}
 
-		drink.name = name;
-		drink.method = method;
-		drink.ingredients = ingredients.map((ing) => ({ ingredientId: ing.ingredientId, quantity: ing.quantity }));
-
-		await this.drinksRepository.update(drink);
+		const updateDrink: IUpdateDrink = {
+			id,
+			name,
+			method,
+			ingredients: ingredients.map((ing) => ({ ingredientId: ing.ingredientId, quantity: ing.quantity })),
+			cover: drink.cover,
+			thumbnail: drink.thumbnail
+		};
+		await this.drinksRepository.update(updateDrink);
 	}
 }
 
