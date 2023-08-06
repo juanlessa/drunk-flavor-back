@@ -1,4 +1,4 @@
-import { IUpdateDrinkThumbnail } from '@modules/drinks/dtos/Drinks';
+import { IUpdateDrink, IUpdateDrinkThumbnail } from '@modules/drinks/dtos/Drinks';
 import { DRINK_ERRORS } from '@modules/drinks/errors/drinkErrors';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
 import { updateDrinkThumbnailSchema } from '@modules/drinks/validations/drinks';
@@ -21,7 +21,7 @@ class UpdateDrinkThumbnailService {
 		}
 		const { drinkId, thumbnailFile } = result.data;
 
-		const drink = await this.drinksRepository.findById(drinkId);
+		const drink = await this.drinksRepository.findByIdWithIngredientsDetails(drinkId);
 		if (!drink) {
 			throw new AppError(DRINK_ERRORS.not_exist);
 		}
@@ -31,7 +31,16 @@ class UpdateDrinkThumbnailService {
 		}
 		drink.thumbnail = thumbnailFile;
 
-		await this.drinksRepository.update(drink);
+		const updateDrink: IUpdateDrink = {
+			id: drinkId,
+			name: drink.name,
+			method: drink.method,
+			ingredients: drink.ingredients.map((ing) => ({ ingredientId: ing.ingredient.id, quantity: ing.quantity })),
+			cover: drink.cover,
+			thumbnail: drink.thumbnail
+		};
+
+		await this.drinksRepository.update(updateDrink);
 	}
 }
 
