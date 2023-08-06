@@ -17,7 +17,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerFile));
-app.use('/files', express.static(resolve(__dirname, '..', 'tmp', 'drink')));
+app.use('/files', express.static(resolve(__dirname, '..', '..', '..', '..', 'tmp', 'drink')));
 app.use(routes);
 app.use(errorMiddleware);
 
