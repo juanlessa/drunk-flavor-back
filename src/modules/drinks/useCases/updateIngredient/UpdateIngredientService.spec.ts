@@ -5,52 +5,63 @@ import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateIngredientService } from './UpdateIngredientService';
 import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredientErrors';
+import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/CategoriesRepository';
+import Category from '@modules/drinks/entities/Category';
+import Ingredient from '@modules/drinks/entities/Ingredient';
 
+let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
 let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;
 let updateIngredientService: UpdateIngredientService;
 
 // test constants
 const name = 'Ingredient test';
-const category = 'test';
-const unity = 'ml';
-const colorTheme = '#000000';
+const categoryName = 'Category test';
+const unitySingular = 'ml';
+const unityPlural = 'ml';
 const isAlcoholic = true;
-const updatedName = 'New ingredient test';
-const updatedCategory = 'new category test';
-const updatedUnity = 'oz';
-const updatedColorTheme = '#FFFFFF';
+const updatedName = 'Updated ingredient';
+const updatedUnitySingular = 'oz';
+const updatedUnityPlural = 'oz';
 const updatedIsAlcoholic = false;
+let createdCategory: Category;
+let createdIngredient: Ingredient;
 
 describe('Update Ingredient', () => {
-	beforeEach(() => {
-		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory();
-		updateIngredientService = new UpdateIngredientService(ingredientsRepositoryInMemory);
+	beforeEach(async () => {
+		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
+		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory(categoriesRepositoryInMemory);
+		updateIngredientService = new UpdateIngredientService(
+			ingredientsRepositoryInMemory,
+			categoriesRepositoryInMemory
+		);
+
+		// test constants
+		createdCategory = await categoriesRepositoryInMemory.create({ name: categoryName });
+		createdIngredient = await ingredientsRepositoryInMemory.create({
+			name,
+			categoryId: createdCategory.id,
+			unitySingular,
+			unityPlural,
+			isAlcoholic
+		});
 	});
 
 	it('should be able to update an ingredient', async () => {
-		let createdIngredient = await ingredientsRepositoryInMemory.create({
-			name,
-			category,
-			unity,
-			isAlcoholic,
-			colorTheme
-		});
-
 		await updateIngredientService.execute({
 			id: createdIngredient.id,
 			name: updatedName,
-			category: updatedCategory,
-			unity: updatedUnity,
-			colorTheme: updatedColorTheme,
+			categoryId: createdCategory.id,
+			unitySingular: updatedUnitySingular,
+			unityPlural: updatedUnityPlural,
 			isAlcoholic: updatedIsAlcoholic
 		});
 
-		createdIngredient = await ingredientsRepositoryInMemory.findById(createdIngredient.id);
+		const findUpdatedIngredient = await ingredientsRepositoryInMemory.findById(createdIngredient.id);
 
-		expect(createdIngredient.name).toEqual(updatedName);
-		expect(createdIngredient.category).toEqual(updatedCategory);
-		expect(createdIngredient.unity).toEqual(updatedUnity);
-		expect(createdIngredient.name).toEqual(updatedName);
+		expect(findUpdatedIngredient.name).toEqual(updatedName);
+		expect(findUpdatedIngredient.categoryId).toEqual(createdCategory.id);
+		expect(findUpdatedIngredient.unitySingular).toEqual(updatedUnitySingular);
+		expect(findUpdatedIngredient.unityPlural).toEqual(updatedUnityPlural);
 	});
 
 	it('should not be able to update a nonexistent ingredient', async () => {
@@ -58,39 +69,45 @@ describe('Update Ingredient', () => {
 			updateIngredientService.execute({
 				id: new ObjectId().toString(),
 				name: updatedName,
-				category: updatedCategory,
-				unity: updatedUnity,
-				colorTheme: updatedColorTheme,
+				categoryId: createdCategory.id,
+				unitySingular: updatedUnitySingular,
+				unityPlural: updatedUnityPlural,
 				isAlcoholic: updatedIsAlcoholic
 			})
 		).rejects.toEqual(new AppError(INGREDIENT_ERRORS.not_exist));
 	});
 
 	it('should not be able to update an ingredient name to an existing name', async () => {
-		let createdIngredient = await ingredientsRepositoryInMemory.create({
-			name,
-			category,
-			unity,
-			isAlcoholic,
-			colorTheme
-		});
 		await ingredientsRepositoryInMemory.create({
 			name: updatedName,
-			category,
-			unity,
-			isAlcoholic,
-			colorTheme
+			categoryId: createdCategory.id,
+			unitySingular: updatedUnitySingular,
+			unityPlural: updatedUnityPlural,
+			isAlcoholic: updatedIsAlcoholic
 		});
 
 		await expect(
 			updateIngredientService.execute({
 				id: createdIngredient.id,
 				name: updatedName,
-				category: updatedCategory,
-				unity: updatedUnity,
-				colorTheme: updatedColorTheme,
+				categoryId: createdCategory.id,
+				unitySingular: updatedUnitySingular,
+				unityPlural: updatedUnityPlural,
 				isAlcoholic: updatedIsAlcoholic
 			})
 		).rejects.toEqual(new AppError(INGREDIENT_ERRORS.already_exist));
+	});
+
+	it('should not be able to update an ingredient to a nonexistent category', async () => {
+		await expect(
+			updateIngredientService.execute({
+				id: createdIngredient.id,
+				name: updatedName,
+				categoryId: new ObjectId().toString(),
+				unitySingular: updatedUnitySingular,
+				unityPlural: updatedUnityPlural,
+				isAlcoholic: updatedIsAlcoholic
+			})
+		).rejects.toEqual(new AppError(INGREDIENT_ERRORS.invalid_category_id_format));
 	});
 });
