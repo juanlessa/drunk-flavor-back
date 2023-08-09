@@ -79,7 +79,7 @@ Now your database environment is ready.
 ### node.js
 
 To run our API locally, you will need to have Node.js 16 or higher installed on your machine.
-To install MongoDB on macOS, execute the command below.
+To install Node.js on macOS, execute the command below.
 
 ```shell
 brew install node
@@ -175,3 +175,5 @@ If you are using a different operating system, please refer to the documentation
 ## Build
 
 ## Documentation
+
+If you are running the API locally you also will find the documentation on path ```/api-docs``` of you local instance.
