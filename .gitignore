@@ -4,6 +4,6 @@ node_modules
 .env
 .env.testing
 dist
-.DS_StoreÞ
+.DS_Store
 tmp/*
 !tmp/.gitkeep
