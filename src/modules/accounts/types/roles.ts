@@ -1,6 +1,4 @@
-const ROLES = {
-	admin: 'admin',
-	partner: 'partner'
-};
-
-export { ROLES };
+export enum ROLES {
+	admin = 'admin',
+	partner = 'partner'
+}
