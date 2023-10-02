@@ -1,15 +1,15 @@
 import { container } from 'tsyringe';
 import '@shared/container/providers';
-import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
-import { IngredientsRepository } from '@modules/drinks/infra/prisma/repositories/IngredientsRepository';
-import { ICategoriesRepository } from '@modules/drinks/repositories/ICategoriesRepository';
-import { CategoriesRepository } from '@modules/drinks/infra/prisma/repositories/CategoriesRepository';
+import { IIngredientsRepository } from '@modules/drinks/repositories/ingredients.repository.interface';
+import { IngredientsRepository } from '@modules/drinks/infra/mongo/repositories/ingredients.repository';
+import { ICategoriesRepository } from '@modules/drinks/repositories/categories.repository.interface';
+import { CategoriesRepository } from '@modules/drinks/infra/mongo/repositories/categories.repository';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
-import { DrinksRepository } from '@modules/drinks/infra/prisma/repositories/DrinksRepository';
+import { DrinksRepository } from '@modules/drinks/infra/mongo/repositories/DrinksRepository';
 import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
-import { UsersRepository } from '@modules/accounts/infra/prisma/repositories/UsersRepository';
+import { UsersRepository } from '@modules/accounts/infra/mongo/repositories/UsersRepository';
 import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokensRepository';
-import { UsersTokensRepository } from '@modules/accounts/infra/prisma/repositories/UsersTokensRepository';
+import { UsersTokensRepository } from '@modules/accounts/infra/mongo/repositories/UsersTokensRepository';
 
 container.registerSingleton<ICategoriesRepository>('CategoriesRepository', CategoriesRepository);
 
