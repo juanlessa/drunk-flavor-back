@@ -1,8 +1,8 @@
 import auth from '@config/auth';
 import AppError from '@errors/AppError';
 import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authenticationErrors';
-import { USER_ERRORS } from '@modules/accounts/errors/userErrors';
-import { UsersRepository } from '@modules/accounts/infra/prisma/repositories/UsersRepository';
+import { USER_ERRORS } from '@modules/accounts/errors/user.errors';
+import { UsersRepository } from '@modules/accounts/infra/mongo/repositories/UsersRepository';
 import { JsonwebtokenProvider } from '@shared/container/providers/jwt/implementations/JsonwebtokenProvider';
 import { NextFunction, Request, Response } from 'express';
 
