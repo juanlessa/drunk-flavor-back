@@ -1,6 +1,6 @@
-import Category from '@modules/drinks/entities/Category';
-import { ICreateCategory, IUpdateCategory } from '@modules/drinks/dtos/Categories';
-import { ICategoriesRepository } from '../ICategoriesRepository';
+import Category from '@modules/drinks/entities/category.entity';
+import { ICreateCategory, IUpdateCategory } from '@modules/drinks/dtos/category.dtos';
+import { ICategoriesRepository } from '../categories.repository.interface';
 import { ObjectId } from 'bson';
 
 class CategoriesRepositoryInMemory implements ICategoriesRepository {

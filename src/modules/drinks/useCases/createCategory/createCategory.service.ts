@@ -1,6 +1,6 @@
 import { ICreateCategory } from '@modules/drinks/dtos/category.dtos';
 import { CATEGORY_ERRORS } from '@modules/drinks/errors/category.errors';
-import { mapToTranslationsName } from '@modules/drinks/mappers/TranslationsMap';
+import { mapToTranslationsName } from '@modules/drinks/mappers/translations.mapper';
 import { ICategoriesRepository } from '@modules/drinks/repositories/categories.repository.interface';
 import AppError from '@shared/errors/AppError';
 import { inject, injectable } from 'tsyringe';
