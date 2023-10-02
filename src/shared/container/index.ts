@@ -4,8 +4,8 @@ import { IIngredientsRepository } from '@modules/drinks/repositories/ingredients
 import { IngredientsRepository } from '@modules/drinks/infra/mongo/repositories/ingredients.repository';
 import { ICategoriesRepository } from '@modules/drinks/repositories/categories.repository.interface';
 import { CategoriesRepository } from '@modules/drinks/infra/mongo/repositories/categories.repository';
-import { IDrinksRepository } from '@modules/drinks/repositories/IDrinksRepository';
-import { DrinksRepository } from '@modules/drinks/infra/mongo/repositories/DrinksRepository';
+import { IDrinksRepository } from '@modules/drinks/repositories/drinks.repository.interface';
+import { DrinksRepository } from '@modules/drinks/infra/mongo/repositories/drinks.repository';
 import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
 import { UsersRepository } from '@modules/accounts/infra/mongo/repositories/UsersRepository';
 import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokensRepository';
