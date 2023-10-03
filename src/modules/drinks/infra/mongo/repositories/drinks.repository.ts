@@ -1,7 +1,7 @@
 import { IDrinksRepository } from '@modules/drinks/repositories/drinks.repository.interface';
 import { IDrink } from '@modules/drinks/entities/drink.entity';
 import { ICreateDrink, IFindDrinkByName, IUpdateDrink } from '@modules/drinks/dtos/drink.dtos';
-import { Drink } from '../entities/Drink';
+import { Drink } from '../entities/drink.model';
 import { getNameCompareQuery } from '../utils/getNameCompareQuery';
 
 class DrinksRepository implements IDrinksRepository {
@@ -10,9 +10,11 @@ class DrinksRepository implements IDrinksRepository {
 		await drink.save();
 		return drink;
 	}
-	async update({ id, translations, ingredients }: IUpdateDrink): Promise<IDrink> {
-		return await Drink.findByIdAndUpdate<IDrink>({ _id: id }, { translations, ingredients }).exec();
+
+	async update({ id, ...data }: IUpdateDrink): Promise<IDrink> {
+		return await Drink.findByIdAndUpdate<IDrink>({ _id: id }, { ...data }).exec();
 	}
+
 	async delete(id: string): Promise<IDrink> {
 		return await Drink.findOneAndDelete<IDrink>({ _id: id }).exec();
 	}

@@ -1,4 +1,5 @@
-import { IDrinkTranslation } from '../entities/drink.entity';
+import { DatabaseCommonInfo } from '@shared/infra/database/mongo/types';
+import { IDrink, IDrinkTranslation } from '../entities/drink.entity';
 import { IIngredient } from '../entities/ingredient.entity';
 import { ITranslations } from '../types/translations';
 
@@ -8,6 +9,9 @@ export type ICreateDrinkRequest = {
 		ingredient_id: string;
 		quantity: number;
 	}[];
+};
+export type ICreateDrinkResponse = {
+	id: string;
 };
 
 export type ICreateDrink = {
@@ -27,14 +31,15 @@ export type IUpdateDrinkRequest = {
 	}[];
 };
 
-export type IUpdateDrink = {
-	id: string;
+export type IUpdateDrink = { id: string } & Partial<{
 	translations: ITranslations<IDrinkTranslation>;
+	cover: string;
+	thumbnail: string;
 	ingredients: {
-		ingredient: IIngredient;
+		ingredient_id: string;
 		quantity: number;
 	}[];
-};
+}>;
 
 export type IUpdateDrinkCover = {
 	drink_id: string;
