@@ -1,14 +1,11 @@
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
-import { DeleteCategoryService } from './DeleteCategoryService';
-
-interface IRequest {
-	id: string;
-}
+import { DeleteCategoryService } from './deleteCategory.service';
+import { IDeleteCategory } from '@modules/drinks/dtos/category.dtos';
 
 class DeleteCategoryController {
 	async handle(request: Request, response: Response): Promise<Response> {
-		const { id }: IRequest = request.body;
+		const { id }: IDeleteCategory = request.body;
 
 		const deleteCategoryService = container.resolve(DeleteCategoryService);
 
