@@ -1,12 +1,12 @@
 import AppError from '@errors/AppError';
-import Category from '@modules/drinks/entities/Category';
-import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredientErrors';
+import Category from '@modules/drinks/entities/category.entity';
+import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredient.errors';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/CategoriesRepository';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { ObjectId } from 'bson';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { DeleteIngredientService } from './DeleteIngredientService';
+import { DeleteIngredientService } from './deleteIngredient.service';
 
 let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
 let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;

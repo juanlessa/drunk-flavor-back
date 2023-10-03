@@ -1,21 +1,15 @@
-import Ingredient from '@modules/drinks/entities/Ingredient';
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
-import { CreateIngredientService } from './CreateIngredientService';
+import { CreateIngredientService } from './createIngredient.service';
+import { ICreateIngredientRequest } from '@modules/drinks/dtos/ingredient.dtos';
 
 class CreateIngredientController {
 	async handle(request: Request, response: Response): Promise<Response> {
-		const { name, unitySingular, unityPlural, categoryId, isAlcoholic }: Ingredient = request.body;
+		const { translations, category_id, is_alcoholic }: ICreateIngredientRequest = request.body;
 
 		const createIngredientService = container.resolve(CreateIngredientService);
 
-		await createIngredientService.execute({
-			name,
-			unitySingular,
-			unityPlural,
-			categoryId,
-			isAlcoholic
-		});
+		await createIngredientService.execute({ translations, category_id, is_alcoholic });
 
 		return response.status(201).send();
 	}
