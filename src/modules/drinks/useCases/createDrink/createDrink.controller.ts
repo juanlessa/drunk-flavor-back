@@ -1,24 +1,15 @@
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
-import { CreateDrinkService } from './CreateDrinkService';
-
-interface IRequest {
-	name: string;
-	method: string;
-	ingredients: { ingredientId: string; quantity: number }[];
-}
+import { CreateDrinkService } from './createDrink.service';
+import { ICreateDrinkRequest } from '@modules/drinks/dtos/drink.dtos';
 
 class CreateDrinkController {
 	async handle(request: Request, response: Response): Promise<Response> {
-		const { name, method, ingredients }: IRequest = request.body;
+		const { translations, ingredients }: ICreateDrinkRequest = request.body;
 
 		const createDrinkService = container.resolve(CreateDrinkService);
 
-		const drinkId = await createDrinkService.execute({
-			name,
-			method,
-			ingredients
-		});
+		const drinkId = await createDrinkService.execute({ translations, ingredients });
 
 		return response.status(201).json(drinkId);
 	}
