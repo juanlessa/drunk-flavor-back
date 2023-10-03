@@ -1,5 +1,5 @@
-import Category from '@modules/drinks/entities/Category';
-import { ICategoriesRepository } from '@modules/drinks/repositories/ICategoriesRepository';
+import { ICategory } from '@modules/drinks/entities/category.entity';
+import { ICategoriesRepository } from '@modules/drinks/repositories/categories.repository.interface';
 import { inject, injectable } from 'tsyringe';
 
 @injectable()
@@ -9,7 +9,7 @@ class ListCategoriesService {
 		private categoriesRepository: ICategoriesRepository
 	) {}
 
-	async execute(): Promise<Category[]> {
+	async execute(): Promise<ICategory[]> {
 		const categories = await this.categoriesRepository.findAll();
 
 		return categories;

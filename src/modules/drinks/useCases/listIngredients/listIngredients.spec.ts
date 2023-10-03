@@ -1,9 +1,9 @@
-import Category from '@modules/drinks/entities/Category';
+import Category from '@modules/drinks/entities/category.entity';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/CategoriesRepository';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { ListIngredientsService } from './ListIngredientsService';
+import { ListIngredientsService } from './listIngredients.service';
 
 let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
 let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;

@@ -1,7 +1,7 @@
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/CategoriesRepository';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { ListCategoriesService } from './ListCategoriesService';
+import { ListCategoriesService } from './listCategories.service';
 
 let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
 let listCategoriesService: ListCategoriesService;

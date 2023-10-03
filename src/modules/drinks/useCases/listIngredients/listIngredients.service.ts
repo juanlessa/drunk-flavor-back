@@ -1,5 +1,5 @@
-import Ingredient from '@modules/drinks/entities/Ingredient';
-import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredientsRepository';
+import { IIngredient } from '@modules/drinks/entities/ingredient.entity';
+import { IIngredientsRepository } from '@modules/drinks/repositories/ingredients.repository.interface';
 import { inject, injectable } from 'tsyringe';
 
 @injectable()
@@ -9,7 +9,7 @@ class ListIngredientsService {
 		private ingredientsRepository: IIngredientsRepository
 	) {}
 
-	async execute(): Promise<Ingredient[]> {
+	async execute(): Promise<IIngredient[]> {
 		const ingredients = await this.ingredientsRepository.findAll();
 
 		return ingredients;

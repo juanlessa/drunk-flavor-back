@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
-import { ListIngredientsService } from './ListIngredientsService';
+import { ListIngredientsService } from './listIngredients.service';
 
 class ListIngredientsController {
 	async handle(request: Request, response: Response): Promise<Response> {

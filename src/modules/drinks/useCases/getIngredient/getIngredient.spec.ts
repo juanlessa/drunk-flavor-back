@@ -1,12 +1,11 @@
 import AppError from '@errors/AppError';
-import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredientErrors';
+import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredient.errors';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/CategoriesRepository';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
-import { Category } from '@prisma/client';
 import { ObjectId } from 'bson';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { GetIngredientService } from './GetIngredientService';
+import { GetIngredientService } from './getIngredient.service';
 
 let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
 let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;
