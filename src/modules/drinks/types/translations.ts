@@ -4,8 +4,7 @@ export enum LANGUAGES {
 }
 
 export type ITranslations<T> = {
-	[LANGUAGES.english]: T;
-	[LANGUAGES.portuguese]: T;
+	[value in LANGUAGES]: T;
 };
 
 export type ITranslationName = {
