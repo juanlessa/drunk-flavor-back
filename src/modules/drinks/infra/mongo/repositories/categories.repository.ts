@@ -1,6 +1,6 @@
 import { ICreateCategory, IFindCategoryByName, IUpdateCategory } from '@modules/drinks/dtos/category.dtos';
 import { ICategory } from '@modules/drinks/entities/category.entity';
-import { ICategoriesRepository } from '@modules/drinks/repositories/categories.repository.interface';
+import { ICategoriesRepository } from '@modules/drinks/repositories/ICategories.repository';
 import { Category } from '@modules/drinks/infra/mongo/entities/category.model';
 import { getNameCompareQuery } from '@modules/drinks/infra/mongo/utils/getNameCompareQuery';
 
