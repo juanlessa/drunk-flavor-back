@@ -1,6 +1,6 @@
 import { ICreateIngredient, IFindIngredientByName, IUpdateIngredient } from '@modules/drinks/dtos/ingredient.dtos';
 import { IIngredient } from '@modules/drinks/entities/ingredient.entity';
-import { IIngredientsRepository } from '@modules/drinks/repositories/ingredients.repository.interface';
+import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredients.repository';
 import { Ingredient } from '@modules/drinks/infra/mongo/entities/ingredient.model';
 import { getNameCompareQuery } from '../utils/getNameCompareQuery';
 
@@ -10,11 +10,8 @@ class IngredientsRepository implements IIngredientsRepository {
 		await ingredient.save();
 		return ingredient;
 	}
-	async update({ id, translations, is_alcoholic, category }: IUpdateIngredient): Promise<IIngredient> {
-		return await Ingredient.findByIdAndUpdate<IIngredient>(
-			{ _id: id },
-			{ translations, is_alcoholic, category }
-		).exec();
+	async update({ id, ...data }: IUpdateIngredient): Promise<IIngredient> {
+		return await Ingredient.findByIdAndUpdate<IIngredient>({ _id: id }, { ...data }).exec();
 	}
 
 	async delete(id: string): Promise<IIngredient> {

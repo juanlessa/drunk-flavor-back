@@ -1,4 +1,4 @@
-import { IDrinksRepository } from '@modules/drinks/repositories/drinks.repository.interface';
+import { IDrinksRepository } from '@modules/drinks/repositories/IDrinks.repository';
 import { IDrink } from '@modules/drinks/entities/drink.entity';
 import { ICreateDrink, IFindDrinkByName, IUpdateDrink } from '@modules/drinks/dtos/drink.dtos';
 import { Drink } from '../entities/drink.model';
