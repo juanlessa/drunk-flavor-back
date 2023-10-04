@@ -20,7 +20,7 @@ export const IngredientSchema = new Schema<IIngredient>(
 			type: getTranslationsSchema(IngredientTranslationSchema),
 			required: true
 		},
-		category: { type: CategorySchema, required: true },
+		category: { type: CategorySchema, excludeIndexes: true, required: true },
 		is_alcoholic: { type: Boolean, required: true }
 	},
 	{

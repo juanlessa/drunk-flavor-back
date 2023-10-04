@@ -16,7 +16,7 @@ export const DrinkTranslationSchema = new Schema<IDrinkTranslation>(
 export const DrinkIngredientSchema = new Schema<IDrinkIngredient>(
 	{
 		quantity: { type: Number, required: true },
-		ingredient: { type: IngredientSchema, required: true }
+		ingredient: { type: IngredientSchema, excludeIndexes: true, required: true }
 	},
 	{
 		_id: false
