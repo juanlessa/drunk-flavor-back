@@ -21,12 +21,11 @@ export type IUpdateIngredientRequest = {
 	is_alcoholic: boolean;
 };
 
-export type IUpdateIngredient = {
-	id: string;
+export type IUpdateIngredient = { id: string } & Partial<{
 	translations: ITranslations<IIngredientTranslation>;
 	category: ICategory;
 	is_alcoholic: boolean;
-};
+}>;
 
 export type IDeleteIngredient = {
 	id: string;
