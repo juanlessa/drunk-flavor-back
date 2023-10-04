@@ -1,8 +1,8 @@
 import { ICreateIngredientRequest } from '@modules/drinks/dtos/ingredient.dtos';
 import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredient.errors';
 import { mapToTranslationsName } from '@modules/drinks/mappers/translations.mapper';
-import { ICategoriesRepository } from '@modules/drinks/repositories/categories.repository.interface';
-import { IIngredientsRepository } from '@modules/drinks/repositories/ingredients.repository.interface';
+import { ICategoriesRepository } from '@modules/drinks/repositories/ICategories.repository';
+import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredients.repository';
 import AppError from '@shared/errors/AppError';
 import { inject, injectable } from 'tsyringe';
 

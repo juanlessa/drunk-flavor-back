@@ -1,5 +1,5 @@
 import { ICategory } from '@modules/drinks/entities/category.entity';
-import { ICategoriesRepository } from '@modules/drinks/repositories/categories.repository.interface';
+import { ICategoriesRepository } from '@modules/drinks/repositories/ICategories.repository';
 import { inject, injectable } from 'tsyringe';
 
 @injectable()

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
-import { CreateDrinkService } from './createDrink.service';
+import { CreateDrinkService } from './CreateDrink.service';
 import { ICreateDrinkRequest } from '@modules/drinks/dtos/drink.dtos';
 
 class CreateDrinkController {

@@ -1,7 +1,7 @@
 import { IGetCategory } from '@modules/drinks/dtos/category.dtos';
 import { ICategory } from '@modules/drinks/entities/category.entity';
 import { CATEGORY_ERRORS } from '@modules/drinks/errors/category.errors';
-import { ICategoriesRepository } from '@modules/drinks/repositories/categories.repository.interface';
+import { ICategoriesRepository } from '@modules/drinks/repositories/ICategories.repository';
 import AppError from '@shared/errors/AppError';
 import { inject, injectable } from 'tsyringe';
 

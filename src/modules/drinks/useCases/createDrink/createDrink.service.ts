@@ -3,8 +3,8 @@ import { IDrinkIngredient } from '@modules/drinks/entities/drink.entity';
 import { IIngredient } from '@modules/drinks/entities/ingredient.entity';
 import { DRINK_ERRORS } from '@modules/drinks/errors/drink.errors';
 import { mapToTranslationsName } from '@modules/drinks/mappers/translations.mapper';
-import { IDrinksRepository } from '@modules/drinks/repositories/drinks.repository.interface';
-import { IIngredientsRepository } from '@modules/drinks/repositories/ingredients.repository.interface';
+import { IDrinksRepository } from '@modules/drinks/repositories/IDrinks.repository';
+import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredients.repository';
 import AppError from '@shared/errors/AppError';
 import { inject, injectable } from 'tsyringe';
 

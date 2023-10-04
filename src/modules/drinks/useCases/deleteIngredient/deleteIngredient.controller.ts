@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
-import { DeleteIngredientService } from './deleteIngredient.service';
+import { DeleteIngredientService } from './DeleteIngredient.service';
 import { IDeleteIngredient } from '@modules/drinks/dtos/ingredient.dtos';
 
 class DeleteIngredientController {

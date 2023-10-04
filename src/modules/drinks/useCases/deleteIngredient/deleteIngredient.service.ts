@@ -1,6 +1,6 @@
 import { IDeleteIngredient } from '@modules/drinks/dtos/ingredient.dtos';
 import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredient.errors';
-import { IIngredientsRepository } from '@modules/drinks/repositories/ingredients.repository.interface';
+import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredients.repository';
 import AppError from '@shared/errors/AppError';
 import { inject, injectable } from 'tsyringe';
 

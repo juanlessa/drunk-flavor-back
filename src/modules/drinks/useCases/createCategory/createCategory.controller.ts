@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
-import { CreateCategoryService } from './createCategory.service';
+import { CreateCategoryService } from './CreateCategory.service';
 import { ICategory } from '@modules/drinks/entities/category.entity';
 
 class CreateCategoryController {

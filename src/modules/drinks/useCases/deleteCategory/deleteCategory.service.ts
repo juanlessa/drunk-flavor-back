@@ -1,6 +1,6 @@
 import { IDeleteCategory } from '@modules/drinks/dtos/category.dtos';
 import { CATEGORY_ERRORS } from '@modules/drinks/errors/category.errors';
-import { ICategoriesRepository } from '@modules/drinks/repositories/categories.repository.interface';
+import { ICategoriesRepository } from '@modules/drinks/repositories/ICategories.repository';
 import AppError from '@shared/errors/AppError';
 import { inject, injectable } from 'tsyringe';
 

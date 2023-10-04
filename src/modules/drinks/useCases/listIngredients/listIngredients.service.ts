@@ -1,5 +1,5 @@
 import { IIngredient } from '@modules/drinks/entities/ingredient.entity';
-import { IIngredientsRepository } from '@modules/drinks/repositories/ingredients.repository.interface';
+import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredients.repository';
 import { inject, injectable } from 'tsyringe';
 
 @injectable()

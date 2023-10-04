@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
-import { DeleteCategoryService } from './deleteCategory.service';
+import { DeleteCategoryService } from './DeleteCategory.service';
 import { IDeleteCategory } from '@modules/drinks/dtos/category.dtos';
 
 class DeleteCategoryController {

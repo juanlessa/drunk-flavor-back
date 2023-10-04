@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
-import { GetCategoryService } from './getCategory.service';
+import { GetCategoryService } from './GetCategory.service';
 
 class GetCategoryController {
 	async handle(request: Request, response: Response): Promise<Response> {
