@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
-import { UpdateDrinkCoverService } from './UpdateDrinkCoverService';
+import { UpdateDrinkCoverService } from './UpdateDrinkCover.service';
 
 class UpdateDrinkCoverController {
 	async handle(request: Request, response: Response): Promise<Response> {
@@ -13,7 +13,7 @@ class UpdateDrinkCoverController {
 
 		const updateDrinkCoverService = container.resolve(UpdateDrinkCoverService);
 
-		await updateDrinkCoverService.execute({ drinkId: id, coverFile: coverFile });
+		await updateDrinkCoverService.execute({ drink_id: id, cover_file: coverFile });
 
 		return response.status(204).send();
 	}

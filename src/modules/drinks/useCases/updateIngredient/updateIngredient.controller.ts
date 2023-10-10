@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
-import { UpdateIngredientService } from './updateIngredient.service';
+import { UpdateIngredientService } from './UpdateIngredient.service';
 import { IUpdateIngredientRequest } from '@modules/drinks/dtos/ingredient.dtos';
 
 class UpdateIngredientController {

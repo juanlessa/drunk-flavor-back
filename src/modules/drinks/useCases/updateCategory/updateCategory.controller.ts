@@ -1,7 +1,7 @@
 import { IUpdateCategory } from '@modules/drinks/dtos/category.dtos';
 import { Request, Response } from 'express';
 import { container } from 'tsyringe';
-import { UpdateCategoryService } from './updateCategory.service';
+import { UpdateCategoryService } from './UpdateCategory.service';
 
 class UpdateCategoryController {
 	async handle(request: Request, response: Response): Promise<Response> {

@@ -1,4 +1,4 @@
-import { IUpdateIngredient, IUpdateIngredientRequest } from '@modules/drinks/dtos/ingredient.dtos';
+import { IUpdateIngredientRequest } from '@modules/drinks/dtos/ingredient.dtos';
 import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredient.errors';
 import { mapToTranslationsName } from '@modules/drinks/mappers/translations.mapper';
 import { ICategoriesRepository } from '@modules/drinks/repositories/ICategories.repository';
