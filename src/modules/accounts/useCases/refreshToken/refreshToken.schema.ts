@@ -1,0 +1,10 @@
+import { validateSchema } from '@middlewares/fieldsValidator';
+import { IRefreshUserToken } from '@modules/accounts/dtos/usersTokens.dtos';
+import { tokenValidation } from '@modules/accounts/validations/usersTokens';
+import { z } from 'zod';
+
+const refreshTokenSchema = z.object({
+	token: tokenValidation
+});
+
+export const refreshTokenValidator = validateSchema<IRefreshUserToken>(refreshTokenSchema);
