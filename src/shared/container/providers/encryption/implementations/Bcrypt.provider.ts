@@ -1,5 +1,5 @@
 import { compare, hash } from 'bcrypt';
-import { IEncryptionProvider } from '../IEncryptionProvider';
+import { IEncryptionProvider } from '../IEncryption.provider';
 
 class BcryptProvider implements IEncryptionProvider {
 	async hash(password: string): Promise<string> {

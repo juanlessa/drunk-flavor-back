@@ -6,10 +6,10 @@ import { ICategoriesRepository } from '@modules/drinks/repositories/ICategories.
 import { CategoriesRepository } from '@modules/drinks/infra/mongo/repositories/Categories.repository';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinks.repository';
 import { DrinksRepository } from '@modules/drinks/infra/mongo/repositories/Drinks.repository';
-import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
-import { UsersRepository } from '@modules/accounts/infra/mongo/repositories/UsersRepository';
-import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokensRepository';
-import { UsersTokensRepository } from '@modules/accounts/infra/mongo/repositories/UsersTokensRepository';
+import { IUsersRepository } from '@modules/accounts/repositories/IUsers.repository';
+import { UsersRepository } from '@modules/accounts/infra/mongo/repositories/Users.repository';
+import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokens.repository';
+import { UsersTokensRepository } from '@modules/accounts/infra/mongo/repositories/UsersTokens.repository';
 
 container.registerSingleton<ICategoriesRepository>('CategoriesRepository', CategoriesRepository);
 
