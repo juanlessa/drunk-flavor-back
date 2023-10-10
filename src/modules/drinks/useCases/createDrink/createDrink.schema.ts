@@ -1,17 +1,12 @@
 import { validateSchema } from '@middlewares/fieldsValidator';
-import { ICreateIngredient, ICreateIngredientRequest } from '@modules/drinks/dtos/ingredient.dtos';
+import { ICreateDrinkRequest } from '@modules/drinks/dtos/drink.dtos';
+import { drinkIngredientsValidation, drinkTranslationSchema } from '@modules/drinks/validations/drinks';
 import { getZodTranslationsSchema } from '@modules/drinks/validations/getZodTranslationsSchema';
-import {
-	ingredientCategoryIdValidation,
-	ingredientIsAlcoholicValidation,
-	ingredientTranslationSchema
-} from '@modules/drinks/validations/ingredients';
 import { z } from 'zod';
 
-const createIngredientSchema = z.object({
-	translations: getZodTranslationsSchema(ingredientTranslationSchema),
-	is_alcoholic: ingredientIsAlcoholicValidation,
-	category_id: ingredientCategoryIdValidation
+const createDrinkSchema = z.object({
+	translations: getZodTranslationsSchema(drinkTranslationSchema),
+	ingredients: drinkIngredientsValidation
 });
 
-export const createIngredientValidator = validateSchema<ICreateIngredientRequest>(createIngredientSchema);
+export const createDrinkValidator = validateSchema<ICreateDrinkRequest>(createDrinkSchema);
