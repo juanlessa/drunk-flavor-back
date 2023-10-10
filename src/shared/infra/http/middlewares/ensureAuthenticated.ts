@@ -1,9 +1,9 @@
 import auth from '@config/auth';
 import AppError from '@errors/AppError';
-import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authenticationErrors';
+import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authentication.errors';
 import { USER_ERRORS } from '@modules/accounts/errors/user.errors';
-import { UsersRepository } from '@modules/accounts/infra/mongo/repositories/UsersRepository';
-import { JsonwebtokenProvider } from '@shared/container/providers/jwt/implementations/JsonwebtokenProvider';
+import { UsersRepository } from '@modules/accounts/infra/mongo/repositories/Users.repository';
+import { JsonwebtokenProvider } from '@shared/container/providers/jwt/implementations/Jsonwebtoken.provider';
 import { NextFunction, Request, Response } from 'express';
 
 export async function ensureAuthenticated(request: Request, response: Response, next: NextFunction) {

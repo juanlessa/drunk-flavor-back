@@ -1,7 +1,7 @@
 import AppError from '@errors/AppError';
-import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authenticationErrors';
+import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authentication.errors';
 import { USER_ERRORS } from '@modules/accounts/errors/user.errors';
-import { UsersRepository } from '@modules/accounts/infra/mongo/repositories/UsersRepository';
+import { UsersRepository } from '@modules/accounts/infra/mongo/repositories/Users.repository';
 import { ROLES } from '@modules/accounts/types/roles';
 import { NextFunction, Request, Response } from 'express';
 
