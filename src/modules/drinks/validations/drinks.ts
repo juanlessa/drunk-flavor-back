@@ -1,35 +1,35 @@
 import { z } from 'zod';
-import { DRINK_ERRORS } from '../errors/drinkErrors';
+import { DRINK_ERRORS } from '../errors/drink.errors';
 
 // fields validation
-const idValidation = z
+export const drinkIdValidation = z
 	.string({ required_error: DRINK_ERRORS.required_id })
 	.length(24, { message: DRINK_ERRORS.invalid_id_format });
 
-const nameValidation = z
+export const drinkNameValidation = z
 	.string({ required_error: DRINK_ERRORS.required_name })
 	.trim()
 	.toLowerCase()
 	.min(1, { message: DRINK_ERRORS.invalid_name_format })
 	.transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`);
 
-const methodValidation = z
+export const drinkMethodValidation = z
 	.string({ required_error: DRINK_ERRORS.required_method })
 	.trim()
 	.min(1, { message: DRINK_ERRORS.invalid_method_format });
 
-const coverValidation = z
+export const drinkCoverValidation = z
 	.string({ required_error: DRINK_ERRORS.required_cover })
 	.min(1, { message: DRINK_ERRORS.invalid_cover_format });
 
-const thumbnailValidation = z
+export const drinkThumbnailValidation = z
 	.string({ required_error: DRINK_ERRORS.required_thumbnail })
 	.min(1, { message: DRINK_ERRORS.invalid_thumbnail_format });
 
-const ingredientsValidation = z
+export const drinkIngredientsValidation = z
 	.array(
 		z.object({
-			ingredientId: z
+			ingredient_id: z
 				.string({ required_error: DRINK_ERRORS.required_ingredient_id })
 				.length(24, { message: DRINK_ERRORS.invalid_ingredient_id_format }),
 			quantity: z
@@ -40,42 +40,7 @@ const ingredientsValidation = z
 	.min(1, { message: DRINK_ERRORS.required_ingredients });
 
 // schemas
-const createDrinkSchema = z.object({
-	name: nameValidation,
-	method: methodValidation,
-	ingredients: ingredientsValidation
+export const drinkTranslationSchema = z.object({
+	name: drinkNameValidation,
+	method: drinkMethodValidation
 });
-
-const deleteDrinkSchema = z.object({
-	id: idValidation
-});
-
-const getDrinkSchema = z.object({
-	id: idValidation
-});
-
-const updateDrinkSchema = z.object({
-	id: idValidation,
-	name: nameValidation,
-	method: methodValidation,
-	ingredients: ingredientsValidation
-});
-
-const updateDrinkCoverSchema = z.object({
-	drinkId: idValidation,
-	coverFile: coverValidation
-});
-
-const updateDrinkThumbnailSchema = z.object({
-	drinkId: idValidation,
-	thumbnailFile: thumbnailValidation
-});
-
-export {
-	createDrinkSchema,
-	deleteDrinkSchema,
-	getDrinkSchema,
-	updateDrinkSchema,
-	updateDrinkCoverSchema,
-	updateDrinkThumbnailSchema
-};
