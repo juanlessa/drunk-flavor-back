@@ -1,15 +1,13 @@
 import auth from '@config/auth';
 import AppError from '@errors/AppError';
-import { IAuthenticateUser, IAuthenticateUserResponse } from '@modules/accounts/dtos/Users';
-import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authenticationErrors';
-import { IUsersRepository } from '@modules/accounts/repositories/IUsersRepository';
-import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokensRepository';
-import { authenticateUserSchema } from '@modules/accounts/validations/users';
+import { IAuthenticateUser, IAuthenticateUserResponse } from '@modules/accounts/dtos/authentication.dtos';
+import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authentication.errors';
+import { IUsersRepository } from '@modules/accounts/repositories/IUsers.repository';
+import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokens.repository';
 import { IDateProvider } from '@shared/container/providers/date/IDateProvider';
-import { IEncryptionProvider } from '@shared/container/providers/encryption/IEncryptionProvider';
-import { IJwtProvider } from '@shared/container/providers/jwt/IJwtProvider';
+import { IEncryptionProvider } from '@shared/container/providers/encryption/IEncryption.provider';
+import { IJwtProvider } from '@shared/container/providers/jwt/IJwt.provider';
 import { inject, injectable } from 'tsyringe';
-import { SafeParseError } from 'zod';
 
 @injectable()
 class AuthenticateUserService {
@@ -25,14 +23,7 @@ class AuthenticateUserService {
 		@inject('BcryptProvider')
 		private bcryptProvider: IEncryptionProvider
 	) {}
-	async execute(data: IAuthenticateUser): Promise<IAuthenticateUserResponse> {
-		const result = authenticateUserSchema.safeParse(data);
-		if (!result.success) {
-			const { error } = result as SafeParseError<IAuthenticateUser>;
-			throw new AppError(error.issues[0].message);
-		}
-		const { email, password } = result.data;
-
+	async execute({ email, password }: IAuthenticateUser): Promise<IAuthenticateUserResponse> {
 		const user = await this.usersRepository.findByEmail(email);
 		if (!user) {
 			throw new AppError(AUTHENTICATION_ERRORS.invalid_credentials);
@@ -45,25 +36,25 @@ class AuthenticateUserService {
 
 		// create token
 		const token = this.jwtProvider.createToken({
-			userId: user.id,
+			subject: user._id,
 			secret: auth.secret_token,
-			expiresIn: auth.expires_in_token
+			expires_in: auth.expires_in_token
 		});
 		const token_expires_date = this.dateProvider.addHours(auth.expires_token_hours);
 
 		// create refresh token
 		const refresh_token = this.jwtProvider.createRefreshToken({
-			userEmail: email,
-			userId: user.id,
+			sign_property: email,
+			subject: user._id,
 			secret: auth.secret_refresh_token,
-			expiresIn: auth.expires_in_refresh_token
+			expires_in: auth.expires_in_refresh_token
 		});
 		const refresh_token_expires_date = this.dateProvider.addDays(auth.expires_refresh_token_days);
 
 		await this.usersTokensRepository.create({
 			expires_date: refresh_token_expires_date,
 			refresh_token: refresh_token,
-			user_id: user.id
+			user_id: user._id
 		});
 
 		return {
