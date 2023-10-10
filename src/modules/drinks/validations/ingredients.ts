@@ -1,60 +1,39 @@
 import { z } from 'zod';
-import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredientErrors';
+import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredient.errors';
 
 // fields validation
-const idValidation = z
+export const ingredientIdValidation = z
 	.string({ required_error: INGREDIENT_ERRORS.required_id })
 	.length(24, { message: INGREDIENT_ERRORS.invalid_id_format });
 
-const nameValidation = z
+export const ingredientNameValidation = z
 	.string({ required_error: INGREDIENT_ERRORS.required_name })
 	.trim()
 	.toLowerCase()
 	.min(1, { message: INGREDIENT_ERRORS.invalid_name_format })
 	.transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`);
 
-const unitySingularValidation = z
-	.string({ required_error: INGREDIENT_ERRORS.required_unitySingular })
+export const ingredientUnitValidation = z
+	.string({ required_error: INGREDIENT_ERRORS.required_unit })
 	.trim()
 	.toLowerCase()
-	.min(1, { message: INGREDIENT_ERRORS.invalid_unitySingular_format });
+	.min(1, { message: INGREDIENT_ERRORS.invalid_unit_format });
 
-const unityPluralValidation = z
-	.string({ required_error: INGREDIENT_ERRORS.required_unityPlural })
+export const ingredientUnityPluralValidation = z
+	.string({ required_error: INGREDIENT_ERRORS.required_unit_plural })
 	.trim()
 	.toLowerCase()
-	.min(1, { message: INGREDIENT_ERRORS.invalid_unityPlural_format });
+	.min(1, { message: INGREDIENT_ERRORS.invalid_unit_plural_format });
 
-const categoryIdValidation = z
-	.string({ required_error: INGREDIENT_ERRORS.required_categoryId })
-	.length(24, { message: INGREDIENT_ERRORS.invalid_categoryId_format });
+export const ingredientCategoryIdValidation = z
+	.string({ required_error: INGREDIENT_ERRORS.required_category })
+	.length(24, { message: INGREDIENT_ERRORS.invalid_category_format });
 
-const isAlcoholicValidation = z.boolean({ required_error: INGREDIENT_ERRORS.required_is_alcoholic });
+export const ingredientIsAlcoholicValidation = z.boolean({ required_error: INGREDIENT_ERRORS.required_is_alcoholic });
 
 // schemas
-const createIngredientSchema = z.object({
-	name: nameValidation,
-	categoryId: categoryIdValidation,
-	unitySingular: unitySingularValidation,
-	unityPlural: unityPluralValidation,
-	isAlcoholic: isAlcoholicValidation
+export const ingredientTranslationSchema = z.object({
+	name: ingredientNameValidation,
+	unit: ingredientUnitValidation,
+	unit_plural: ingredientUnityPluralValidation
 });
-
-const deleteIngredientSchema = z.object({
-	id: idValidation
-});
-
-const updateIngredientSchema = z.object({
-	id: idValidation,
-	name: nameValidation,
-	categoryId: categoryIdValidation,
-	unitySingular: unitySingularValidation,
-	unityPlural: unityPluralValidation,
-	isAlcoholic: isAlcoholicValidation
-});
-
-const getIngredientSchema = z.object({
-	id: idValidation
-});
-
-export { createIngredientSchema, deleteIngredientSchema, updateIngredientSchema, getIngredientSchema };
