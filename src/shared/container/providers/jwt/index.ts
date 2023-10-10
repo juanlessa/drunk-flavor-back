@@ -1,5 +1,5 @@
 import { container } from 'tsyringe';
-import { IJwtProvider } from './IJwtProvider';
-import { JsonwebtokenProvider } from './implementations/JsonwebtokenProvider';
+import { IJwtProvider } from './IJwt.provider';
+import { JsonwebtokenProvider } from './implementations/Jsonwebtoken.provider';
 
 container.registerSingleton<IJwtProvider>('JsonwebtokenProvider', JsonwebtokenProvider);
