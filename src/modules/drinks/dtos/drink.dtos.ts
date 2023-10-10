@@ -36,7 +36,7 @@ export type IUpdateDrink = { id: string } & Partial<{
 	cover: string;
 	thumbnail: string;
 	ingredients: {
-		ingredient_id: string;
+		ingredient: IIngredient;
 		quantity: number;
 	}[];
 }>;
