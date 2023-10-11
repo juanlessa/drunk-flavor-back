@@ -1,11 +1,12 @@
 import { DatabaseCommonInfo } from '@shared/infra/database/mongo/types';
+import { ROLES } from '../types/roles';
 
 export type ICreateUser = {
 	name: string;
 	surname: string;
 	email: string;
 	password: string;
-	role: string;
+	role: ROLES;
 };
 
 export type IUpdateUserRequest = {
@@ -20,7 +21,7 @@ export type IUpdateUser = { id: string } & Partial<{
 	surname: string;
 	email: string;
 	password: string;
-	role: string;
+	role: ROLES;
 }>;
 
 export type IDeleteUser = {
