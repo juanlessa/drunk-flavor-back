@@ -9,7 +9,7 @@
         "dev": "tsx src/server.ts",
         "dev:debug": "tsx watch src/server.ts",
         "build": "tsup src",
-        "test-unit": "vitest -c vitest.config.unit.ts",
+        "test": "vitest -c vitest.config.ts",
         "test-integration": "dotenv -e .env.testing -- vitest -c vitest.config.integration.ts"
     },
     "repository": {
