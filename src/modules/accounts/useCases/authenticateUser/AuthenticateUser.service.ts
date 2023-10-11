@@ -36,7 +36,7 @@ class AuthenticateUserService {
 
 		// create token
 		const token = this.jwtProvider.createToken({
-			subject: user._id,
+			subject: user._id.toString(),
 			secret: auth.secret_token,
 			expires_in: auth.expires_in_token
 		});
@@ -45,7 +45,7 @@ class AuthenticateUserService {
 		// create refresh token
 		const refresh_token = this.jwtProvider.createRefreshToken({
 			sign_property: email,
-			subject: user._id,
+			subject: user._id.toString(),
 			secret: auth.secret_refresh_token,
 			expires_in: auth.expires_in_refresh_token
 		});
