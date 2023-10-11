@@ -3,7 +3,7 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
 	test: {
-		include: ['src/**/*Controller.spec.ts'],
+		include: ['src/**/*.e2e-spec.ts'],
 		threads: false
 	},
 	plugins: [tsconfigPaths()]
