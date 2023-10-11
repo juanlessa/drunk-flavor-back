@@ -1,4 +1,4 @@
-import mongoose, { Mongoose } from 'mongoose';
+import mongoose, { Model, Mongoose } from 'mongoose';
 
 let mongoClient: Mongoose;
 
@@ -28,3 +28,19 @@ export async function initiateMongo(): Promise<void> {
 export function getMongoClient(): Mongoose {
 	return mongoClient;
 }
+
+export const closeConnection = async () => {
+	await mongoClient.connection.close();
+};
+
+export const dropCollection = async (model: Model<any>) => {
+	const collectionsList = Object.keys(mongoClient.connection.collections);
+	const collectionToDeleteName = model.collection.collectionName;
+	if (collectionsList.includes(collectionToDeleteName)) {
+		await mongoClient.connection.dropCollection(collectionToDeleteName);
+	}
+};
+export const emptyCollection = async (model: Model<any>) => {
+	const collectionName = model.collection.collectionName;
+	await mongoClient.connection.collection(collectionName).deleteMany({});
+};
