@@ -10,7 +10,7 @@
         "dev:debug": "tsx watch src/server.ts",
         "build": "tsup src",
         "test": "vitest -c vitest.config.ts",
-        "test-integration": "dotenv -e .env.testing -- vitest -c vitest.config.e2e.ts"
+        "test:e2e": "dotenv -e .env.testing -- vitest -c vitest-e2e.config.ts"
     },
     "repository": {
         "type": "git",
