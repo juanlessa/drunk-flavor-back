@@ -1,128 +1,76 @@
-import { ICreateIngredient, IUpdateIngredient } from '@modules/drinks/dtos/ingredients';
-import Ingredient from '@modules/drinks/entities/Ingredient';
-import { IIngredientsRepository } from '../IIngredientsRepository';
+import { ICreateIngredient, IFindIngredientByName, IUpdateIngredient } from '@modules/drinks/dtos/ingredient.dtos';
+import { IIngredient } from '@modules/drinks/entities/ingredient.entity';
+import { IIngredientsRepository } from '../IIngredients.repository';
 import { ObjectId } from 'bson';
-import { ICategoriesRepository } from '../ICategoriesRepository';
+import { compareTranslationsName } from './utils/compareTranslationsName';
 
 class IngredientsRepositoryInMemory implements IIngredientsRepository {
-	ingredients: Ingredient[] = [];
-	categoriesRepository: ICategoriesRepository;
-	constructor(categoriesRepository: ICategoriesRepository) {
-		this.categoriesRepository = categoriesRepository;
-	}
-	async create({
-		name,
-		categoryId,
-		unitySingular,
-		unityPlural,
-		isAlcoholic
-	}: ICreateIngredient): Promise<Ingredient> {
-		let ingredient: Ingredient = {
-			id: new ObjectId().toString(),
-			name,
-			categoryId,
-			unitySingular,
-			unityPlural,
-			isAlcoholic,
-			created_at: new Date()
+	ingredients: IIngredient[] = [];
+
+	async create({ translations, category, is_alcoholic }: ICreateIngredient): Promise<IIngredient> {
+		let ingredient: IIngredient = {
+			translations,
+			is_alcoholic,
+			category,
+			_id: new ObjectId().toString(),
+			created_at: new Date(),
+			updated_at: new Date()
 		};
 
 		this.ingredients.push(ingredient);
 
-		const category = await this.categoriesRepository.findById(categoryId);
-		ingredient.category = category;
-
 		return ingredient;
 	}
 
-	async update({
-		id,
-		name,
-		categoryId,
-		unitySingular,
-		unityPlural,
-		isAlcoholic
-	}: IUpdateIngredient): Promise<Ingredient> {
-		let ingredient: Ingredient;
+	async update({ id, ...data }: IUpdateIngredient): Promise<IIngredient> {
+		let ingredient: IIngredient;
 
 		this.ingredients = this.ingredients.map((ing) => {
-			if (ing.id === id) {
+			if (ing._id === id) {
 				ingredient = {
-					id: ing.id,
-					name,
-					categoryId,
-					unitySingular,
-					unityPlural,
-					isAlcoholic,
-					created_at: ing.created_at
+					_id: ing._id,
+					translations: data.translations || ing.translations,
+					is_alcoholic: data.is_alcoholic || ing.is_alcoholic,
+					category: data.category || ing.category,
+					created_at: ing.created_at,
+					updated_at: new Date()
 				};
 				return ingredient;
 			}
 			return ing;
 		});
 
-		const category = await this.categoriesRepository.findById(categoryId);
-		ingredient.category = category;
-
 		return ingredient;
 	}
 
-	async delete(id: string): Promise<Ingredient> {
-		let ingredient: Ingredient;
-		const ingredientIndex = this.ingredients.findIndex((ing) => ing.id === id);
+	async delete(id: string): Promise<IIngredient> {
+		let ingredient: IIngredient;
+		const ingredientIndex = this.ingredients.findIndex((ing) => ing._id === id);
 		if (ingredientIndex != -1) {
 			const deleted = this.ingredients.splice(ingredientIndex, 1);
 			ingredient = deleted[0];
 		}
 
-		const category = await this.categoriesRepository.findById(ingredient.categoryId);
-		ingredient.category = category;
-
 		return ingredient;
 	}
 
-	async findByName(name: string): Promise<Ingredient> {
-		let ingredient = this.ingredients.find((ing) => ing.name === name);
-		if (ingredient) {
-			const category = await this.categoriesRepository.findById(ingredient.categoryId);
-			ingredient.category = category;
-		}
+	async findByName(translations: IFindIngredientByName): Promise<IIngredient> {
+		const ingredient = this.ingredients.find((ing) => compareTranslationsName(ing.translations, translations));
 		return ingredient;
 	}
 
-	async findById(id: string): Promise<Ingredient> {
-		const ingredient = this.ingredients.find((ing) => ing.id === id);
-		if (ingredient) {
-			const category = await this.categoriesRepository.findById(ingredient.categoryId);
-			ingredient.category = category;
-		}
+	async findById(id: string): Promise<IIngredient> {
+		const ingredient = this.ingredients.find((ing) => ing._id === id);
 		return ingredient;
 	}
 
-	async findAll(): Promise<Ingredient[]> {
-		let ingredients = [...this.ingredients];
-
-		ingredients = await Promise.all(
-			ingredients.map(async (ing) => {
-				const category = await this.categoriesRepository.findById(ing.categoryId);
-				ing.category = category;
-				return ing;
-			})
-		);
-
+	async findAll(): Promise<IIngredient[]> {
+		const ingredients = [...this.ingredients];
 		return ingredients;
 	}
-	async findByIdList(ids: string[]): Promise<Ingredient[]> {
-		let ingredients = this.ingredients.filter((ing) => ids.includes(ing.id));
 
-		ingredients = await Promise.all(
-			ingredients.map(async (ing) => {
-				const category = await this.categoriesRepository.findById(ing.categoryId);
-				ing.category = category;
-				return ing;
-			})
-		);
-
+	async findByIdList(ids: string[]): Promise<IIngredient[]> {
+		const ingredients = this.ingredients.filter((ing) => ids.includes(ing._id));
 		return ingredients;
 	}
 }

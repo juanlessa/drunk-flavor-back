@@ -1,43 +1,38 @@
-import { IDrinksRepository } from '../IDrinksRepository';
-import { ICreateDrink, IUpdateDrink } from '@modules/drinks/dtos/Drinks';
+import { IDrinksRepository } from '../IDrinks.repository';
+import { ICreateDrink, IFindDrinkByName, IUpdateDrink } from '@modules/drinks/dtos/drink.dtos';
 import { ObjectId } from 'bson';
-import Drink from '@modules/drinks/entities/Drink';
-import { IIngredientsRepository } from '../IIngredientsRepository';
-import Ingredient from '@modules/drinks/entities/Ingredient';
+import { IDrink } from '@modules/drinks/entities/drink.entity';
+import { compareTranslationsName } from './utils/compareTranslationsName';
 
 class DrinksRepositoryInMemory implements IDrinksRepository {
-	drinks: Drink[] = [];
-	ingredientsRepository: IIngredientsRepository;
-	constructor(ingredientsRepository: IIngredientsRepository) {
-		this.ingredientsRepository = ingredientsRepository;
-	}
+	drinks: IDrink[] = [];
 
-	async create({ name, method, ingredients }: ICreateDrink): Promise<Drink> {
-		const drink: Drink = {
-			id: new ObjectId().toString(),
-			name,
-			method,
+	async create({ translations, ingredients }: ICreateDrink): Promise<IDrink> {
+		const drink: IDrink = {
+			translations,
 			ingredients,
 			cover: '',
 			thumbnail: '',
-			created_at: new Date()
+			_id: new ObjectId().toString(),
+			created_at: new Date(),
+			updated_at: new Date()
 		};
 		this.drinks.push(drink);
 		return drink;
 	}
 
-	async update({ id, name, method, ingredients, cover, thumbnail }: IUpdateDrink): Promise<Drink> {
-		let drink: Drink;
+	async update({ id, ...data }: IUpdateDrink): Promise<IDrink> {
+		let drink: IDrink;
 		this.drinks = this.drinks.map((d) => {
-			if (d.id === id) {
+			if (d._id === id) {
 				drink = {
-					id: d.id,
-					name,
-					method,
-					ingredients,
-					cover,
-					thumbnail,
-					created_at: d.created_at
+					_id: d._id,
+					translations: data.translations || d.translations,
+					ingredients: data.ingredients || d.ingredients,
+					cover: data.cover || d.cover,
+					thumbnail: data.thumbnail || d.thumbnail,
+					created_at: d.created_at,
+					updated_at: new Date()
 				};
 				return drink;
 			}
@@ -46,9 +41,9 @@ class DrinksRepositoryInMemory implements IDrinksRepository {
 		return drink;
 	}
 
-	async delete(id: string): Promise<Drink> {
-		let drink: Drink;
-		const drinkIndex = this.drinks.findIndex((d) => d.id === id);
+	async delete(id: string): Promise<IDrink> {
+		let drink: IDrink;
+		const drinkIndex = this.drinks.findIndex((d) => d._id === id);
 		if (drinkIndex != -1) {
 			const deleted = this.drinks.splice(drinkIndex, 1);
 			drink = deleted[0];
@@ -56,68 +51,18 @@ class DrinksRepositoryInMemory implements IDrinksRepository {
 		return drink;
 	}
 
-	async findByName(name: string): Promise<Drink> {
-		let drink = this.drinks.find((d) => d.name === name);
-		if (drink) {
-			drink.ingredients = undefined;
-		}
+	async findByName(translations: IFindDrinkByName): Promise<IDrink> {
+		const drink = this.drinks.find((d) => compareTranslationsName(d.translations, translations));
 		return drink;
 	}
 
-	async findById(id: string): Promise<Drink> {
-		let drink = this.drinks.find((d) => d.id === id);
-		if (drink) {
-			drink.ingredients = undefined;
-		}
+	async findById(id: string): Promise<IDrink> {
+		const drink = this.drinks.find((d) => d._id === id);
 		return drink;
 	}
 
-	async findAll(): Promise<Drink[]> {
-		let results = [...this.drinks];
-		results = results.map((d) => (d.ingredients = undefined));
-		return results;
-	}
-
-	async findByNameWithIngredientsDetails(name: string): Promise<Drink> {
-		let drink = this.drinks.find((d) => d.name === name);
-		if (drink) {
-			drink.ingredients = await Promise.all(
-				drink.ingredients.map(async (ing) => {
-					ing.ingredient = await this.ingredientsRepository.findById(ing.ingredientId);
-					return ing;
-				})
-			);
-		}
-
-		return drink;
-	}
-
-	async findByIdWithIngredientsDetails(id: string): Promise<Drink> {
-		let drink = this.drinks.find((d) => d.id === id);
-		if (drink) {
-			drink.ingredients = await Promise.all(
-				drink.ingredients.map(async (ing) => {
-					ing.ingredient = await this.ingredientsRepository.findById(ing.ingredientId);
-					return ing;
-				})
-			);
-		}
-		return drink;
-	}
-
-	async findAllWithIngredientsDetails(): Promise<Drink[]> {
+	async findAll(): Promise<IDrink[]> {
 		let drinks = [...this.drinks];
-		drinks = await Promise.all(
-			drinks.map(async (d) => {
-				d.ingredients = await Promise.all(
-					d.ingredients.map(async (ing) => {
-						ing.ingredient = await this.ingredientsRepository.findById(ing.ingredientId);
-						return ing;
-					})
-				);
-				return d;
-			})
-		);
 		return drinks;
 	}
 }
