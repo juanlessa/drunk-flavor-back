@@ -1,6 +1,6 @@
 import { ICategory, ICategoryTranslation } from '@modules/drinks/entities/category.entity';
 import { getTranslationsSchema } from '@modules/drinks/infra/mongo/utils/getTranslationsSchema';
-import { Schema, model } from 'mongoose';
+import { Schema, model, models } from 'mongoose';
 
 const CategoryTranslationSchema = new Schema<ICategoryTranslation>(
 	{
@@ -31,4 +31,4 @@ export const CategorySchema = new Schema<ICategory>(
 	}
 );
 
-export const Category = model<ICategory>('categories', CategorySchema);
+export const Category = models['categories'] || model<ICategory>('categories', CategorySchema);

@@ -1,5 +1,5 @@
 import { IIngredient, IIngredientTranslation } from '@modules/drinks/entities/ingredient.entity';
-import { Schema, model } from 'mongoose';
+import { Schema, model, models } from 'mongoose';
 import { CategorySchema } from './category.model';
 import { getTranslationsSchema } from '../utils/getTranslationsSchema';
 
@@ -36,4 +36,4 @@ export const IngredientSchema = new Schema<IIngredient>(
 	}
 );
 
-export const Ingredient = model<IIngredient>('ingredients', IngredientSchema);
+export const Ingredient = models['ingredients'] || model<IIngredient>('ingredients', IngredientSchema);

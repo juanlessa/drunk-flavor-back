@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, models } from 'mongoose';
 import { IUserToken } from '@modules/accounts/entities/userToken.entity';
 
 export const IUserTokenSchema = new Schema<IUserToken>(
@@ -20,4 +20,4 @@ export const IUserTokenSchema = new Schema<IUserToken>(
 	}
 );
 
-export const UserToken = model<IUserToken>('users-tokens', IUserTokenSchema);
+export const UserToken = models['users-tokens'] || model<IUserToken>('users-tokens', IUserTokenSchema);

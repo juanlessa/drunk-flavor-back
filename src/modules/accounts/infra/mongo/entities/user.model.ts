@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, models } from 'mongoose';
 import { IUser } from '@modules/accounts/entities/user.entity';
 import { ROLES } from '@modules/accounts/types/roles';
 
@@ -23,4 +23,4 @@ export const UserSchema = new Schema<IUser>(
 	}
 );
 
-export const User = model<IUser>('users', UserSchema);
+export const User = models['users'] || model<IUser>('users', UserSchema);

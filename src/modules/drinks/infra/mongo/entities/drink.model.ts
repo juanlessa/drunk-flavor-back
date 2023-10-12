@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, models } from 'mongoose';
 import { IngredientSchema } from './ingredient.model';
 import { IDrink, IDrinkIngredient, IDrinkTranslation } from '@modules/drinks/entities/drink.entity';
 import { getTranslationsSchema } from '../utils/getTranslationsSchema';
@@ -46,4 +46,4 @@ export const DrinkSchema = new Schema<IDrink>(
 	}
 );
 
-export const Drink = model<IDrink>('drinks', DrinkSchema);
+export const Drink = models['drinks'] || model<IDrink>('drinks', DrinkSchema);
