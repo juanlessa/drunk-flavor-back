@@ -27,10 +27,10 @@ class DrinksRepositoryInMemory implements IDrinksRepository {
 			if (d._id === id) {
 				drink = {
 					_id: d._id,
-					translations: data.translations || d.translations,
-					ingredients: data.ingredients || d.ingredients,
-					cover: data.cover || d.cover,
-					thumbnail: data.thumbnail || d.thumbnail,
+					translations: data.translations ?? d.translations,
+					ingredients: data.ingredients ?? d.ingredients,
+					cover: data.cover ?? d.cover,
+					thumbnail: data.thumbnail ?? d.thumbnail,
 					created_at: d.created_at,
 					updated_at: new Date()
 				};

@@ -29,9 +29,9 @@ class IngredientsRepositoryInMemory implements IIngredientsRepository {
 			if (ing._id === id) {
 				ingredient = {
 					_id: ing._id,
-					translations: data.translations || ing.translations,
-					is_alcoholic: data.is_alcoholic || ing.is_alcoholic,
-					category: data.category || ing.category,
+					translations: data.translations ?? ing.translations,
+					is_alcoholic: data.is_alcoholic ?? ing.is_alcoholic,
+					category: data.category ?? ing.category,
 					created_at: ing.created_at,
 					updated_at: new Date()
 				};
