@@ -27,11 +27,11 @@ const userTest: ICreateUser = {
 
 describe('Authenticate User Controller', () => {
 	beforeAll(async () => {
-		await initiateMongo();
-
 		usersRepository = new UsersRepository();
 		bcryptProvider = new BcryptProvider();
 		createUserService = new CreateUserService(usersRepository, bcryptProvider);
+
+		await initiateMongo();
 	});
 
 	beforeEach(async () => {
@@ -42,7 +42,6 @@ describe('Authenticate User Controller', () => {
 	afterAll(async () => {
 		await dropCollection(User);
 		await dropCollection(UserToken);
-		await closeConnection();
 	});
 
 	it('should be able to authenticate an user', async () => {

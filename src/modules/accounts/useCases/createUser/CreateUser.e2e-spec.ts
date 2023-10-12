@@ -44,8 +44,6 @@ const partnerUser: ICreateUser = {
 
 describe('Create user Controller', () => {
 	beforeAll(async () => {
-		await initiateMongo();
-
 		usersRepository = new UsersRepository();
 		usersTokensRepository = new UsersTokensRepository();
 		bcryptProvider = new BcryptProvider();
@@ -59,6 +57,8 @@ describe('Create user Controller', () => {
 			jsonwebtokenProvider,
 			bcryptProvider
 		);
+
+		await initiateMongo();
 	});
 
 	beforeEach(async () => {
@@ -69,7 +69,6 @@ describe('Create user Controller', () => {
 	afterAll(async () => {
 		await dropCollection(User);
 		await dropCollection(UserToken);
-		await closeConnection();
 	});
 
 	it('Should be able to create a user', async () => {
