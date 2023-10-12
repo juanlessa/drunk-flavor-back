@@ -1,11 +1,11 @@
-import { ITranslations, ITranslationsName, LANGUAGES } from '../types/translations';
+import { ITranslations, ITranslationAnyWithNameKey, LANGUAGES } from '../types/translations';
 
 export const mapToTranslationsName = (
-	translations: ITranslations<ITranslationsName>
-): ITranslations<ITranslationsName> => {
+	translations: ITranslations<ITranslationAnyWithNameKey>
+): ITranslations<ITranslationAnyWithNameKey> => {
 	const languages = Object.values(LANGUAGES);
 	return languages.reduce(
 		(accumulator, lang) => ({ ...accumulator, [lang]: { name: translations[lang].name } }),
-		{} as ITranslations<ITranslationsName>
+		{} as ITranslations<ITranslationAnyWithNameKey>
 	);
 };

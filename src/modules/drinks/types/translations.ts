@@ -11,7 +11,7 @@ export type ITranslationName = {
 	name: string;
 };
 
-export type ITranslationsName = {
+export type ITranslationAnyWithNameKey = {
 	[key: string]: any;
 	name: string;
 };
