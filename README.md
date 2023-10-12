@@ -21,7 +21,7 @@ Feel free to suggest improvements and report possible bugs, if you are a softwar
 - [Dev](#dev)
 - [Testing](#dev)
 - [Build](#build)
-
+- [Documentation](#documentation)
 
 ## Setup
 
@@ -35,46 +35,6 @@ brew install mongodb-community@6.0
 ```
 
 If you are using a different operating system, please refer to the installation guide on the [MongoDB website](https://www.mongodb.com) for instructions.
-
-Make sure to enable the replica set option in your MongoDB single node by following these steps:
-**Note:** in the code samples below, we will consider that your MongoDB instance is running on localhost at port 27017 (the default MongoDB port). If this is not the case for you, please modify this information as needed.
-
-1. Start the MongoDB server in replSet mode by providing the --replSet parameter when starting the MongoDB process. For example:
-
-    ```shell
-    mongod --replSet=rs0
-    ```
-
-2. Connect to the MongoDB instance using the MongoDB shell.
-
-    ```shell
-    mongosh "mongodb://localhost:27017"
-    ```
-
-3. In the MongoDB shell, initiate the replica set by running the following command:
-
-    ```mongo
-    rs.initiate({
-        _id : "rs0",
-        members: [ 
-            { _id: 0, host: "localhost:27001" } 
-        ] 
-    })
-    ```
-
-4. Now, you can add the current node to the replica set by executing the following command:
-
-    ```mongo
-    rs.add("localhost:27017")
-    ```
-
-5. Verify the replica set status to ensure that everything is configured correctly.
-
-     ```mongo
-    rs.status()
-    ```
-
-Now your database environment is ready.
 
 ### node.js
 
@@ -114,14 +74,11 @@ You can use the [```.env.example```](https://github.com/juanlessa/drunk-flavor-b
 
 ```dotenv
 # MongoDB
-MONGO_ROOT_USERNAME='drunkflavor'
-MONGO_ROOT_PASSWORD='drunkflavor'
+MONGO_USERNAME='drunkflavor'
+MONGO_PASSWORD='drunkflavor'
 MONGO_DATABASE='drunk-flavor'
 MONGO_HOST='localhost'
 MONGO_PORT='27017'
-
-# Prisma database - do not change this variable
-DATABASE_URL="mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/${MONGO_DATABASE}"
 
 # API
 APP_HOST=http://localhost
@@ -171,8 +128,40 @@ brew services start mongodb-community@6.0
 If you are using a different operating system, please refer to the documentation on the [MongoDB website](https://www.mongodb.com).
 
 ## Testing
+In our project, we use Vitest as our testing library.
+The unit tests (.spec.ts fales) can be run by using the command below.
+```shel
+npm run test
+```
+
+For the integration tests (.e2e-spec.ts fales) you need to add a file named ```.env.testing``` at the root project folder, containing the testing database environment variables. You can use the sample below changing the values to your mongodb testing database:
+
+```dotenv
+# MongoDB
+MONGO_USERNAME='drunkflavor'
+MONGO_PASSWORD='drunkflavor'
+MONGO_DATABASE='drunk-flavor'
+MONGO_HOST='localhost'
+MONGO_PORT='27017'
+```
+
+after that you can run the integration tests by using the command below.
+```shel
+npm run test:e2e
+```
 
 ## Build
+You can build the project by using the command below:
+
+```shell
+npm run build
+```
+
+The build result will be added to the 'dist' directory and it can be run by using the command below:
+
+```shell
+npm run start
+```
 
 ## Documentation
 
