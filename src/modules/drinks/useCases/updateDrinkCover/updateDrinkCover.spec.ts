@@ -1,28 +1,28 @@
 import AppError from '@errors/AppError';
+import { ICategory, ICategoryTranslation } from '@modules/drinks/entities/category.entity';
+import { IIngredient, IIngredientTranslation } from '@modules/drinks/entities/ingredient.entity';
+import { DRINK_ERRORS } from '@modules/drinks/errors/drink.errors';
+import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { DrinksRepositoryInMemory } from '@modules/drinks/repositories/inMemory/DrinksRepository';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { ObjectId } from 'bson';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { UpdateDrinkThumbnailService } from './UpdateDrinkThumbnail.service';
-import { DRINK_ERRORS } from '@modules/drinks/errors/drink.errors';
-import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
-import { ITranslations } from '@modules/drinks/types/translations';
+import { UpdateDrinkCoverService } from './UpdateDrinkCover.service';
 import { IDrinkTranslation } from '@modules/drinks/entities/drink.entity';
-import { IIngredient, IIngredientTranslation } from '@modules/drinks/entities/ingredient.entity';
-import { ICategory, ICategoryTranslation } from '@modules/drinks/entities/category.entity';
+import { ITranslations } from '@modules/drinks/types/translations';
 
 let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
 let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;
 let drinksRepositoryInMemory: DrinksRepositoryInMemory;
-let updateDrinkThumbnailService: UpdateDrinkThumbnailService;
+let updateDrinkCoverService: UpdateDrinkCoverService;
 
 // test constants
 const translations: ITranslations<IDrinkTranslation> = {
 	en: { name: 'en name', method: 'en method...' },
 	pt: { name: 'pt name', method: 'pt method...' }
 };
-const thumbnailFileName = 'fale-name-test.jpeg';
+const coverFileName = 'fale-name-test.jpeg';
 
 const ingredientTranslations: ITranslations<IIngredientTranslation> = {
 	en: { name: 'en name', unit: 'ml', unit_plural: 'ml' },
@@ -39,12 +39,12 @@ const categoryTranslations: ITranslations<ICategoryTranslation> = {
 };
 let createdCategory: ICategory;
 
-describe('Update Drink Thumbnail', () => {
+describe('Update Drink Cover', () => {
 	beforeEach(async () => {
 		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
 		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory();
 		drinksRepositoryInMemory = new DrinksRepositoryInMemory();
-		updateDrinkThumbnailService = new UpdateDrinkThumbnailService(drinksRepositoryInMemory);
+		updateDrinkCoverService = new UpdateDrinkCoverService(drinksRepositoryInMemory);
 
 		// test constants
 		createdCategory = await categoriesRepositoryInMemory.create({ translations: categoryTranslations });
@@ -55,30 +55,30 @@ describe('Update Drink Thumbnail', () => {
 		});
 	});
 
-	it('should be able to update a drink thumbnail', async () => {
+	it('should be able to update a drink cover', async () => {
 		const createdDrink = await drinksRepositoryInMemory.create({
 			translations,
 			ingredients: [{ ingredient: createdIngredient, quantity: 60 }]
 		});
 
-		await updateDrinkThumbnailService.execute({
+		await updateDrinkCoverService.execute({
 			drink_id: createdDrink._id,
-			thumbnail_file: thumbnailFileName
+			cover_file: coverFileName
 		});
 
 		const updatedDrink = await drinksRepositoryInMemory.findById(createdDrink._id);
 
-		expect(updatedDrink.thumbnail).toEqual(thumbnailFileName);
+		expect(updatedDrink.cover).toEqual(coverFileName);
 		expect(updatedDrink._id).toEqual(createdDrink._id);
 	});
 
-	it('should not be able to update the thumbnail of a nonexistent drink', async () => {
+	it('should not be able to update the cover of a nonexistent drink', async () => {
 		const nonexistentDrinkId = new ObjectId().toString();
 
 		await expect(
-			updateDrinkThumbnailService.execute({
+			updateDrinkCoverService.execute({
 				drink_id: nonexistentDrinkId,
-				thumbnail_file: thumbnailFileName
+				cover_file: coverFileName
 			})
 		).rejects.toEqual(new AppError(DRINK_ERRORS.not_exist));
 	});
