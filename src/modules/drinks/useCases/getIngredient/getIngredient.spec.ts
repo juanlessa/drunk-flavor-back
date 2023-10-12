@@ -15,7 +15,6 @@ let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;
 let getIngredientService: GetIngredientService;
 
 // test constants
-// test constants
 const translations: ITranslations<IIngredientTranslation> = {
 	en: { name: 'en name', unit: 'ml', unit_plural: 'ml' },
 	pt: { name: 'pt name', unit: 'ml', unit_plural: 'ml' }
