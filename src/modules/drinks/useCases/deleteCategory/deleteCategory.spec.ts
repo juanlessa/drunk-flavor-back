@@ -1,16 +1,23 @@
 import AppError from '@errors/AppError';
-import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/CategoriesRepository';
+import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { ObjectId } from 'bson';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { DeleteCategoryService } from './DeleteCategory.service';
 import { CATEGORY_ERRORS } from '@modules/drinks/errors/category.errors';
+import { ITranslations } from '@modules/drinks/types/translations';
+import { ICategoryTranslation } from '@modules/drinks/entities/category.entity';
 
 let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
 let deleteCategoryService: DeleteCategoryService;
 
 // test constants
-const name = 'Category test';
+const translations: ITranslations<ICategoryTranslation> = {
+	en: {
+		name: 'en name'
+	},
+	pt: { name: 'pt name' }
+};
 
 describe('Delete category', () => {
 	beforeEach(() => {
@@ -19,11 +26,11 @@ describe('Delete category', () => {
 	});
 
 	it('should be able to delete a Category', async () => {
-		const createdCategory = await categoriesRepositoryInMemory.create({ name });
+		const createdCategory = await categoriesRepositoryInMemory.create({ translations });
 
-		await deleteCategoryService.execute({ id: createdCategory.id });
+		await deleteCategoryService.execute({ id: createdCategory._id });
 
-		const findDeledCategory = await categoriesRepositoryInMemory.findById(createdCategory.id);
+		const findDeledCategory = await categoriesRepositoryInMemory.findById(createdCategory._id);
 
 		expect(findDeledCategory).toBeUndefined();
 	});
