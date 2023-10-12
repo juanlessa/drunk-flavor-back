@@ -146,7 +146,7 @@ MONGO_HOST='localhost'
 MONGO_PORT='27017'
 ```
 
-after that you can run the integration tests by using the command below.
+after that you can run the integration tests by using the command below:
 ```shel
 npm run test:e2e
 ```
@@ -158,7 +158,7 @@ You can build the project by using the command below:
 npm run build
 ```
 
-The build result will be added to the 'dist' directory and it can be run by using the command below:
+The build result will be added to the ```dist``` directory and it can be run by using the command below:
 
 ```shell
 npm run start
