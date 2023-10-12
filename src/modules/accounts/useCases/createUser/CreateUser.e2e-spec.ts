@@ -12,8 +12,7 @@ import { app } from '@shared/infra/http/app';
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { AuthenticateUserService } from '../authenticateUser/AuthenticateUser.service';
-import { CreateUserService } from './CreateUser.service';
-import { closeConnection, dropCollection, emptyCollection, initiateMongo } from '@shared/infra/database/mongo';
+import { dropCollection, emptyCollection, initiateMongo } from '@shared/infra/database/mongo';
 import { UserToken } from '@modules/accounts/infra/mongo/entities/userToken.model';
 import { User } from '@modules/accounts/infra/mongo/entities/user.model';
 import auth from '@config/auth';
@@ -23,7 +22,6 @@ let usersTokensRepository: IUsersTokensRepository;
 let bcryptProvider: BcryptProvider;
 let dayjsDateProvider: DayjsDateProvider;
 let jsonwebtokenProvider: JsonwebtokenProvider;
-let createUserService: CreateUserService;
 let authenticateUserService: AuthenticateUserService;
 
 // test constants
@@ -49,7 +47,6 @@ describe('Create user Controller', () => {
 		bcryptProvider = new BcryptProvider();
 		dayjsDateProvider = new DayjsDateProvider();
 		jsonwebtokenProvider = new JsonwebtokenProvider();
-		createUserService = new CreateUserService(usersRepository, bcryptProvider);
 		authenticateUserService = new AuthenticateUserService(
 			usersRepository,
 			usersTokensRepository,
@@ -72,7 +69,10 @@ describe('Create user Controller', () => {
 	});
 
 	it('Should be able to create a user', async () => {
-		await createUserService.execute(adminUser);
+		await usersRepository.create({
+			...adminUser,
+			password: await bcryptProvider.hash(adminUser.password)
+		});
 		const authenticateResponse = await authenticateUserService.execute({
 			email: adminUser.email,
 			password: adminUser.password
@@ -88,14 +88,20 @@ describe('Create user Controller', () => {
 	});
 
 	it('Should not be able to create an user with an existing email', async () => {
-		await createUserService.execute(adminUser);
+		await usersRepository.create({
+			...adminUser,
+			password: await bcryptProvider.hash(adminUser.password)
+		});
 		const authenticateResponse = await authenticateUserService.execute({
 			email: adminUser.email,
 			password: adminUser.password
 		});
 		const adminToken = authenticateResponse.token.token;
 
-		await createUserService.execute(partnerUser);
+		await usersRepository.create({
+			...partnerUser,
+			password: await bcryptProvider.hash(partnerUser.password)
+		});
 
 		const response = await request(app)
 			.post('/users')
@@ -121,7 +127,10 @@ describe('Create user Controller', () => {
 	});
 
 	it('Should not be able to create a user without being admin', async () => {
-		await createUserService.execute(partnerUser);
+		await usersRepository.create({
+			...partnerUser,
+			password: await bcryptProvider.hash(partnerUser.password)
+		});
 		const authenticateResponse = await authenticateUserService.execute({
 			email: partnerUser.email,
 			password: partnerUser.password
