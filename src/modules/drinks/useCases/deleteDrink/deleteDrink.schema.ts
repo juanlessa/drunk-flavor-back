@@ -1,6 +1,6 @@
 import { validateSchema } from '@middlewares/fieldsValidator';
 import { IDeleteDrink } from '@modules/drinks/dtos/drink.dtos';
-import { drinkIdValidation } from '@modules/drinks/validations/drinks';
+import { drinkIdValidation } from '@modules/drinks/validations/drink.validations';
 
 import { z } from 'zod';
 

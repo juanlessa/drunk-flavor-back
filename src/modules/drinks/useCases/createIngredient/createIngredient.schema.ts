@@ -5,7 +5,7 @@ import {
 	ingredientCategoryIdValidation,
 	ingredientIsAlcoholicValidation,
 	ingredientTranslationSchema
-} from '@modules/drinks/validations/ingredients';
+} from '@modules/drinks/validations/ingredient.validations';
 import { z } from 'zod';
 
 const createIngredientSchema = z.object({

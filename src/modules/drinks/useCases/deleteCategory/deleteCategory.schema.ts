@@ -1,6 +1,6 @@
 import { validateSchema } from '@middlewares/fieldsValidator';
 import { IDeleteCategory } from '@modules/drinks/dtos/category.dtos';
-import { categoryIdValidation } from '@modules/drinks/validations/categories';
+import { categoryIdValidation } from '@modules/drinks/validations/category.validations';
 import { z } from 'zod';
 
 const deleteCategorySchema = z.object({

@@ -4,7 +4,7 @@ import {
 	drinkIdValidation,
 	drinkIngredientsValidation,
 	drinkTranslationSchema
-} from '@modules/drinks/validations/drinks';
+} from '@modules/drinks/validations/drink.validations';
 import { getZodTranslationsSchema } from '@modules/drinks/validations/getZodTranslationsSchema';
 import { z } from 'zod';
 
