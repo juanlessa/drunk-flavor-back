@@ -1,6 +1,6 @@
 import { validateSchema } from '@middlewares/fieldsValidator';
 import { IUpdateUserRole } from '@modules/accounts/dtos/user.dtos';
-import { userIdValidation, userRoleValidation } from '@modules/accounts/validations/users';
+import { userIdValidation, userRoleValidation } from '@modules/accounts/validations/user.validations';
 import { z } from 'zod';
 
 const updateUserRoleSchema = z.object({

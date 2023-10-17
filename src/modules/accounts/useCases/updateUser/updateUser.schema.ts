@@ -5,7 +5,7 @@ import {
 	userNameValidation,
 	userPasswordValidation,
 	userSurnameValidation
-} from '@modules/accounts/validations/users';
+} from '@modules/accounts/validations/user.validations';
 import { z } from 'zod';
 
 const updateUserSchema = z.object({

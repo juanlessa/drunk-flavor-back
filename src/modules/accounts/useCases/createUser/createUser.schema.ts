@@ -6,7 +6,7 @@ import {
 	userPasswordValidation,
 	userRoleValidation,
 	userSurnameValidation
-} from '@modules/accounts/validations/users';
+} from '@modules/accounts/validations/user.validations';
 import { z } from 'zod';
 
 const createUserSchema = z.object({
