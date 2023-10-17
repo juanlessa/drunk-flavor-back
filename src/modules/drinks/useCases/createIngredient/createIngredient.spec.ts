@@ -1,4 +1,3 @@
-import { tokenValidation } from '@modules/accounts/validations/usersTokens';
 import AppError from '@errors/AppError';
 import { ICategory, ICategoryTranslation } from '@modules/drinks/entities/category.entity';
 import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredient.errors';
