@@ -19,7 +19,7 @@ export const ingredientUnitValidation = z
 	.toLowerCase()
 	.min(1, { message: INGREDIENT_ERRORS.invalid_unit_format });
 
-export const ingredientUnityPluralValidation = z
+export const ingredientUnitPluralValidation = z
 	.string({ required_error: INGREDIENT_ERRORS.required_unit_plural })
 	.trim()
 	.toLowerCase()
@@ -35,5 +35,5 @@ export const ingredientIsAlcoholicValidation = z.boolean({ required_error: INGRE
 export const ingredientTranslationSchema = z.object({
 	name: ingredientNameValidation,
 	unit: ingredientUnitValidation,
-	unit_plural: ingredientUnityPluralValidation
+	unit_plural: ingredientUnitPluralValidation
 });
