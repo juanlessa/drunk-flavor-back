@@ -1,4 +1,4 @@
-import { validateSchema } from '@middlewares/fieldsValidator';
+import { validateSchema } from '@middlewares/validateSchema';
 import { IDeleteIngredient } from '@modules/drinks/dtos/ingredient.dtos';
 import { ingredientIdValidation } from '@modules/drinks/validations/ingredient.validations';
 import { z } from 'zod';

@@ -1,4 +1,4 @@
-import { validateSchema } from '@middlewares/fieldsValidator';
+import { validateSchema } from '@middlewares/validateSchema';
 import { IUpdateUser } from '@modules/accounts/dtos/user.dtos';
 import {
 	userEmailValidation,

@@ -1,5 +1,5 @@
-import { validateSchema } from '@middlewares/fieldsValidator';
-import { IAuthenticateUser } from '@modules/accounts/dtos/user.dtos';
+import { IAuthenticateUser } from '@modules/accounts/dtos/authentication.dtos';
+import { validateSchema } from '@middlewares/validateSchema';
 import { userEmailValidation, userPasswordValidation } from '@modules/accounts/validations/user.validations';
 import { z } from 'zod';
 

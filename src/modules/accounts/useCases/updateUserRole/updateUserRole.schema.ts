@@ -1,4 +1,4 @@
-import { validateSchema } from '@middlewares/fieldsValidator';
+import { validateSchema } from '@middlewares/validateSchema';
 import { IUpdateUserRole } from '@modules/accounts/dtos/user.dtos';
 import { userIdValidation, userRoleValidation } from '@modules/accounts/validations/user.validations';
 import { z } from 'zod';

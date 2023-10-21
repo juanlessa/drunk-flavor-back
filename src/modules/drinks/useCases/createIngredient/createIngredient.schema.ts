@@ -1,5 +1,5 @@
-import { validateSchema } from '@middlewares/fieldsValidator';
-import { ICreateIngredient, ICreateIngredientRequest } from '@modules/drinks/dtos/ingredient.dtos';
+import { validateSchema } from '@middlewares/validateSchema';
+import { ICreateIngredientRequest } from '@modules/drinks/dtos/ingredient.dtos';
 import { getZodTranslationsSchema } from '@modules/drinks/validations/getZodTranslationsSchema';
 import {
 	ingredientCategoryIdValidation,
