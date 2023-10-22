@@ -1,4 +1,4 @@
-import { DatabaseCommonInfo } from '@shared/infra/database/mongo/types';
+import { DatabaseCommonInfo } from '@shared/infra/mongo/types';
 import { IIngredient } from './ingredient.entity';
 import { ITranslations } from '../types/translations';
 

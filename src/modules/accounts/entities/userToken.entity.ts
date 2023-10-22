@@ -1,4 +1,4 @@
-import { DatabaseCommonInfo } from '@shared/infra/database/mongo/types';
+import { DatabaseCommonInfo } from '@shared/infra/mongo/types';
 
 export type IUserToken = DatabaseCommonInfo & {
 	user_id: string;

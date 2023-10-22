@@ -1,4 +1,4 @@
-import { DatabaseCommonInfo } from '@shared/infra/database/mongo/types';
+import { DatabaseCommonInfo } from '@shared/infra/mongo/types';
 import { ROLES } from '../types/roles';
 
 export type ICreateUser = {

@@ -1,5 +1,4 @@
-import { DatabaseCommonInfo } from '@shared/infra/database/mongo/types';
-import { IDrink, IDrinkTranslation } from '../entities/drink.entity';
+import { IDrinkTranslation } from '../entities/drink.entity';
 import { IIngredient } from '../entities/ingredient.entity';
 import { ITranslations } from '../types/translations';
 

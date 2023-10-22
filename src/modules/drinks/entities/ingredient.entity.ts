@@ -1,5 +1,5 @@
 import { ICategory } from '@modules/drinks/entities/category.entity';
-import { DatabaseCommonInfo } from '@shared/infra/database/mongo/types';
+import { DatabaseCommonInfo } from '@shared/infra/mongo/types';
 import { ITranslations } from '../types/translations';
 
 export type IIngredientTranslation = {

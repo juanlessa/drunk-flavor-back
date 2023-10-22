@@ -9,7 +9,7 @@ import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { UserToken } from '@modules/accounts/infra/mongo/entities/userToken.model';
 import { User } from '@modules/accounts/infra/mongo/entities/user.model';
-import { dropCollection, emptyCollection, initiateMongo } from '@shared/infra/database/mongo';
+import { dropCollection, emptyCollection, initiateMongo } from '@shared/infra/mongo';
 
 let usersRepository: IUsersRepository;
 let bcryptProvider: BcryptProvider;

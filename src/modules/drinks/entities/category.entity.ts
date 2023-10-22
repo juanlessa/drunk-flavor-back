@@ -1,4 +1,4 @@
-import { DatabaseCommonInfo } from '@shared/infra/database/mongo/types';
+import { DatabaseCommonInfo } from '@shared/infra/mongo/types';
 import { ITranslations } from '@modules/drinks/types/translations';
 
 export type ICategoryTranslation = {

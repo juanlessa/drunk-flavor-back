@@ -9,7 +9,7 @@ import swaggerFile from '../../../swagger.json';
 import swaggerUi from 'swagger-ui-express';
 import '@shared/container';
 import { errorHandler } from '@middlewares/errorHandler';
-import { initiateMongo } from '@shared/infra/database/mongo';
+import { initiateMongo } from '@shared/infra/mongo';
 
 dotenv.config();
 
