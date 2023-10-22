@@ -6,21 +6,20 @@ export async function initiateMongo(): Promise<void> {
 	const mongoHost = process.env.MONGO_HOST || 'localhost';
 	const mongoPort = process.env.MONGO_PORT || '27017';
 	const mongoMaxPoolSize = process.env.MONGO_MAX_POOL_SIZE || '25';
-	const mongoDb = process.env.MONGO_DATABASE || 'drunkflavor';
-	const mongoAuthDb = process.env.MONGO_AUTH_DB || 'admin';
-	const mongoUser = process.env.MONGO_USERNAME || '';
-	const mongoPwd = process.env.MONGO_PASSWORD;
-	//const params = `authMechanism=SCRAM-SHA-256&authSource=${mongoAuthDb}`;
-	const params = ``;
 
+	const mongoDatabase = process.env.MONGO_DATABASE || '';
+	const mongoUser = process.env.MONGO_USERNAME || '';
+	const mongoPassword = process.env.MONGO_PASSWORD;
+
+	const mongoParams = '';
 	try {
 		mongoClient = await mongoose.connect(
-			`mongodb://${mongoUser}:${mongoPwd}@${mongoHost}:${mongoPort}/${mongoDb}?${params}`,
+			`mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}/${mongoDatabase}?${mongoParams}`,
 			{ maxPoolSize: parseInt(mongoMaxPoolSize), serverSelectionTimeoutMS: 5000, connectTimeoutMS: 5000 }
 		);
 		console.log('[INFO] Mongo connection has been stablish.');
 	} catch (error) {
-		console.error('Could not connect ', error);
+		console.error('Mongo could not connect ', error);
 		throw new Error(error);
 	}
 }
