@@ -1,12 +1,10 @@
 import { docsDrinkDefinition, docsDrinkTag } from '@modules/drinks/docs/drink.docs';
-import { docsUseBearerAuth } from '@shared/docs/common.docs';
 import { docsAppErrorDefinition } from '@shared/docs/errors.docs';
 
 export const docsGetDrink = {
 	tags: [docsDrinkTag],
 	summary: 'Get drink',
 	description: 'Get a drink',
-	security: docsUseBearerAuth,
 	parameters: [
 		{
 			name: 'id',
