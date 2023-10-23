@@ -1,0 +1,47 @@
+import { docsDrinkTag, docsDrinkTranslationSchema } from '@modules/drinks/docs/drink.docs';
+import { docsUseBearerAuth } from '@shared/docs/common.docs';
+import { docsAppErrorDefinition } from '@shared/docs/errors.docs';
+
+const docsCreateDrinkRequestContent = {
+	'application/json': {
+		schema: {
+			type: 'object',
+			properties: {
+				translations: {
+					type: 'object',
+					properties: {
+						en: docsDrinkTranslationSchema,
+						pt: docsDrinkTranslationSchema
+					}
+				}
+			},
+			example: {
+				translations: {
+					en: { name: 'margarita', method: 'drink method ...' },
+					pt: { name: 'Margarita', method: 'instruções de preparo ...' }
+				}
+			}
+		}
+	}
+};
+
+export const docsCreateDrink = {
+	tags: [docsDrinkTag],
+	summary: 'Create drink',
+	description: 'Create a new drink',
+	security: docsUseBearerAuth,
+	requestBody: { content: docsCreateDrinkRequestContent },
+	responses: {
+		'201': {
+			description: 'Created'
+		},
+		'400': {
+			description: 'Bad Request',
+			content: {
+				'application/json': {
+					schema: docsAppErrorDefinition
+				}
+			}
+		}
+	}
+};
