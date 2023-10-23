@@ -1,9 +1,9 @@
 FROM node:18
 
-WORKDIR /src
-COPY package.json package-lock.json /src/
+WORKDIR /app
+COPY package.json package-lock.json /app/
 RUN npm install
-COPY . /src
+COPY . /app
 RUN npm run build
 EXPOSE 3333
 ENV MONGO_HOST="mongodb"
