@@ -16,10 +16,10 @@ export const docsDrinksPath = {
 	'/drinks/{id}': {
 		get: docsGetDrink
 	},
-	'drinks/{id}/cover': {
+	'/drinks/{id}/cover': {
 		patch: docsUpdateDrinkCover
 	},
-	'drinks/{id}/thumbnail': {
+	'/drinks/{id}/thumbnail': {
 		patch: docsUpdateDrinkThumbnail
 	}
 };
