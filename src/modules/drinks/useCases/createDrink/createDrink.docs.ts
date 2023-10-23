@@ -13,13 +13,29 @@ const docsCreateDrinkRequestContent = {
 						en: docsDrinkTranslationSchema,
 						pt: docsDrinkTranslationSchema
 					}
+				},
+				ingredients: {
+					type: 'array',
+					items: {
+						type: 'object',
+						properties: {
+							quantity: { type: 'number' },
+							ingredient_id: { type: 'string' }
+						}
+					}
 				}
 			},
 			example: {
 				translations: {
 					en: { name: 'margarita', method: 'drink method ...' },
 					pt: { name: 'Margarita', method: 'instruções de preparo ...' }
-				}
+				},
+				ingredients: [
+					{
+						quantity: 15,
+						ingredient_id: '651be0e87677171847560ee3'
+					}
+				]
 			}
 		}
 	}
