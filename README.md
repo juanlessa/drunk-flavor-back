@@ -80,9 +80,16 @@ MONGO_DATABASE='drunk-flavor'
 MONGO_HOST='localhost'
 MONGO_PORT='27017'
 
+# Environment
+NODE_ENV=dev
+
 # API
-APP_HOST=http://localhost
-APP_PORT=3333
+API_HOST=http://localhost
+API_PORT=3333
+
+#logger
+LOGGER_ENABLED='true'
+LOGGER_LEVEL='debug'
 
 # Storage - do not change this variable
 STORAGE_TYPE=local
@@ -144,6 +151,13 @@ MONGO_PASSWORD='drunkflavor'
 MONGO_DATABASE='drunk-flavor'
 MONGO_HOST='localhost'
 MONGO_PORT='27017'
+
+# Environment
+NODE_ENV=testing
+
+#logger
+LOGGER_ENABLED='false'
+LOGGER_LEVEL='error'
 ```
 
 after that you can run the integration tests by using the command below:
