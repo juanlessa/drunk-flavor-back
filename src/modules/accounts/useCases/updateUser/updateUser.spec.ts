@@ -10,7 +10,7 @@ import { UpdateUserService } from './UpdateUser.service';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
 let updateUserService: UpdateUserService;
-let bcryptProvider: BcryptProvider;
+let encryptionProvider: BcryptProvider;
 
 // test constants
 const planPassword = '123456789';
@@ -26,8 +26,8 @@ const updatedPlanPassword = '987654321';
 describe('Update User', () => {
 	beforeEach(async () => {
 		usersRepositoryInMemory = new UsersRepositoryInMemory();
-		bcryptProvider = new BcryptProvider();
-		updateUserService = new UpdateUserService(usersRepositoryInMemory, bcryptProvider);
+		encryptionProvider = new BcryptProvider();
+		updateUserService = new UpdateUserService(usersRepositoryInMemory, encryptionProvider);
 	});
 
 	it('Should be able to update an user', async () => {
@@ -36,7 +36,7 @@ describe('Update User', () => {
 			surname,
 			email,
 			role,
-			password: await bcryptProvider.hash(planPassword)
+			password: await encryptionProvider.hash(planPassword)
 		});
 		await updateUserService.execute({
 			id: createdUser._id,
@@ -61,14 +61,14 @@ describe('Update User', () => {
 			surname,
 			email,
 			role,
-			password: await bcryptProvider.hash(planPassword)
+			password: await encryptionProvider.hash(planPassword)
 		});
 		await usersRepositoryInMemory.create({
 			name: updatedName,
 			surname: updatedSurname,
 			email: updatedEmail,
 			role,
-			password: await bcryptProvider.hash(updatedPlanPassword)
+			password: await encryptionProvider.hash(updatedPlanPassword)
 		});
 
 		await expect(

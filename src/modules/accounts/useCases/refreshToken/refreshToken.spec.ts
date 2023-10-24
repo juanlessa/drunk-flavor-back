@@ -11,8 +11,8 @@ import { RefreshTokenService } from './RefreshToken.service';
 
 let usersTokensRepositoryInMemory: UsersTokensRepositoryInMemory;
 let refreshTokenService: RefreshTokenService;
-let dayjsDateProvider: DayjsDateProvider;
-let jsonwebtokenProvider: JsonwebtokenProvider;
+let dateProvider: DayjsDateProvider;
+let jwtProvider: JsonwebtokenProvider;
 
 // test constants
 const email = 'user@test.com';
@@ -24,24 +24,20 @@ let invalid_refresh_token: string;
 describe('Refresh token', () => {
 	beforeEach(() => {
 		usersTokensRepositoryInMemory = new UsersTokensRepositoryInMemory();
-		dayjsDateProvider = new DayjsDateProvider();
-		jsonwebtokenProvider = new JsonwebtokenProvider();
-		refreshTokenService = new RefreshTokenService(
-			usersTokensRepositoryInMemory,
-			dayjsDateProvider,
-			jsonwebtokenProvider
-		);
+		dateProvider = new DayjsDateProvider();
+		jwtProvider = new JsonwebtokenProvider();
+		refreshTokenService = new RefreshTokenService(usersTokensRepositoryInMemory, dateProvider, jwtProvider);
 
 		// test constants
-		refresh_token = jsonwebtokenProvider.createRefreshToken({
+		refresh_token = jwtProvider.createRefreshToken({
 			sign_property: email,
 			subject: user_id,
 			secret: auth.secret_refresh_token,
 			expires_in: auth.expires_in_refresh_token
 		});
-		expires_date = dayjsDateProvider.addDays(auth.expires_refresh_token_days);
+		expires_date = dateProvider.addDays(auth.expires_refresh_token_days);
 
-		invalid_refresh_token = jsonwebtokenProvider.createRefreshToken({
+		invalid_refresh_token = jwtProvider.createRefreshToken({
 			sign_property: email,
 			subject: user_id,
 			secret: 'incorrect secret refresh token',

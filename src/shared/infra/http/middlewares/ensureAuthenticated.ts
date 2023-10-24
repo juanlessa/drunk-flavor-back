@@ -15,9 +15,9 @@ export async function ensureAuthenticated(request: Request, response: Response, 
 	const [, token] = authHeader.split(' ');
 
 	try {
-		const jsonwebtokenProvider = new JsonwebtokenProvider();
+		const jwtProvider = new JsonwebtokenProvider();
 
-		const { sub: user_id } = jsonwebtokenProvider.verifyToken({ token, secret: auth.secret_token });
+		const { sub: user_id } = jwtProvider.verifyToken({ token, secret: auth.secret_token });
 
 		const usersRepository = new UsersRepository();
 

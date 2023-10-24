@@ -12,9 +12,9 @@ class RefreshTokenService {
 	constructor(
 		@inject('UsersTokensRepository')
 		private usersTokensRepository: IUsersTokensRepository,
-		@inject('DayjsDateProvider')
+		@inject('DateProvider')
 		private dateProvider: IDateProvider,
-		@inject('JsonwebtokenProvider')
+		@inject('JwtProvider')
 		private jwtProvider: IJwtProvider
 	) {}
 

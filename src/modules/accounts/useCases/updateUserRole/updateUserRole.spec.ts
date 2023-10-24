@@ -10,7 +10,7 @@ import { UpdateUserRoleService } from './UpdateUserRole.service';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
 let updateUserRoleService: UpdateUserRoleService;
-let bcryptProvider: BcryptProvider;
+let encryptionProvider: BcryptProvider;
 
 // test constants
 const partnerName = 'partner';
@@ -20,7 +20,7 @@ const partnerPlanPassword = '987654321';
 
 describe('Update User Role', () => {
 	beforeEach(async () => {
-		bcryptProvider = new BcryptProvider();
+		encryptionProvider = new BcryptProvider();
 		usersRepositoryInMemory = new UsersRepositoryInMemory();
 		updateUserRoleService = new UpdateUserRoleService(usersRepositoryInMemory);
 	});
@@ -31,7 +31,7 @@ describe('Update User Role', () => {
 			surname: partnerSurname,
 			email: partnerEmail,
 			role: ROLES.partner,
-			password: await bcryptProvider.hash(partnerPlanPassword)
+			password: await encryptionProvider.hash(partnerPlanPassword)
 		});
 
 		await updateUserRoleService.execute({ user_id: createdPartnerUser._id, role: ROLES.admin });

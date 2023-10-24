@@ -13,9 +13,9 @@ import { AuthenticateUserService } from './AuthenticateUser.service';
 let usersRepositoryInMemory: UsersRepositoryInMemory;
 let usersTokensRepositoryInMemory: UsersTokensRepositoryInMemory;
 let authenticateUserService: AuthenticateUserService;
-let dayjsDateProvider: DayjsDateProvider;
-let jsonwebtokenProvider: JsonwebtokenProvider;
-let bcryptProvider: BcryptProvider;
+let dateProvider: DayjsDateProvider;
+let jwtProvider: JsonwebtokenProvider;
+let encryptionProvider: BcryptProvider;
 
 // test constants
 const email = 'user@test.com';
@@ -27,15 +27,15 @@ describe('Authenticate User', () => {
 	beforeEach(async () => {
 		usersRepositoryInMemory = new UsersRepositoryInMemory();
 		usersTokensRepositoryInMemory = new UsersTokensRepositoryInMemory();
-		dayjsDateProvider = new DayjsDateProvider();
-		jsonwebtokenProvider = new JsonwebtokenProvider();
-		bcryptProvider = new BcryptProvider();
+		dateProvider = new DayjsDateProvider();
+		jwtProvider = new JsonwebtokenProvider();
+		encryptionProvider = new BcryptProvider();
 		authenticateUserService = new AuthenticateUserService(
 			usersRepositoryInMemory,
 			usersTokensRepositoryInMemory,
-			dayjsDateProvider,
-			jsonwebtokenProvider,
-			bcryptProvider
+			dateProvider,
+			jwtProvider,
+			encryptionProvider
 		);
 	});
 
@@ -44,7 +44,7 @@ describe('Authenticate User', () => {
 			name,
 			surname,
 			email,
-			password: await bcryptProvider.hash(planPassword),
+			password: await encryptionProvider.hash(planPassword),
 			role: ROLES.partner
 		});
 
@@ -71,7 +71,7 @@ describe('Authenticate User', () => {
 			name,
 			surname,
 			email,
-			password: await bcryptProvider.hash(planPassword),
+			password: await encryptionProvider.hash(planPassword),
 			role: ROLES.partner
 		});
 

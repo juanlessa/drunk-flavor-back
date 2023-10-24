@@ -10,8 +10,8 @@ class UpdateUserService {
 	constructor(
 		@inject('UsersRepository')
 		private usersRepository: IUsersRepository,
-		@inject('BcryptProvider')
-		private bcryptProvider: IEncryptionProvider
+		@inject('EncryptionProvider')
+		private encryptionProvider: IEncryptionProvider
 	) {}
 	async execute({ id, name, surname, password, email }: IUpdateUser) {
 		const user = await this.usersRepository.findById(id);
@@ -24,7 +24,7 @@ class UpdateUserService {
 			throw new AppError(USER_ERRORS.already_exist);
 		}
 
-		const passwordHash = await this.bcryptProvider.hash(password);
+		const passwordHash = await this.encryptionProvider.hash(password);
 
 		await this.usersRepository.update({ id, name, surname, password: passwordHash, email });
 	}

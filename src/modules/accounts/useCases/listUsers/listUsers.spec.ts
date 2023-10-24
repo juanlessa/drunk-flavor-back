@@ -7,7 +7,7 @@ import { ListUsersService } from './ListUsers.service';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
 let listUsersService: ListUsersService;
-let bcryptProvider: BcryptProvider;
+let encryptionProvider: BcryptProvider;
 
 // test constants
 const partnerName = 'Partner';
@@ -21,7 +21,7 @@ const adminPlanPassword = '123456789';
 
 describe('List Users', () => {
 	beforeEach(() => {
-		bcryptProvider = new BcryptProvider();
+		encryptionProvider = new BcryptProvider();
 		usersRepositoryInMemory = new UsersRepositoryInMemory();
 		listUsersService = new ListUsersService(usersRepositoryInMemory);
 	});
@@ -32,14 +32,14 @@ describe('List Users', () => {
 			surname: partnerSurname,
 			email: partnerEmail,
 			role: ROLES.partner,
-			password: await bcryptProvider.hash(partnerPlanPassword)
+			password: await encryptionProvider.hash(partnerPlanPassword)
 		});
 		const createdAdminUser = await usersRepositoryInMemory.create({
 			name: adminName,
 			surname: adminSurname,
 			email: adminEmail,
 			role: ROLES.admin,
-			password: await bcryptProvider.hash(adminPlanPassword)
+			password: await encryptionProvider.hash(adminPlanPassword)
 		});
 
 		const users = await listUsersService.execute(createdAdminUser._id);

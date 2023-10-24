@@ -10,7 +10,7 @@ import { USER_ERRORS } from '@modules/accounts/errors/user.errors';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
 let createUserService: CreateUserService;
-let bcryptProvider: BcryptProvider;
+let encryptionProvider: BcryptProvider;
 
 // test constants
 const planPassword = '123456789';
@@ -29,8 +29,8 @@ let createTestUser: ICreateUser = {
 describe('Create User', () => {
 	beforeEach(async () => {
 		usersRepositoryInMemory = new UsersRepositoryInMemory();
-		bcryptProvider = new BcryptProvider();
-		createUserService = new CreateUserService(usersRepositoryInMemory, bcryptProvider);
+		encryptionProvider = new BcryptProvider();
+		createUserService = new CreateUserService(usersRepositoryInMemory, encryptionProvider);
 	});
 
 	it('Should be able to create an user', async () => {
@@ -52,7 +52,7 @@ describe('Create User', () => {
 			surname,
 			email,
 			role,
-			password: await bcryptProvider.hash(planPassword)
+			password: await encryptionProvider.hash(planPassword)
 		});
 
 		await expect(createUserService.execute(createTestUser)).rejects.toEqual(

@@ -16,12 +16,12 @@ class AuthenticateUserService {
 		private usersRepository: IUsersRepository,
 		@inject('UsersTokensRepository')
 		private usersTokensRepository: IUsersTokensRepository,
-		@inject('DayjsDateProvider')
+		@inject('DateProvider')
 		private dateProvider: IDateProvider,
-		@inject('JsonwebtokenProvider')
+		@inject('JwtProvider')
 		private jwtProvider: IJwtProvider,
-		@inject('BcryptProvider')
-		private bcryptProvider: IEncryptionProvider
+		@inject('EncryptionProvider')
+		private encryptionProvider: IEncryptionProvider
 	) {}
 	async execute({ email, password }: IAuthenticateUser): Promise<IAuthenticateUserResponse> {
 		const user = await this.usersRepository.findByEmail(email);
@@ -29,7 +29,7 @@ class AuthenticateUserService {
 			throw new AppError(AUTHENTICATION_ERRORS.invalid_credentials);
 		}
 
-		const passwordMatch = await this.bcryptProvider.compare(password, user.password);
+		const passwordMatch = await this.encryptionProvider.compare(password, user.password);
 		if (!passwordMatch) {
 			throw new AppError(AUTHENTICATION_ERRORS.invalid_credentials);
 		}

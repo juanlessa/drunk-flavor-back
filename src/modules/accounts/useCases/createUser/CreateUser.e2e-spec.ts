@@ -19,9 +19,9 @@ import auth from '@config/auth';
 
 let usersRepository: IUsersRepository;
 let usersTokensRepository: IUsersTokensRepository;
-let bcryptProvider: BcryptProvider;
-let dayjsDateProvider: DayjsDateProvider;
-let jsonwebtokenProvider: JsonwebtokenProvider;
+let encryptionProvider: BcryptProvider;
+let dateProvider: DayjsDateProvider;
+let jwtProvider: JsonwebtokenProvider;
 let authenticateUserService: AuthenticateUserService;
 
 // test constants
@@ -44,15 +44,15 @@ describe('Create user Controller', () => {
 	beforeAll(async () => {
 		usersRepository = new UsersRepository();
 		usersTokensRepository = new UsersTokensRepository();
-		bcryptProvider = new BcryptProvider();
-		dayjsDateProvider = new DayjsDateProvider();
-		jsonwebtokenProvider = new JsonwebtokenProvider();
+		encryptionProvider = new BcryptProvider();
+		dateProvider = new DayjsDateProvider();
+		jwtProvider = new JsonwebtokenProvider();
 		authenticateUserService = new AuthenticateUserService(
 			usersRepository,
 			usersTokensRepository,
-			dayjsDateProvider,
-			jsonwebtokenProvider,
-			bcryptProvider
+			dateProvider,
+			jwtProvider,
+			encryptionProvider
 		);
 
 		await initiateMongo();
@@ -71,7 +71,7 @@ describe('Create user Controller', () => {
 	it('Should be able to create a user', async () => {
 		await usersRepository.create({
 			...adminUser,
-			password: await bcryptProvider.hash(adminUser.password)
+			password: await encryptionProvider.hash(adminUser.password)
 		});
 		const authenticateResponse = await authenticateUserService.execute({
 			email: adminUser.email,
@@ -90,7 +90,7 @@ describe('Create user Controller', () => {
 	it('Should not be able to create an user with an existing email', async () => {
 		await usersRepository.create({
 			...adminUser,
-			password: await bcryptProvider.hash(adminUser.password)
+			password: await encryptionProvider.hash(adminUser.password)
 		});
 		const authenticateResponse = await authenticateUserService.execute({
 			email: adminUser.email,
@@ -100,7 +100,7 @@ describe('Create user Controller', () => {
 
 		await usersRepository.create({
 			...partnerUser,
-			password: await bcryptProvider.hash(partnerUser.password)
+			password: await encryptionProvider.hash(partnerUser.password)
 		});
 
 		const response = await request(app)
@@ -112,7 +112,7 @@ describe('Create user Controller', () => {
 	});
 
 	it('Should not be able to create a user without being authenticated', async () => {
-		const invalidUserToken = jsonwebtokenProvider.createToken({
+		const invalidUserToken = jwtProvider.createToken({
 			subject: '',
 			secret: 'incorrect secret token',
 			expires_in: auth.expires_in_token
@@ -129,7 +129,7 @@ describe('Create user Controller', () => {
 	it('Should not be able to create a user without being admin', async () => {
 		await usersRepository.create({
 			...partnerUser,
-			password: await bcryptProvider.hash(partnerUser.password)
+			password: await encryptionProvider.hash(partnerUser.password)
 		});
 		const authenticateResponse = await authenticateUserService.execute({
 			email: partnerUser.email,

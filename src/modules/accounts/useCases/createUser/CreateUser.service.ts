@@ -10,8 +10,8 @@ class CreateUserService {
 	constructor(
 		@inject('UsersRepository')
 		private usersRepository: IUsersRepository,
-		@inject('BcryptProvider')
-		private bcryptProvider: IEncryptionProvider
+		@inject('EncryptionProvider')
+		private encryptionProvider: IEncryptionProvider
 	) {}
 	async execute({ name, surname, email, password, role }: ICreateUser) {
 		const userAlreadyExists = await this.usersRepository.findByEmail(email);
@@ -19,7 +19,7 @@ class CreateUserService {
 			throw new AppError(USER_ERRORS.already_exist);
 		}
 
-		const passwordHash = await this.bcryptProvider.hash(password);
+		const passwordHash = await this.encryptionProvider.hash(password);
 
 		await this.usersRepository.create({ name, password: passwordHash, surname, email, role });
 	}

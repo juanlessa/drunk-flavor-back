@@ -12,7 +12,7 @@ import { User } from '@modules/accounts/infra/mongo/entities/user.model';
 import { dropCollection, emptyCollection, initiateMongo } from '@shared/infra/mongo';
 
 let usersRepository: IUsersRepository;
-let bcryptProvider: BcryptProvider;
+let encryptionProvider: BcryptProvider;
 
 // test constants
 const userTest: ICreateUser = {
@@ -26,7 +26,7 @@ const userTest: ICreateUser = {
 describe('Authenticate User Controller', () => {
 	beforeAll(async () => {
 		usersRepository = new UsersRepository();
-		bcryptProvider = new BcryptProvider();
+		encryptionProvider = new BcryptProvider();
 
 		await initiateMongo();
 	});
@@ -44,7 +44,7 @@ describe('Authenticate User Controller', () => {
 	it('should be able to authenticate an user', async () => {
 		await usersRepository.create({
 			...userTest,
-			password: await bcryptProvider.hash(userTest.password)
+			password: await encryptionProvider.hash(userTest.password)
 		});
 
 		const response = await request(app)
@@ -66,7 +66,7 @@ describe('Authenticate User Controller', () => {
 	it('should not be able to authenticate an user with incorrect password', async () => {
 		await usersRepository.create({
 			...userTest,
-			password: await bcryptProvider.hash(userTest.password)
+			password: await encryptionProvider.hash(userTest.password)
 		});
 
 		const response = await request(app)
