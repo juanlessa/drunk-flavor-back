@@ -87,7 +87,7 @@ NODE_ENV=dev
 API_HOST=http://localhost
 API_PORT=3333
 
-#logger
+# Logger
 LOGGER_ENABLED='true'
 LOGGER_LEVEL='debug'
 
@@ -155,7 +155,7 @@ MONGO_PORT='27017'
 # Environment
 NODE_ENV=testing
 
-#logger
+# Logger
 LOGGER_ENABLED='false'
 LOGGER_LEVEL='error'
 ```
