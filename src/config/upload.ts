@@ -6,6 +6,8 @@ import { S3Client } from '@aws-sdk/client-s3';
 import crypto from 'crypto';
 import { resolve } from 'path';
 
+const storageType = process.env.STORAGE_TYPE || 'local';
+
 const s3Config = new S3Client({
 	region: process.env.AWS_DEFAULT_REGION,
 	credentials: {
@@ -37,9 +39,10 @@ const storageTypes = {
 };
 
 export default {
+	storageType,
 	upload() {
 		return {
-			storage: storageTypes[process.env.STORAGE_TYPE],
+			storage: storageTypes[storageType],
 			limits: { fieldSize: 10 * 1024 * 1024 } //10MB
 		};
 	}
