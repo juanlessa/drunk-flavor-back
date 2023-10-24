@@ -1,11 +1,14 @@
-import * as dotenv from 'dotenv';
-dotenv.config();
+import s3Config from '@config/s3';
+import fileConfig from '@config/upload';
+import apiConfig from '@config/api';
 
 export const getFileURL = (fileName: string): string => {
-	if (process.env.STORAGE_TYPE === 'local') {
-		fileName = `${process.env.APP_HOST}:${process.env.APP_PORT}/files/${fileName}`;
+	if (fileConfig.storageType === 'local') {
+		// fileConfig.storageType === 'local'
+		fileName = `${apiConfig.host}:${apiConfig.port}/files/${fileName}`;
 	} else {
-		fileName = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_DEFAULT_REGION}.amazonaws.com/${fileName}`;
+		// fileConfig.storageType === 's3'
+		fileName = `https://${s3Config.bucketName}.s3.${s3Config.defaultRegion}.amazonaws.com/${fileName}`;
 	}
 	return fileName;
 };

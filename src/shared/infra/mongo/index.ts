@@ -1,25 +1,23 @@
+import { PinoLogger } from '@shared/container/providers/logger/implementations/PinoLogger.provider';
 import mongoose, { Model, Mongoose } from 'mongoose';
+import { container } from 'tsyringe';
+import mongoConfig from '@config/mongo';
+
+const logger = container.resolve(PinoLogger);
 
 let mongoClient: Mongoose;
 
 export async function initiateMongo(): Promise<void> {
-	const mongoHost = process.env.MONGO_HOST || 'localhost';
-	const mongoPort = process.env.MONGO_PORT || '27017';
-	const mongoMaxPoolSize = process.env.MONGO_MAX_POOL_SIZE || '25';
-
-	const mongoDatabase = process.env.MONGO_DATABASE || '';
-	const mongoUser = process.env.MONGO_USERNAME || '';
-	const mongoPassword = process.env.MONGO_PASSWORD;
-
-	const mongoParams = '';
+	const connectURL = `mongodb://${mongoConfig.user}:${mongoConfig.password}@${mongoConfig.host}:${mongoConfig.port}/${mongoConfig.database}?${mongoConfig.params}`;
 	try {
-		mongoClient = await mongoose.connect(
-			`mongodb://${mongoUser}:${mongoPassword}@${mongoHost}:${mongoPort}/${mongoDatabase}?${mongoParams}`,
-			{ maxPoolSize: parseInt(mongoMaxPoolSize), serverSelectionTimeoutMS: 5000, connectTimeoutMS: 5000 }
-		);
-		console.log('[INFO] Mongo connection has been stablish.');
+		mongoClient = await mongoose.connect(connectURL, {
+			maxPoolSize: mongoConfig.maxPoolSize,
+			serverSelectionTimeoutMS: mongoConfig.serverSelectionTimeoutMS,
+			connectTimeoutMS: mongoConfig.connectTimeoutMS
+		});
+		logger.info('Mongo connection has been stablish.');
 	} catch (error) {
-		console.error('Mongo could not connect ', error);
+		logger.error('Mongo could not connect ', error);
 		throw new Error(error);
 	}
 }
