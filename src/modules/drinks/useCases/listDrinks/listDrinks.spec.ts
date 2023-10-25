@@ -8,7 +8,10 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { ListDrinksService } from './ListDrinks.service';
 import { ITranslations } from '@modules/drinks/types/translations';
 import { IDrinkTranslation } from '@modules/drinks/entities/drink.entity';
+import { LocalStorageProvider } from '@shared/container/providers/storage/implementations/LocalStorage.provider';
+import { IStorageProvider } from '@shared/container/providers/storage/IStorage.provider';
 
+let storageProvider: IStorageProvider;
 let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
 let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;
 let drinksRepositoryInMemory: DrinksRepositoryInMemory;
@@ -36,10 +39,12 @@ let createdCategory: ICategory;
 
 describe('List Drinks', () => {
 	beforeEach(async () => {
+		storageProvider = new LocalStorageProvider();
+
 		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
 		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory();
 		drinksRepositoryInMemory = new DrinksRepositoryInMemory();
-		listDrinksService = new ListDrinksService(drinksRepositoryInMemory);
+		listDrinksService = new ListDrinksService(drinksRepositoryInMemory, storageProvider);
 
 		// test constants
 		createdCategory = await categoriesRepositoryInMemory.create({ translations: categoryTranslations });
