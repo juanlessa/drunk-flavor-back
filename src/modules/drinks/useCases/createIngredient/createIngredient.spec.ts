@@ -6,7 +6,7 @@ import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMe
 import { ObjectId } from 'bson';
 import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CreateIngredientService } from './CreateIngredient.service';
+import { CreateIngredientService } from '@modules/drinks/useCases/createIngredient/CreateIngredient.service';
 import { ITranslations } from '@modules/drinks/types/translations';
 import { IIngredientTranslation } from '@modules/drinks/entities/ingredient.entity';
 
