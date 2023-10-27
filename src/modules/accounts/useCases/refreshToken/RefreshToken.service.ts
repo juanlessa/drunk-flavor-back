@@ -1,5 +1,5 @@
 import auth from '@config/auth';
-import AppError from '@errors/AppError';
+import AppError from '@shared/errors/AppError';
 import { IRefreshUserToken, IRefreshTokenResponse } from '@modules/accounts/dtos/usersTokens.dtos';
 import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authentication.errors';
 import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokens.repository';

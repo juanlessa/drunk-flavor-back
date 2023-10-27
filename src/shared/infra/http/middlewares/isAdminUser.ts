@@ -1,4 +1,4 @@
-import AppError from '@errors/AppError';
+import AppError from '@shared/errors/AppError';
 import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authentication.errors';
 import { USER_ERRORS } from '@modules/accounts/errors/user.errors';
 import { UsersRepository } from '@modules/accounts/infra/mongo/repositories/Users.repository';

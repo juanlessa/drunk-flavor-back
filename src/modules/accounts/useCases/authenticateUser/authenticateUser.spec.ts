@@ -1,4 +1,4 @@
-import AppError from '@errors/AppError';
+import AppError from '@shared/errors/AppError';
 import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authentication.errors';
 import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory/Users.repository';
 import { UsersTokensRepositoryInMemory } from '@modules/accounts/repositories/inMemory/UsersTokens.repository';

@@ -1,4 +1,4 @@
-import { validateSchema } from '@middlewares/validateSchema';
+import { validateSchema } from '@shared/infra/http/middlewares/validateSchema';
 import { IUpdateUser } from '@modules/accounts/dtos/user.dtos';
 import {
 	userEmailValidation,

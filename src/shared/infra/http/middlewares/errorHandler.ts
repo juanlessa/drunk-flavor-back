@@ -1,4 +1,4 @@
-import AppError from '@errors/AppError';
+import AppError from '@shared/errors/AppError';
 import { resolveLoggerProvider } from '@shared/container/providers/logger';
 import { AppNextFunction, AppRequest, AppResponse } from '../types';
 

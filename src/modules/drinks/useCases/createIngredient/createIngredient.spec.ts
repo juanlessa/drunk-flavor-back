@@ -1,4 +1,4 @@
-import AppError from '@errors/AppError';
+import AppError from '@shared/errors/AppError';
 import { ICategory, ICategoryTranslation } from '@modules/drinks/entities/category.entity';
 import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredient.errors';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';

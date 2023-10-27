@@ -1,4 +1,4 @@
-import { ensureAuthenticated } from '@middlewares/ensureAuthenticated';
+import { ensureAuthenticated } from '@shared/infra/http/middlewares/ensureAuthenticated';
 import { CreateDrinkController } from '@modules/drinks/useCases/createDrink/CreateDrink.controller';
 import { createDrinkValidator } from '@modules/drinks/useCases/createDrink/createDrink.schema';
 import { DeleteDrinkController } from '@modules/drinks/useCases/deleteDrink/DeleteDrink.controller';

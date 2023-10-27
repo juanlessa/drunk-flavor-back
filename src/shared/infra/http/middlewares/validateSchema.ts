@@ -1,5 +1,5 @@
 import { SafeParseError, z } from 'zod';
-import AppError from '@errors/AppError';
+import AppError from '@shared/errors/AppError';
 import { AppNextFunction, AppRequest, AppResponse } from '../types';
 
 const validateSchema =

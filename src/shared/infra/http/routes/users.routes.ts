@@ -1,5 +1,5 @@
-import { ensureAuthenticated } from '@middlewares/ensureAuthenticated';
-import { isUserAdmin } from '@middlewares/isAdminUser';
+import { ensureAuthenticated } from '@shared/infra/http/middlewares/ensureAuthenticated';
+import { isUserAdmin } from '@shared/infra/http/middlewares/isAdminUser';
 import { CreateUserController } from '@modules/accounts/useCases/createUser/CreateUser.controller';
 import { createUserValidator } from '@modules/accounts/useCases/createUser/createUser.schema';
 import { DeleteUserController } from '@modules/accounts/useCases/deleteUser/DeleteUser.controller';

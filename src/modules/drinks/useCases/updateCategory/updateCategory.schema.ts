@@ -1,4 +1,4 @@
-import { validateSchema } from '@middlewares/validateSchema';
+import { validateSchema } from '@shared/infra/http/middlewares/validateSchema';
 import { IUpdateCategory } from '@modules/drinks/dtos/category.dtos';
 import { categoryIdValidation, categoryTranslationSchema } from '@modules/drinks/validations/category.validations';
 import { getZodTranslationsSchema } from '@modules/drinks/validations/utils/getZodTranslationsSchema';

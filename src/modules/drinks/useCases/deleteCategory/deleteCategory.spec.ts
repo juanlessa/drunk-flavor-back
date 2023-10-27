@@ -1,4 +1,4 @@
-import AppError from '@errors/AppError';
+import AppError from '@shared/errors/AppError';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { ObjectId } from 'bson';
 import { beforeEach, describe, expect, it } from 'vitest';

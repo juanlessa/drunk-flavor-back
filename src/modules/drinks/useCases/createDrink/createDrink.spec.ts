@@ -1,4 +1,4 @@
-import AppError from '@errors/AppError';
+import AppError from '@shared/errors/AppError';
 import { DRINK_ERRORS } from '@modules/drinks/errors/drink.errors';
 import { DrinksRepositoryInMemory } from '@modules/drinks/repositories/inMemory/DrinksRepository';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';

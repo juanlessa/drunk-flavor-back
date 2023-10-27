@@ -1,4 +1,4 @@
-import AppError from '@errors/AppError';
+import AppError from '@shared/errors/AppError';
 import { ICreateUser } from '@modules/accounts/dtos/user.dtos';
 import { USER_ERRORS } from '@modules/accounts/errors/user.errors';
 import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory/Users.repository';

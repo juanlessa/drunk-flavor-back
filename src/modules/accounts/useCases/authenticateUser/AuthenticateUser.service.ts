@@ -1,5 +1,5 @@
 import auth from '@config/auth';
-import AppError from '@errors/AppError';
+import AppError from '@shared/errors/AppError';
 import { IAuthenticateUser, IAuthenticateUserResponse } from '@modules/accounts/dtos/authentication.dtos';
 import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authentication.errors';
 import { IUsersRepository } from '@modules/accounts/repositories/IUsers.repository';

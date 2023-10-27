@@ -1,4 +1,4 @@
-import { validateSchema } from '@middlewares/validateSchema';
+import { validateSchema } from '@shared/infra/http/middlewares/validateSchema';
 import { IDeleteUser } from '@modules/accounts/dtos/user.dtos';
 import { userIdValidation } from '@modules/accounts/validations/user.validations';
 import { z } from 'zod';

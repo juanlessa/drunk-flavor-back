@@ -1,4 +1,4 @@
-import { validateSchema } from '@middlewares/validateSchema';
+import { validateSchema } from '@shared/infra/http/middlewares/validateSchema';
 import { ICreateDrinkRequest } from '@modules/drinks/dtos/drink.dtos';
 import { drinkIngredientsValidation, drinkTranslationSchema } from '@modules/drinks/validations/drink.validations';
 import { getZodTranslationsSchema } from '@modules/drinks/validations/utils/getZodTranslationsSchema';
