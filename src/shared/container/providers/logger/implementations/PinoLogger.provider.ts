@@ -1,10 +1,9 @@
 import pino, { Logger } from 'pino';
 import pinoHttp, { HttpLogger } from 'pino-http';
 import loggerConfig from '@config/logger';
-import { ILogger } from '../ILogger.provider';
-import AppError from '@errors/AppError';
+import { ILoggerProvider } from '../ILogger.provider';
 
-export class PinoLogger implements ILogger {
+export class PinoLoggerProvider implements ILoggerProvider {
 	private logger: Logger;
 	private httpMiddleware: HttpLogger;
 	constructor() {

@@ -1,5 +1,9 @@
 import { container } from 'tsyringe';
-import { ILogger } from './ILogger.provider';
-import { PinoLogger } from './implementations/PinoLogger.provider';
+import { ILoggerProvider } from './ILogger.provider';
+import { PinoLoggerProvider } from './implementations/PinoLogger.provider';
 
-container.registerSingleton<ILogger>('LoggerProvider', PinoLogger);
+container.registerSingleton<ILoggerProvider>('LoggerProvider', PinoLoggerProvider);
+
+const loggerProvider = new PinoLoggerProvider();
+
+export const resolveLoggerProvider = () => loggerProvider;

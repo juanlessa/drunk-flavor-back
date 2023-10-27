@@ -1,9 +1,8 @@
-import { PinoLogger } from '@shared/container/providers/logger/implementations/PinoLogger.provider';
 import mongoose, { Model, Mongoose } from 'mongoose';
-import { container } from 'tsyringe';
 import mongoConfig from '@config/mongo';
+import { resolveLoggerProvider } from '@shared/container/providers/logger';
 
-const logger = container.resolve(PinoLogger);
+const logger = resolveLoggerProvider();
 
 let mongoClient: Mongoose;
 

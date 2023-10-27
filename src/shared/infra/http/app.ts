@@ -11,13 +11,12 @@ import '@shared/container';
 import { errorHandler } from '@middlewares/errorHandler';
 import { initiateMongo } from '@shared/infra/mongo';
 import docs from '@shared/docs';
-import { container } from 'tsyringe';
-import { PinoLogger } from '@shared/container/providers/logger/implementations/PinoLogger.provider';
+import { resolveLoggerProvider } from '@shared/container/providers/logger';
 
 const app = express();
 
 initiateMongo();
-const logger = container.resolve(PinoLogger);
+const logger = resolveLoggerProvider();
 
 app.use(cors());
 app.use(express.json());

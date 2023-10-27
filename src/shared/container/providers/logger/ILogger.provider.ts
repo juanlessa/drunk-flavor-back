@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express';
 
-export interface ILogger {
+export interface ILoggerProvider {
 	getHttpMiddleware(): RequestHandler;
 	info(obj: Object, msg?: string, ...args: any[]): void;
 	debug(obj: Object, msg?: string, ...args: any[]): void;
