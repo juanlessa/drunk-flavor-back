@@ -26,11 +26,7 @@ jobs:
           cache: 'npm'
         
       - name: Install all dependencies
-        run: npm install
-    
-      - name: 'Create env file'
-        run: |
-          echo "${{ secrets.DOTENV_TESTING }}" > .env.testing
+        run: npm ci
       
       - name: Run tests
         run: npm run test
