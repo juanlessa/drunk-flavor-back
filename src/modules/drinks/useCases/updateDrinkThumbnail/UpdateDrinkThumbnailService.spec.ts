@@ -2,7 +2,6 @@ import AppError from '@errors/AppError';
 import { DrinksRepositoryInMemory } from '@modules/drinks/repositories/inMemory/DrinksRepository';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { ObjectId } from 'bson';
-import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateDrinkThumbnailService } from './UpdateDrinkThumbnail.service';
 import { DRINK_ERRORS } from '@modules/drinks/errors/drink.errors';

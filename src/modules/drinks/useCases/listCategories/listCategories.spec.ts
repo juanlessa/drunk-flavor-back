@@ -1,5 +1,4 @@
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
-import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ListCategoriesService } from './ListCategories.service';
 import { ICategoryTranslation } from '@modules/drinks/entities/category.entity';

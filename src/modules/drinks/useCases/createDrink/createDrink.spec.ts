@@ -3,7 +3,6 @@ import { DRINK_ERRORS } from '@modules/drinks/errors/drink.errors';
 import { DrinksRepositoryInMemory } from '@modules/drinks/repositories/inMemory/DrinksRepository';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { ObjectId } from 'bson';
-import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CreateDrinkService } from './CreateDrink.service';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';

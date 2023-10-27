@@ -4,7 +4,6 @@ import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredient.errors';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { ObjectId } from 'bson';
-import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CreateIngredientService } from '@modules/drinks/useCases/createIngredient/CreateIngredient.service';
 import { ITranslations } from '@modules/drinks/types/translations';

@@ -1,7 +1,6 @@
 import { ICategory, ICategoryTranslation } from '@modules/drinks/entities/category.entity';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
-import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ListIngredientsService } from './ListIngredients.service';
 import { ITranslations } from '@modules/drinks/types/translations';

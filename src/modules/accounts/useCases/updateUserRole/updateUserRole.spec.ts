@@ -4,7 +4,6 @@ import { ROLES } from '@modules/accounts/types/roles';
 import { BcryptProvider } from '@shared/container/providers/encryption/implementations/Bcrypt.provider';
 import AppError from '@shared/errors/AppError';
 import { ObjectId } from 'bson';
-import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateUserRoleService } from './UpdateUserRole.service';
 

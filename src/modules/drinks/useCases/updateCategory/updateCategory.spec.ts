@@ -1,5 +1,4 @@
 import AppError from '@errors/AppError';
-import 'reflect-metadata';
 import { CATEGORY_ERRORS } from '@modules/drinks/errors/category.errors';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { ObjectId } from 'bson';

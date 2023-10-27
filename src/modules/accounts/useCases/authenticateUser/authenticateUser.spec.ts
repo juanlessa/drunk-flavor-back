@@ -6,7 +6,6 @@ import { ROLES } from '@modules/accounts/types/roles';
 import { DayjsDateProvider } from '@shared/container/providers/date/implementations/DayjsDateProvider';
 import { BcryptProvider } from '@shared/container/providers/encryption/implementations/Bcrypt.provider';
 import { JsonwebtokenProvider } from '@shared/container/providers/jwt/implementations/Jsonwebtoken.provider';
-import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { AuthenticateUserService } from './AuthenticateUser.service';
 

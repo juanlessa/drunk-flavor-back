@@ -6,7 +6,6 @@ import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMem
 import { DrinksRepositoryInMemory } from '@modules/drinks/repositories/inMemory/DrinksRepository';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { ObjectId } from 'bson';
-import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateDrinkCoverService } from './UpdateDrinkCover.service';
 import { IDrinkTranslation } from '@modules/drinks/entities/drink.entity';

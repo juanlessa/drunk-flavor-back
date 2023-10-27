@@ -1,7 +1,6 @@
 import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory/Users.repository';
 import { ROLES } from '@modules/accounts/types/roles';
 import { BcryptProvider } from '@shared/container/providers/encryption/implementations/Bcrypt.provider';
-import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ListUsersService } from './ListUsers.service';
 

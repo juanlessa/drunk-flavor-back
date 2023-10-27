@@ -5,7 +5,6 @@ import { DayjsDateProvider } from '@shared/container/providers/date/implementati
 import { JsonwebtokenProvider } from '@shared/container/providers/jwt/implementations/Jsonwebtoken.provider';
 import AppError from '@shared/errors/AppError';
 import { ObjectId } from 'bson';
-import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { RefreshTokenService } from './RefreshToken.service';
 

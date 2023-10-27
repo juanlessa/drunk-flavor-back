@@ -3,7 +3,6 @@ import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory
 import { ROLES } from '@modules/accounts/types/roles';
 import AppError from '@shared/errors/AppError';
 import { ObjectId } from 'bson';
-import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ProfileUserService } from './ProfileUser.service';
 

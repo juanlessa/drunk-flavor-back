@@ -2,7 +2,6 @@ import AppError from '@errors/AppError';
 import { CATEGORY_ERRORS } from '@modules/drinks/errors/category.errors';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { ObjectId } from 'bson';
-import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { GetCategoryService } from './GetCategory.service';
 import { ITranslations } from '@modules/drinks/types/translations';

@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import { ICreateUser } from '@modules/accounts/dtos/user.dtos';
 import { UsersRepository } from '@modules/accounts/infra/mongo/repositories/Users.repository';
 import { IUsersRepository } from '@modules/accounts/repositories/IUsers.repository';

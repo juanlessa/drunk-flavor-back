@@ -1,7 +1,6 @@
 import AppError from '@errors/AppError';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { ObjectId } from 'bson';
-import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateIngredientService } from './UpdateIngredient.service';
 import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredient.errors';

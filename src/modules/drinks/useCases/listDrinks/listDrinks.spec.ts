@@ -3,7 +3,6 @@ import { IIngredient, IIngredientTranslation } from '@modules/drinks/entities/in
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { DrinksRepositoryInMemory } from '@modules/drinks/repositories/inMemory/DrinksRepository';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
-import 'reflect-metadata';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ListDrinksService } from './ListDrinks.service';
 import { ITranslations } from '@modules/drinks/types/translations';
