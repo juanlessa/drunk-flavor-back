@@ -3,14 +3,9 @@ import { ICategory } from '@modules/drinks/entities/category.entity';
 import { CATEGORY_ERRORS } from '@modules/drinks/errors/category.errors';
 import { ICategoriesRepository } from '@modules/drinks/repositories/ICategories.repository';
 import AppError from '@shared/errors/AppError';
-import { inject, injectable } from 'tsyringe';
 
-@injectable()
 class GetCategoryService {
-	constructor(
-		@inject('CategoriesRepository')
-		private categoriesRepository: ICategoriesRepository
-	) {}
+	constructor(private categoriesRepository: ICategoriesRepository) {}
 
 	async execute({ id }: IGetCategory): Promise<ICategory> {
 		const category = await this.categoriesRepository.findById(id);

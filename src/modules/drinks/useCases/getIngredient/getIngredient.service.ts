@@ -3,14 +3,9 @@ import { IIngredient } from '@modules/drinks/entities/ingredient.entity';
 import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredient.errors';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredients.repository';
 import AppError from '@shared/errors/AppError';
-import { inject, injectable } from 'tsyringe';
 
-@injectable()
 class GetIngredientService {
-	constructor(
-		@inject('IngredientsRepository')
-		private ingredientsRepository: IIngredientsRepository
-	) {}
+	constructor(private ingredientsRepository: IIngredientsRepository) {}
 
 	async execute({ id }: IGetIngredient): Promise<IIngredient> {
 		const ingredient = await this.ingredientsRepository.findById(id);

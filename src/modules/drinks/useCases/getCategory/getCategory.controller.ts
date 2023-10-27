@@ -1,14 +1,13 @@
-import { Request, Response } from 'express';
-import { container } from 'tsyringe';
-import { GetCategoryService } from './GetCategory.service';
+import { AppRequest, AppResponse } from '@shared/infra/http/types';
+import { resolveGetCategoryService } from './getCategory.container';
 
 class GetCategoryController {
-	async handle(request: Request, response: Response): Promise<Response> {
+	async handle(request: AppRequest, response: AppResponse): Promise<AppResponse> {
 		const { id } = request.params;
 
-		const getCategoryService = container.resolve(GetCategoryService);
+		const service = resolveGetCategoryService();
 
-		const category = await getCategoryService.execute({ id });
+		const category = await service.execute({ id });
 
 		return response.json(category);
 	}

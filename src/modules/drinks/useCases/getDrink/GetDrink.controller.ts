@@ -1,14 +1,13 @@
-import { Request, Response } from 'express';
-import { container } from 'tsyringe';
-import { GetDrinkService } from './GetDrink.service';
+import { AppRequest, AppResponse } from '@shared/infra/http/types';
+import { resolveGetDrinkService } from './getDrink.container';
 
 class GetDrinkController {
-	async handle(request: Request, response: Response): Promise<Response> {
+	async handle(request: AppRequest, response: AppResponse): Promise<AppResponse> {
 		const { id } = request.params;
 
-		const getDrinkService = container.resolve(GetDrinkService);
+		const service = resolveGetDrinkService();
 
-		const drink = await getDrinkService.execute({ id });
+		const drink = await service.execute({ id });
 
 		return response.json(drink);
 	}

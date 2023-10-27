@@ -1,15 +1,14 @@
 import { IUpdateCategory } from '@modules/drinks/dtos/category.dtos';
-import { Request, Response } from 'express';
-import { container } from 'tsyringe';
-import { UpdateCategoryService } from './UpdateCategory.service';
+import { resolveUpdateCategoryService } from './updateCategory.container';
+import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class UpdateCategoryController {
-	async handle(request: Request, response: Response): Promise<Response> {
+	async handle(request: AppRequest, response: AppResponse): Promise<AppResponse> {
 		const { id, translations }: IUpdateCategory = request.body;
 
-		const updateCategoryService = container.resolve(UpdateCategoryService);
+		const service = resolveUpdateCategoryService();
 
-		await updateCategoryService.execute({ id, translations });
+		await service.execute({ id, translations });
 
 		return response.status(204).send();
 	}

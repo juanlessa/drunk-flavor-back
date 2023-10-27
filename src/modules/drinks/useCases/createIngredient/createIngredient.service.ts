@@ -4,14 +4,10 @@ import { mapToTranslationsName } from '@modules/drinks/mappers/translations.mapp
 import { ICategoriesRepository } from '@modules/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredients.repository';
 import AppError from '@shared/errors/AppError';
-import { inject, injectable } from 'tsyringe';
 
-@injectable()
 class CreateIngredientService {
 	constructor(
-		@inject('IngredientsRepository')
 		private ingredientsRepository: IIngredientsRepository,
-		@inject('CategoriesRepository')
 		private categoriesRepository: ICategoriesRepository
 	) {}
 

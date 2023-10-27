@@ -1,15 +1,15 @@
 import { IUpdateDrinkRequest } from '@modules/drinks/dtos/drink.dtos';
-import { Request, Response } from 'express';
-import { container } from 'tsyringe';
-import { UpdateDrinkService } from './UpdateDrink.service';
+import { AppRequest, AppResponse } from '@shared/infra/http/types';
+import { resolveUpdateDrinkService } from './updateDrink.container';
 
 class UpdateDrinkController {
-	async handle(request: Request, response: Response): Promise<Response> {
+	async handle(request: AppRequest, response: AppResponse): Promise<AppResponse> {
 		const { id, translations, ingredients }: IUpdateDrinkRequest = request.body;
 
-		const updateDrinkService = container.resolve(UpdateDrinkService);
+		const service = resolveUpdateDrinkService();
 
-		await updateDrinkService.execute({ id, translations, ingredients });
+		await service.execute({ id, translations, ingredients });
+
 		return response.status(204).send();
 	}
 }

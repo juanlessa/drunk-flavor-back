@@ -4,16 +4,13 @@ import { mapToTranslationsName } from '@modules/drinks/mappers/translations.mapp
 import { ICategoriesRepository } from '@modules/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredients.repository';
 import AppError from '@shared/errors/AppError';
-import { inject, injectable } from 'tsyringe';
 
-@injectable()
 class UpdateIngredientService {
 	constructor(
-		@inject('IngredientsRepository')
 		private ingredientsRepository: IIngredientsRepository,
-		@inject('CategoriesRepository')
 		private categoriesRepository: ICategoriesRepository
 	) {}
+
 	async execute({ id, translations, is_alcoholic, category_id }: IUpdateIngredientRequest): Promise<void> {
 		const ingredientExists = await this.ingredientsRepository.findById(id);
 		if (!ingredientExists) {

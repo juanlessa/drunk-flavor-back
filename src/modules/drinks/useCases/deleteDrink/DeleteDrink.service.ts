@@ -3,16 +3,10 @@ import { DRINK_ERRORS } from '@modules/drinks/errors/drink.errors';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinks.repository';
 import { IStorageProvider } from '@shared/container/providers/storage/IStorage.provider';
 import AppError from '@shared/errors/AppError';
-import { inject, injectable } from 'tsyringe';
 
-@injectable()
 class DeleteDrinkService {
-	constructor(
-		@inject('DrinksRepository')
-		private drinksRepository: IDrinksRepository,
-		@inject('StorageProvider')
-		private storageProvider: IStorageProvider
-	) {}
+	constructor(private drinksRepository: IDrinksRepository, private storageProvider: IStorageProvider) {}
+
 	async execute({ id }: IDeleteDrink): Promise<void> {
 		const drinkExists = await this.drinksRepository.findById(id);
 

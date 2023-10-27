@@ -6,16 +6,9 @@ import { mapToTranslationsName } from '@modules/drinks/mappers/translations.mapp
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinks.repository';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredients.repository';
 import AppError from '@shared/errors/AppError';
-import { inject, injectable } from 'tsyringe';
 
-@injectable()
 class CreateDrinkService {
-	constructor(
-		@inject('DrinksRepository')
-		private drinksRepository: IDrinksRepository,
-		@inject('IngredientsRepository')
-		private ingredientsRepository: IIngredientsRepository
-	) {}
+	constructor(private drinksRepository: IDrinksRepository, private ingredientsRepository: IIngredientsRepository) {}
 
 	async execute({ translations, ingredients }: ICreateDrinkRequest): Promise<ICreateDrinkResponse> {
 		const translationsName = mapToTranslationsName(translations);

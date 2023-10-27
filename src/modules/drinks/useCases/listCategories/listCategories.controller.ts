@@ -1,12 +1,11 @@
-import { Request, Response } from 'express';
-import { container } from 'tsyringe';
-import { ListCategoriesService } from './ListCategories.service';
+import { resolveListCategoriesService } from './listCategories.container';
+import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class ListCategoriesController {
-	async handle(request: Request, response: Response): Promise<Response> {
-		const listCategoriesService = container.resolve(ListCategoriesService);
+	async handle(request: AppRequest, response: AppResponse): Promise<AppResponse> {
+		const service = resolveListCategoriesService();
 
-		const categories = await listCategoriesService.execute();
+		const categories = await service.execute();
 
 		return response.json(categories);
 	}

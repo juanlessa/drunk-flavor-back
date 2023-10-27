@@ -3,14 +3,10 @@ import { CATEGORY_ERRORS } from '@modules/drinks/errors/category.errors';
 import { mapToTranslationsName } from '@modules/drinks/mappers/translations.mapper';
 import { ICategoriesRepository } from '@modules/drinks/repositories/ICategories.repository';
 import AppError from '@shared/errors/AppError';
-import { inject, injectable } from 'tsyringe';
 
-@injectable()
 class UpdateCategoryService {
-	constructor(
-		@inject('CategoriesRepository')
-		private categoriesRepository: ICategoriesRepository
-	) {}
+	constructor(private categoriesRepository: ICategoriesRepository) {}
+
 	async execute({ id, translations }: IUpdateCategory): Promise<void> {
 		const categoryExists = await this.categoriesRepository.findById(id);
 		if (!categoryExists) {

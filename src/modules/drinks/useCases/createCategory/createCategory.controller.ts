@@ -1,17 +1,14 @@
-import { Request, Response } from 'express';
-import { container } from 'tsyringe';
-import { CreateCategoryService } from './CreateCategory.service';
+import { AppRequest, AppResponse } from '@shared/infra/http/types';
 import { ICategory } from '@modules/drinks/entities/category.entity';
+import { resolveCreateCategoryService } from './createCategory.container';
 
 class CreateCategoryController {
-	async handle(request: Request, response: Response): Promise<Response> {
+	async handle(request: AppRequest, response: AppResponse): Promise<AppResponse> {
 		const { translations }: ICategory = request.body;
 
-		const createCategoryService = container.resolve(CreateCategoryService);
+		const service = resolveCreateCategoryService();
 
-		await createCategoryService.execute({
-			translations
-		});
+		await service.execute({ translations });
 
 		return response.status(201).send();
 	}

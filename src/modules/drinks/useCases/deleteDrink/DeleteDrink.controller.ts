@@ -1,15 +1,14 @@
-import { Request, Response } from 'express';
-import { container } from 'tsyringe';
-import { DeleteDrinkService } from './DeleteDrink.service';
 import { IDeleteDrink } from '@modules/drinks/dtos/drink.dtos';
+import { resolveDeleteDrinkService } from './deleteDrink.container';
+import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class DeleteDrinkController {
-	async handle(request: Request, response: Response): Promise<Response> {
+	async handle(request: AppRequest, response: AppResponse): Promise<AppResponse> {
 		const { id }: IDeleteDrink = request.body;
 
-		const deleteDrinkService = container.resolve(DeleteDrinkService);
+		const service = resolveDeleteDrinkService();
 
-		await deleteDrinkService.execute({ id });
+		await service.execute({ id });
 
 		return response.status(204).send();
 	}

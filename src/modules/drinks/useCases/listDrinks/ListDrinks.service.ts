@@ -1,16 +1,9 @@
 import { IDrink } from '@modules/drinks/entities/drink.entity';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinks.repository';
 import { IStorageProvider } from '@shared/container/providers/storage/IStorage.provider';
-import { inject, injectable } from 'tsyringe';
 
-@injectable()
 class ListDrinksService {
-	constructor(
-		@inject('DrinksRepository')
-		private drinksRepository: IDrinksRepository,
-		@inject('StorageProvider')
-		private storageProvider: IStorageProvider
-	) {}
+	constructor(private drinksRepository: IDrinksRepository, private storageProvider: IStorageProvider) {}
 
 	async execute(): Promise<IDrink[]> {
 		const drinks = await this.drinksRepository.findAll();

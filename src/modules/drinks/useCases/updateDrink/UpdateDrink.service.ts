@@ -1,4 +1,4 @@
-import { IUpdateDrink, IUpdateDrinkRequest } from '@modules/drinks/dtos/drink.dtos';
+import { IUpdateDrinkRequest } from '@modules/drinks/dtos/drink.dtos';
 import { IDrinkIngredient } from '@modules/drinks/entities/drink.entity';
 import { IIngredient } from '@modules/drinks/entities/ingredient.entity';
 import { DRINK_ERRORS } from '@modules/drinks/errors/drink.errors';
@@ -6,16 +6,9 @@ import { mapToTranslationsName } from '@modules/drinks/mappers/translations.mapp
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinks.repository';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredients.repository';
 import AppError from '@shared/errors/AppError';
-import { inject, injectable } from 'tsyringe';
 
-@injectable()
 class UpdateDrinkService {
-	constructor(
-		@inject('DrinksRepository')
-		private drinksRepository: IDrinksRepository,
-		@inject('IngredientsRepository')
-		private ingredientsRepository: IIngredientsRepository
-	) {}
+	constructor(private drinksRepository: IDrinksRepository, private ingredientsRepository: IIngredientsRepository) {}
 	async execute({ id, translations, ingredients }: IUpdateDrinkRequest): Promise<void> {
 		const drinkExists = await this.drinksRepository.findById(id);
 		if (!drinkExists) {

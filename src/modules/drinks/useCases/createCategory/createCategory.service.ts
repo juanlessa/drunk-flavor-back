@@ -3,14 +3,9 @@ import { CATEGORY_ERRORS } from '@modules/drinks/errors/category.errors';
 import { mapToTranslationsName } from '@modules/drinks/mappers/translations.mapper';
 import { ICategoriesRepository } from '@modules/drinks/repositories/ICategories.repository';
 import AppError from '@shared/errors/AppError';
-import { inject, injectable } from 'tsyringe';
 
-@injectable()
 class CreateCategoryService {
-	constructor(
-		@inject('CategoriesRepository')
-		private categoriesRepository: ICategoriesRepository
-	) {}
+	constructor(private categoriesRepository: ICategoriesRepository) {}
 
 	async execute({ translations }: ICreateCategory): Promise<void> {
 		const translationsName = mapToTranslationsName(translations);
