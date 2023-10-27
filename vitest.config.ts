@@ -7,8 +7,8 @@ export default defineConfig({
 		include: ['src/**/*.spec.ts'],
 		exclude: ['src/**/*.e2e-spec.ts'],
 		alias: {
-			'@': path.resolve(__dirname, './src'),
-			'@modules': path.resolve(__dirname, './src/modules')
+			'@': path.resolve(__dirname, 'src'),
+			'@modules': path.resolve(__dirname, 'src/modules')
 		}
 	},
 	plugins: [tsconfigPaths()]
