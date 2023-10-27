@@ -10,8 +10,8 @@ const validateSchema =
 		const result = schema.safeParse(data);
 
 		if (!result.success) {
-			const { error } = result as SafeParseError<T>;
-			throw new AppError(error.issues[0].message);
+			const { issues } = result.error;
+			throw new AppError(issues[0].message);
 		}
 
 		request.body = result.data;

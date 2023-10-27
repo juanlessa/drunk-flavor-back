@@ -32,7 +32,7 @@ export class S3StorageProvider implements IStorageProvider {
 		try {
 			await this.s3Client.send(command);
 		} catch (error) {
-			logger.error(error, 'delete file error');
+			logger.error(error as Error, 'delete file error');
 			return;
 		}
 	}
