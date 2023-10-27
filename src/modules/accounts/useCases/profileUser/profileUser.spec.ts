@@ -4,7 +4,7 @@ import { ROLES } from '@modules/accounts/types/roles';
 import AppError from '@shared/errors/AppError';
 import { ObjectId } from 'bson';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { ProfileUserService } from './ProfileUser.service';
+import { ProfileUserService } from '@modules/accounts/useCases/profileUser/ProfileUser.service';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
 let profileUserService: ProfileUserService;

@@ -4,7 +4,7 @@ import { ROLES } from '@modules/accounts/types/roles';
 import { BcryptProvider } from '@shared/container/providers/encryption/implementations/Bcrypt.provider';
 import AppError from '@shared/errors/AppError';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CreateUserService } from './CreateUser.service';
+import { CreateUserService } from '@modules/accounts/useCases/createUser/CreateUser.service';
 import { USER_ERRORS } from '@modules/accounts/errors/user.errors';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;

@@ -1,6 +1,6 @@
 import { IDrink } from '@modules/drinks/entities/drink.entity';
 import { ICreateDrink, IUpdateDrink } from '@modules/drinks/dtos/drink.dtos';
-import { IFindIngredientByName } from '../dtos/ingredient.dtos';
+import { IFindIngredientByName } from '@modules/drinks/dtos/ingredient.dtos';
 
 export interface IDrinksRepository {
 	create(data: ICreateDrink): Promise<IDrink>;

@@ -5,7 +5,7 @@ import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory
 import { ROLES } from '@modules/accounts/types/roles';
 import { ObjectId } from 'bson';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { DeleteUserService } from './DeleteUser.service';
+import { DeleteUserService } from '@modules/accounts/useCases/deleteUser/DeleteUser.service';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
 let deleteUserService: DeleteUserService;

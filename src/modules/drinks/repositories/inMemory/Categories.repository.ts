@@ -2,7 +2,7 @@ import { ICategory } from '@modules/drinks/entities/category.entity';
 import { ICreateCategory, IFindCategoryByName, IUpdateCategory } from '@modules/drinks/dtos/category.dtos';
 import { ICategoriesRepository } from '@modules/drinks/repositories/ICategories.repository';
 import { ObjectId } from 'bson';
-import { compareTranslationsName } from './utils/compareTranslationsName';
+import { compareTranslationsName } from '@modules/drinks/repositories/inMemory/utils/compareTranslationsName';
 
 class CategoriesRepositoryInMemory implements ICategoriesRepository {
 	categories: ICategory[] = [];

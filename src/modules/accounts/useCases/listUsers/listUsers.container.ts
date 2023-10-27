@@ -1,5 +1,5 @@
 import { resolveUsersRepository } from '@modules/accounts/container';
-import { ListUsersService } from './ListUsers.service';
+import { ListUsersService } from '@modules/accounts/useCases/listUsers/ListUsers.service';
 
 const usersRepository = resolveUsersRepository();
 

@@ -1,5 +1,5 @@
 import { resolveUsersRepository } from '@modules/accounts/container';
-import { DeleteUserService } from './DeleteUser.service';
+import { DeleteUserService } from '@modules/accounts/useCases/deleteUser/DeleteUser.service';
 
 const usersRepository = resolveUsersRepository();
 

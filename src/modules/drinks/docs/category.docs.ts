@@ -1,4 +1,4 @@
-import { docsDatabaseCommonInfoExample } from './../../../shared/docs/common.docs';
+import { docsDatabaseCommonInfoExample } from '@shared/docs/common.docs';
 import { docsDatabaseCommonInfo } from '@shared/docs/common.docs';
 
 export const docsCategoryTag = 'category';

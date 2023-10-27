@@ -1,4 +1,4 @@
-import { resolveListUsersService } from './listUsers.container';
+import { resolveListUsersService } from '@modules/accounts/useCases/listUsers/listUsers.container';
 import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class ListUsersController {

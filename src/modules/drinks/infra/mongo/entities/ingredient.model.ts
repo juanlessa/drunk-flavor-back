@@ -1,7 +1,7 @@
 import { IIngredient, IIngredientTranslation } from '@modules/drinks/entities/ingredient.entity';
 import { Schema, model, models } from 'mongoose';
-import { CategorySchema } from './category.model';
-import { getTranslationsSchema } from '../utils/getTranslationsSchema';
+import { CategorySchema } from '@modules/drinks/infra/mongo/entities/category.model';
+import { getTranslationsSchema } from '@modules/drinks/infra/mongo/utils/getTranslationsSchema';
 
 export const IngredientTranslationSchema = new Schema<IIngredientTranslation>(
 	{

@@ -4,7 +4,7 @@ import { DrinksRepositoryInMemory } from '@modules/drinks/repositories/inMemory/
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { ObjectId } from 'bson';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CreateDrinkService } from './CreateDrink.service';
+import { CreateDrinkService } from '@modules/drinks/useCases/createDrink/CreateDrink.service';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { ICategory, ICategoryTranslation } from '@modules/drinks/entities/category.entity';
 import { IIngredient, IIngredientTranslation } from '@modules/drinks/entities/ingredient.entity';

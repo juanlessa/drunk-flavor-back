@@ -1,6 +1,6 @@
 import { ICreateUserToken } from '@modules/accounts/dtos/usersTokens.dtos';
 import { IUserToken } from '@modules/accounts/entities/userToken.entity';
-import { IUsersTokensRepository } from '../IUsersTokens.repository';
+import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokens.repository';
 import { ObjectId } from 'bson';
 
 class UsersTokensRepositoryInMemory implements IUsersTokensRepository {

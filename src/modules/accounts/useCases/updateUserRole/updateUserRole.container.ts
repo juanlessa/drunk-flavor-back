@@ -1,5 +1,5 @@
 import { resolveUsersRepository } from '@modules/accounts/container';
-import { UpdateUserRoleService } from './UpdateUserRole.service';
+import { UpdateUserRoleService } from '@modules/accounts/useCases/updateUserRole/UpdateUserRole.service';
 
 const usersRepository = resolveUsersRepository();
 

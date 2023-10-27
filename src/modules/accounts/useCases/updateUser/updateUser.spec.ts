@@ -5,7 +5,7 @@ import { BcryptProvider } from '@shared/container/providers/encryption/implement
 import AppError from '@shared/errors/AppError';
 import { ObjectId } from 'bson';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { UpdateUserService } from './UpdateUser.service';
+import { UpdateUserService } from '@modules/accounts/useCases/updateUser/UpdateUser.service';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
 let updateUserService: UpdateUserService;

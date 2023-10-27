@@ -1,5 +1,5 @@
 import { IUpdateUserRequest } from '@modules/accounts/dtos/user.dtos';
-import { resolveUpdateUserService } from './updateUser.container';
+import { resolveUpdateUserService } from '@modules/accounts/useCases/updateUser/updateUser.container';
 import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class UpdateUserController {

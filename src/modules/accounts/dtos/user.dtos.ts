@@ -1,5 +1,5 @@
 import { DatabaseCommonInfo } from '@shared/infra/mongo/types';
-import { ROLES } from '../types/roles';
+import { ROLES } from '@modules/accounts/types/roles';
 
 export type ICreateUser = {
 	name: string;

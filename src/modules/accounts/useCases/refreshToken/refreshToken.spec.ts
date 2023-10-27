@@ -6,7 +6,7 @@ import { JsonwebtokenProvider } from '@shared/container/providers/jwt/implementa
 import AppError from '@shared/errors/AppError';
 import { ObjectId } from 'bson';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { RefreshTokenService } from './RefreshToken.service';
+import { RefreshTokenService } from '@modules/accounts/useCases/refreshToken/RefreshToken.service';
 
 let usersTokensRepositoryInMemory: UsersTokensRepositoryInMemory;
 let refreshTokenService: RefreshTokenService;

@@ -1,6 +1,6 @@
-import { ICategory } from '../entities/category.entity';
-import { IIngredientTranslation } from '../entities/ingredient.entity';
-import { ITranslations } from '../types/translations';
+import { ICategory } from '@modules/drinks/entities/category.entity';
+import { IIngredientTranslation } from '@modules/drinks/entities/ingredient.entity';
+import { ITranslations } from '@modules/drinks/types/translations';
 
 export type ICreateIngredientRequest = {
 	translations: ITranslations<IIngredientTranslation>;

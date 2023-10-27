@@ -10,7 +10,7 @@ import { JsonwebtokenProvider } from '@shared/container/providers/jwt/implementa
 import { app } from '@shared/infra/http/app';
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { AuthenticateUserService } from '../authenticateUser/AuthenticateUser.service';
+import { AuthenticateUserService } from '@modules/accounts/useCases/authenticateUser/AuthenticateUser.service';
 import { dropCollection, emptyCollection, initiateMongo } from '@shared/infra/mongo';
 import { UserToken } from '@modules/accounts/infra/mongo/entities/userToken.model';
 import { User } from '@modules/accounts/infra/mongo/entities/user.model';

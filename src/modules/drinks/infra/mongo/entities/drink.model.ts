@@ -1,7 +1,7 @@
 import { Schema, model, models } from 'mongoose';
-import { IngredientSchema } from './ingredient.model';
+import { IngredientSchema } from '@modules/drinks/infra/mongo/entities/ingredient.model';
 import { IDrink, IDrinkIngredient, IDrinkTranslation } from '@modules/drinks/entities/drink.entity';
-import { getTranslationsSchema } from '../utils/getTranslationsSchema';
+import { getTranslationsSchema } from '@modules/drinks/infra/mongo/utils/getTranslationsSchema';
 
 export const DrinkTranslationSchema = new Schema<IDrinkTranslation>(
 	{

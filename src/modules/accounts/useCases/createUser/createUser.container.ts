@@ -1,6 +1,6 @@
 import { resolveUsersRepository } from '@modules/accounts/container';
 import { resolveEncryptionProvider } from '@shared/container/providers/encryption';
-import { CreateUserService } from './CreateUser.service';
+import { CreateUserService } from '@modules/accounts/useCases/createUser/CreateUser.service';
 
 const encryptionProvider = resolveEncryptionProvider();
 const usersRepository = resolveUsersRepository();

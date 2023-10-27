@@ -1,5 +1,5 @@
 import { resolveUsersRepository, resolveUsersTokensRepository } from '@modules/accounts/container';
-import { AuthenticateUserService } from './AuthenticateUser.service';
+import { AuthenticateUserService } from '@modules/accounts/useCases/authenticateUser/AuthenticateUser.service';
 import { resolveDateProvider } from '@shared/container/providers/date';
 import { resolveJwtProvider } from '@shared/container/providers/jwt';
 import { resolveEncryptionProvider } from '@shared/container/providers/encryption';

@@ -1,4 +1,4 @@
-import { resolveProfileUserService } from './profileUser.container';
+import { resolveProfileUserService } from '@modules/accounts/useCases/profileUser/profileUser.container';
 import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class ProfileUserController {

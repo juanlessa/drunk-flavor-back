@@ -1,6 +1,6 @@
 import { IAuthenticateUser } from '@modules/accounts/dtos/authentication.dtos';
 import { AppRequest, AppResponse } from '@shared/infra/http/types';
-import { resolveAuthenticateUserService } from './authenticateUser.container';
+import { resolveAuthenticateUserService } from '@modules/accounts/useCases/authenticateUser/authenticateUser.container';
 
 class AuthenticateUserController {
 	async handle(request: AppRequest, response: AppResponse): Promise<AppResponse> {

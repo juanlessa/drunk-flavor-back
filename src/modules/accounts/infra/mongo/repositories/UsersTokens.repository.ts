@@ -1,7 +1,7 @@
 import { ICreateUserToken } from '@modules/accounts/dtos/usersTokens.dtos';
 import { IUserToken } from '@modules/accounts/entities/userToken.entity';
 import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokens.repository';
-import { UserToken } from '../entities/userToken.model';
+import { UserToken } from '@modules/accounts/infra/mongo/entities/userToken.model';
 
 class UsersTokensRepository implements IUsersTokensRepository {
 	async create(data: ICreateUserToken): Promise<IUserToken> {

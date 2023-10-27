@@ -5,7 +5,7 @@ import { BcryptProvider } from '@shared/container/providers/encryption/implement
 import AppError from '@shared/errors/AppError';
 import { ObjectId } from 'bson';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { UpdateUserRoleService } from './UpdateUserRole.service';
+import { UpdateUserRoleService } from '@modules/accounts/useCases/updateUserRole/UpdateUserRole.service';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
 let updateUserRoleService: UpdateUserRoleService;

@@ -1,8 +1,8 @@
-import { IDrinksRepository } from '../IDrinks.repository';
+import { IDrinksRepository } from '@modules/drinks/repositories/IDrinks.repository';
 import { ICreateDrink, IFindDrinkByName, IUpdateDrink } from '@modules/drinks/dtos/drink.dtos';
 import { ObjectId } from 'bson';
 import { IDrink } from '@modules/drinks/entities/drink.entity';
-import { compareTranslationsName } from './utils/compareTranslationsName';
+import { compareTranslationsName } from '@modules/drinks/repositories/inMemory/utils/compareTranslationsName';
 
 class DrinksRepositoryInMemory implements IDrinksRepository {
 	drinks: IDrink[] = [];

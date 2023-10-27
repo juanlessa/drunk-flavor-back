@@ -7,7 +7,7 @@ import { DayjsDateProvider } from '@shared/container/providers/date/implementati
 import { BcryptProvider } from '@shared/container/providers/encryption/implementations/Bcrypt.provider';
 import { JsonwebtokenProvider } from '@shared/container/providers/jwt/implementations/Jsonwebtoken.provider';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { AuthenticateUserService } from './AuthenticateUser.service';
+import { AuthenticateUserService } from '@modules/accounts/useCases/authenticateUser/AuthenticateUser.service';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
 let usersTokensRepositoryInMemory: UsersTokensRepositoryInMemory;

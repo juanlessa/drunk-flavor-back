@@ -1,5 +1,5 @@
 import { resolveUsersRepository } from '@modules/accounts/container';
-import { ProfileUserService } from './ProfileUser.service';
+import { ProfileUserService } from '@modules/accounts/useCases/profileUser/ProfileUser.service';
 
 const usersRepository = resolveUsersRepository();
 

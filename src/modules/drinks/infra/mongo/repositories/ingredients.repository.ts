@@ -2,7 +2,7 @@ import { ICreateIngredient, IFindIngredientByName, IUpdateIngredient } from '@mo
 import { IIngredient } from '@modules/drinks/entities/ingredient.entity';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredients.repository';
 import { Ingredient } from '@modules/drinks/infra/mongo/entities/ingredient.model';
-import { getNameCompareQuery } from '../utils/getNameCompareQuery';
+import { getNameCompareQuery } from '@modules/drinks/infra/mongo/utils/getNameCompareQuery';
 
 class IngredientsRepository implements IIngredientsRepository {
 	async create(data: ICreateIngredient): Promise<IIngredient> {

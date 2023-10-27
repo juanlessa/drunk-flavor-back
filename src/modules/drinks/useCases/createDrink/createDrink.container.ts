@@ -1,5 +1,5 @@
 import { resolveDrinksRepository, resolveIngredientsRepository } from '@modules/drinks/container';
-import { CreateDrinkService } from './CreateDrink.service';
+import { CreateDrinkService } from '@modules/drinks/useCases/createDrink/CreateDrink.service';
 
 const drinksRepository = resolveDrinksRepository();
 const ingredientRepository = resolveIngredientsRepository();

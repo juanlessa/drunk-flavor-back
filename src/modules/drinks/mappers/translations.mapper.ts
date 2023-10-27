@@ -1,4 +1,4 @@
-import { ITranslations, ITranslationAnyWithNameKey, LANGUAGES } from '../types/translations';
+import { ITranslations, ITranslationAnyWithNameKey, LANGUAGES } from '@modules/drinks/types/translations';
 
 export const mapToTranslationsName = (
 	translations: ITranslations<ITranslationAnyWithNameKey>

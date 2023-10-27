@@ -1,5 +1,5 @@
 import { ICreateDrinkRequest } from '@modules/drinks/dtos/drink.dtos';
-import { resolveCreateDrinkService } from './createDrink.container';
+import { resolveCreateDrinkService } from '@modules/drinks/useCases/createDrink/createDrink.container';
 import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class CreateDrinkController {

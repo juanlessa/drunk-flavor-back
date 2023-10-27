@@ -1,5 +1,5 @@
 import { resolveCategoriesRepository } from '@modules/drinks/container';
-import { DeleteCategoryService } from './DeleteCategory.service';
+import { DeleteCategoryService } from '@modules/drinks/useCases/deleteCategory/DeleteCategory.service';
 
 const categoriesRepository = resolveCategoriesRepository();
 

@@ -1,8 +1,8 @@
 import { ICreateIngredient, IFindIngredientByName, IUpdateIngredient } from '@modules/drinks/dtos/ingredient.dtos';
 import { IIngredient } from '@modules/drinks/entities/ingredient.entity';
-import { IIngredientsRepository } from '../IIngredients.repository';
+import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredients.repository';
 import { ObjectId } from 'bson';
-import { compareTranslationsName } from './utils/compareTranslationsName';
+import { compareTranslationsName } from '@modules/drinks/repositories/inMemory/utils/compareTranslationsName';
 
 class IngredientsRepositoryInMemory implements IIngredientsRepository {
 	ingredients: IIngredient[] = [];

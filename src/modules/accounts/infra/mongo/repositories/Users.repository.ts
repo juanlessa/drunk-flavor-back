@@ -1,7 +1,7 @@
 import { ICreateUser, IUpdateUser } from '@modules/accounts/dtos/user.dtos';
 import { IUser } from '@modules/accounts/entities/user.entity';
 import { IUsersRepository } from '@modules/accounts/repositories/IUsers.repository';
-import { User } from '../entities/user.model';
+import { User } from '@modules/accounts/infra/mongo/entities/user.model';
 
 class UsersRepository implements IUsersRepository {
 	async create(data: ICreateUser): Promise<IUser> {

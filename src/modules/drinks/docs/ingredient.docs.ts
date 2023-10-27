@@ -1,5 +1,5 @@
 import { docsDatabaseCommonInfo, docsDatabaseCommonInfoExample } from '@shared/docs/common.docs';
-import { docsCategoryDefinition, docsCategoryExample } from './category.docs';
+import { docsCategoryDefinition, docsCategoryExample } from '@modules/drinks/docs/category.docs';
 
 export const docsIngredientTag = 'ingredient';
 

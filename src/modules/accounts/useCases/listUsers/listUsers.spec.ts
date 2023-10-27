@@ -2,7 +2,7 @@ import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory
 import { ROLES } from '@modules/accounts/types/roles';
 import { BcryptProvider } from '@shared/container/providers/encryption/implementations/Bcrypt.provider';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { ListUsersService } from './ListUsers.service';
+import { ListUsersService } from '@modules/accounts/useCases/listUsers/ListUsers.service';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
 let listUsersService: ListUsersService;

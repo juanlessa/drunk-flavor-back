@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AUTHENTICATION_ERRORS } from '../errors/authentication.errors';
+import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authentication.errors';
 
 // fields validation
 export const tokenValidation = z

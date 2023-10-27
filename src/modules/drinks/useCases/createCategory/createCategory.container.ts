@@ -1,5 +1,5 @@
 import { resolveCategoriesRepository } from '@modules/drinks/container';
-import { CreateCategoryService } from './CreateCategory.service';
+import { CreateCategoryService } from '@modules/drinks/useCases/createCategory/createCategory.service';
 
 const categoriesRepository = resolveCategoriesRepository();
 

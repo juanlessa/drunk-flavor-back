@@ -1,5 +1,5 @@
 import { IUpdateUserRole } from '@modules/accounts/dtos/user.dtos';
-import { resolveUpdateUserRoleService } from './updateUserRole.container';
+import { resolveUpdateUserRoleService } from '@modules/accounts/useCases/updateUserRole/updateUserRole.container';
 import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class UpdateUserRoleController {

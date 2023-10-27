@@ -1,6 +1,6 @@
 import { DatabaseCommonInfo } from '@shared/infra/mongo/types';
-import { IIngredient } from './ingredient.entity';
-import { ITranslations } from '../types/translations';
+import { IIngredient } from '@modules/drinks/entities/ingredient.entity';
+import { ITranslations } from '@modules/drinks/types/translations';
 
 export type IDrinkTranslation = {
 	name: string;

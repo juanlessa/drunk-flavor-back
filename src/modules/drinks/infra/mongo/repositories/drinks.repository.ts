@@ -1,8 +1,8 @@
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinks.repository';
 import { IDrink } from '@modules/drinks/entities/drink.entity';
 import { ICreateDrink, IFindDrinkByName, IUpdateDrink } from '@modules/drinks/dtos/drink.dtos';
-import { Drink } from '../entities/drink.model';
-import { getNameCompareQuery } from '../utils/getNameCompareQuery';
+import { Drink } from '@modules/drinks/infra/mongo/entities/drink.model';
+import { getNameCompareQuery } from '@modules/drinks/infra/mongo/utils/getNameCompareQuery';
 
 class DrinksRepository implements IDrinksRepository {
 	async create(data: ICreateDrink): Promise<IDrink> {
