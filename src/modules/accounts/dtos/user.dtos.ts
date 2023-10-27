@@ -30,14 +30,14 @@ export type IDeleteUser = {
 
 export type IUpdateUserRole = {
 	user_id: string;
-	role: string;
+	role: ROLES;
 };
 
 export type IUserProfileResponse = DatabaseCommonInfo & {
 	name: string;
 	surname: string;
 	email: string;
-	role: string;
+	role: ROLES;
 };
 
 export type IUserProfileRequest = {
