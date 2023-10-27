@@ -5,7 +5,7 @@ import {
 	drinkIngredientsValidation,
 	drinkTranslationSchema
 } from '@modules/drinks/validations/drink.validations';
-import { getZodTranslationsSchema } from '@modules/drinks/validations/getZodTranslationsSchema';
+import { getZodTranslationsSchema } from '@modules/drinks/validations/utils/getZodTranslationsSchema';
 import { z } from 'zod';
 
 const updateDrinkSchema = z.object({

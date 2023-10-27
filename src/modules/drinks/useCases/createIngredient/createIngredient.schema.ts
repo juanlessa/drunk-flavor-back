@@ -1,6 +1,6 @@
 import { validateSchema } from '@middlewares/validateSchema';
 import { ICreateIngredientRequest } from '@modules/drinks/dtos/ingredient.dtos';
-import { getZodTranslationsSchema } from '@modules/drinks/validations/getZodTranslationsSchema';
+import { getZodTranslationsSchema } from '@modules/drinks/validations/utils/getZodTranslationsSchema';
 import {
 	ingredientCategoryIdValidation,
 	ingredientIsAlcoholicValidation,
