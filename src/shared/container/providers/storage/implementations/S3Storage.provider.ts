@@ -4,10 +4,9 @@ import { DeleteObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import multerS3 from 'multer-s3';
 import crypto from 'crypto';
 import storageConfig from '@config/storage';
-import { container } from 'tsyringe';
-import { PinoLogger } from '@shared/container/providers/logger/implementations/PinoLogger.provider';
+import { resolveLoggerProvider } from '../../logger';
 
-const logger = container.resolve(PinoLogger);
+const logger = resolveLoggerProvider();
 
 export class S3StorageProvider implements IStorageProvider {
 	private s3Client: S3Client;
