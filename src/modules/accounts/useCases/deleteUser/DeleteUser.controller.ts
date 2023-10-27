@@ -1,15 +1,14 @@
-import { Request, Response } from 'express';
-import { container } from 'tsyringe';
-import { DeleteUserService } from './DeleteUser.service';
 import { IDeleteUser } from '@modules/accounts/dtos/user.dtos';
+import { AppRequest, AppResponse } from '@shared/infra/http/types';
+import { resolveDeleteUserService } from './deleteUser.container';
 
 class DeleteUserController {
-	async handle(request: Request, response: Response): Promise<Response> {
+	async handle(request: AppRequest, response: AppResponse): Promise<AppResponse> {
 		const { id }: IDeleteUser = request.body;
 
-		const deleteUserService = container.resolve(DeleteUserService);
+		const service = resolveDeleteUserService();
 
-		await deleteUserService.execute({ id });
+		await service.execute({ id });
 
 		return response.status(204).send();
 	}

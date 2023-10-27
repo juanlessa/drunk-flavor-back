@@ -1,15 +1,13 @@
-import { Request, Response } from 'express';
-import { container } from 'tsyringe';
-
-import { RefreshTokenService } from './RefreshToken.service';
+import { resolveRefreshTokenService } from './RefreshToken.container';
+import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class RefreshTokenController {
-	async handle(request: Request, response: Response): Promise<Response> {
+	async handle(request: AppRequest, response: AppResponse): Promise<AppResponse> {
 		const token = request.body.token || request.headers['x-access-token'] || request.query.token;
 
-		const refreshTokenService = container.resolve(RefreshTokenService);
+		const service = resolveRefreshTokenService();
 
-		const tokenResponse = await refreshTokenService.execute({ token });
+		const tokenResponse = await service.execute({ token });
 
 		return response.json(tokenResponse);
 	}

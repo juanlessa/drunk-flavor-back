@@ -7,22 +7,16 @@ import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTok
 import { IDateProvider } from '@shared/container/providers/date/IDateProvider';
 import { IEncryptionProvider } from '@shared/container/providers/encryption/IEncryption.provider';
 import { IJwtProvider } from '@shared/container/providers/jwt/IJwt.provider';
-import { inject, injectable } from 'tsyringe';
 
-@injectable()
 class AuthenticateUserService {
 	constructor(
-		@inject('UsersRepository')
 		private usersRepository: IUsersRepository,
-		@inject('UsersTokensRepository')
 		private usersTokensRepository: IUsersTokensRepository,
-		@inject('DateProvider')
 		private dateProvider: IDateProvider,
-		@inject('JwtProvider')
 		private jwtProvider: IJwtProvider,
-		@inject('EncryptionProvider')
 		private encryptionProvider: IEncryptionProvider
 	) {}
+
 	async execute({ email, password }: IAuthenticateUser): Promise<IAuthenticateUserResponse> {
 		const user = await this.usersRepository.findByEmail(email);
 		if (!user) {

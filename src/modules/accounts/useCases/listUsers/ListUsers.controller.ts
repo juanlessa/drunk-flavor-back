@@ -1,14 +1,13 @@
-import { Request, Response } from 'express';
-import { container } from 'tsyringe';
-import { ListUsersService } from './ListUsers.service';
+import { resolveListUsersService } from './listUsers.container';
+import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class ListUsersController {
-	async handle(request: Request, response: Response): Promise<Response> {
+	async handle(request: AppRequest, response: AppResponse): Promise<AppResponse> {
 		const { id: adminId } = request.user;
 
-		const listUsersService = container.resolve(ListUsersService);
+		const service = resolveListUsersService();
 
-		const users = await listUsersService.execute(adminId);
+		const users = await service.execute(adminId);
 
 		return response.json(users);
 	}

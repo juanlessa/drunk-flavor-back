@@ -1,15 +1,14 @@
-import { Request, Response } from 'express';
-import { container } from 'tsyringe';
-import { AuthenticateUserService } from './AuthenticateUser.service';
 import { IAuthenticateUser } from '@modules/accounts/dtos/authentication.dtos';
+import { AppRequest, AppResponse } from '@shared/infra/http/types';
+import { resolveAuthenticateUserService } from './authenticateUser.container';
 
 class AuthenticateUserController {
-	async handle(request: Request, response: Response): Promise<Response> {
+	async handle(request: AppRequest, response: AppResponse): Promise<AppResponse> {
 		const { password, email }: IAuthenticateUser = request.body;
 
-		const authenticateUserService = container.resolve(AuthenticateUserService);
+		const service = resolveAuthenticateUserService();
 
-		const tokens = await authenticateUserService.execute({
+		const tokens = await service.execute({
 			password,
 			email
 		});

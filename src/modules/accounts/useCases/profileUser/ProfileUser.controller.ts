@@ -1,15 +1,13 @@
-import { Request, Response } from 'express';
-import { container } from 'tsyringe';
-
-import { ProfileUserService } from './ProfileUser.service';
+import { resolveProfileUserService } from './profileUser.container';
+import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class ProfileUserController {
-	async handle(request: Request, response: Response): Promise<Response> {
+	async handle(request: AppRequest, response: AppResponse): Promise<AppResponse> {
 		const { id } = request.user;
 
-		const profileUserService = container.resolve(ProfileUserService);
+		const service = resolveProfileUserService();
 
-		const user = await profileUserService.execute({ id });
+		const user = await service.execute({ id });
 
 		return response.json(user);
 	}

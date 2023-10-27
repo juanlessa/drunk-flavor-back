@@ -1,14 +1,9 @@
 import { IUserProfileResponse } from '@modules/accounts/dtos/user.dtos';
 import { mapToUserDto } from '@modules/accounts/mappers/user.mapper';
 import { IUsersRepository } from '@modules/accounts/repositories/IUsers.repository';
-import { inject, injectable } from 'tsyringe';
 
-@injectable()
 class ListUsersService {
-	constructor(
-		@inject('UsersRepository')
-		private usersRepository: IUsersRepository
-	) {}
+	constructor(private usersRepository: IUsersRepository) {}
 
 	async execute(adminId: string): Promise<IUserProfileResponse[]> {
 		const users = await this.usersRepository.findAll();

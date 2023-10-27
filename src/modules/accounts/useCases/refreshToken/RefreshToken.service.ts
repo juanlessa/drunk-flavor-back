@@ -5,16 +5,11 @@ import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authentication.e
 import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokens.repository';
 import { IDateProvider } from '@shared/container/providers/date/IDateProvider';
 import { IJwtProvider } from '@shared/container/providers/jwt/IJwt.provider';
-import { inject, injectable } from 'tsyringe';
 
-@injectable()
 class RefreshTokenService {
 	constructor(
-		@inject('UsersTokensRepository')
 		private usersTokensRepository: IUsersTokensRepository,
-		@inject('DateProvider')
 		private dateProvider: IDateProvider,
-		@inject('JwtProvider')
 		private jwtProvider: IJwtProvider
 	) {}
 

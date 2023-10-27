@@ -3,14 +3,10 @@ import { USER_ERRORS } from '@modules/accounts/errors/user.errors';
 import { mapToUserDto } from '@modules/accounts/mappers/user.mapper';
 import { IUsersRepository } from '@modules/accounts/repositories/IUsers.repository';
 import AppError from '@shared/errors/AppError';
-import { inject, injectable } from 'tsyringe';
 
-@injectable()
 class ProfileUserService {
-	constructor(
-		@inject('UsersRepository')
-		private usersRepository: IUsersRepository
-	) {}
+	constructor(private usersRepository: IUsersRepository) {}
+
 	async execute({ id }: IUserProfileRequest): Promise<IUserProfileResponse> {
 		const user = await this.usersRepository.findById(id);
 		if (!user) {
