@@ -1,11 +1,10 @@
 import AppError from '@errors/AppError';
-import { PinoLogger } from '@shared/container/providers/logger/implementations/PinoLogger.provider';
-import { Request, Response, NextFunction } from 'express';
-import { container } from 'tsyringe';
+import { resolveLoggerProvider } from '@shared/container/providers/logger';
+import { AppNextFunction, AppRequest, AppResponse } from '../types';
 
-const logger = container.resolve(PinoLogger);
+const logger = resolveLoggerProvider();
 
-export async function errorHandler(err: Error, request: Request, response: Response, next: NextFunction) {
+export async function errorHandler(err: Error, request: AppRequest, response: AppResponse, next: AppNextFunction) {
 	if (err instanceof AppError) {
 		logger.error(err, 'AppError:');
 		return response.status(err.statusCode).json({

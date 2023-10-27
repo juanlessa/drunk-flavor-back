@@ -4,9 +4,9 @@ import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authentication.e
 import { USER_ERRORS } from '@modules/accounts/errors/user.errors';
 import { UsersRepository } from '@modules/accounts/infra/mongo/repositories/Users.repository';
 import { JsonwebtokenProvider } from '@shared/container/providers/jwt/implementations/Jsonwebtoken.provider';
-import { NextFunction, Request, Response } from 'express';
+import { AppNextFunction, AppRequest, AppResponse } from '../types';
 
-export async function ensureAuthenticated(request: Request, response: Response, next: NextFunction) {
+export async function ensureAuthenticated(request: AppRequest, response: AppResponse, next: AppNextFunction) {
 	const authHeader = request.headers.authorization;
 	if (!authHeader) {
 		throw new AppError(AUTHENTICATION_ERRORS.missing_token, 401);
