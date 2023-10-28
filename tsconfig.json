@@ -19,25 +19,24 @@
         "importHelpers": true,
         "outDir": "./dist",
         "sourceMap": true,
-        "baseUrl": "./src",
+        "baseUrl": ".",
         "typeRoots": [
-            "./node_modules/@types",
-            "./src/@types"
+            "./node_modules/@types"
         ],
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "paths": {
             "@modules/*": [
-                "modules/*"
+                "src/modules/*"
             ],
             "@config/*": [
-                "config/*"
+                "src/config/*"
             ],
             "@utils/*": [
-                "utils/*"
+                "src/utils/*"
             ],
             "@shared/*": [
-                "shared/*"
+                "src/shared/*"
             ]
         }
     },
@@ -47,6 +46,8 @@
     "exclude": [
         "node_modules",
         "*.spec.ts",
+        "*.e2e-spec.ts",
+        "coverage",
         "dist"
     ]
 }
