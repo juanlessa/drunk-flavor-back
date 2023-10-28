@@ -1,5 +1,5 @@
 import { resolveIngredientsRepository } from '@modules/drinks/container';
-import { DeleteIngredientService } from './DeleteIngredient.service';
+import { DeleteIngredientService } from '@modules/drinks/useCases/deleteIngredient/DeleteIngredient.service';
 
 const ingredientRepository = resolveIngredientsRepository();
 

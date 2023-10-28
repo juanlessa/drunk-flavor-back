@@ -1,5 +1,5 @@
 import { resolveDrinksRepository } from '@modules/drinks/container';
-import { DeleteDrinkService } from './DeleteDrink.service';
+import { DeleteDrinkService } from '@modules/drinks/useCases/deleteDrink/DeleteDrink.service';
 import { resolveStorageProvider } from '@shared/container/providers/storage';
 
 const storageProvider = resolveStorageProvider();

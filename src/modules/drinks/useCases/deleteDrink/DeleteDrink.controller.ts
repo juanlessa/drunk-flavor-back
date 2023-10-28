@@ -1,5 +1,5 @@
 import { IDeleteDrink } from '@modules/drinks/dtos/drink.dtos';
-import { resolveDeleteDrinkService } from './deleteDrink.container';
+import { resolveDeleteDrinkService } from '@modules/drinks/useCases/deleteDrink/deleteDrink.container';
 import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class DeleteDrinkController {

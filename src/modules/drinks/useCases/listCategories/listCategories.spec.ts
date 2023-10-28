@@ -1,6 +1,6 @@
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { ListCategoriesService } from './ListCategories.service';
+import { ListCategoriesService } from '@modules/drinks/useCases/listCategories/ListCategories.service';
 import { ICategoryTranslation } from '@modules/drinks/entities/category.entity';
 import { ITranslations } from '@modules/drinks/types/translations';
 

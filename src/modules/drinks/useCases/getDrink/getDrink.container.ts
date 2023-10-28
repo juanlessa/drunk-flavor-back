@@ -1,5 +1,5 @@
 import { resolveDrinksRepository } from '@modules/drinks/container';
-import { GetDrinkService } from './GetDrink.service';
+import { GetDrinkService } from '@modules/drinks/useCases/getDrink/GetDrink.service';
 import { resolveStorageProvider } from '@shared/container/providers/storage';
 
 const storageProvider = resolveStorageProvider();

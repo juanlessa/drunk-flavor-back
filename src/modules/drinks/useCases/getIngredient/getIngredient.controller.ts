@@ -1,4 +1,4 @@
-import { resolveGetIngredientService } from './getIngredient.container';
+import { resolveGetIngredientService } from '@modules/drinks/useCases/getIngredient/getIngredient.container';
 import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class GetIngredientController {

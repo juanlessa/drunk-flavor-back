@@ -1,5 +1,5 @@
 import { IUpdateCategory } from '@modules/drinks/dtos/category.dtos';
-import { resolveUpdateCategoryService } from './updateCategory.container';
+import { resolveUpdateCategoryService } from '@modules/drinks/useCases/updateCategory/updateCategory.container';
 import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class UpdateCategoryController {

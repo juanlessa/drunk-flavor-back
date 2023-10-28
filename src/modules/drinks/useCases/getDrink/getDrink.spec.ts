@@ -7,7 +7,7 @@ import { DrinksRepositoryInMemory } from '@modules/drinks/repositories/inMemory/
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { ObjectId } from 'bson';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { GetDrinkService } from './GetDrink.service';
+import { GetDrinkService } from '@modules/drinks/useCases/getDrink/GetDrink.service';
 import { ITranslations } from '@modules/drinks/types/translations';
 import { IDrinkTranslation } from '@modules/drinks/entities/drink.entity';
 import { LocalStorageProvider } from '@shared/container/providers/storage/implementations/LocalStorage.provider';

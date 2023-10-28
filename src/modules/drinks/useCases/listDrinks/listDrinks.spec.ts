@@ -4,7 +4,7 @@ import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMem
 import { DrinksRepositoryInMemory } from '@modules/drinks/repositories/inMemory/DrinksRepository';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { ListDrinksService } from './ListDrinks.service';
+import { ListDrinksService } from '@modules/drinks/useCases/listDrinks/ListDrinks.service';
 import { ITranslations } from '@modules/drinks/types/translations';
 import { IDrinkTranslation } from '@modules/drinks/entities/drink.entity';
 import { LocalStorageProvider } from '@shared/container/providers/storage/implementations/LocalStorage.provider';

@@ -1,5 +1,5 @@
 import { resolveCategoriesRepository } from '@modules/drinks/container';
-import { ListCategoriesService } from './ListCategories.service';
+import { ListCategoriesService } from '@modules/drinks/useCases/listCategories/ListCategories.service';
 
 const categoriesRepository = resolveCategoriesRepository();
 

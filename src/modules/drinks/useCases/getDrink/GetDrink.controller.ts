@@ -1,5 +1,5 @@
 import { AppRequest, AppResponse } from '@shared/infra/http/types';
-import { resolveGetDrinkService } from './getDrink.container';
+import { resolveGetDrinkService } from '@modules/drinks/useCases/getDrink/getDrink.container';
 
 class GetDrinkController {
 	async handle(request: AppRequest, response: AppResponse): Promise<AppResponse> {

@@ -1,5 +1,5 @@
 import { AppRequest, AppResponse } from '@shared/infra/http/types';
-import { resolveGetCategoryService } from './getCategory.container';
+import { resolveGetCategoryService } from '@modules/drinks/useCases/getCategory/getCategory.container';
 
 class GetCategoryController {
 	async handle(request: AppRequest, response: AppResponse): Promise<AppResponse> {

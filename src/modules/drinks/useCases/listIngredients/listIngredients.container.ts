@@ -1,5 +1,5 @@
 import { resolveIngredientsRepository } from '@modules/drinks/container';
-import { ListIngredientsService } from './ListIngredients.service';
+import { ListIngredientsService } from '@modules/drinks/useCases/listIngredients/ListIngredients.service';
 
 const ingredientRepository = resolveIngredientsRepository();
 

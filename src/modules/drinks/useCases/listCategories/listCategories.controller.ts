@@ -1,4 +1,4 @@
-import { resolveListCategoriesService } from './listCategories.container';
+import { resolveListCategoriesService } from '@modules/drinks/useCases/listCategories/listCategories.container';
 import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class ListCategoriesController {

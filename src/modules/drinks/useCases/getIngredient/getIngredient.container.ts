@@ -1,5 +1,5 @@
 import { resolveIngredientsRepository } from '@modules/drinks/container';
-import { GetIngredientService } from './GetIngredient.service';
+import { GetIngredientService } from '@modules/drinks/useCases/getIngredient/GetIngredient.service';
 
 const ingredientRepository = resolveIngredientsRepository();
 
