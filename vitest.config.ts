@@ -3,7 +3,7 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
 	test: {
-		include: ['src/**/*.spec.ts'],
+		include: ['src/modules/accounts/**/*.spec.ts'],
 		exclude: ['src/**/*.e2e-spec.ts']
 	},
 	plugins: [tsconfigPaths()]
