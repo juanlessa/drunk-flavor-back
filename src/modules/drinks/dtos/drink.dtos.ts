@@ -9,6 +9,7 @@ export type ICreateDrinkRequest = {
 		quantity: number;
 	}[];
 };
+
 export type ICreateDrinkResponse = {
 	id: string;
 };
