@@ -38,7 +38,7 @@
         "pino-pretty": "^10.2.3",
         "supertest": "^6.3.3",
         "tsup": "^6.7.0",
-        "tsx": "^3.12.7",
+        "tsx": "^3.14.0",
         "typescript": "^5.0.4",
         "vite-tsconfig-paths": "^4.2.0",
         "vitest": "^0.34.6"
