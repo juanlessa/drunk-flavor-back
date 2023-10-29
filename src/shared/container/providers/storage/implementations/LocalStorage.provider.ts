@@ -1,8 +1,8 @@
 import { IStorageProvider } from '../IStorage.provider';
 import apiConfig from '@config/api';
-import fs from 'fs';
+import fs from 'node:fs';
 import multer from 'multer';
-import { resolve } from 'path';
+import { resolve } from 'node:path';
 import crypto from 'crypto';
 import storageConfig from '@config/storage';
 
@@ -24,7 +24,7 @@ export class LocalStorageProvider implements IStorageProvider {
 
 	configureUpload() {
 		const storage = multer.diskStorage({
-			destination: resolve(__dirname, '..', '..', '..', '..', '..', '..', './tmp/drink'),
+			destination: resolve(__dirname, '..', '..', '..', '..', '..', '..', 'tmp', 'drink'),
 			filename: (request, file, callback) => {
 				const fileHash = crypto.randomBytes(16).toString('hex');
 				const fileName = `${fileHash}-${file.originalname}`;
