@@ -1,4 +1,4 @@
-import { SafeParseError, z } from 'zod';
+import { z } from 'zod';
 import AppError from '@shared/errors/AppError';
 import { AppNextFunction, AppRequest, AppResponse } from '../types';
 
