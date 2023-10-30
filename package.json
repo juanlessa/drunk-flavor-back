@@ -9,7 +9,7 @@
         "dev": "tsx src/server.ts",
         "dev:debug": "tsx watch src/server.ts",
         "build": "tsup src",
-        "test": "DEBUG=vite-tsconfig-paths vitest -c vitest.config.ts",
+        "test": "vitest -c vitest.config.ts",
         "test:e2e": "dotenv -e .env.testing -- vitest -c vitest-e2e.config.ts",
         "coverage": "vitest -c vitest.config.ts --coverage"
     },

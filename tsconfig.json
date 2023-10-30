@@ -43,5 +43,12 @@
     },
     "include": [
         "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "*.spec.ts",
+        "*.e2e-spec.ts",
+        "coverage",
+        "dist"
     ]
 }
