@@ -1,14 +1,11 @@
 import { defineConfig } from 'vitest/config';
-import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
+	root: '.',
 	test: {
 		include: ['src/**/*.spec.ts'],
 		exclude: ['src/**/*.e2e-spec.ts'],
-		typecheck: {
-			tsconfig: './tsconfig.vitest.json'
-		},
 		environment: 'node'
 	},
 	resolve: {
