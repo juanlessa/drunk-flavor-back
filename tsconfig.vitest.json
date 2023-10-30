@@ -1,5 +1,14 @@
 {
     "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "types": [
+            "node"
+        ]
+    },
+    "include": [
+        "*.spec.ts",
+        "src/**/*"
+    ],
     "exclude": [
         "node_modules",
         "*.e2e-spec.ts",

@@ -7,7 +7,8 @@ export default defineConfig({
 		exclude: ['src/**/*.e2e-spec.ts'],
 		typecheck: {
 			tsconfig: './tsconfig.vitest.json'
-		}
+		},
+		environment: 'node'
 	},
 	resolve: {
 		alias: {
