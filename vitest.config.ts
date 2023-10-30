@@ -1,9 +1,8 @@
 import { defineConfig } from 'vitest/config';
 import { fileURLToPath } from 'node:url';
-import { resolve } from 'node:path';
 
 export default defineConfig({
-	root: resolve(__dirname, './'),
+	root: fileURLToPath(new URL('./', import.meta.url)),
 	test: {
 		include: ['src/**/*.spec.ts'],
 		exclude: ['src/**/*.e2e-spec.ts'],
