@@ -16,8 +16,8 @@ export async function initiateMongo(): Promise<void> {
 		});
 		logger.info('Mongo connection has been stablish.');
 	} catch (error) {
-		logger.error('Mongo could not connect ', error);
-		throw new Error(error);
+		logger.error(error as Error, 'Mongo could not connect');
+		throw new Error('MongoDB could not connect', error as Error);
 	}
 }
 
