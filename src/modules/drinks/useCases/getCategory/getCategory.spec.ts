@@ -3,7 +3,7 @@ import { CATEGORY_ERRORS } from '@modules/drinks/errors/category.errors';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { ObjectId } from 'bson';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { GetCategoryService } from '@modules/drinks/useCases/getCategory/getCategory.service';
+import { GetCategoryService } from '@modules/drinks/useCases/getCategory/GetCategory.service';
 import { ITranslations } from '@modules/drinks/types/translations';
 import { ICategoryTranslation } from '@modules/drinks/entities/category.entity';
 
