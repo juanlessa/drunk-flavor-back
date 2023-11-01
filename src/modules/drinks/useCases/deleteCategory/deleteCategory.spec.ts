@@ -5,7 +5,7 @@ import { CATEGORY_ERRORS } from '@modules/drinks/errors/category.errors';
 import { ITranslations } from '@modules/drinks/types/translations';
 import { ICategoryTranslation } from '@modules/drinks/entities/category.entity';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { DeleteCategoryService } from '@modules/drinks/useCases/deleteCategory/DeleteCategory.service';
+import { DeleteCategoryService } from '@modules/drinks/useCases/deleteCategory/deleteCategory.service';
 
 let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
 let deleteCategoryService: DeleteCategoryService;
