@@ -2,7 +2,7 @@ import AppError from '@shared/errors/AppError';
 import { CATEGORY_ERRORS } from '@modules/drinks/errors/category.errors';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CreateCategoryService } from '@modules/drinks/useCases/createCategory/createCategory.service';
+import { CreateCategoryService } from '@modules/drinks/useCases/createCategory/CreateCategory.service';
 import { ITranslations } from '@modules/drinks/types/translations';
 import { ICategoryTranslation } from '@modules/drinks/entities/category.entity';
 
