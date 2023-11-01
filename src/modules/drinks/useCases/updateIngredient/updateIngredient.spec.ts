@@ -2,7 +2,7 @@ import AppError from '@shared/errors/AppError';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { ObjectId } from 'bson';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { UpdateIngredientService } from './UpdateIngredient.service';
+import { UpdateIngredientService } from './updateIngredient.service';
 import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredient.errors';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { ICategory, ICategoryTranslation } from '@modules/drinks/entities/category.entity';

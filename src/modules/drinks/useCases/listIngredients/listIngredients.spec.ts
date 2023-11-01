@@ -2,7 +2,7 @@ import { ICategory, ICategoryTranslation } from '@modules/drinks/entities/catego
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { ListIngredientsService } from '@modules/drinks/useCases/listIngredients/ListIngredients.service';
+import { ListIngredientsService } from '@modules/drinks/useCases/listIngredients/listIngredients.service';
 import { ITranslations } from '@modules/drinks/types/translations';
 import { IIngredientTranslation } from '@modules/drinks/entities/ingredient.entity';
 
