@@ -9,6 +9,14 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { UserToken } from '@modules/accounts/infra/mongo/entities/userToken.model';
 import { User } from '@modules/accounts/infra/mongo/entities/user.model';
 import { dropCollection, emptyCollection, initiateMongo } from '@shared/infra/mongo';
+import * as dotenv from 'dotenv';
+dotenv.config();
+
+console.log('---------------- L O G ------------------------');
+console.log(process.env.LOGGER_ENABLED);
+console.log(process.env.MONGO_USERNAME);
+console.log(process.env.MONGO_PASSWORD);
+console.log(process.env.MONGO_DATABASE);
 
 let usersRepository: IUsersRepository;
 let encryptionProvider: BcryptProvider;
