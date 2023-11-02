@@ -42,3 +42,4 @@ jobs:
         MONGO_USERNAME: supercharge
         MONGO_PASSWORD: secret
         MONGO_DATABASE: supercharge
+        MONGO_HOST: '127.0.0.1'

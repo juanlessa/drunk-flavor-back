@@ -17,6 +17,7 @@ console.log(process.env.LOGGER_ENABLED);
 console.log(process.env.MONGO_USERNAME);
 console.log(process.env.MONGO_PASSWORD);
 console.log(process.env.MONGO_DATABASE);
+console.log(process.env.MONGO_HOST);
 
 let usersRepository: IUsersRepository;
 let encryptionProvider: BcryptProvider;
