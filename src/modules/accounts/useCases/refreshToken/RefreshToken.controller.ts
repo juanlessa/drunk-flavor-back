@@ -1,4 +1,4 @@
-import { resolveRefreshTokenService } from '@modules/accounts/useCases/refreshToken/RefreshToken.container';
+import { resolveRefreshTokenService } from '@modules/accounts/useCases/refreshToken/refreshToken.container';
 import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class RefreshTokenController {
