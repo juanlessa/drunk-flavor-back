@@ -79,6 +79,7 @@ MONGO_PASSWORD='drunkflavor'
 MONGO_DATABASE='drunk-flavor'
 MONGO_HOST='localhost'
 MONGO_PORT='27017'
+MONGO_PARAMS=''
 
 # Environment
 NODE_ENV=dev
@@ -151,6 +152,7 @@ MONGO_PASSWORD='drunkflavor'
 MONGO_DATABASE='drunk-flavor'
 MONGO_HOST='localhost'
 MONGO_PORT='27017'
+MONGO_PARAMS=''
 
 # Environment
 NODE_ENV=testing
