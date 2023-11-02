@@ -42,4 +42,5 @@ jobs:
         MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
         MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
         MONGO_DATABASE: ${{ secrets.MONGO_DATABASE }}
-        MONGO_HOST: '127.0.0.1'
+        MONGO_HOST: 'localhost'
+        MONGO_PARAMS: 'authMechanism=DEFAULT&authSource=admin'

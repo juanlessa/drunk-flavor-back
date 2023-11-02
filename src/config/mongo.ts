@@ -8,7 +8,7 @@ export default {
 	database: process.env.MONGO_DATABASE || '',
 	user: process.env.MONGO_USERNAME || '',
 	password: process.env.MONGO_PASSWORD,
-	params: '',
+	params: process.env.MONGO_PARAMS || '',
 	serverSelectionTimeoutMS: 5000,
 	connectTimeoutMS: 5000
 };
