@@ -1,14 +1,19 @@
-name: e2e Testing Flow 
+name: e2e testing flow 
 
 on:
   push:
     branches:
       - 'releases/**'
-      - 'master' 
+      - 'master'
+      - 'develop'
   pull_request:
+    branches:
+      - 'releases/**'
+      - 'master'
+      - 'develop'
 
 jobs:
-  build:
+  run-tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
