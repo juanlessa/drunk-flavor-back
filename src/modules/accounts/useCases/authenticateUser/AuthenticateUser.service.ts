@@ -43,7 +43,7 @@ class AuthenticateUserService {
 			secret: auth.secret_refresh_token,
 			expires_in: auth.expires_in_refresh_token
 		});
-		const refresh_token_expires_date = this.dateProvider.addDays(auth.expires_refresh_token_days);
+		const refresh_token_expires_date = this.dateProvider.addSeconds(auth.expires_refresh_token_seconds);
 
 		await this.usersTokensRepository.create({
 			expires_date: refresh_token_expires_date,

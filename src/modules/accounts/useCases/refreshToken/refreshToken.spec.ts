@@ -34,7 +34,7 @@ describe('Refresh token', () => {
 			secret: auth.secret_refresh_token,
 			expires_in: auth.expires_in_refresh_token
 		});
-		expires_date = dateProvider.addDays(auth.expires_refresh_token_days);
+		expires_date = dateProvider.addSeconds(auth.expires_refresh_token_seconds);
 
 		invalid_refresh_token = jwtProvider.createRefreshToken({
 			sign_property: email,
