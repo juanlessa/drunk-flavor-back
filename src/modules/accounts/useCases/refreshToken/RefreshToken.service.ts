@@ -25,6 +25,12 @@ class RefreshTokenService {
 			throw new AppError(AUTHENTICATION_ERRORS.not_exist_refresh_token);
 		}
 
+		const isExpiredDate = this.dateProvider.isExpiredDate(userToken.expires_date);
+		if (isExpiredDate) {
+			await this.usersTokensRepository.delete(userToken._id);
+			throw new AppError(AUTHENTICATION_ERRORS.not_exist_refresh_token);
+		}
+
 		// create token
 		const newToken = this.jwtProvider.createToken({
 			subject: user_id,
