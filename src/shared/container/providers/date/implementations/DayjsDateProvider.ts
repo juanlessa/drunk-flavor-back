@@ -46,6 +46,10 @@ class DayjsDateProvider implements IDateProvider {
 	compareIfBefore(dateA: Date, dateB: Date): boolean {
 		return dayjs(dateA).isBefore(dateB);
 	}
+
+	isExpiredDate(date: Date): boolean {
+		return dayjs(date).isBefore(this.dateNow());
+	}
 }
 
 export { DayjsDateProvider };

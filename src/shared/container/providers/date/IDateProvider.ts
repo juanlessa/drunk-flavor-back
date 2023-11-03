@@ -8,6 +8,7 @@ interface IDateProvider {
 	addMinutes(minutes: number): Date;
 	addSeconds(seconds: number): Date;
 	compareIfBefore(dateA: Date, dateB: Date): boolean;
+	isExpiredDate(date: Date): boolean;
 }
 
 export { IDateProvider };
