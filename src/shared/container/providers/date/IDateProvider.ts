@@ -6,6 +6,7 @@ interface IDateProvider {
 	addDays(days: number): Date;
 	addHours(hours: number): Date;
 	addMinutes(minutes: number): Date;
+	addSeconds(seconds: number): Date;
 	compareIfBefore(dateA: Date, dateB: Date): boolean;
 }
 
