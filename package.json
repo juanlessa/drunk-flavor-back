@@ -9,9 +9,12 @@
         "dev": "tsx src/server.ts",
         "dev:debug": "tsx watch src/server.ts",
         "build": "tsup src",
-        "test": "vitest -c vitest.config.ts",
-        "test:e2e": "dotenv -e .env.testing -- vitest -c vitest-e2e.config.ts",
-        "coverage": "vitest -c vitest.config.ts --coverage"
+        "test": "vitest run -c vitest.config.ts",
+        "test:watch": "vitest -c vitest.unit.config.ts",
+        "test:coverage": "vitest run -c vitest.config.ts --coverage",
+        "test:e2e:setup": "npm link vitest-environment-mongo",
+        "test:e2e": "dotenv -e .env.testing -- vitest run -c vitest-e2e.config.ts",
+        "test:e2e:watch": "dotenv -e .env.testing -- vitest -c vitest-e2e.config.ts"
     },
     "repository": {
         "type": "git",
