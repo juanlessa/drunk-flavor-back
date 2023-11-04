@@ -8,13 +8,13 @@ import routes from '@shared/infra/http/routes/index';
 import swaggerUi from 'swagger-ui-express';
 import '@shared/container';
 import { errorHandler } from '@shared/infra/http/middlewares/errorHandler';
-import { initiateMongo } from '@shared/infra/mongo';
 import docs from '@shared/docs';
 import { resolveLoggerProvider } from '@shared/container/providers/logger';
+import { MongoRepository } from '../mongo/Mongo.repository';
 
 const app = express();
 
-initiateMongo();
+MongoRepository.Instance.start();
 const logger = resolveLoggerProvider();
 
 app.use(cors());
