@@ -16,6 +16,7 @@ import { resolveAuthenticateUserService } from '../authenticateUser/authenticate
 import { resolveJwtProvider } from '@shared/container/providers/jwt';
 import { resolveEncryptionProvider } from '@shared/container/providers/encryption';
 import { resolveUsersRepository } from '@modules/accounts/container';
+import { HTTP_STATUS } from '@shared/constants/httpStatus';
 
 let usersRepository: IUsersRepository;
 let encryptionProvider: BcryptProvider;
@@ -72,7 +73,7 @@ describe('Create user Controller', () => {
 			.send({ id: createdPartnerUser._id })
 			.set('Authorization', `Bearer ${adminToken}`);
 
-		expect(response.status).toBe(204);
+		expect(response.status).toBe(HTTP_STATUS.no_content);
 	});
 
 	it('Should not be able to delete a nonexisting user', async () => {
@@ -93,7 +94,7 @@ describe('Create user Controller', () => {
 			.send({ id: nonexistentUserId })
 			.set('Authorization', `Bearer ${adminToken}`);
 
-		expect(response.status).toBe(400);
+		expect(response.status).toBe(HTTP_STATUS.bad_request);
 	});
 
 	it('Should not be able to delete a user without being authenticated', async () => {
@@ -108,7 +109,7 @@ describe('Create user Controller', () => {
 			.send(partnerUser)
 			.set('Authorization', `Bearer ${invalidUserToken}`);
 
-		expect(response.status).toBe(401);
+		expect(response.status).toBe(HTTP_STATUS.unauthorized);
 	});
 
 	it('Should not be able to delete a user without being admin', async () => {
@@ -131,6 +132,6 @@ describe('Create user Controller', () => {
 			.send({ id: createdAdminUser._id })
 			.set('Authorization', `Bearer ${partnerToken}`);
 
-		expect(response.status).toBe(403);
+		expect(response.status).toBe(HTTP_STATUS.forbidden);
 	});
 });

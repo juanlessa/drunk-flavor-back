@@ -14,6 +14,7 @@ import auth from '@config/auth';
 import { MongoRepository } from '@shared/infra/mongo/Mongo.repository';
 import { resolveJwtProvider } from '@shared/container/providers/jwt';
 import { resolveUsersRepository } from '@modules/accounts/container';
+import { HTTP_STATUS } from '@shared/constants/httpStatus';
 
 let usersRepository: IUsersRepository;
 let encryptionProvider: BcryptProvider;
@@ -65,7 +66,7 @@ describe('Create user Controller', () => {
 			.send(partnerUser)
 			.set('Authorization', `Bearer ${adminToken}`);
 
-		expect(response.status).toBe(201);
+		expect(response.status).toBe(HTTP_STATUS.created);
 	});
 
 	it('Should not be able to create an user with an existing email', async () => {
@@ -89,7 +90,7 @@ describe('Create user Controller', () => {
 			.send(partnerUser)
 			.set('Authorization', `Bearer ${adminToken}`);
 
-		expect(response.status).toBe(400);
+		expect(response.status).toBe(HTTP_STATUS.bad_request);
 	});
 
 	it('Should not be able to create a user without being authenticated', async () => {
@@ -104,7 +105,7 @@ describe('Create user Controller', () => {
 			.send(partnerUser)
 			.set('Authorization', `Bearer ${invalidUserToken}`);
 
-		expect(response.status).toBe(401);
+		expect(response.status).toBe(HTTP_STATUS.unauthorized);
 	});
 
 	it('Should not be able to create a user without being admin', async () => {
@@ -123,6 +124,6 @@ describe('Create user Controller', () => {
 			.send(partnerUser)
 			.set('Authorization', `Bearer ${partnerToken}`);
 
-		expect(response.status).toBe(403);
+		expect(response.status).toBe(HTTP_STATUS.forbidden);
 	});
 });
