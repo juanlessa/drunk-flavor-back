@@ -2,9 +2,9 @@ import { z } from 'zod';
 import AppError from '@shared/errors/AppError';
 import { AppNextFunction, AppRequest, AppResponse } from '../types';
 
-const validateSchema =
+export const validateSchema =
 	<T>(schema: z.ZodTypeAny) =>
-	(request: AppRequest, response: AppResponse, next: AppNextFunction) => {
+	(request: AppRequest, _response: AppResponse, next: AppNextFunction) => {
 		const data: T = request.body;
 
 		const result = schema.safeParse(data);
@@ -18,5 +18,3 @@ const validateSchema =
 
 		next();
 	};
-
-export { validateSchema };
