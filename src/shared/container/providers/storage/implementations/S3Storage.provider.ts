@@ -2,9 +2,10 @@ import { IStorageProvider } from '../IStorage.provider';
 import s3Config from '@config/s3';
 import { DeleteObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import multerS3 from 'multer-s3';
-import crypto from 'crypto';
 import storageConfig from '@config/storage';
 import { resolveLoggerProvider } from '../../logger';
+import multer from 'multer';
+import { hashedFileName } from './utils/hashedFileName';
 
 const logger = resolveLoggerProvider();
 
@@ -43,18 +44,17 @@ export class S3StorageProvider implements IStorageProvider {
 			bucket: s3Config.bucketName,
 			contentType: multerS3.AUTO_CONTENT_TYPE,
 			acl: 'public-read',
-			key: (request, file, callback) => {
-				const fileHash = crypto.randomBytes(16).toString('hex');
-				const fileName = `${fileHash}-${file.originalname}`;
+			key: (_request, file, callback) => {
+				const fileName = hashedFileName(file.originalname);
 				return callback(null, fileName);
 			}
 		});
 
-		return {
+		return multer({
 			storage,
 			limits: {
 				fieldSize: storageConfig.maxFileSize
 			}
-		};
+		});
 	}
 }

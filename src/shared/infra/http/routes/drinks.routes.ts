@@ -10,7 +10,6 @@ import { updateDrinkValidator } from '@modules/drinks/useCases/updateDrink/updat
 import { UpdateDrinkCoverController } from '@modules/drinks/useCases/updateDrinkCover/UpdateDrinkCover.controller';
 import { UpdateDrinkThumbnailController } from '@modules/drinks/useCases/updateDrinkThumbnail/UpdateDrinkThumbnail.controller';
 import { Router } from 'express';
-import multer from 'multer';
 import { resolveStorageProvider } from '@shared/container/providers/storage';
 
 const createDrinkController = new CreateDrinkController();
@@ -23,8 +22,7 @@ const deleteDrinkController = new DeleteDrinkController();
 
 const drinksRoutes = Router();
 
-const storageProvider = resolveStorageProvider();
-const uploadImage = multer(storageProvider.configureUpload());
+const uploadImage = resolveStorageProvider().configureUpload();
 
 drinksRoutes.post('/', createDrinkValidator, createDrinkController.handle);
 drinksRoutes.get('/', listDrinksController.handle);
