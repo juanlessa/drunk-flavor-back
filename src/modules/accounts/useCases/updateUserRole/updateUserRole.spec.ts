@@ -1,11 +1,10 @@
-import { USER_ERRORS } from '@modules/accounts/errors/user.errors';
 import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory/Users.repository';
 import { ROLES } from '@modules/accounts/types/roles';
 import { BcryptProvider } from '@shared/container/providers/encryption/implementations/Bcrypt.provider';
-import AppError from '@shared/errors/AppError';
 import { ObjectId } from 'bson';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateUserRoleService } from '@modules/accounts/useCases/updateUserRole/UpdateUserRole.service';
+import { BadRequestError } from '@shared/errors/error.lib';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
 let updateUserRoleService: UpdateUserRoleService;
@@ -47,6 +46,6 @@ describe('Update User Role', () => {
 				user_id: nonexistentId,
 				role: ROLES.admin
 			})
-		).rejects.toEqual(new AppError(USER_ERRORS.not_exist));
+		).rejects.toBeInstanceOf(BadRequestError);
 	});
 });
