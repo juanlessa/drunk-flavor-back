@@ -61,6 +61,7 @@
         "pino": "^8.16.1",
         "pino-http": "^8.5.0",
         "swagger-ui-express": "^4.6.3",
+        "ts-pattern": "^5.0.5",
         "zod": "^3.21.4"
     }
 }
