@@ -6,8 +6,7 @@ export default defineConfig({
 	test: {
 		include: ['src/**/*.spec.ts'],
 		exclude: ['src/**/*.e2e-spec.ts'],
-		environment: 'node',
-		globals: true
+		environment: 'node'
 	},
 	resolve: {
 		alias: [

@@ -5,9 +5,8 @@ export default defineConfig({
 	root: fileURLToPath(new URL('./', import.meta.url)),
 	test: {
 		include: ['src/**/*.e2e-spec.ts'],
-		threads: false,
-		environment: 'node',
-		globals: true
+		environment: 'mongo',
+		threads: false
 	},
 	resolve: {
 		alias: [
