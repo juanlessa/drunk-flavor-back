@@ -1,5 +1,6 @@
 import { IUpdateUserRole } from '@modules/accounts/dtos/user.dtos';
 import { resolveUpdateUserRoleService } from '@modules/accounts/useCases/updateUserRole/updateUserRole.container';
+import { HTTP_STATUS } from '@shared/constants/httpStatus';
 import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class UpdateUserRoleController {
@@ -10,7 +11,7 @@ class UpdateUserRoleController {
 
 		await service.execute({ user_id, role });
 
-		return response.status(204).send();
+		return response.status(HTTP_STATUS.no_content).send();
 	}
 }
 

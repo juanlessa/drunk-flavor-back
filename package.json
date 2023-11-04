@@ -10,7 +10,7 @@
         "dev:debug": "tsx watch src/server.ts",
         "build": "tsup src",
         "test": "vitest run -c vitest.config.ts",
-        "test:watch": "vitest -c vitest.unit.config.ts",
+        "test:watch": "vitest -c vitest.config.ts",
         "test:coverage": "vitest run -c vitest.config.ts --coverage",
         "test:e2e:setup": "npm link ./src/shared/infra/mongo/vitest-environment-mongo",
         "test:e2e": "dotenv -e .env.testing -- vitest run -c vitest-e2e.config.ts",
@@ -61,6 +61,7 @@
         "pino": "^8.16.1",
         "pino-http": "^8.5.0",
         "swagger-ui-express": "^4.6.3",
+        "ts-pattern": "^5.0.5",
         "zod": "^3.21.4"
     }
 }

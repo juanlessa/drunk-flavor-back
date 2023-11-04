@@ -1,22 +1,20 @@
 import { z } from 'zod';
-import AppError from '@shared/errors/AppError';
 import { AppNextFunction, AppRequest, AppResponse } from '../types';
+import { BadRequestError } from '@shared/errors/error.lib';
 
-const validateSchema =
+export const validateSchema =
 	<T>(schema: z.ZodTypeAny) =>
-	(request: AppRequest, response: AppResponse, next: AppNextFunction) => {
+	(request: AppRequest, _response: AppResponse, next: AppNextFunction) => {
 		const data: T = request.body;
 
 		const result = schema.safeParse(data);
 
 		if (!result.success) {
 			const { issues } = result.error;
-			throw new AppError(issues[0].message);
+			throw new BadRequestError(issues[0].message, { path: 'validateSchema.middleware' });
 		}
 
 		request.body = result.data;
 
 		next();
 	};
-
-export { validateSchema };

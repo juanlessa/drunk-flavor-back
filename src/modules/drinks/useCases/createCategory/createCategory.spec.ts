@@ -1,10 +1,9 @@
-import AppError from '@shared/errors/AppError';
-import { CATEGORY_ERRORS } from '@modules/drinks/errors/category.errors';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CreateCategoryService } from '@modules/drinks/useCases/createCategory/CreateCategory.service';
 import { ITranslations } from '@modules/drinks/types/translations';
 import { ICategoryTranslation } from '@modules/drinks/entities/category.entity';
+import { BadRequestError } from '@shared/errors/error.lib';
 
 let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
 let createCategoryService: CreateCategoryService;
@@ -42,8 +41,8 @@ describe('Create Category', () => {
 	it('should not be able to create a category with an existing name', async () => {
 		await categoriesRepositoryInMemory.create({ translations });
 
-		await expect(createCategoryService.execute({ translations: translationsSameName })).rejects.toEqual(
-			new AppError(CATEGORY_ERRORS.already_exist)
+		await expect(createCategoryService.execute({ translations: translationsSameName })).rejects.toBeInstanceOf(
+			BadRequestError
 		);
 	});
 });

@@ -1,21 +1,22 @@
-import AppError from '@shared/errors/AppError';
-import { resolveLoggerProvider } from '@shared/container/providers/logger';
-import { AppNextFunction, AppRequest, AppResponse } from '../types';
+import { P, match } from 'ts-pattern';
+import { AppError } from '@shared/errors/error.lib';
+import { AppNextFunction, AppRequest, AppResponse } from '@shared/infra/http/types';
+import {
+	handleMongoError,
+	handleMongooseError,
+	instanceOfMongoError,
+	instanceOfMongooseError
+} from '@shared/infra/mongo/mongo.errors';
+import { handleAppError } from '@shared/errors/handleAppError';
+import { unhandledError } from '@shared/errors/unhandledError';
+import { ErrorResponse } from '@shared/errors/error.dtos';
 
-const logger = resolveLoggerProvider();
+export async function errorHandler(err: Error, _request: AppRequest, response: AppResponse, _next: AppNextFunction) {
+	const { statusCode, message }: ErrorResponse = match(err)
+		.with(P.instanceOf(AppError), handleAppError)
+		.when(instanceOfMongoError, handleMongoError)
+		.when(instanceOfMongooseError, handleMongooseError)
+		.otherwise(unhandledError);
 
-export async function errorHandler(err: Error, request: AppRequest, response: AppResponse, next: AppNextFunction) {
-	if (err instanceof AppError) {
-		logger.error(err, 'AppError:');
-		return response.status(err.statusCode).json({
-			status: 'error',
-			message: err.message
-		});
-	}
-
-	logger.error(err, 'Not handled error:');
-	return response.status(500).json({
-		status: 'error',
-		message: 'Internal server error.'
-	});
+	return response.status(statusCode).json({ ok: false, message });
 }

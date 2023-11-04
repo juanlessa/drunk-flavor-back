@@ -5,7 +5,7 @@ import { DRINK_ERRORS } from '@modules/drinks/errors/drink.errors';
 import { mapToTranslationsName } from '@modules/drinks/mappers/translations.mapper';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinks.repository';
 import { IIngredientsRepository } from '@modules/drinks/repositories/IIngredients.repository';
-import AppError from '@shared/errors/AppError';
+import { BadRequestError } from '@shared/errors/error.lib';
 
 class CreateDrinkService {
 	constructor(private drinksRepository: IDrinksRepository, private ingredientsRepository: IIngredientsRepository) {}
@@ -14,14 +14,14 @@ class CreateDrinkService {
 		const translationsName = mapToTranslationsName(translations);
 		const drinkALreadyExists = await this.drinksRepository.findByName(translationsName);
 		if (drinkALreadyExists) {
-			throw new AppError(DRINK_ERRORS.already_exist);
+			throw new BadRequestError(DRINK_ERRORS.already_exist, { path: 'CreateDrink.service' });
 		}
 
 		const ingredientsExists = await this.ingredientsRepository.findByIdList(
 			ingredients.map((ing) => ing.ingredient_id)
 		);
 		if (ingredientsExists.length !== ingredients.length) {
-			throw new AppError(DRINK_ERRORS.some_ingredients_not_exist);
+			throw new BadRequestError(DRINK_ERRORS.some_ingredients_not_exist, { path: 'CreateDrink.service' });
 		}
 
 		const ingredientsMap = ingredientsExists.reduce(

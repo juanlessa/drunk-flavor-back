@@ -1,5 +1,6 @@
 import { IDeleteDrink } from '@modules/drinks/dtos/drink.dtos';
 import { resolveDeleteDrinkService } from '@modules/drinks/useCases/deleteDrink/deleteDrink.container';
+import { HTTP_STATUS } from '@shared/constants/httpStatus';
 import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class DeleteDrinkController {
@@ -10,7 +11,7 @@ class DeleteDrinkController {
 
 		await service.execute({ id });
 
-		return response.status(204).send();
+		return response.status(HTTP_STATUS.no_content).send();
 	}
 }
 

@@ -2,10 +2,9 @@ import { ICreateUser } from '@modules/accounts/dtos/user.dtos';
 import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory/Users.repository';
 import { ROLES } from '@modules/accounts/types/roles';
 import { BcryptProvider } from '@shared/container/providers/encryption/implementations/Bcrypt.provider';
-import AppError from '@shared/errors/AppError';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CreateUserService } from '@modules/accounts/useCases/createUser/CreateUser.service';
-import { USER_ERRORS } from '@modules/accounts/errors/user.errors';
+import { BadRequestError } from '@shared/errors/error.lib';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
 let createUserService: CreateUserService;
@@ -54,8 +53,6 @@ describe('Create User', () => {
 			password: await encryptionProvider.hash(planPassword)
 		});
 
-		await expect(createUserService.execute(createTestUser)).rejects.toEqual(
-			new AppError(USER_ERRORS.already_exist)
-		);
+		await expect(createUserService.execute(createTestUser)).rejects.toBeInstanceOf(BadRequestError);
 	});
 });

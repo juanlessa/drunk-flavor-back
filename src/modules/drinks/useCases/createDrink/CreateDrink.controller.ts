@@ -1,5 +1,6 @@
 import { ICreateDrinkRequest } from '@modules/drinks/dtos/drink.dtos';
 import { resolveCreateDrinkService } from '@modules/drinks/useCases/createDrink/createDrink.container';
+import { HTTP_STATUS } from '@shared/constants/httpStatus';
 import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class CreateDrinkController {
@@ -10,7 +11,7 @@ class CreateDrinkController {
 
 		const drinkId = await service.execute({ translations, ingredients });
 
-		return response.status(201).json(drinkId);
+		return response.status(HTTP_STATUS.created).json(drinkId);
 	}
 }
 

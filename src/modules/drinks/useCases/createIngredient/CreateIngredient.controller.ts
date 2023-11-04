@@ -1,5 +1,6 @@
 import { ICreateIngredientRequest } from '@modules/drinks/dtos/ingredient.dtos';
 import { resolveCreateIngredientService } from '@modules/drinks/useCases/createIngredient/createIngredient.container';
+import { HTTP_STATUS } from '@shared/constants/httpStatus';
 import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class CreateIngredientController {
@@ -10,7 +11,7 @@ class CreateIngredientController {
 
 		await service.execute({ translations, category_id, is_alcoholic });
 
-		return response.status(201).send();
+		return response.status(HTTP_STATUS.created).send();
 	}
 }
 

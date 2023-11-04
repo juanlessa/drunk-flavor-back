@@ -2,7 +2,7 @@ import { IDeleteDrink } from '@modules/drinks/dtos/drink.dtos';
 import { DRINK_ERRORS } from '@modules/drinks/errors/drink.errors';
 import { IDrinksRepository } from '@modules/drinks/repositories/IDrinks.repository';
 import { IStorageProvider } from '@shared/container/providers/storage/IStorage.provider';
-import AppError from '@shared/errors/AppError';
+import { BadRequestError } from '@shared/errors/error.lib';
 
 class DeleteDrinkService {
 	constructor(private drinksRepository: IDrinksRepository, private storageProvider: IStorageProvider) {}
@@ -11,7 +11,7 @@ class DeleteDrinkService {
 		const drinkExists = await this.drinksRepository.findById(id);
 
 		if (!drinkExists) {
-			throw new AppError(DRINK_ERRORS.not_exist);
+			throw new BadRequestError(DRINK_ERRORS.not_exist, { path: 'DeleteDrink.service' });
 		}
 
 		const deletedDrink = await this.drinksRepository.delete(id);

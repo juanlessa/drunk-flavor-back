@@ -1,6 +1,4 @@
-import AppError from '@shared/errors/AppError';
 import { ICategory, ICategoryTranslation } from '@modules/drinks/entities/category.entity';
-import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredient.errors';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { ObjectId } from 'bson';
@@ -8,6 +6,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { DeleteIngredientService } from '@modules/drinks/useCases/deleteIngredient/DeleteIngredient.service';
 import { ITranslations } from '@modules/drinks/types/translations';
 import { IIngredientTranslation } from '@modules/drinks/entities/ingredient.entity';
+import { BadRequestError } from '@shared/errors/error.lib';
 
 let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
 let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;
@@ -52,8 +51,6 @@ describe('Delete Ingredient', () => {
 
 	it('should not be able to delete a nonexistent ingredient', async () => {
 		const nonexistentId = new ObjectId().toString();
-		await expect(deleteIngredientService.execute({ id: nonexistentId })).rejects.toEqual(
-			new AppError(INGREDIENT_ERRORS.not_exist)
-		);
+		await expect(deleteIngredientService.execute({ id: nonexistentId })).rejects.toBeInstanceOf(BadRequestError);
 	});
 });

@@ -10,6 +10,7 @@ import { User } from '@modules/accounts/infra/mongo/entities/user.model';
 import { MongoRepository } from '@shared/infra/mongo/Mongo.repository';
 import { resolveUsersRepository } from '@modules/accounts/container';
 import { resolveEncryptionProvider } from '@shared/container/providers/encryption';
+import { HTTP_STATUS } from '@shared/constants/httpStatus';
 
 let usersRepository: IUsersRepository;
 let encryptionProvider: BcryptProvider;
@@ -53,7 +54,7 @@ describe('Authenticate User Controller', () => {
 			.post('/sessions')
 			.send({ email: 'invalid.email@test.com', password: userTest.password });
 
-		expect(response.status).toBe(400);
+		expect(response.status).toBe(HTTP_STATUS.bad_request);
 	});
 
 	it('should not be able to authenticate an user with incorrect password', async () => {
@@ -66,6 +67,6 @@ describe('Authenticate User Controller', () => {
 			.post('/sessions')
 			.send({ email: userTest.email, password: 'incorrectPassword' });
 
-		expect(response.status).toBe(400);
+		expect(response.status).toBe(HTTP_STATUS.bad_request);
 	});
 });
