@@ -1,5 +1,6 @@
 import { IUpdateUserRequest } from '@modules/accounts/dtos/user.dtos';
 import { resolveUpdateUserService } from '@modules/accounts/useCases/updateUser/updateUser.container';
+import { HTTP_STATUS } from '@shared/constants/httpStatus';
 import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class UpdateUserController {
@@ -11,7 +12,7 @@ class UpdateUserController {
 
 		await service.execute({ id, name, email, surname, password });
 
-		return response.status(204).send();
+		return response.status(HTTP_STATUS.no_content).send();
 	}
 }
 
