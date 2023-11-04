@@ -1,11 +1,10 @@
-import AppError from '@shared/errors/AppError';
-import { CATEGORY_ERRORS } from '@modules/drinks/errors/category.errors';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { ObjectId } from 'bson';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateCategoryService } from '@modules/drinks/useCases/updateCategory/UpdateCategory.service';
 import { ICategoryTranslation } from '@modules/drinks/entities/category.entity';
 import { ITranslations } from '@modules/drinks/types/translations';
+import { BadRequestError } from '@shared/errors/error.lib';
 
 let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
 let updateCategoryService: UpdateCategoryService;
@@ -50,7 +49,7 @@ describe('Update Category', () => {
 				id: new ObjectId().toString(),
 				translations: updatedTranslations
 			})
-		).rejects.toEqual(new AppError(CATEGORY_ERRORS.not_exist));
+		).rejects.toBeInstanceOf(BadRequestError);
 	});
 
 	it('should not be able to update an ingredient name to an existing name', async () => {
@@ -63,6 +62,6 @@ describe('Update Category', () => {
 				id: createdCategory._id,
 				translations: updatedTranslations
 			})
-		).rejects.toEqual(new AppError(CATEGORY_ERRORS.already_exist));
+		).rejects.toBeInstanceOf(BadRequestError);
 	});
 });

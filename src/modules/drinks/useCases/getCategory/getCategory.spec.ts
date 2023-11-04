@@ -1,11 +1,10 @@
-import AppError from '@shared/errors/AppError';
-import { CATEGORY_ERRORS } from '@modules/drinks/errors/category.errors';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { ObjectId } from 'bson';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { GetCategoryService } from '@modules/drinks/useCases/getCategory/GetCategory.service';
 import { ITranslations } from '@modules/drinks/types/translations';
 import { ICategoryTranslation } from '@modules/drinks/entities/category.entity';
+import { BadRequestError } from '@shared/errors/error.lib';
 
 let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
 let getCategoryService: GetCategoryService;
@@ -35,8 +34,6 @@ describe('Get Ingredient', () => {
 	it('should not be able to find a nonexistent category', async () => {
 		const nonexistentId = new ObjectId().toString();
 
-		await expect(getCategoryService.execute({ id: nonexistentId })).rejects.toEqual(
-			new AppError(CATEGORY_ERRORS.not_found)
-		);
+		await expect(getCategoryService.execute({ id: nonexistentId })).rejects.toBeInstanceOf(BadRequestError);
 	});
 });

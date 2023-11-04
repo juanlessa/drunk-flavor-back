@@ -1,5 +1,3 @@
-import AppError from '@shared/errors/AppError';
-import { DRINK_ERRORS } from '@modules/drinks/errors/drink.errors';
 import { DrinksRepositoryInMemory } from '@modules/drinks/repositories/inMemory/DrinksRepository';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { ObjectId } from 'bson';
@@ -10,6 +8,7 @@ import { ITranslations } from '@modules/drinks/types/translations';
 import { IDrinkTranslation } from '@modules/drinks/entities/drink.entity';
 import { IIngredient, IIngredientTranslation } from '@modules/drinks/entities/ingredient.entity';
 import { ICategory, ICategoryTranslation } from '@modules/drinks/entities/category.entity';
+import { BadRequestError } from '@shared/errors/error.lib';
 
 let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
 let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;
@@ -93,7 +92,7 @@ describe('Update Drink', () => {
 				translations: updatedTranslations,
 				ingredients: [{ ingredient_id: updatedIngredient._id, quantity: 12 }]
 			})
-		).rejects.toEqual(new AppError(DRINK_ERRORS.not_exist));
+		).rejects.toBeInstanceOf(BadRequestError);
 	});
 
 	it('should not be able to update drink name to an already existing name', async () => {
@@ -112,7 +111,7 @@ describe('Update Drink', () => {
 				translations: updatedTranslations,
 				ingredients: [{ ingredient_id: updatedIngredient._id, quantity: 12 }]
 			})
-		).rejects.toEqual(new AppError(DRINK_ERRORS.name_already_exit));
+		).rejects.toBeInstanceOf(BadRequestError);
 	});
 
 	it('should not be able to update a drink to add a nonexistent ingredient', async () => {
@@ -128,6 +127,6 @@ describe('Update Drink', () => {
 				translations: updatedTranslations,
 				ingredients: [{ ingredient_id: nonexistentIngredientId, quantity: 12 }]
 			})
-		).rejects.toEqual(new AppError(DRINK_ERRORS.some_ingredients_not_exist));
+		).rejects.toBeInstanceOf(BadRequestError);
 	});
 });

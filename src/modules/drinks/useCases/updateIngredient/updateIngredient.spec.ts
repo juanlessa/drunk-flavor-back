@@ -1,13 +1,12 @@
-import AppError from '@shared/errors/AppError';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { ObjectId } from 'bson';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateIngredientService } from '@modules/drinks/useCases/updateIngredient/UpdateIngredient.service';
-import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredient.errors';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { ICategory, ICategoryTranslation } from '@modules/drinks/entities/category.entity';
 import { IIngredient, IIngredientTranslation } from '@modules/drinks/entities/ingredient.entity';
 import { ITranslations } from '@modules/drinks/types/translations';
+import { BadRequestError } from '@shared/errors/error.lib';
 
 let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
 let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;
@@ -83,7 +82,7 @@ describe('Update Ingredient', () => {
 				category_id: updatedCategory._id,
 				is_alcoholic: updatedIsAlcoholic
 			})
-		).rejects.toEqual(new AppError(INGREDIENT_ERRORS.not_exist));
+		).rejects.toBeInstanceOf(BadRequestError);
 	});
 
 	it('should not be able to update an ingredient name to an existing name', async () => {
@@ -100,9 +99,8 @@ describe('Update Ingredient', () => {
 				category_id: updatedCategory._id,
 				is_alcoholic: updatedIsAlcoholic
 			})
-		).rejects.toEqual(new AppError(INGREDIENT_ERRORS.already_exist));
+		).rejects.toBeInstanceOf(BadRequestError);
 	});
-
 	it('should not be able to update an ingredient to a nonexistent category', async () => {
 		await expect(
 			updateIngredientService.execute({
@@ -111,6 +109,6 @@ describe('Update Ingredient', () => {
 				category_id: new ObjectId().toString(),
 				is_alcoholic: updatedIsAlcoholic
 			})
-		).rejects.toEqual(new AppError(INGREDIENT_ERRORS.invalid_category_format));
+		).rejects.toBeInstanceOf(BadRequestError);
 	});
 });
