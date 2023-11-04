@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import AppError from '@shared/errors/AppError';
 import { AppNextFunction, AppRequest, AppResponse } from '../types';
+import { BadRequestError } from '@shared/errors/error.lib';
 
 export const validateSchema =
 	<T>(schema: z.ZodTypeAny) =>
@@ -11,7 +11,7 @@ export const validateSchema =
 
 		if (!result.success) {
 			const { issues } = result.error;
-			throw new AppError(issues[0].message);
+			throw new BadRequestError(issues[0].message, { path: 'validateSchema.middleware' });
 		}
 
 		request.body = result.data;

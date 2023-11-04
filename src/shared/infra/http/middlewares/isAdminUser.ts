@@ -1,25 +1,25 @@
-import AppError from '@shared/errors/AppError';
 import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authentication.errors';
 import { USER_ERRORS } from '@modules/accounts/errors/user.errors';
 import { UsersRepository } from '@modules/accounts/infra/mongo/repositories/Users.repository';
 import { ROLES } from '@modules/accounts/types/roles';
 import { AppNextFunction, AppRequest, AppResponse } from '../types';
+import { ForbiddenError, UnauthorizedError } from '@shared/errors/error.lib';
 
 export async function isUserAdmin(request: AppRequest, response: AppResponse, next: AppNextFunction) {
 	const { id: userId } = request.user;
 	if (!userId) {
-		throw new AppError(AUTHENTICATION_ERRORS.not_authenticated, 401);
+		throw new UnauthorizedError(AUTHENTICATION_ERRORS.not_authenticated, { path: 'isUserAdmin.middleware' });
 	}
 
 	const usersRepository = new UsersRepository();
 
 	const user = await usersRepository.findById(userId);
 	if (!user) {
-		throw new AppError(USER_ERRORS.not_exist, 401);
+		throw new UnauthorizedError(USER_ERRORS.not_exist, { path: 'isUserAdmin.middleware' });
 	}
 
 	if (user.role !== ROLES.admin) {
-		throw new AppError(AUTHENTICATION_ERRORS.invalid_permission, 403);
+		throw new ForbiddenError(AUTHENTICATION_ERRORS.invalid_permission, { path: 'isUserAdmin.middleware' });
 	}
 	next();
 }
