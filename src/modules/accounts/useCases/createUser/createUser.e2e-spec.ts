@@ -1,25 +1,22 @@
+import { resolveAuthenticateUserService } from '@modules/accounts/useCases/authenticateUser/authenticateUser.container';
 import { ICreateUser } from '@modules/accounts/dtos/user.dtos';
-import { UsersRepository } from '@modules/accounts/infra/mongo/repositories/Users.repository';
-import { UsersTokensRepository } from '@modules/accounts/infra/mongo/repositories/UsersTokens.repository';
 import { IUsersRepository } from '@modules/accounts/repositories/IUsers.repository';
-import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTokens.repository';
 import { ROLES } from '@modules/accounts/types/roles';
-import { DayjsDateProvider } from '@shared/container/providers/date/implementations/DayjsDateProvider';
 import { BcryptProvider } from '@shared/container/providers/encryption/implementations/Bcrypt.provider';
 import { JsonwebtokenProvider } from '@shared/container/providers/jwt/implementations/Jsonwebtoken.provider';
 import { app } from '@shared/infra/http/app';
 import request from 'supertest';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { AuthenticateUserService } from '@modules/accounts/useCases/authenticateUser/AuthenticateUser.service';
-import { dropCollection, emptyCollection, initiateMongo } from '@shared/infra/mongo';
 import { UserToken } from '@modules/accounts/infra/mongo/entities/userToken.model';
 import { User } from '@modules/accounts/infra/mongo/entities/user.model';
 import auth from '@config/auth';
+import { MongoRepository } from '@shared/infra/mongo/Mongo.repository';
+import { resolveJwtProvider } from '@shared/container/providers/jwt';
+import { resolveUsersRepository } from '@modules/accounts/container';
 
 let usersRepository: IUsersRepository;
-let usersTokensRepository: IUsersTokensRepository;
 let encryptionProvider: BcryptProvider;
-let dateProvider: DayjsDateProvider;
 let jwtProvider: JsonwebtokenProvider;
 let authenticateUserService: AuthenticateUserService;
 
@@ -41,30 +38,15 @@ const partnerUser: ICreateUser = {
 
 describe('Create user Controller', () => {
 	beforeAll(async () => {
-		usersRepository = new UsersRepository();
-		usersTokensRepository = new UsersTokensRepository();
+		usersRepository = resolveUsersRepository();
 		encryptionProvider = new BcryptProvider();
-		dateProvider = new DayjsDateProvider();
-		jwtProvider = new JsonwebtokenProvider();
-		authenticateUserService = new AuthenticateUserService(
-			usersRepository,
-			usersTokensRepository,
-			dateProvider,
-			jwtProvider,
-			encryptionProvider
-		);
-
-		await initiateMongo();
+		jwtProvider = resolveJwtProvider();
+		authenticateUserService = resolveAuthenticateUserService();
 	});
 
 	beforeEach(async () => {
-		await emptyCollection(User);
-		await emptyCollection(UserToken);
-	});
-
-	afterAll(async () => {
-		await dropCollection(User);
-		await dropCollection(UserToken);
+		await MongoRepository.Instance.emptyCollection(User);
+		await MongoRepository.Instance.emptyCollection(UserToken);
 	});
 
 	it('Should be able to create a user', async () => {
