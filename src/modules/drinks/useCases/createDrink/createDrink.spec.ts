@@ -1,5 +1,3 @@
-import AppError from '@shared/errors/AppError';
-import { DRINK_ERRORS } from '@modules/drinks/errors/drink.errors';
 import { DrinksRepositoryInMemory } from '@modules/drinks/repositories/inMemory/DrinksRepository';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { ObjectId } from 'bson';
@@ -10,6 +8,7 @@ import { ICategory, ICategoryTranslation } from '@modules/drinks/entities/catego
 import { IIngredient, IIngredientTranslation } from '@modules/drinks/entities/ingredient.entity';
 import { ITranslations } from '@modules/drinks/types/translations';
 import { IDrinkTranslation } from '@modules/drinks/entities/drink.entity';
+import { BadRequestError } from '@shared/errors/error.lib';
 
 let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
 let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;
@@ -81,7 +80,7 @@ describe('Create Drink', () => {
 				translations: translationsSameName,
 				ingredients: [{ ingredient_id: createdIngredient._id, quantity: 60 }]
 			})
-		).rejects.toEqual(new AppError(DRINK_ERRORS.already_exist));
+		).rejects.toBeInstanceOf(BadRequestError);
 	});
 
 	it('should not be able to create a drink with a nonexistent ingredient', async () => {
@@ -90,6 +89,6 @@ describe('Create Drink', () => {
 				translations,
 				ingredients: [{ ingredient_id: new ObjectId().toString(), quantity: 60 }]
 			})
-		).rejects.toEqual(new AppError(DRINK_ERRORS.some_ingredients_not_exist));
+		).rejects.toBeInstanceOf(BadRequestError);
 	});
 });

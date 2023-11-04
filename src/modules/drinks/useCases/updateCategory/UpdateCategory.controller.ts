@@ -1,5 +1,6 @@
 import { IUpdateCategory } from '@modules/drinks/dtos/category.dtos';
 import { resolveUpdateCategoryService } from '@modules/drinks/useCases/updateCategory/updateCategory.container';
+import { HTTP_STATUS } from '@shared/constants/httpStatus';
 import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class UpdateCategoryController {
@@ -10,7 +11,7 @@ class UpdateCategoryController {
 
 		await service.execute({ id, translations });
 
-		return response.status(204).send();
+		return response.status(HTTP_STATUS.no_content).send();
 	}
 }
 

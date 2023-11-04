@@ -1,12 +1,11 @@
 import auth from '@config/auth';
-import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authentication.errors';
 import { UsersTokensRepositoryInMemory } from '@modules/accounts/repositories/inMemory/UsersTokens.repository';
 import { DayjsDateProvider } from '@shared/container/providers/date/implementations/DayjsDateProvider';
 import { JsonwebtokenProvider } from '@shared/container/providers/jwt/implementations/Jsonwebtoken.provider';
-import AppError from '@shared/errors/AppError';
 import { ObjectId } from 'bson';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { RefreshTokenService } from '@modules/accounts/useCases/refreshToken/RefreshToken.service';
+import { UnauthorizedError } from '@shared/errors/error.lib';
 
 let usersTokensRepositoryInMemory: UsersTokensRepositoryInMemory;
 let refreshTokenService: RefreshTokenService;
@@ -34,7 +33,7 @@ describe('Refresh token', () => {
 			secret: auth.secret_refresh_token,
 			expires_in: auth.expires_in_refresh_token
 		});
-		expires_date = dateProvider.addDays(auth.expires_refresh_token_days);
+		expires_date = dateProvider.addSeconds(auth.expires_refresh_token_seconds);
 
 		invalid_refresh_token = jwtProvider.createRefreshToken({
 			sign_property: email,
@@ -59,14 +58,12 @@ describe('Refresh token', () => {
 	});
 
 	it('Should not be able to refresh a invalid token', async () => {
-		await expect(refreshTokenService.execute({ token: invalid_refresh_token })).rejects.toEqual(
-			new AppError(AUTHENTICATION_ERRORS.invalid_token, 401)
+		await expect(refreshTokenService.execute({ token: invalid_refresh_token })).rejects.toBeInstanceOf(
+			UnauthorizedError
 		);
 	});
 
 	it('Should not be able to use a nonexistent refresh token', async () => {
-		await expect(refreshTokenService.execute({ token: refresh_token })).rejects.toEqual(
-			new AppError(AUTHENTICATION_ERRORS.not_exist_refresh_token)
-		);
+		await expect(refreshTokenService.execute({ token: refresh_token })).rejects.toBeInstanceOf(UnauthorizedError);
 	});
 });

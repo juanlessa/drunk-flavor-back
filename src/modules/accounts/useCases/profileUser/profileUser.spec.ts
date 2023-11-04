@@ -1,10 +1,9 @@
-import { USER_ERRORS } from '@modules/accounts/errors/user.errors';
 import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory/Users.repository';
 import { ROLES } from '@modules/accounts/types/roles';
-import AppError from '@shared/errors/AppError';
 import { ObjectId } from 'bson';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ProfileUserService } from '@modules/accounts/useCases/profileUser/ProfileUser.service';
+import { BadRequestError } from '@shared/errors/error.lib';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
 let profileUserService: ProfileUserService;
@@ -37,8 +36,6 @@ describe('User Profile', () => {
 
 	it('Should not be able to find a nonexistent user profile', async () => {
 		const nonexistentId = new ObjectId().toString();
-		await expect(profileUserService.execute({ id: nonexistentId })).rejects.toEqual(
-			new AppError(USER_ERRORS.not_exist)
-		);
+		await expect(profileUserService.execute({ id: nonexistentId })).rejects.toBeInstanceOf(BadRequestError);
 	});
 });

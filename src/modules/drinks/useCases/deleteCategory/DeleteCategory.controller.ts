@@ -1,5 +1,6 @@
 import { IDeleteCategory } from '@modules/drinks/dtos/category.dtos';
 import { resolveDeleteCategoryService } from '@modules/drinks/useCases/deleteCategory/deleteCategory.container';
+import { HTTP_STATUS } from '@shared/constants/httpStatus';
 import { AppRequest, AppResponse } from '@shared/infra/http/types';
 
 class DeleteCategoryController {
@@ -10,7 +11,7 @@ class DeleteCategoryController {
 
 		await service.execute({ id });
 
-		return response.status(204).send();
+		return response.status(HTTP_STATUS.no_content).send();
 	}
 }
 

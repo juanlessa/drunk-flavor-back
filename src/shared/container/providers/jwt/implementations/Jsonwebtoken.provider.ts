@@ -1,7 +1,7 @@
 import { sign, verify } from 'jsonwebtoken';
 import { IJwtProvider } from '../IJwt.provider';
 import { ICreateToken, ICreateRefreshToken, IPayload, IVerifyRefreshToken, IVerifyToken } from '../jwt.dtos';
-import AppError from '@shared/errors/AppError';
+import { UnauthorizedError } from '@shared/errors/error.lib';
 
 class JsonwebtokenProvider implements IJwtProvider {
 	createToken({ subject, secret, expires_in }: ICreateToken): string {
@@ -25,7 +25,7 @@ class JsonwebtokenProvider implements IJwtProvider {
 		try {
 			decode = verify(refresh_token, secret) as IPayload;
 		} catch {
-			throw new AppError('Invalid token', 401);
+			throw new UnauthorizedError('Invalid token', { path: 'Jsonwebtoken.provider' });
 		}
 
 		return decode;
@@ -36,7 +36,7 @@ class JsonwebtokenProvider implements IJwtProvider {
 		try {
 			decode = verify(token, secret) as IPayload;
 		} catch {
-			throw new AppError('Invalid token', 401);
+			throw new UnauthorizedError('Invalid token', { path: 'Jsonwebtoken.provider' });
 		}
 
 		return decode;

@@ -1,6 +1,4 @@
-import AppError from '@shared/errors/AppError';
 import { ICategory, ICategoryTranslation } from '@modules/drinks/entities/category.entity';
-import { INGREDIENT_ERRORS } from '@modules/drinks/errors/ingredient.errors';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
 import { ObjectId } from 'bson';
@@ -8,6 +6,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { CreateIngredientService } from '@modules/drinks/useCases/createIngredient/CreateIngredient.service';
 import { ITranslations } from '@modules/drinks/types/translations';
 import { IIngredientTranslation } from '@modules/drinks/entities/ingredient.entity';
+import { BadRequestError } from '@shared/errors/error.lib';
 
 let ingredientsRepositoryInMemory: IngredientsRepositoryInMemory;
 let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
@@ -74,7 +73,7 @@ describe('Create Ingredient', () => {
 				is_alcoholic: isAlcoholic,
 				category_id: createdCategory._id
 			})
-		).rejects.toEqual(new AppError(INGREDIENT_ERRORS.already_exist));
+		).rejects.toBeInstanceOf(BadRequestError);
 	});
 
 	it('should not be able to create a ingredient with a nonexistent category', async () => {
@@ -84,6 +83,6 @@ describe('Create Ingredient', () => {
 				category_id: new ObjectId().toString(),
 				is_alcoholic: isAlcoholic
 			})
-		).rejects.toEqual(new AppError(INGREDIENT_ERRORS.invalid_category_format));
+		).rejects.toBeInstanceOf(BadRequestError);
 	});
 });

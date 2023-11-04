@@ -1,5 +1,3 @@
-import AppError from '@shared/errors/AppError';
-import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authentication.errors';
 import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory/Users.repository';
 import { UsersTokensRepositoryInMemory } from '@modules/accounts/repositories/inMemory/UsersTokens.repository';
 import { ROLES } from '@modules/accounts/types/roles';
@@ -8,6 +6,7 @@ import { BcryptProvider } from '@shared/container/providers/encryption/implement
 import { JsonwebtokenProvider } from '@shared/container/providers/jwt/implementations/Jsonwebtoken.provider';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { AuthenticateUserService } from '@modules/accounts/useCases/authenticateUser/AuthenticateUser.service';
+import { BadRequestError } from '@shared/errors/error.lib';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
 let usersTokensRepositoryInMemory: UsersTokensRepositoryInMemory;
@@ -62,7 +61,7 @@ describe('Authenticate User', () => {
 				email,
 				password: planPassword
 			})
-		).rejects.toEqual(new AppError(AUTHENTICATION_ERRORS.invalid_credentials));
+		).rejects.toBeInstanceOf(BadRequestError);
 	});
 
 	it('should not be able to authenticate an user with incorrect password', async () => {
@@ -79,6 +78,6 @@ describe('Authenticate User', () => {
 				email: email,
 				password: 'incorrectPassword'
 			})
-		).rejects.toEqual(new AppError(AUTHENTICATION_ERRORS.invalid_credentials));
+		).rejects.toBeInstanceOf(BadRequestError);
 	});
 });

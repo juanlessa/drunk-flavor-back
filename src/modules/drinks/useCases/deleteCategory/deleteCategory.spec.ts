@@ -1,11 +1,10 @@
-import AppError from '@shared/errors/AppError';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { ObjectId } from 'bson';
-import { CATEGORY_ERRORS } from '@modules/drinks/errors/category.errors';
 import { ITranslations } from '@modules/drinks/types/translations';
 import { ICategoryTranslation } from '@modules/drinks/entities/category.entity';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { DeleteCategoryService } from '@modules/drinks/useCases/deleteCategory/DeleteCategory.service';
+import { BadRequestError } from '@shared/errors/error.lib';
 
 let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
 let deleteCategoryService: DeleteCategoryService;
@@ -36,8 +35,6 @@ describe('Delete category', () => {
 
 	it('should not be able to delete a nonexistent ingredient', async () => {
 		const nonexistentId = new ObjectId().toString();
-		await expect(deleteCategoryService.execute({ id: nonexistentId })).rejects.toEqual(
-			new AppError(CATEGORY_ERRORS.not_exist)
-		);
+		await expect(deleteCategoryService.execute({ id: nonexistentId })).rejects.toBeInstanceOf(BadRequestError);
 	});
 });

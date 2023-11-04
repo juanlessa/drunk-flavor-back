@@ -1,11 +1,10 @@
-import AppError from '@shared/errors/AppError';
 import { ICreateUser } from '@modules/accounts/dtos/user.dtos';
-import { USER_ERRORS } from '@modules/accounts/errors/user.errors';
 import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory/Users.repository';
 import { ROLES } from '@modules/accounts/types/roles';
 import { ObjectId } from 'bson';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { DeleteUserService } from '@modules/accounts/useCases/deleteUser/DeleteUser.service';
+import { BadRequestError } from '@shared/errors/error.lib';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
 let deleteUserService: DeleteUserService;
@@ -41,8 +40,6 @@ describe('Delete User', () => {
 
 	it('should not be able to delete a nonexistent user', async () => {
 		const nonexistentId = new ObjectId().toString();
-		await expect(deleteUserService.execute({ id: nonexistentId })).rejects.toEqual(
-			new AppError(USER_ERRORS.not_exist)
-		);
+		await expect(deleteUserService.execute({ id: nonexistentId })).rejects.toBeInstanceOf(BadRequestError);
 	});
 });

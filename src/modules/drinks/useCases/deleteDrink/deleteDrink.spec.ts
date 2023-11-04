@@ -1,7 +1,5 @@
-import AppError from '@shared/errors/AppError';
 import { ICategory, ICategoryTranslation } from '@modules/drinks/entities/category.entity';
 import { IIngredient, IIngredientTranslation } from '@modules/drinks/entities/ingredient.entity';
-import { DRINK_ERRORS } from '@modules/drinks/errors/drink.errors';
 import { CategoriesRepositoryInMemory } from '@modules/drinks/repositories/inMemory/Categories.repository';
 import { DrinksRepositoryInMemory } from '@modules/drinks/repositories/inMemory/DrinksRepository';
 import { IngredientsRepositoryInMemory } from '@modules/drinks/repositories/inMemory/IngredientsRepository';
@@ -12,6 +10,7 @@ import { ITranslations } from '@modules/drinks/types/translations';
 import { IDrinkTranslation } from '@modules/drinks/entities/drink.entity';
 import { IStorageProvider } from '@shared/container/providers/storage/IStorage.provider';
 import { LocalStorageProvider } from '@shared/container/providers/storage/implementations/LocalStorage.provider';
+import { BadRequestError } from '@shared/errors/error.lib';
 
 let storageProvider: IStorageProvider;
 let categoriesRepositoryInMemory: CategoriesRepositoryInMemory;
@@ -70,8 +69,6 @@ describe('Delete Drink', () => {
 
 	it('should not be able to delete a nonexistent drink', async () => {
 		const nonexistentId = new ObjectId().toString();
-		await expect(deleteDrinkService.execute({ id: nonexistentId })).rejects.toEqual(
-			new AppError(DRINK_ERRORS.not_exist)
-		);
+		await expect(deleteDrinkService.execute({ id: nonexistentId })).rejects.toBeInstanceOf(BadRequestError);
 	});
 });

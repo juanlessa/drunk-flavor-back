@@ -1,5 +1,4 @@
 import auth from '@config/auth';
-import AppError from '@shared/errors/AppError';
 import { IAuthenticateUser, IAuthenticateUserResponse } from '@modules/accounts/dtos/authentication.dtos';
 import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authentication.errors';
 import { IUsersRepository } from '@modules/accounts/repositories/IUsers.repository';
@@ -7,6 +6,7 @@ import { IUsersTokensRepository } from '@modules/accounts/repositories/IUsersTok
 import { IDateProvider } from '@shared/container/providers/date/IDateProvider';
 import { IEncryptionProvider } from '@shared/container/providers/encryption/IEncryption.provider';
 import { IJwtProvider } from '@shared/container/providers/jwt/IJwt.provider';
+import { BadRequestError } from '@shared/errors/error.lib';
 
 class AuthenticateUserService {
 	constructor(
@@ -20,12 +20,18 @@ class AuthenticateUserService {
 	async execute({ email, password }: IAuthenticateUser): Promise<IAuthenticateUserResponse> {
 		const user = await this.usersRepository.findByEmail(email);
 		if (!user) {
-			throw new AppError(AUTHENTICATION_ERRORS.invalid_credentials);
+			throw new BadRequestError(AUTHENTICATION_ERRORS.invalid_credentials, {
+				path: 'AuthenticateUser.service',
+				cause: 'invalid email'
+			});
 		}
 
 		const passwordMatch = await this.encryptionProvider.compare(password, user.password);
 		if (!passwordMatch) {
-			throw new AppError(AUTHENTICATION_ERRORS.invalid_credentials);
+			throw new BadRequestError(AUTHENTICATION_ERRORS.invalid_credentials, {
+				path: 'AuthenticateUser.service',
+				cause: 'invalid password'
+			});
 		}
 
 		// create token
@@ -43,7 +49,7 @@ class AuthenticateUserService {
 			secret: auth.secret_refresh_token,
 			expires_in: auth.expires_in_refresh_token
 		});
-		const refresh_token_expires_date = this.dateProvider.addDays(auth.expires_refresh_token_days);
+		const refresh_token_expires_date = this.dateProvider.addSeconds(auth.expires_refresh_token_seconds);
 
 		await this.usersTokensRepository.create({
 			expires_date: refresh_token_expires_date,
