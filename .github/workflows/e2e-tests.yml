@@ -41,7 +41,9 @@ jobs:
       run: npm install
 
     - name: Run tests
-      run: npm run test:e2e
+      run: |
+        npm run test:e2e:setup
+        npm run test:e2e
       env:
         LOGGER_ENABLED: false
         MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
