@@ -35,7 +35,7 @@ describe('Delete User', () => {
 
 		const findDeledUser = await usersRepositoryInMemory.findById(createdUser._id);
 
-		expect(findDeledUser).toBeUndefined();
+		expect(findDeledUser).toBeNull();
 	});
 
 	it('should not be able to delete a nonexistent user', async () => {

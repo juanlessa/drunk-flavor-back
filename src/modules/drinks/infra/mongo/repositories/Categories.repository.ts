@@ -3,31 +3,45 @@ import { ICategory } from '@modules/drinks/entities/category.entity';
 import { ICategoriesRepository } from '@modules/drinks/repositories/ICategories.repository';
 import { Category } from '@modules/drinks/infra/mongo/entities/category.model';
 import { getNameCompareQuery } from '@modules/drinks/infra/mongo/utils/getNameCompareQuery';
+import { NotFoundError } from '@shared/errors/error.lib';
+import { CATEGORY_ERRORS } from '@modules/drinks/errors/category.errors';
 
 class CategoriesRepository implements ICategoriesRepository {
 	async create(data: ICreateCategory): Promise<ICategory> {
-		const category = new Category(data);
-		await category.save();
-		return category;
+		return Category.create(data);
 	}
-	async update({ id, translations }: IUpdateCategory): Promise<ICategory> {
-		return await Category.findByIdAndUpdate<ICategory>({ _id: id }, { translations }).exec();
+	async update({ id, ...data }: IUpdateCategory): Promise<ICategory> {
+		const category = await Category.findByIdAndUpdate<ICategory>(id, data, { new: true }).exec();
+		if (!category) {
+			throw new NotFoundError(CATEGORY_ERRORS.not_found, {
+				path: 'Categories.repository',
+				cause: 'Error on findByIdAndUpdate operation'
+			});
+		}
+		return category;
 	}
 
 	async delete(id: string): Promise<ICategory> {
-		return await Category.findOneAndDelete<ICategory>({ _id: id }).exec();
+		const category = await Category.findByIdAndDelete<ICategory>(id).exec();
+		if (!category) {
+			throw new NotFoundError(CATEGORY_ERRORS.not_found, {
+				path: 'Categories.repository',
+				cause: 'Error on findOneAndDelete operation'
+			});
+		}
+		return category;
 	}
 
-	async findByName(data: IFindCategoryByName): Promise<ICategory> {
-		return await Category.findOne<ICategory>({ $or: getNameCompareQuery(data) }).exec();
+	async findByName(data: IFindCategoryByName): Promise<ICategory | null> {
+		return Category.findOne<ICategory>({ $or: getNameCompareQuery(data) }).exec();
 	}
 
-	async findById(id: string): Promise<ICategory> {
-		return await Category.findById<ICategory>(id).exec();
+	async findById(id: string): Promise<ICategory | null> {
+		return Category.findById<ICategory>(id).exec();
 	}
 
 	async findAll(): Promise<ICategory[]> {
-		return await Category.find<ICategory>().exec();
+		return Category.find<ICategory>().exec();
 	}
 }
 

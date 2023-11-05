@@ -1,6 +1,7 @@
 export enum USER_ERRORS {
 	not_exist = 'User does not exist',
 	already_exist = 'User already exists',
+	not_found = 'User not found',
 	required_id = 'id is required',
 	invalid_id_format = 'id invalid',
 	required_name = 'name is required',

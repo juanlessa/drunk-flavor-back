@@ -64,7 +64,7 @@ describe('Delete Drink', () => {
 
 		const findDeledDrink = await drinksRepositoryInMemory.findById(createdDrink._id);
 
-		expect(findDeledDrink).toBeUndefined();
+		expect(findDeledDrink).toBeNull();
 	});
 
 	it('should not be able to delete a nonexistent drink', async () => {

@@ -3,6 +3,8 @@ import { ICreateCategory, IFindCategoryByName, IUpdateCategory } from '@modules/
 import { ICategoriesRepository } from '@modules/drinks/repositories/ICategories.repository';
 import { ObjectId } from 'bson';
 import { compareTranslationsName } from '@modules/drinks/repositories/inMemory/utils/compareTranslationsName';
+import { NotFoundError } from '@shared/errors/error.lib';
+import { CATEGORY_ERRORS } from '@modules/drinks/errors/category.errors';
 
 class CategoriesRepositoryInMemory implements ICategoriesRepository {
 	categories: ICategory[] = [];
@@ -16,53 +18,52 @@ class CategoriesRepositoryInMemory implements ICategoriesRepository {
 		};
 
 		this.categories.push(category);
-
 		return category;
 	}
 
-	async update({ id, translations }: IUpdateCategory): Promise<ICategory> {
-		let category: ICategory;
+	async update({ id, ...data }: IUpdateCategory): Promise<ICategory> {
+		const categoryIndex = this.categories.findIndex((cat) => cat._id === id);
+		if (categoryIndex === -1) {
+			throw new NotFoundError(CATEGORY_ERRORS.not_found, {
+				path: 'CategoriesInMemory.repository',
+				cause: 'Error on findByIdAndUpdate operation'
+			});
+		}
+		const category = this.categories[categoryIndex];
+		category.translations = data.translations ?? category.translations;
+		category.updated_at = new Date();
 
-		this.categories = this.categories.map((cat) => {
-			if (cat._id === id) {
-				category = {
-					_id: cat._id,
-					translations,
-					created_at: cat.created_at,
-					updated_at: new Date()
-				};
-				return category;
-			}
-			return cat;
-		});
-
+		this.categories[categoryIndex] = category;
 		return category;
 	}
 
 	async delete(id: string): Promise<ICategory> {
-		let category: ICategory;
 		const categoryIndex = this.categories.findIndex((cat) => cat._id === id);
-		if (categoryIndex != -1) {
-			const deleted = this.categories.splice(categoryIndex, 1);
-			category = deleted[0];
+		if (categoryIndex === -1) {
+			throw new NotFoundError(CATEGORY_ERRORS.not_found, {
+				path: 'CategoriesInMemory.repository',
+				cause: 'Error on findByIdAndDelete operation'
+			});
 		}
-		return category;
+		const [deletedCategory] = this.categories.splice(categoryIndex, 1);
+		return deletedCategory;
 	}
 
-	async findByName(translations: IFindCategoryByName): Promise<ICategory> {
+	async findByName(translations: IFindCategoryByName): Promise<ICategory | null> {
 		const category = this.categories.find((cat) => compareTranslationsName(cat.translations, translations));
-		return category;
+		return category || null;
 	}
 
-	async findById(id: string): Promise<ICategory> {
+	async findById(id: string): Promise<ICategory | null> {
 		const category = this.categories.find((cat) => cat._id === id);
-		return category;
+		return category || null;
 	}
 
 	async findAll(): Promise<ICategory[]> {
 		const categories = [...this.categories];
 		return categories;
 	}
+
 	async findByIdList(ids: string[]): Promise<ICategory[]> {
 		const categories = this.categories.filter((cat) => ids.includes(cat._id));
 		return categories;

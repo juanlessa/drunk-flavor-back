@@ -6,7 +6,7 @@ export interface IDrinksRepository {
 	create(data: ICreateDrink): Promise<IDrink>;
 	update(data: IUpdateDrink): Promise<IDrink>;
 	delete(id: string): Promise<IDrink>;
-	findByName(data: IFindIngredientByName): Promise<IDrink>;
-	findById(id: string): Promise<IDrink>;
+	findByName(data: IFindIngredientByName): Promise<IDrink | null>;
+	findById(id: string): Promise<IDrink | null>;
 	findAll(): Promise<IDrink[]>;
 }
