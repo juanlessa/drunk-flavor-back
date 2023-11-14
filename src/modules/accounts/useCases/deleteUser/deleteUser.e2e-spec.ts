@@ -40,7 +40,7 @@ const partnerUser: ICreateUser = {
 	role: ROLES.partner
 };
 
-describe('Create user Controller', () => {
+describe('Delete user Controller', () => {
 	beforeAll(async () => {
 		usersRepository = resolveUsersRepository();
 		encryptionProvider = resolveEncryptionProvider();
