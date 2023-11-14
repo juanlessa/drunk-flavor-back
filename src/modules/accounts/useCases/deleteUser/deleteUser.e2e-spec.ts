@@ -106,7 +106,7 @@ describe('Delete user Controller', () => {
 
 		const response = await request(app)
 			.delete('/users')
-			.send(partnerUser)
+			.send({ id: 'user_id' })
 			.set('Authorization', `Bearer ${invalidUserToken}`);
 
 		expect(response.status).toBe(HTTP_STATUS.unauthorized);
