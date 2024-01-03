@@ -11,13 +11,14 @@ import { errorHandler } from '@shared/infra/http/middlewares/errorHandler';
 import docs from '@shared/docs';
 import { resolveLoggerProvider } from '@shared/container/providers/logger';
 import { MongoRepository } from '../mongo/Mongo.repository';
+import corsConfig from '@config/cors';
 
 const app = express();
 
 MongoRepository.Instance.start();
 const logger = resolveLoggerProvider();
 
-app.use(cors());
+app.use(cors(corsConfig));
 app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(docs));
 app.use('/files', express.static(resolve(__dirname, '..', '..', '..', '..', 'tmp', 'drink')));
