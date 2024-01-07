@@ -60,13 +60,14 @@ class AuthenticateUserService {
 		return {
 			user: {
 				name: user.name,
+				surname: user.surname,
 				email: user.email
 			},
-			token: {
+			accessToken: {
 				token: token,
 				expires: token_expires_date
 			},
-			refresh_token: {
+			refreshToken: {
 				token: refresh_token,
 				expires: refresh_token_expires_date
 			}

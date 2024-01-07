@@ -1,25 +1,24 @@
 import auth from '@config/auth';
 import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authentication.errors';
 import { USER_ERRORS } from '@modules/accounts/errors/user.errors';
-import { UsersRepository } from '@modules/accounts/infra/mongo/repositories/Users.repository';
-import { JsonwebtokenProvider } from '@shared/container/providers/jwt/implementations/Jsonwebtoken.provider';
 import { AppNextFunction, AppRequest, AppResponse } from '../types';
 import { UnauthorizedError } from '@shared/errors/error.lib';
+import { resolveJwtProvider } from '@shared/container/providers/jwt';
+import { resolveUsersRepository } from '@modules/accounts/container';
 
-export async function ensureAuthenticated(request: AppRequest, response: AppResponse, next: AppNextFunction) {
-	const authHeader = request.headers.authorization;
-	if (!authHeader) {
+export async function ensureAuthenticated(request: AppRequest, _response: AppResponse, next: AppNextFunction) {
+	const accessToken = request.cookies.authorization as string | undefined;
+
+	if (!accessToken) {
 		throw new UnauthorizedError(AUTHENTICATION_ERRORS.missing_token, { path: 'ensureAuthenticated.middleware' });
 	}
 
-	const [, token] = authHeader.split(' ');
-
 	try {
-		const jwtProvider = new JsonwebtokenProvider();
+		const jwtProvider = resolveJwtProvider();
 
-		const { sub: user_id } = jwtProvider.verifyToken({ token, secret: auth.secret_token });
+		const { sub: user_id } = jwtProvider.verifyToken({ token: accessToken, secret: auth.secret_token });
 
-		const usersRepository = new UsersRepository();
+		const usersRepository = resolveUsersRepository();
 
 		const user = await usersRepository.findById(user_id);
 		if (!user) {

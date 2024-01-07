@@ -8,12 +8,19 @@ class AuthenticateUserController {
 
 		const service = resolveAuthenticateUserService();
 
-		const tokens = await service.execute({
+		const { user, accessToken, refreshToken } = await service.execute({
 			password,
 			email
 		});
 
-		return response.json(tokens);
+		return response
+			.cookie('authorization', accessToken.token, {
+				path: '/',
+				secure: true,
+				sameSite: true,
+				httpOnly: true
+			})
+			.json(user);
 	}
 }
 

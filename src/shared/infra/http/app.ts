@@ -3,6 +3,7 @@ dotenv.config();
 import { resolve } from 'node:path';
 import 'express-async-errors';
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import routes from '@shared/infra/http/routes/index';
 import swaggerUi from 'swagger-ui-express';
@@ -20,6 +21,7 @@ const logger = resolveLoggerProvider();
 
 app.use(cors(corsConfig));
 app.use(express.json());
+app.use(cookieParser());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(docs));
 app.use('/files', express.static(resolve(__dirname, '..', '..', '..', '..', 'tmp', 'drink')));
 app.use(logger.getHttpMiddleware());
