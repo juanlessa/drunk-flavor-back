@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import 'express-async-errors';
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import session from 'express-session';
 import cors from 'cors';
 import routes from '@shared/infra/http/routes/index';
 import swaggerUi from 'swagger-ui-express';
@@ -13,6 +14,7 @@ import docs from '@shared/docs';
 import { resolveLoggerProvider } from '@shared/container/providers/logger';
 import { MongoRepository } from '../mongo/Mongo.repository';
 import corsConfig from '@config/cors';
+import sessionsConfig from '@config/sessions';
 
 const app = express();
 
@@ -22,6 +24,7 @@ const logger = resolveLoggerProvider();
 app.use(cors(corsConfig));
 app.use(express.json());
 app.use(cookieParser());
+app.use(session(sessionsConfig));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(docs));
 app.use('/files', express.static(resolve(__dirname, '..', '..', '..', '..', 'tmp', 'drink')));
 app.use(logger.getHttpMiddleware());
