@@ -7,7 +7,7 @@ export default {
 	resave: false,
 	saveUninitialized: true,
 	cookie: {
-		secure: false,
+		secure: false, // if true only works with HTTPS
 		maxAge: 1000 * 60 * 60 * 24 * 15 // 15 days
 	}
 } as SessionOptions;
