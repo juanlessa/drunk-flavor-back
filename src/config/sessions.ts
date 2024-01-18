@@ -1,6 +1,6 @@
 import { SessionOptions } from 'express-session';
 import authConfig from './auth';
-
+// refresh token
 export default {
 	name: 'refresh-token',
 	secret: authConfig.secret_refresh_token,
