@@ -1,7 +1,7 @@
-import { sign, verify } from 'jsonwebtoken';
+import { JwtPayload, TokenExpiredError, sign, verify } from 'jsonwebtoken';
 import { IJwtProvider } from '../IJwt.provider';
 import { ICreateToken, ICreateRefreshToken, IPayload, IVerifyRefreshToken, IVerifyToken } from '../jwt.dtos';
-import { UnauthorizedError } from '@shared/errors/error.lib';
+import { ForbiddenError } from '@shared/errors/error.lib';
 
 class JsonwebtokenProvider implements IJwtProvider {
 	createToken({ subject, secret, expires_in }: ICreateToken): string {
@@ -25,21 +25,22 @@ class JsonwebtokenProvider implements IJwtProvider {
 		try {
 			decode = verify(refresh_token, secret) as IPayload;
 		} catch {
-			throw new UnauthorizedError('Invalid token', { path: 'Jsonwebtoken.provider' });
+			throw new ForbiddenError('Invalid token', { path: 'Jsonwebtoken.provider' });
 		}
 
 		return decode;
 	}
 
 	verifyToken({ token, secret }: IVerifyToken): IPayload {
-		let decode: IPayload;
 		try {
-			decode = verify(token, secret) as IPayload;
-		} catch {
-			throw new UnauthorizedError('Invalid token', { path: 'Jsonwebtoken.provider' });
+			const decoded = verify(token, secret) as JwtPayload;
+			return { subject: decoded.sub || '', isExpired: false };
+		} catch (err) {
+			if (err instanceof TokenExpiredError) {
+				return { subject: '', isExpired: true };
+			}
+			throw new ForbiddenError('invalid token', { cause: token, path: 'jwt.provider.verifyToken' });
 		}
-
-		return decode;
 	}
 }
 

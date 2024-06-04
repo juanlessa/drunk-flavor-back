@@ -1,14 +1,14 @@
 export type ICreateToken = {
 	subject: string;
 	secret: string;
-	expires_in: string;
+	expires_in: number;
 };
 
 export type ICreateRefreshToken = {
 	sign_property: string;
 	subject: string;
 	secret: string;
-	expires_in: string;
+	expires_in: number;
 };
 
 export type IVerifyRefreshToken = {
@@ -22,5 +22,6 @@ export type IVerifyToken = {
 };
 
 export type IPayload = {
-	sub: string;
+	subject: string;
+	isExpired: boolean;
 };
