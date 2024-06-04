@@ -9,12 +9,6 @@ export type IAuthenticateUserResponse = {
 		surname: string;
 		email: string;
 	};
-	accessToken: {
-		token: string;
-		expires: Date;
-	};
-	refreshToken: {
-		token: string;
-		expires: Date;
-	};
+	accessToken: string;
+	refreshToken: string;
 };
