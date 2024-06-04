@@ -14,7 +14,7 @@ import docs from '@shared/docs';
 import { resolveLoggerProvider } from '@shared/container/providers/logger';
 import { MongoRepository } from '../mongo/Mongo.repository';
 import corsConfig from '@config/cors';
-import sessionsConfig from '@config/sessions';
+import { sessionsConfig } from '@config/sessions';
 
 const app = express();
 
