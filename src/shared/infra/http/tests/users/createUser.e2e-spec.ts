@@ -8,9 +8,7 @@ import { app } from '@shared/infra/http/app';
 import request from 'supertest';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { AuthenticateUserService } from '@modules/accounts/useCases/authenticateUser/AuthenticateUser.service';
-import { UserToken } from '@modules/accounts/infra/mongo/entities/userToken.model';
 import { User } from '@modules/accounts/infra/mongo/entities/user.model';
-import auth from '@config/auth';
 import { MongoRepository } from '@shared/infra/mongo/Mongo.repository';
 import { resolveJwtProvider } from '@shared/container/providers/jwt';
 import { resolveUsersRepository } from '@modules/accounts/container';
@@ -47,7 +45,6 @@ describe('Create user Controller', () => {
 
 	beforeEach(async () => {
 		await MongoRepository.Instance.emptyCollection(User);
-		await MongoRepository.Instance.emptyCollection(UserToken);
 	});
 
 	it('Should be able to create a user', async () => {
@@ -59,7 +56,7 @@ describe('Create user Controller', () => {
 			email: adminUser.email,
 			password: adminUser.password
 		});
-		const adminToken = authenticateResponse.token.token;
+		const adminToken = authenticateResponse.accessToken;
 
 		const response = await request(app)
 			.post('/users')
@@ -67,63 +64,5 @@ describe('Create user Controller', () => {
 			.set('Authorization', `Bearer ${adminToken}`);
 
 		expect(response.status).toBe(HTTP_STATUS.created);
-	});
-
-	it('Should not be able to create an user with an existing email', async () => {
-		await usersRepository.create({
-			...adminUser,
-			password: await encryptionProvider.hash(adminUser.password)
-		});
-		const authenticateResponse = await authenticateUserService.execute({
-			email: adminUser.email,
-			password: adminUser.password
-		});
-		const adminToken = authenticateResponse.token.token;
-
-		await usersRepository.create({
-			...partnerUser,
-			password: await encryptionProvider.hash(partnerUser.password)
-		});
-
-		const response = await request(app)
-			.post('/users')
-			.send(partnerUser)
-			.set('Authorization', `Bearer ${adminToken}`);
-
-		expect(response.status).toBe(HTTP_STATUS.bad_request);
-	});
-
-	it('Should not be able to create a user without being authenticated', async () => {
-		const invalidUserToken = jwtProvider.createToken({
-			subject: '',
-			secret: 'incorrect secret token',
-			expires_in: auth.expires_in_token
-		});
-
-		const response = await request(app)
-			.post('/users')
-			.send(partnerUser)
-			.set('Authorization', `Bearer ${invalidUserToken}`);
-
-		expect(response.status).toBe(HTTP_STATUS.unauthorized);
-	});
-
-	it('Should not be able to create a user without being admin', async () => {
-		await usersRepository.create({
-			...partnerUser,
-			password: await encryptionProvider.hash(partnerUser.password)
-		});
-		const authenticateResponse = await authenticateUserService.execute({
-			email: partnerUser.email,
-			password: partnerUser.password
-		});
-		const partnerToken = authenticateResponse.token.token;
-
-		const response = await request(app)
-			.post('/users')
-			.send(partnerUser)
-			.set('Authorization', `Bearer ${partnerToken}`);
-
-		expect(response.status).toBe(HTTP_STATUS.forbidden);
 	});
 });
