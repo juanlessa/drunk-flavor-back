@@ -13,7 +13,6 @@ let jwtProvider: IJwtProvider;
 let dateProvider: IDateProvider;
 
 const userId = new ObjectId().toString();
-const email = 'test@example.com';
 
 describe('Ensure Authenticated', () => {
 	beforeEach(() => {
@@ -33,9 +32,8 @@ describe('Ensure Authenticated', () => {
 			secret: authConfig.ACCESS_TOKEN_SECRET,
 			expires_in: authConfig.ACCESS_TOKEN_EXPIRES_IN
 		});
-		const refreshToken = jwtProvider.createRefreshToken({
-			sign_property: email,
-			subject: userId,
+		const refreshToken = jwtProvider.createToken({
+			subject: '',
 			secret: authConfig.REFRESH_TOKEN_SECRET,
 			expires_in: authConfig.REFRESH_TOKEN_EXPIRES_IN
 		});
@@ -109,9 +107,8 @@ describe('Ensure Authenticated', () => {
 			secret: authConfig.ACCESS_TOKEN_SECRET,
 			expires_in: authConfig.ACCESS_TOKEN_EXPIRES_IN
 		});
-		const refreshToken = jwtProvider.createRefreshToken({
-			sign_property: email,
-			subject: userId,
+		const refreshToken = jwtProvider.createToken({
+			subject: '',
 			secret: authConfig.REFRESH_TOKEN_SECRET,
 			expires_in: authConfig.REFRESH_TOKEN_EXPIRES_IN
 		});
@@ -163,9 +160,8 @@ describe('Ensure Authenticated', () => {
 			secret: authConfig.ACCESS_TOKEN_SECRET,
 			expires_in: authConfig.ACCESS_TOKEN_EXPIRES_IN
 		});
-		const refreshToken = jwtProvider.createRefreshToken({
-			sign_property: email,
-			subject: userId,
+		const refreshToken = jwtProvider.createToken({
+			subject: '',
 			secret: 'invalid-reefresh-token-secret',
 			expires_in: authConfig.REFRESH_TOKEN_EXPIRES_IN
 		});
@@ -191,9 +187,8 @@ describe('Ensure Authenticated', () => {
 			secret: authConfig.ACCESS_TOKEN_SECRET,
 			expires_in: authConfig.ACCESS_TOKEN_EXPIRES_IN
 		});
-		const refreshToken = jwtProvider.createRefreshToken({
-			sign_property: email,
-			subject: userId,
+		const refreshToken = jwtProvider.createToken({
+			subject: '',
 			secret: authConfig.REFRESH_TOKEN_SECRET,
 			expires_in: authConfig.REFRESH_TOKEN_EXPIRES_IN
 		});

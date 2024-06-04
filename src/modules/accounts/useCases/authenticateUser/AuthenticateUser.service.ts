@@ -32,7 +32,7 @@ class AuthenticateUserService {
 			});
 		}
 
-		// create token
+		// create access token
 		const accessToken = this.jwtProvider.createToken({
 			subject: user._id.toString(),
 			secret: authConfig.ACCESS_TOKEN_SECRET,
@@ -40,11 +40,10 @@ class AuthenticateUserService {
 		});
 
 		// create refresh token
-		const refreshToken = this.jwtProvider.createRefreshToken({
-			sign_property: email,
-			subject: user._id.toString(),
-			secret: authConfig.ACCESS_TOKEN_SECRET,
-			expires_in: authConfig.ACCESS_TOKEN_EXPIRES_IN
+		const refreshToken = this.jwtProvider.createToken({
+			subject: '',
+			secret: authConfig.REFRESH_TOKEN_SECRET,
+			expires_in: authConfig.REFRESH_TOKEN_EXPIRES_IN
 		});
 
 		return {
