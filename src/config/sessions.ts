@@ -1,11 +1,11 @@
 import { SessionOptions } from 'express-session';
-import authConfig from './auth';
+import { env } from '@/env';
 
-export default {
-	name: 'refresh-token',
-	secret: authConfig.secret_refresh_token,
+export const sessionsConfig = {
+	name: 'refreshToken',
+	secret: env.SESSION_SECRET,
 	resave: false,
-	saveUninitialized: true,
+	saveUninitialized: false,
 	cookie: {
 		secure: false, // if true only works with HTTPS
 		maxAge: 1000 * 60 * 60 * 24 * 15 // 15 days
