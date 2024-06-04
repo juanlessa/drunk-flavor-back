@@ -10,6 +10,7 @@ export default defineConfig({
 	},
 	resolve: {
 		alias: [
+			{ find: '@', replacement: fileURLToPath(new URL('./src/', import.meta.url)) },
 			{ find: '@config', replacement: fileURLToPath(new URL('./src/config', import.meta.url)) },
 			{ find: '@modules', replacement: fileURLToPath(new URL('./src/modules', import.meta.url)) },
 			{ find: '@shared', replacement: fileURLToPath(new URL('./src/shared', import.meta.url)) },
