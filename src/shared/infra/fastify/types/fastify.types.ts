@@ -11,6 +11,23 @@ export type Controller = <
   reply: Reply
 ) => Promise<Reply>;
 
+export type Middleware = <
+  Request extends FastifyRequest = FastifyRequest,
+  Reply extends FastifyReply = FastifyReply
+>(
+  request: Request,
+  reply: Reply
+) => unknown;
+
+export type ErrorHandler = <
+  Request extends FastifyRequest = FastifyRequest,
+  Reply extends FastifyReply = FastifyReply
+>(
+  error: Error,
+  request: Request,
+  reply: Reply
+) => unknown;
+
 export type Routes = <Server extends FastifyInstance = FastifyInstance>(
   server: Server
 ) => unknown;
