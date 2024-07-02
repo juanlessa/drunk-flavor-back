@@ -3,9 +3,6 @@ import { ErrorResponse } from "@/shared/error/error.dtos";
 import { logger } from "@/shared/logger";
 import { FastifyError } from "fastify";
 
-const logStringifiedObject = (value: unknown) =>
-  logger.info(JSON.stringify(value));
-
 export const instanceOfFastifyError = (
   error: unknown
 ): error is FastifyError => {
@@ -22,7 +19,9 @@ export const handleFastifyError = (error: FastifyError): ErrorResponse => {
     logger.info(
       `fastify.handleFastifyError(${error.name}): failed validation of ${error.validationContext}.\n`
     );
-    error.validation.forEach(logStringifiedObject);
+    error.validation.forEach((value: unknown) =>
+      logger.info(JSON.stringify(value))
+    );
   }
   logger.error(error);
 
