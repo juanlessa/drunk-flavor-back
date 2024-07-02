@@ -3,13 +3,14 @@ import { createUserSchema } from "@/modules/accounts/useCases/createUser/createU
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { pluginGenerator } from "../helpers/fastify.helpers";
 import { Routes } from "../types/fastify.types";
+import { verifyAndRenewToken } from "../middlewares/verifyAndRenewToken";
 
 const routes: Routes = (server) => {
   server
     .withTypeProvider<ZodTypeProvider>()
     .post(
       "/users",
-      { schema: { body: createUserSchema } },
+      { schema: { body: createUserSchema }, onRequest: [verifyAndRenewToken] },
       CreateUserController
     );
 };
