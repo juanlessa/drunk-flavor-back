@@ -1,137 +1,210 @@
-import z from "zod";
+import { z } from "zod";
+import { EnvType, StorageTypeEnum } from "./env.types";
+import { awsS3Fields } from "./env.constants";
 
-// auth values for testing environment
-const TESTING_ACCESS_TOKEN_SECRET = "access-token-secret";
-const TESTING_ACCESS_TOKEN_EXPIRES_IN = 180; // 3 min
-const TESTING_REFRESH_TOKEN_SECRET = "refresh-token-secret";
-const TESTING_REFRESH_TOKEN_EXPIRES_IN = 600; // 10 min
-const SESSION_SECRET = "session-secret";
+// defaults
+const TESTING_TOKEN_SECRET = "token-secret";
+const TESTING_COOKIE_SECRET = "cookie-secret";
+const TESTING_SESSION_SECRET = "session-secret";
+const TESTING_ACCESS_TOKEN_EXPIRES_IN_SECONDS = 180; // 3 min
+const TESTING_REFRESH_TOKEN_EXPIRES_IN_SECONDS = 600; // 10 min
 
-export const envSchema = z
-  .object({
-    // Environment
-    NODE_ENV: z
-      .enum(["dev", "testing", "e2e-testing", "production"])
-      .default("dev"),
-    // API
-    API_HOST: z.string().default("http://localhost"),
-    API_PORT: z.coerce.number().default(3333),
-    // MongoDB
-    MONGO_USERNAME: z.string().default(""), // required if NODE_ENV='dev'|'production'|'e2e-testing'
-    MONGO_PASSWORD: z.string().default(""), // required if NODE_ENV='dev'|'production'|'e2e-testing'
-    MONGO_DATABASE: z.string().default(""), // required if NODE_ENV='dev'|'production'|'e2e-testing'
-    MONGO_HOST: z.string().default(""), // required if NODE_ENV='dev'|'production'|'e2e-testing'
-    MONGO_PORT: z.string().default(""), // required if NODE_ENV='dev'|'production'|'e2e-testing'
-    MONGO_PARAMS: z.string().default(""), // required if NODE_ENV='dev'|'production'|'e2e-testing'
-    // Auth
-    ACCESS_TOKEN_SECRET: z.string().default(""), // required if NODE_ENV='dev'|'production'
-    ACCESS_TOKEN_EXPIRES_IN: z.coerce.number().default(0), // required if NODE_ENV='dev'|'production'
-    REFRESH_TOKEN_SECRET: z.string().default(""), // required if NODE_ENV='dev'|'production'
-    REFRESH_TOKEN_EXPIRES_IN: z.coerce.number().default(0), // required if NODE_ENV='dev'|'production'
-    SESSION_SECRET: z.string().default(""), // required if NODE_ENV='dev'|'production'
-    COOKIE_SECRET: z.string().default(""),
-    // Logger
-    LOGGER_ENABLED: z.coerce.boolean().default(false),
-    LOGGER_LEVEL: z.enum(["debug", "info", "error"]).default("info"),
-    // Storage type
-    STORAGE_TYPE: z.enum(["local", "s3"]).default("local"),
-    // S3
-    AWS_S3_BUCKET_NAME: z.string().optional(), // required if STORAGE_TYPE='s3'
-    AWS_ACCESS_KEY_ID: z.string().optional(), // required if STORAGE_TYPE='s3'
-    AWS_SECRET_ACCESS_KEY: z.string().optional(), // required if STORAGE_TYPE='s3'
-    AWS_DEFAULT_REGION: z.string().optional(), // required if STORAGE_TYPE='s3'
-  })
-  .superRefine((data, ctx) => {
-    if (data.NODE_ENV === "testing" || data.NODE_ENV === "e2e-testing") {
-      if (!data.ACCESS_TOKEN_SECRET)
-        data.ACCESS_TOKEN_SECRET = TESTING_ACCESS_TOKEN_SECRET;
-      if (!data.ACCESS_TOKEN_EXPIRES_IN)
-        data.ACCESS_TOKEN_EXPIRES_IN = TESTING_ACCESS_TOKEN_EXPIRES_IN;
-      if (!data.REFRESH_TOKEN_SECRET)
-        data.REFRESH_TOKEN_SECRET = TESTING_REFRESH_TOKEN_SECRET;
-      if (!data.REFRESH_TOKEN_EXPIRES_IN)
-        data.REFRESH_TOKEN_EXPIRES_IN = TESTING_REFRESH_TOKEN_EXPIRES_IN;
-      if (!data.SESSION_SECRET) data.SESSION_SECRET = SESSION_SECRET;
-    } else {
-      const requiredAuthFields = [
-        "ACCESS_TOKEN_SECRET",
-        "ACCESS_TOKEN_EXPIRES_IN",
-        "REFRESH_TOKEN_SECRET",
-        "REFRESH_TOKEN_EXPIRES_IN",
-        "SESSION_SECRET",
-      ];
+// fields validation
+const nodeEnvValidation = z
+  .enum(["development", "testing", "e2e-testing", "production"])
+  .default("development");
 
-      requiredAuthFields.forEach((_field) => {
-        const field = _field as keyof typeof data;
-        if (!data[field]) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `${field} is required in non-test environments`,
-            path: [field],
-          });
-        }
-      });
-    }
+const apiEnvValidation = z
+  .enum(["development", "staging", "production"])
+  .default("development");
+const apiHostValidation = z.string().default("0.0.0.0");
+const apiPortValidation = z.coerce.number().default(3333);
 
-    if (data.NODE_ENV === "testing") {
-      data.MONGO_USERNAME = "";
-      data.MONGO_PASSWORD = "";
-      data.MONGO_DATABASE = "";
-      data.MONGO_HOST = "";
-      data.MONGO_PORT = "";
-      data.MONGO_PARAMS = "";
-    } else {
-      const requiredMongoFields = [
-        "MONGO_USERNAME",
-        "MONGO_PASSWORD",
-        "MONGO_DATABASE",
-        "MONGO_HOST",
-        "MONGO_PORT",
-      ];
+const logEnabledValidation = z.coerce.boolean().default(false);
+const logLevelValidation = z.enum(["debug", "info", "error"]).default("info");
 
-      requiredMongoFields.forEach((_field) => {
-        const field = _field as keyof typeof data;
-        if (!data[field]) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `${field} is required in ${data.NODE_ENV} environment`,
-            path: [field],
-          });
-        }
-      });
+const mongoUsernameValidation = z.string();
+const mongoPasswordValidation = z.string();
+const mongoDatabaseValidation = z.string();
+const mongoHostValidation = z.string();
+const mongoPortValidation = z.coerce.number();
+const mongoParamsValidation = z.string();
+const mongoMaxPoolSizeValidation = z.coerce.number().default(25);
+const mongoServerSelectionTimeoutMsValidation = z.coerce.number().default(500);
+const mongoConnectTimeoutMsValidation = z.coerce.number().default(500);
 
-      if (!data.MONGO_PARAMS && data.MONGO_PARAMS !== "")
+const cookieSecretValidation = z.string();
+const sessionSecreteValidation = z.string();
+const tokenSecretValidation = z.string();
+const accessTokenExpiresInSecondsValidation = z.coerce.number();
+const refreshTokenExpiresInSecondsValidation = z.coerce.number();
+
+const storageTypeValidation = z.enum(["local", "s3"]).default("local");
+
+const awsS3BucketNameValidation = z.string().optional();
+const awsAccessKeyIdValidation = z.string().optional();
+const awsSecretAccessKeyValidation = z.string().optional();
+const awsDefaultRegionValidation = z.string().optional();
+
+const requireAwsFieldsForStorageS3 = (data: EnvType, ctx: z.RefinementCtx) => {
+  if (data.STORAGE_TYPE === StorageTypeEnum.s3) {
+    awsS3Fields.forEach((_field) => {
+      const field = _field as keyof typeof data;
+      if (!data[field]) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: `MONGO_PARAMS is required in ${data.NODE_ENV} environments`,
-          path: ["MONGO_PARAMS"],
+          message: `${field} is required when STORAGE_TYPE is 's3'`,
+          path: [field],
         });
-    }
+      }
+    });
+  }
+};
 
-    if (data.STORAGE_TYPE === "s3") {
-      const requiredAwsFields = [
-        "AWS_S3_BUCKET_NAME",
-        "AWS_ACCESS_KEY_ID",
-        "AWS_SECRET_ACCESS_KEY",
-        "AWS_DEFAULT_REGION",
-      ];
+// schemas
+export const developmentEnvSchema = z
+  .object({
+    // Environment
+    NODE_ENV: nodeEnvValidation,
+    // API
+    API_ENV: apiEnvValidation,
+    API_HOST: apiHostValidation,
+    API_PORT: apiPortValidation,
+    // Logger
+    LOG_ENABLED: logEnabledValidation,
+    LOG_LEVEL: logLevelValidation,
+    // Auth
+    COOKIE_SECRET: cookieSecretValidation,
+    SESSION_SECRET: sessionSecreteValidation,
+    TOKEN_SECRET: tokenSecretValidation,
+    ACCESS_TOKEN_EXPIRES_IN_SECONDS: accessTokenExpiresInSecondsValidation,
+    REFRESH_TOKEN_EXPIRES_IN_SECONDS: refreshTokenExpiresInSecondsValidation,
+    // MongoDB
+    MONGO_USERNAME: mongoUsernameValidation,
+    MONGO_PASSWORD: mongoPasswordValidation,
+    MONGO_DATABASE: mongoDatabaseValidation,
+    MONGO_HOST: mongoHostValidation,
+    MONGO_PORT: mongoPortValidation,
+    MONGO_PARAMS: mongoParamsValidation,
+    MONGO_MAX_POOL_SIZE: mongoMaxPoolSizeValidation,
+    MONGO_SERVER_SELECTION_TIMEOUT_MS: mongoServerSelectionTimeoutMsValidation,
+    MONGO_CONNECT_TIMEOUT_MS: mongoConnectTimeoutMsValidation,
+    // Storage type
+    STORAGE_TYPE: storageTypeValidation,
+    // S3
+    AWS_S3_BUCKET_NAME: awsS3BucketNameValidation,
+    AWS_ACCESS_KEY_ID: awsAccessKeyIdValidation,
+    AWS_SECRET_ACCESS_KEY: awsSecretAccessKeyValidation,
+    AWS_DEFAULT_REGION: awsDefaultRegionValidation,
+  })
+  .superRefine(requireAwsFieldsForStorageS3);
 
-      requiredAwsFields.forEach((_field) => {
-        const field = _field as keyof typeof data;
-        if (!data[field]) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `${field} is required when STORAGE_TYPE is 's3'`,
-            path: [field],
-          });
-        }
-      });
-    } else {
-      data.AWS_S3_BUCKET_NAME = data.AWS_S3_BUCKET_NAME || "";
-      data.AWS_ACCESS_KEY_ID = data.AWS_ACCESS_KEY_ID || "";
-      data.AWS_SECRET_ACCESS_KEY = data.AWS_SECRET_ACCESS_KEY || "";
-      data.AWS_DEFAULT_REGION = data.AWS_DEFAULT_REGION || "";
-    }
-  });
+export const productionEnvSchema = z
+  .object({
+    // Environment
+    NODE_ENV: nodeEnvValidation,
+    // API
+    API_ENV: apiEnvValidation,
+    API_HOST: apiHostValidation,
+    API_PORT: apiPortValidation,
+    // Logger
+    LOG_ENABLED: logEnabledValidation,
+    LOG_LEVEL: logLevelValidation,
+    // Auth
+    COOKIE_SECRET: cookieSecretValidation,
+    SESSION_SECRET: sessionSecreteValidation,
+    TOKEN_SECRET: tokenSecretValidation,
+    ACCESS_TOKEN_EXPIRES_IN_SECONDS: accessTokenExpiresInSecondsValidation,
+    REFRESH_TOKEN_EXPIRES_IN_SECONDS: refreshTokenExpiresInSecondsValidation,
+    // MongoDB
+    MONGO_USERNAME: mongoUsernameValidation,
+    MONGO_PASSWORD: mongoPasswordValidation,
+    MONGO_DATABASE: mongoDatabaseValidation,
+    MONGO_HOST: mongoHostValidation,
+    MONGO_PORT: mongoPortValidation,
+    MONGO_PARAMS: mongoParamsValidation,
+    MONGO_MAX_POOL_SIZE: mongoMaxPoolSizeValidation,
+    MONGO_SERVER_SELECTION_TIMEOUT_MS: mongoServerSelectionTimeoutMsValidation,
+    MONGO_CONNECT_TIMEOUT_MS: mongoConnectTimeoutMsValidation,
+    // Storage type
+    STORAGE_TYPE: storageTypeValidation,
+    // S3
+    AWS_S3_BUCKET_NAME: awsS3BucketNameValidation,
+    AWS_ACCESS_KEY_ID: awsAccessKeyIdValidation,
+    AWS_SECRET_ACCESS_KEY: awsSecretAccessKeyValidation,
+    AWS_DEFAULT_REGION: awsDefaultRegionValidation,
+  })
+  .superRefine(requireAwsFieldsForStorageS3);
 
-export type EnvType = z.infer<typeof envSchema>;
+export const testingEnvSchema = z.object({
+  // Environment
+  NODE_ENV: nodeEnvValidation,
+  // API
+  API_ENV: apiEnvValidation,
+  API_HOST: apiHostValidation,
+  API_PORT: apiPortValidation,
+  // Logger
+  LOG_ENABLED: logEnabledValidation,
+  LOG_LEVEL: logLevelValidation,
+  // Auth
+  COOKIE_SECRET: cookieSecretValidation.default(TESTING_COOKIE_SECRET),
+  SESSION_SECRET: sessionSecreteValidation.default(TESTING_SESSION_SECRET),
+  TOKEN_SECRET: tokenSecretValidation.default(TESTING_TOKEN_SECRET),
+  ACCESS_TOKEN_EXPIRES_IN_SECONDS:
+    accessTokenExpiresInSecondsValidation.default(
+      TESTING_ACCESS_TOKEN_EXPIRES_IN_SECONDS
+    ),
+  REFRESH_TOKEN_EXPIRES_IN_SECONDS:
+    refreshTokenExpiresInSecondsValidation.default(
+      TESTING_REFRESH_TOKEN_EXPIRES_IN_SECONDS
+    ),
+  // MongoDB
+  MONGO_USERNAME: mongoUsernameValidation.default(""),
+  MONGO_PASSWORD: mongoPasswordValidation.default(""),
+  MONGO_DATABASE: mongoDatabaseValidation.default(""),
+  MONGO_HOST: mongoHostValidation.default(""),
+  MONGO_PORT: mongoPortValidation.default(0),
+  MONGO_PARAMS: mongoParamsValidation.default(""),
+  MONGO_MAX_POOL_SIZE: mongoMaxPoolSizeValidation.default(0),
+  MONGO_SERVER_SELECTION_TIMEOUT_MS:
+    mongoServerSelectionTimeoutMsValidation.default(0),
+  MONGO_CONNECT_TIMEOUT_MS: mongoConnectTimeoutMsValidation.default(0),
+  // Storage type
+  STORAGE_TYPE: storageTypeValidation.transform(() => StorageTypeEnum.local),
+});
+
+export const e2eTestingEnvSchema = z.object({
+  // Environment
+  NODE_ENV: nodeEnvValidation,
+  // API
+  API_ENV: apiEnvValidation,
+  API_HOST: apiHostValidation,
+  API_PORT: apiPortValidation,
+  // Logger
+  LOG_ENABLED: logEnabledValidation,
+  LOG_LEVEL: logLevelValidation,
+  // Auth
+  COOKIE_SECRET: cookieSecretValidation.default(TESTING_COOKIE_SECRET),
+  SESSION_SECRET: sessionSecreteValidation.default(TESTING_SESSION_SECRET),
+  TOKEN_SECRET: tokenSecretValidation.default(TESTING_TOKEN_SECRET),
+  ACCESS_TOKEN_EXPIRES_IN_SECONDS:
+    accessTokenExpiresInSecondsValidation.default(
+      TESTING_ACCESS_TOKEN_EXPIRES_IN_SECONDS
+    ),
+  REFRESH_TOKEN_EXPIRES_IN_SECONDS:
+    refreshTokenExpiresInSecondsValidation.default(
+      TESTING_REFRESH_TOKEN_EXPIRES_IN_SECONDS
+    ),
+  // MongoDB
+  MONGO_USERNAME: mongoUsernameValidation,
+  MONGO_PASSWORD: mongoPasswordValidation,
+  MONGO_DATABASE: mongoDatabaseValidation,
+  MONGO_HOST: mongoHostValidation,
+  MONGO_PORT: mongoPortValidation,
+  MONGO_PARAMS: mongoParamsValidation,
+  MONGO_MAX_POOL_SIZE: mongoMaxPoolSizeValidation,
+  MONGO_SERVER_SELECTION_TIMEOUT_MS: mongoServerSelectionTimeoutMsValidation,
+  MONGO_CONNECT_TIMEOUT_MS: mongoConnectTimeoutMsValidation,
+  // Storage type
+  STORAGE_TYPE: storageTypeValidation.transform(() => StorageTypeEnum.local),
+});
