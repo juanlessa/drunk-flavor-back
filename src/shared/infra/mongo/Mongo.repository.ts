@@ -1,17 +1,29 @@
 import mongoose, { Model } from "mongoose";
-import mongoConfig from "@/config/mongo";
 import { logger } from "@/shared/logger";
+import { env } from "@/env";
 
 export class MongoRepository {
   private connectionString: string;
   private static _instance: MongoRepository;
 
   private constructor() {
-    const mongoCredentials = `${mongoConfig.user}:${mongoConfig.password}`;
-    const mongoAddress = `${mongoConfig.host}:${mongoConfig.port}`;
-    const mongoDatabase = mongoConfig.database;
-    const mongoParams = mongoConfig.params;
-    this.connectionString = `mongodb://${mongoCredentials}@${mongoAddress}/${mongoDatabase}?${mongoParams}`;
+    if (
+      !env.MONGO_USERNAME ||
+      !env.MONGO_PASSWORD ||
+      !env.MONGO_HOST ||
+      !env.MONGO_PORT ||
+      !env.MONGO_DATABASE
+    ) {
+      throw new Error(
+        "Missing connection options. Ensure MONGO_MAX_POOL_SIZE, MONGO_CONNECT_TIMEOUT_MS, and MONGO_SERVER_SELECTION_TIMEOUT_MS are set."
+      );
+    }
+
+    const credentials = `${env.MONGO_USERNAME}:${env.MONGO_PASSWORD}`;
+    const address = `${env.MONGO_HOST}:${env.MONGO_PORT}`;
+    const database = env.MONGO_DATABASE;
+    const params = env.MONGO_PARAMS;
+    this.connectionString = `mongodb://${credentials}@${address}/${database}?${params}`;
   }
 
   static get Instance() {
@@ -23,10 +35,20 @@ export class MongoRepository {
   }
 
   async start() {
+    if (
+      !env.MONGO_MAX_POOL_SIZE ||
+      !env.MONGO_CONNECT_TIMEOUT_MS ||
+      !env.MONGO_SERVER_SELECTION_TIMEOUT_MS
+    ) {
+      throw new Error(
+        "Missing connection options. Ensure MONGO_MAX_POOL_SIZE, MONGO_CONNECT_TIMEOUT_MS, and MONGO_SERVER_SELECTION_TIMEOUT_MS are set."
+      );
+    }
+
     await mongoose.connect(this.connectionString, {
-      maxPoolSize: mongoConfig.maxPoolSize,
-      serverSelectionTimeoutMS: mongoConfig.serverSelectionTimeoutMS,
-      connectTimeoutMS: mongoConfig.connectTimeoutMS,
+      maxPoolSize: env.MONGO_MAX_POOL_SIZE,
+      serverSelectionTimeoutMS: env.MONGO_SERVER_SELECTION_TIMEOUT_MS,
+      connectTimeoutMS: env.MONGO_CONNECT_TIMEOUT_MS,
       autoCreate: true,
     });
     logger.info("Mongo connection has been stablish.");
