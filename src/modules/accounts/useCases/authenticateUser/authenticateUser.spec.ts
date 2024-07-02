@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { UsersRepositoryInMemory } from "@/modules/accounts/repositories/inMemory/Users.repository";
 import { BcryptProvider } from "@/shared/providers/encryption/implementations/Bcrypt.provider";
 import { AuthenticateUserService } from "@/modules/accounts/useCases/authenticateUser/AuthenticateUser.service";
-import { BadRequestError } from "@/shared/errors/error.lib";
+import { BadRequestError } from "@/shared/error/error.lib";
 import { UserRolesEnum } from "../../entities/user.entity";
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;

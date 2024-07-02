@@ -2,7 +2,7 @@ import { ICreateUser, IUpdateUser } from "@/modules/accounts/dtos/user.dtos";
 import { IUser } from "@/modules/accounts/entities/user.entity";
 import { IUsersRepository } from "@/modules/accounts/repositories/IUsers.repository";
 import { User } from "@/modules/accounts/infra/mongo/entities/user.model";
-import { NotFoundError } from "@/shared/errors/error.lib";
+import { NotFoundError } from "@/shared/error/error.lib";
 import { USER_MESSAGES } from "@/shared/constants/ResponseMessages";
 
 class UsersRepository implements IUsersRepository {

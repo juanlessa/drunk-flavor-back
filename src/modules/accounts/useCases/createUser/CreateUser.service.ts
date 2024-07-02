@@ -1,7 +1,7 @@
 import { ICreateUser } from "@/modules/accounts/dtos/user.dtos";
 import { IUsersRepository } from "@/modules/accounts/repositories/IUsers.repository";
 import { IEncryptionProvider } from "@/shared/providers/encryption/IEncryption.provider";
-import { BadRequestError } from "@/shared/errors/error.lib";
+import { BadRequestError } from "@/shared/error/error.lib";
 import { USER_MESSAGES } from "@/shared/constants/ResponseMessages";
 
 export class CreateUserService {

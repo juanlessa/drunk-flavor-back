@@ -6,7 +6,7 @@ import {
 import { AUTHENTICATION_MESSAGES } from "@/shared/constants/ResponseMessages";
 import { IUsersRepository } from "@/modules/accounts/repositories/IUsers.repository";
 import { IEncryptionProvider } from "@/shared/providers/encryption/IEncryption.provider";
-import { BadRequestError } from "@/shared/errors/error.lib";
+import { BadRequestError } from "@/shared/error/error.lib";
 
 export class AuthenticateUserService {
   constructor(

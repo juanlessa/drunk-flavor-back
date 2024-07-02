@@ -1,6 +1,6 @@
 import { P, match } from "ts-pattern";
 import { ZodError } from "zod";
-import { AppError } from "@/shared/errors/error.lib";
+import { AppError } from "@/shared/error/error.lib";
 import {
   handleMongoError,
   instanceOfMongoError,
@@ -9,9 +9,9 @@ import {
   handleMongooseError,
   instanceOfMongooseError,
 } from "@/shared/infra/mongo/mongoose.errors";
-import { handleAppError } from "@/shared/errors/handleAppError";
-import { unhandledError } from "@/shared/errors/unhandledError";
-import { ErrorResponse } from "@/shared/errors/error.dtos";
+import { handleAppError } from "@/shared/error/handleAppError";
+import { unhandledError } from "@/shared/error/unhandledError";
+import { ErrorResponse } from "@/shared/error/error.dtos";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { handleFastifyZodError } from "@/shared/infra/fastify/errors/fastifyZodError";
 import {

@@ -3,7 +3,7 @@ import { ICreateUser } from "@/modules/accounts/dtos/user.dtos";
 import { UsersRepositoryInMemory } from "@/modules/accounts/repositories/inMemory/Users.repository";
 import { BcryptProvider } from "@/shared/providers/encryption/implementations/Bcrypt.provider";
 import { CreateUserService } from "@/modules/accounts/useCases/createUser/CreateUser.service";
-import { BadRequestError } from "@/shared/errors/error.lib";
+import { BadRequestError } from "@/shared/error/error.lib";
 import { UserRolesEnum } from "@/modules/accounts/entities/user.entity";
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;

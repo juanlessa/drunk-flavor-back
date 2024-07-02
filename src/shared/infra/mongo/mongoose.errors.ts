@@ -1,5 +1,5 @@
 import { HTTP_STATUS } from "@/shared/constants/httpStatus";
-import { ErrorResponse } from "@/shared/errors/error.dtos";
+import { ErrorResponse } from "@/shared/error/error.dtos";
 import { logger } from "@/shared/logger";
 import { MongooseError } from "mongoose";
 

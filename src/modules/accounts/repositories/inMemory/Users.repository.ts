@@ -2,7 +2,7 @@ import { IUsersRepository } from "@/modules/accounts/repositories/IUsers.reposit
 import { ICreateUser, IUpdateUser } from "@/modules/accounts/dtos/user.dtos";
 import { ObjectId } from "bson";
 import { IUser } from "@/modules/accounts/entities/user.entity";
-import { NotFoundError } from "@/shared/errors/error.lib";
+import { NotFoundError } from "@/shared/error/error.lib";
 import { USER_MESSAGES } from "@/shared/constants/ResponseMessages";
 
 class UsersRepositoryInMemory implements IUsersRepository {
