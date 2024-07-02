@@ -1,0 +1,11 @@
+node_modules
+*.log*
+.env
+.env.testing
+/build/
+.DS_Store
+coverage
+.vscode/*
+!.vscode/launch.json
+tmp/*
+!tmp/.gitkeep
