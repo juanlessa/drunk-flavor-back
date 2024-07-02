@@ -21,20 +21,17 @@ export const authenticateUserController: Controller = async (
     email,
   });
 
-  const accessToken = await reply.jwtSign(
-    {},
-    { sign: { sub: user.id, expiresIn: env.ACCESS_TOKEN_EXPIRES_IN } }
-  );
+  const accessToken = await reply.jwtSign({}, { sign: { sub: user.id } });
   const refreshToken = await reply.jwtSign(
     {},
-    { sign: { sub: user.id, expiresIn: env.REFRESH_TOKEN_EXPIRES_IN } }
+    { sign: { sub: user.id, expiresIn: env.REFRESH_TOKEN_EXPIRES_IN_SECONDS } }
   );
 
   request.session.set(AUTH_SESSION, {
     refreshToken,
     userId: user.id,
   });
-  reply.setCookie(AUTH_COOKIE, `Bearer ${accessToken}`, AUTH_COOKIE_OPTIONS);
+  reply.setCookie(AUTH_COOKIE, accessToken, AUTH_COOKIE_OPTIONS);
 
   return reply.send();
 };
