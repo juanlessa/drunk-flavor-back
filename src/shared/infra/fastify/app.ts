@@ -1,6 +1,6 @@
 import fastifyCookie from "@fastify/cookie";
 import fastifyJwt from "@fastify/jwt";
-import fastify, { FastifyReply, FastifyRequest } from "fastify";
+import fastify from "fastify";
 import {
   jsonSchemaTransform,
   serializerCompiler,
@@ -14,11 +14,10 @@ import { errorHandler } from "./middlewares/errorHandler";
 import { TOKEN_OPTIONS } from "./constants/jwt.constants";
 import { SESSION_OPTIONS } from "./constants/session.constants";
 import { FASTIFY_COOKIE_OPTIONS } from "./constants/cookie.constants";
-import { MongoRepository } from "../mongo/Mongo.repository";
 import { router } from "./routes";
 import { FASTIFY_LOGGER_OPTIONS } from "./constants/logger.constants";
-
-MongoRepository.Instance.start();
+import { LoggerRepository, logger } from "@/shared/logger";
+import { env } from "@/env";
 
 export const app = fastify({
   logger: FASTIFY_LOGGER_OPTIONS,
@@ -40,5 +39,31 @@ void app.register(fastifySwagger, {
 });
 
 router.map((route) => app.register(route));
-
 app.setErrorHandler(errorHandler);
+
+export const start = async () => {
+  LoggerRepository.setLogger(app.log);
+
+  try {
+    await app.ready();
+
+    logger.info("plugins\n" + app.printPlugins());
+    logger.info(
+      "routes\n" +
+        app.printRoutes({
+          commonPrefix: false,
+          includeHooks: false,
+          includeMeta: ["metaProperty"],
+        })
+    );
+
+    logger.info(
+      `Documentation running at http://${env.API_HOST}:${env.API_PORT}/documentation \n`
+    );
+
+    await app.listen({ host: env.API_HOST, port: env.API_PORT });
+  } catch (err) {
+    app.log.fatal(err);
+    process.exit(1);
+  }
+};
