@@ -12,18 +12,14 @@ import {
 import { handleAppError } from "@/shared/error/handleAppError";
 import { unhandledError } from "@/shared/error/unhandledError";
 import { ErrorResponse } from "@/shared/error/error.dtos";
-import { FastifyReply, FastifyRequest } from "fastify";
 import { handleFastifyZodError } from "@/shared/infra/fastify/errors/fastifyZodError";
 import {
   handleFastifyError,
   instanceOfFastifyError,
-} from "../errors/fastifyError";
+} from "@/shared/infra/fastify/errors/fastifyError";
+import { ErrorHandler } from "../types/fastify.types";
 
-export const errorHandler = async (
-  error: Error,
-  _request: FastifyRequest,
-  reply: FastifyReply
-) => {
+export const errorHandler: ErrorHandler = async (error, _request, reply) => {
   const { statusCode, message }: ErrorResponse = match(error)
     .with(P.instanceOf(AppError), handleAppError)
     .with(P.instanceOf(ZodError), handleFastifyZodError)
