@@ -1,9 +1,9 @@
 import { env } from "@/env";
+import { NodeEnvEnum } from "@/env/env.types";
 
 const EnvToLogger = {
-  development: {
-    level: env.LOGGER_LEVEL,
-
+  [NodeEnvEnum.development]: {
+    level: env.LOG_LEVEL,
     transport: {
       target: "pino-pretty",
       options: {
@@ -13,8 +13,8 @@ const EnvToLogger = {
       },
     },
   },
-  production: {
-    level: env.LOGGER_LEVEL,
+  [NodeEnvEnum.production]: {
+    level: env.LOG_LEVEL,
     transport: {
       target: "pino-pretty",
       options: {

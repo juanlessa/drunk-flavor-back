@@ -1,6 +1,14 @@
-import { LOG_LEVEL_RANK } from "./logger.constants";
+export enum LogLevelEnum {
+  silent = "silent",
+  trace = "trace",
+  debug = "debug",
+  info = "info",
+  warn = "warn",
+  error = "error",
+  fatal = "fatal",
+}
 
-export type LOG_LEVEL = keyof typeof LOG_LEVEL_RANK;
+export type LogLevel = keyof typeof LogLevelEnum;
 
 type LogFunction = {
   <T extends object>(obj: T, msg?: string, ...args: unknown[]): void;
@@ -10,7 +18,7 @@ type LogFunction = {
 };
 
 export type BaseLogger = {
-  level?: LOG_LEVEL;
+  level?: LogLevel;
   fatal?: LogFunction;
   error: LogFunction;
   warn: LogFunction;

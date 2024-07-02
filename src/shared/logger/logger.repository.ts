@@ -1,12 +1,12 @@
 import { env } from "@/env";
-import { BaseLogger, LOG_LEVEL } from "./logger.types";
+import { BaseLogger } from "./logger.types";
 
 export class LoggerRepository {
   private static _instance: LoggerRepository;
 
   private constructor(
     private loggerInstance: BaseLogger = console,
-    public readonly level = env.LOGGER_LEVEL as LOG_LEVEL
+    public readonly level = env.LOG_LEVEL
   ) {}
 
   static get Instance() {
