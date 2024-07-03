@@ -1,5 +1,4 @@
 import { SecureSessionPluginOptions } from "@fastify/secure-session";
-import { env } from "@/env";
 import { AUTH_COOKIE_OPTIONS } from "./cookie.constants";
 import path from "node:path";
 import fs from "node:fs";
