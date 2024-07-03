@@ -17,6 +17,8 @@ export const AUTH_COOKIE_OPTIONS = {
   maxAge: TTL_30_DAYS,
   httpOnly: true,
   signed: true,
+  sameSite: true,
+  secure: true, // if true only works with HTTPS
   path: "/",
 } as const satisfies CookieSerializeOptions;
 
