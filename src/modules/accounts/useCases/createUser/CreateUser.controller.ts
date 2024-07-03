@@ -1,4 +1,3 @@
-import { ICreateUser } from "@/modules/accounts/dtos/user.dtos";
 import { resolveCreateUserService } from "@/modules/accounts/useCases/createUser/createUser.container";
 import { HTTP_STATUS } from "@/shared/constants/httpStatus";
 import { Controller } from "@/shared/infra/fastify/types/fastify.types";
