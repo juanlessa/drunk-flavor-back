@@ -1,5 +1,4 @@
 import { resolveAuthenticateUserService } from "./authenticateUser.container";
-import { env } from "@/env";
 import { AUTH_SESSION } from "@/shared/infra/fastify/constants/session.constants";
 import {
   AUTH_COOKIE,
@@ -22,9 +21,9 @@ export const authenticateUserController: Controller = async (
   });
 
   const accessToken = await reply.jwtSign({}, { sign: { sub: user.id } });
-  const refreshToken = await reply.jwtSign(
+  const refreshToken = await reply.sessionJwtSign(
     {},
-    { sign: { sub: user.id, expiresIn: env.REFRESH_TOKEN_EXPIRES_IN_SECONDS } }
+    { sign: { sub: user.id } }
   );
 
   request.session.set(AUTH_SESSION, {
