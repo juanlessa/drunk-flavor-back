@@ -19,14 +19,17 @@ import {
 } from "@/shared/infra/fastify/errors/fastifyError";
 import { ErrorHandler } from "../types/fastify.types";
 
-export const errorHandler: ErrorHandler = async (error, _request, reply) => {
-  const { statusCode, message }: ErrorResponse = match(error)
+export const handleCustomError = (error: unknown) =>
+  match(error)
     .with(P.instanceOf(AppError), handleAppError)
     .with(P.instanceOf(ZodError), handleFastifyZodError)
     .when(instanceOfFastifyError, handleFastifyError)
     .when(instanceOfMongoError, handleMongoError)
     .when(instanceOfMongooseError, handleMongooseError)
     .otherwise(unhandledError);
+
+export const errorHandler: ErrorHandler = async (error, _request, reply) => {
+  const { statusCode, message }: ErrorResponse = handleCustomError(error);
 
   return reply.status(statusCode).send({ ok: false, message });
 };
