@@ -1,4 +1,6 @@
 import { FastifyDynamicSwaggerOptions } from "@fastify/swagger";
+import { verifyAndRenewToken } from "../middlewares/verifyAndRenewToken";
+import { handleCustomError } from "../middlewares/errorHandler";
 
 const docsInfo = {
   title: "DrunkFlavor Documentation",
@@ -16,4 +18,10 @@ export const SWAGGER_OPTIONS = {
     info: docsInfo,
     servers: [],
   },
-} as const satisfies FastifyDynamicSwaggerOptions;
+} satisfies FastifyDynamicSwaggerOptions;
+
+export const DOCS_ROUTE_PATH = "/documentation";
+
+export const SWAGGER_UI_OPTIONS = {
+  routePrefix: DOCS_ROUTE_PATH,
+};
