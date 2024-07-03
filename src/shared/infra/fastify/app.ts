@@ -10,14 +10,21 @@ import session from "@fastify/secure-session";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUI from "@fastify/swagger-ui";
 import { errorHandler } from "./middlewares/errorHandler";
-import { TOKEN_OPTIONS } from "./constants/jwt.constants";
+import {
+  REFRESH_TOKEN_OPTIONS,
+  TOKEN_OPTIONS,
+} from "./constants/jwt.constants";
 import { SESSION_OPTIONS } from "./constants/session.constants";
 import { FASTIFY_COOKIE_OPTIONS } from "./constants/cookie.constants";
 import { router } from "./routes";
 import { FASTIFY_LOGGER_OPTIONS } from "./constants/logger.constants";
 import { LoggerRepository, logger } from "@/shared/logger";
 import { env } from "@/env";
-import { SWAGGER_OPTIONS } from "./constants/swagger.constants";
+import {
+  DOCS_ROUTE_PATH,
+  SWAGGER_OPTIONS,
+  SWAGGER_UI_OPTIONS,
+} from "./constants/swagger.constants";
 
 export const app = fastify({
   logger: FASTIFY_LOGGER_OPTIONS,
@@ -25,6 +32,7 @@ export const app = fastify({
 
 app.register(fastifyCookie, FASTIFY_COOKIE_OPTIONS);
 app.register(fastifyJwt, TOKEN_OPTIONS);
+app.register(fastifyJwt, REFRESH_TOKEN_OPTIONS);
 app.register(session, SESSION_OPTIONS);
 
 app.setValidatorCompiler(validatorCompiler);
@@ -34,6 +42,8 @@ void app.register(fastifySwagger, {
   ...SWAGGER_OPTIONS,
   transform: jsonSchemaTransform,
 });
+
+void app.register(fastifySwaggerUI, SWAGGER_UI_OPTIONS);
 
 router.map((route) => app.register(route));
 app.setErrorHandler(errorHandler);
@@ -55,7 +65,7 @@ export const start = async () => {
     );
 
     logger.info(
-      `Documentation running at http://${env.API_HOST}:${env.API_PORT}/documentation \n`
+      `Documentation running at http://${env.API_HOST}:${env.API_PORT}${DOCS_ROUTE_PATH} \n`
     );
 
     await app.listen({ host: env.API_HOST, port: env.API_PORT });
