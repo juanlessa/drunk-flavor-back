@@ -18,3 +18,8 @@ export interface FastifyJwtError extends FastifyError {
   code: JwtError;
   statusCode: number;
 }
+
+export type DecodedToken = {
+  [key: string]: any;
+  sub: string;
+};
