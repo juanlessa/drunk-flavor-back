@@ -5,8 +5,8 @@ interface IIngredientsRepository {
 	create(data: ICreateIngredient): Promise<IIngredient>;
 	update(data: IUpdateIngredient): Promise<IIngredient>;
 	delete(id: string): Promise<IIngredient>;
-	findByName(data: IFindIngredientByName): Promise<IIngredient>;
-	findById(id: string): Promise<IIngredient>;
+	findByName(data: IFindIngredientByName): Promise<IIngredient | null>;
+	findById(id: string): Promise<IIngredient | null>;
 	findAll(): Promise<IIngredient[]>;
 	findByIdList(ids: string[]): Promise<IIngredient[]>;
 }

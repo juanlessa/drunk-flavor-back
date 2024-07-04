@@ -46,7 +46,7 @@ describe('Delete Ingredient', () => {
 
 		const findDeledIngredient = await ingredientsRepositoryInMemory.findById(createdIngredient._id);
 
-		expect(findDeledIngredient).toBeUndefined();
+		expect(findDeledIngredient).toBeNull();
 	});
 
 	it('should not be able to delete a nonexistent ingredient', async () => {

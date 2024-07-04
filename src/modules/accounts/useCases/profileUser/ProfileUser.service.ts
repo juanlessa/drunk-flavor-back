@@ -1,4 +1,4 @@
-import { BadRequestError } from './../../../../shared/errors/error.lib';
+import { BadRequestError } from '@shared/errors/error.lib';
 import { IUserProfileRequest, IUserProfileResponse } from '@modules/accounts/dtos/user.dtos';
 import { USER_ERRORS } from '@modules/accounts/errors/user.errors';
 import { mapToUserDto } from '@modules/accounts/mappers/user.mapper';

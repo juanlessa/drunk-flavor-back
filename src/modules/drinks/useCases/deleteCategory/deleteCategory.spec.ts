@@ -30,7 +30,7 @@ describe('Delete category', () => {
 
 		const findDeledCategory = await categoriesRepositoryInMemory.findById(createdCategory._id);
 
-		expect(findDeledCategory).toBeUndefined();
+		expect(findDeledCategory).toBeNull();
 	});
 
 	it('should not be able to delete a nonexistent ingredient', async () => {
