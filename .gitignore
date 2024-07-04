@@ -1,4 +1,6 @@
 node_modules
+secret-key
+secret_key
 *.log*
 .env
 .env.testing
