@@ -24,6 +24,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "eslint.config.js", ".eslintignore", "prettier.config.cjs", "vitest.config.ts"],
+  "include": ["src/**/*", "eslint.config.mjs", ".eslintignore", "prettier.config.mjs", "vitest.config.ts"],
   "exclude": ["node_modules", "build", "docs", "infra"]
 }
