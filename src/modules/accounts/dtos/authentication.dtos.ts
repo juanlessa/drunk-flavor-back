@@ -1,10 +1,10 @@
 export type IAuthenticateUser = {
-  email: string;
-  password: string;
+	email: string;
+	password: string;
 };
 
 export type IAuthenticateUserResponse = {
-  user: {
-    id: string;
-  };
+	user: {
+		id: string;
+	};
 };

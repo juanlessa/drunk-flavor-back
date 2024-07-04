@@ -9,5 +9,5 @@ export default {
 	credentials: true,
 	methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
 	cacheControl: 600,
-	origin: [originUrl, originRgx]
+	origin: [originUrl, originRgx],
 };

@@ -1,4 +1,4 @@
 export type AuthSessionData = {
-  refreshToken: string;
-  userId: string;
+	refreshToken: string;
+	userId: string;
 };

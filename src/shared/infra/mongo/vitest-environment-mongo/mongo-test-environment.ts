@@ -1,18 +1,18 @@
-import { MongoRepository } from "@/shared/infra/mongo/Mongo.repository";
-import type { Environment } from "vitest";
+import { MongoRepository } from '@/shared/infra/mongo/Mongo.repository';
+import type { Environment } from 'vitest';
 
 export default <Environment>{
-  name: "mongo",
-  transformMode: "ssr",
+	name: 'mongo',
+	transformMode: 'ssr',
 
-  async setup() {
-    await MongoRepository.Instance.start();
+	async setup() {
+		await MongoRepository.Instance.start();
 
-    return {
-      async teardown() {
-        await MongoRepository.Instance.dropAllCollections();
-        await MongoRepository.Instance.stop();
-      },
-    };
-  },
+		return {
+			async teardown() {
+				await MongoRepository.Instance.dropAllCollections();
+				await MongoRepository.Instance.stop();
+			},
+		};
+	},
 };
