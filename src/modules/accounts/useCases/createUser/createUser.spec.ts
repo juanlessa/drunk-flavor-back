@@ -5,8 +5,9 @@ import { BcryptProvider } from '@/shared/providers/encryption/implementations/Bc
 import { CreateUserService } from '@/modules/accounts/useCases/createUser/CreateUser.service';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { UserRolesEnum } from '@/modules/accounts/entities/user.entity';
+import { IUsersRepository } from '@/modules/accounts/repositories/IUsers.repository';
 
-let usersRepositoryInMemory: UsersRepositoryInMemory;
+let usersRepositoryInMemory: IUsersRepository;
 let encryptionProvider: BcryptProvider;
 let service: CreateUserService;
 
