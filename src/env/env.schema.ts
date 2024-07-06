@@ -10,7 +10,7 @@ export const apiHostValidation = z.string();
 export const apiPortValidation = z.coerce.number();
 // Logger
 export const logEnabledValidation = z.coerce.boolean();
-export const logLevelValidation = z.enum(['debug', 'info', 'error']);
+export const logLevelValidation = z.enum(['silent', 'trace', 'debug', 'info', 'warn', 'error', 'fatal']);
 // Auth
 export const mongoProtocolValidation = z.string();
 export const mongoUsernameValidation = z.string();

@@ -1,6 +1,6 @@
 import { HTTP_STATUS } from '@/shared/constants/httpStatus';
 import { ErrorResponse } from './error.dtos';
-import { logger } from '../logger';
+import { logger } from '@/shared/logger';
 
 export const unhandledError = (error: unknown): ErrorResponse => {
 	logger.error(`fastify.unhandledError(${(error as Error).name}): ${(error as Error).message}.`);

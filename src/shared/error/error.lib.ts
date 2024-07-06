@@ -1,6 +1,6 @@
 import { HTTP_STATUS } from '@/shared/constants/httpStatus';
 import { AppErrorOptions } from './error.dtos';
-import { logger } from '../logger';
+import { logger } from '@/shared/logger';
 
 export class AppError extends Error {
 	public type: string;

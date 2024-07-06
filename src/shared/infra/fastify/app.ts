@@ -11,7 +11,8 @@ import { SESSION_OPTIONS } from './constants/session.constants';
 import { FASTIFY_COOKIE_OPTIONS } from './constants/cookie.constants';
 import { router } from './routes';
 import { FASTIFY_LOGGER_OPTIONS } from './constants/logger.constants';
-import { LoggerRepository, logger } from '@/shared/logger';
+import { logger } from '@/shared/logger';
+import { LoggerRepository } from '@/shared/logger/logger.repository';
 import { env } from '@/env';
 import { DOCS_ROUTE_PATH, SWAGGER_OPTIONS, SWAGGER_UI_OPTIONS } from './constants/swagger.constants';
 
