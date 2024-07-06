@@ -3,11 +3,11 @@ import { UsersRepositoryInMemory } from '@/modules/accounts/repositories/inMemor
 import { BcryptProvider } from '@/shared/providers/encryption/implementations/Bcrypt.provider';
 import { AuthenticateUserService } from '@/modules/accounts/useCases/authenticateUser/AuthenticateUser.service';
 import { BadRequestError } from '@/shared/error/error.lib';
-import { UserRolesEnum } from '../../entities/user.entity';
+import { UserRolesEnum } from '@/modules/accounts/entities/user.entity';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
-let authenticateUserService: AuthenticateUserService;
 let encryptionProvider: BcryptProvider;
+let service: AuthenticateUserService;
 
 // test constants
 const email = 'user@test.com';
@@ -19,7 +19,7 @@ describe('Authenticate User', () => {
 	beforeEach(async () => {
 		usersRepositoryInMemory = new UsersRepositoryInMemory();
 		encryptionProvider = new BcryptProvider();
-		authenticateUserService = new AuthenticateUserService(usersRepositoryInMemory, encryptionProvider);
+		service = new AuthenticateUserService(usersRepositoryInMemory, encryptionProvider);
 	});
 
 	it('should be able to authenticate an user', async () => {
@@ -31,7 +31,7 @@ describe('Authenticate User', () => {
 			role: UserRolesEnum.partner,
 		});
 
-		const result = await authenticateUserService.execute({
+		const result = await service.execute({
 			email: email,
 			password: planPassword,
 		});
@@ -40,12 +40,7 @@ describe('Authenticate User', () => {
 	});
 
 	it('should not be able to authenticate an nonexistent user', async () => {
-		await expect(
-			authenticateUserService.execute({
-				email,
-				password: planPassword,
-			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ email, password: planPassword })).rejects.toBeInstanceOf(BadRequestError);
 	});
 
 	it('should not be able to authenticate an user with incorrect password', async () => {
@@ -57,11 +52,8 @@ describe('Authenticate User', () => {
 			role: UserRolesEnum.partner,
 		});
 
-		await expect(
-			authenticateUserService.execute({
-				email: email,
-				password: 'incorrectPassword',
-			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ email: email, password: 'incorrectPassword' })).rejects.toBeInstanceOf(
+			BadRequestError,
+		);
 	});
 });
