@@ -10,6 +10,8 @@ import { deleteUserController } from '@/modules/accounts/useCases/deleteUser/del
 import { listUsersController } from '@/modules/accounts/useCases/listUsers/listUsers.controller';
 import { updateUserProfileSchema } from '@/modules/accounts/useCases/updateUserProfile/updateUserProfile.schema';
 import { updateUserProfileController } from '@/modules/accounts/useCases/updateUserProfile/updateUserProfile.controller';
+import { updateUserRoleSchema } from '@/modules/accounts/useCases/updateUserRole/updateUserRole.schema';
+import { updateUserRoleController } from '@/modules/accounts/useCases/updateUserRole/updateUserRole.controller';
 
 const routes: Routes = (server) => {
 	server
@@ -23,9 +25,17 @@ const routes: Routes = (server) => {
 	server
 		.withTypeProvider<ZodTypeProvider>()
 		.patch(
-			'/users',
+			'/users/me',
 			{ schema: { body: updateUserProfileSchema }, onRequest: [verifyAndRenewToken] },
 			updateUserProfileController,
+		);
+
+	server
+		.withTypeProvider<ZodTypeProvider>()
+		.patch(
+			'/users/role',
+			{ schema: { body: updateUserRoleSchema }, onRequest: [verifyAndRenewToken] },
+			updateUserRoleController,
 		);
 
 	server
