@@ -31,7 +31,14 @@ const typescriptConfig = tsEslint.config({
 const vitestConfig = {
 	files: ['src/**/*spec.ts'],
 	plugins: {
+		'@typescript-eslint': tsEslint.plugin,
 		vitest,
+	},
+	languageOptions: {
+		parser: tsEslint.parser,
+		parserOptions: {
+			project: true,
+		},
 	},
 	rules: {
 		...vitest.configs.recommended.rules,
