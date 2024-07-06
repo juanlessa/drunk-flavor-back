@@ -1,9 +1,9 @@
 import { env } from '@/env';
-import { NodeEnvEnum } from '@/env/env.types';
 
 const EnvToLogger = {
-	[NodeEnvEnum.development]: {
+	development: {
 		level: env.LOG_LEVEL,
+		enabled: env.LOG_ENABLED,
 		transport: {
 			target: 'pino-pretty',
 			options: {
@@ -13,8 +13,9 @@ const EnvToLogger = {
 			},
 		},
 	},
-	[NodeEnvEnum.production]: {
+	production: {
 		level: env.LOG_LEVEL,
+		enabled: env.LOG_ENABLED,
 		transport: {
 			target: 'pino-pretty',
 			options: {
@@ -23,7 +24,8 @@ const EnvToLogger = {
 			},
 		},
 	},
-	test: false,
+	e2e: false,
+	testing: false,
 };
 
 const environment = (env.NODE_ENV ?? 'production') as keyof typeof EnvToLogger;
