@@ -14,7 +14,7 @@ export class AuthenticateUserService {
 		const user = await this.usersRepository.findByEmail(email);
 		if (!user) {
 			throw new BadRequestError(AUTHENTICATION_MESSAGES.invalidCredentials.message, {
-				path: 'AuthenticateUser.service',
+				path: 'AuthenticateUser.service.1',
 				cause: 'invalid email',
 			});
 		}
@@ -22,8 +22,8 @@ export class AuthenticateUserService {
 		const passwordMatch = await this.encryptionProvider.compare(password, user.password);
 		if (!passwordMatch) {
 			throw new BadRequestError(AUTHENTICATION_MESSAGES.invalidCredentials.message, {
-				path: 'AuthenticateUser.service',
-				cause: 'invalid password',
+				path: 'AuthenticateUser.service.2',
+				cause: 'Error on encryptionProvider.compare',
 			});
 		}
 
