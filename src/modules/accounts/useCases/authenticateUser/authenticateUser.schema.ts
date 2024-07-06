@@ -5,5 +5,3 @@ export const authenticateUserSchema = z.object({
 	email: userEmailValidation,
 	password: userPasswordValidation,
 });
-
-export type AuthenticateUserReqBody = z.infer<typeof authenticateUserSchema>;

@@ -1,7 +1,6 @@
-import { UserRole } from '@/modules/accounts/entities/user.entity';
-import { DatabaseCommonInfo } from '@/shared/infra/mongo/types';
+import { User, UserRole } from '@/modules/accounts/entities/user.entity';
 
-export type ICreateUser = {
+export type CreateUser = {
 	name: string;
 	surname: string;
 	email: string;
@@ -9,22 +8,7 @@ export type ICreateUser = {
 	role: UserRole;
 };
 
-export type IUpdateUserRequest = {
-	name: string;
-	surname: string;
-	email: string;
-	password: string;
-};
-
-export type IUpdateUserDto = {
-	id: string;
-	name: string;
-	surname: string;
-	email: string;
-	password: string;
-};
-
-export type IUpdateUser = { id: string } & Partial<{
+export type UpdateUser = { id: string } & Partial<{
 	name: string;
 	surname: string;
 	email: string;
@@ -32,22 +16,13 @@ export type IUpdateUser = { id: string } & Partial<{
 	role: UserRole;
 }>;
 
-export type IDeleteUser = {
+export type DeleteUser = {
 	id: string;
 };
 
-export type IUpdateUserRole = {
+export type UpdateUserRole = {
 	user_id: string;
 	role: UserRole;
 };
 
-export type IUserProfileResponse = DatabaseCommonInfo & {
-	name: string;
-	surname: string;
-	email: string;
-	role: UserRole;
-};
-
-export type IUserProfileRequest = {
-	id: string;
-};
+export type UserWithoutPassword = Omit<User, 'password'>;

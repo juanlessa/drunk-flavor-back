@@ -1,16 +1,17 @@
 import { IUsersRepository } from '@/modules/accounts/repositories/IUsers.repository';
-import { ICreateUser, IUpdateUser } from '@/modules/accounts/dtos/user.dtos';
-import { ObjectId } from 'bson';
-import { IUser } from '@/modules/accounts/entities/user.entity';
+import { CreateUser, UpdateUser, UserWithoutPassword } from '@/modules/accounts/dtos/user.dtos';
+import { ObjectId } from 'mongodb';
+import { User } from '@/modules/accounts/entities/user.entity';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { USER_MESSAGES } from '@/shared/constants/ResponseMessages';
+import { omitUserPassword } from '../../mappers/user.mappers';
 
-class UsersRepositoryInMemory implements IUsersRepository {
-	users: IUser[] = [];
+export class UsersRepositoryInMemory implements IUsersRepository {
+	users: User[] = [];
 
-	async create({ surname, email, name, password, role }: ICreateUser): Promise<IUser> {
-		const user: IUser = {
-			_id: new ObjectId().toString(),
+	async create({ surname, email, name, password, role }: CreateUser): Promise<User> {
+		const user: User = {
+			_id: new ObjectId(),
 			surname,
 			email,
 			name,
@@ -23,11 +24,11 @@ class UsersRepositoryInMemory implements IUsersRepository {
 		return user;
 	}
 
-	async update({ id, ...data }: IUpdateUser): Promise<IUser> {
-		const userIndex = this.users.findIndex((u) => u._id === id);
+	async update({ id, ...data }: UpdateUser): Promise<User> {
+		const userIndex = this.users.findIndex((u) => u._id.toString() === id);
 		if (userIndex === -1) {
 			throw new NotFoundError(USER_MESSAGES.notFound.message, {
-				path: 'Users.repository',
+				path: 'Users.repository.update',
 				cause: 'Error on findOneAndUpdate operation',
 			});
 		}
@@ -44,11 +45,11 @@ class UsersRepositoryInMemory implements IUsersRepository {
 		return user;
 	}
 
-	async delete(id: string): Promise<IUser> {
-		const userIndex = this.users.findIndex((u) => u._id === id);
+	async delete(id: string): Promise<User> {
+		const userIndex = this.users.findIndex((u) => u._id.toString() === id);
 		if (userIndex === -1) {
 			throw new NotFoundError(USER_MESSAGES.notFound.message, {
-				path: 'Users.repository',
+				path: 'Users.repository.delete',
 				cause: 'Error on findOneAndDelete operation',
 			});
 		}
@@ -57,20 +58,18 @@ class UsersRepositoryInMemory implements IUsersRepository {
 		return deletedUser;
 	}
 
-	async findByEmail(email: string): Promise<IUser | null> {
+	async findByEmail(email: string): Promise<User | null> {
 		const foundUser = this.users.find((user) => user.email === email);
 		return foundUser || null;
 	}
 
-	async findById(id: string): Promise<IUser | null> {
-		const foundUser = this.users.find((user) => user._id === id);
+	async findById(id: string): Promise<User | null> {
+		const foundUser = this.users.find((user) => user._id.toString() === id);
 		return foundUser || null;
 	}
 
-	async findAll(): Promise<IUser[]> {
+	async findAll(): Promise<UserWithoutPassword[]> {
 		const results = [...this.users];
-		return results;
+		return results.map(omitUserPassword);
 	}
 }
-
-export { UsersRepositoryInMemory };

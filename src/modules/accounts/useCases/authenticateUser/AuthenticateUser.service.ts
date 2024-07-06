@@ -1,5 +1,4 @@
-import { authConfig } from '@/config/auth';
-import { IAuthenticateUser, IAuthenticateUserResponse } from '@/modules/accounts/dtos/authentication.dtos';
+import { AuthenticateUser } from './authenticateUser.dtos';
 import { AUTHENTICATION_MESSAGES } from '@/shared/constants/ResponseMessages';
 import { IUsersRepository } from '@/modules/accounts/repositories/IUsers.repository';
 import { IEncryptionProvider } from '@/shared/providers/encryption/IEncryption.provider';
@@ -11,7 +10,7 @@ export class AuthenticateUserService {
 		private encryptionProvider: IEncryptionProvider,
 	) {}
 
-	async execute({ email, password }: IAuthenticateUser): Promise<IAuthenticateUserResponse> {
+	async execute({ email, password }: AuthenticateUser) {
 		const user = await this.usersRepository.findByEmail(email);
 		if (!user) {
 			throw new BadRequestError(AUTHENTICATION_MESSAGES.invalidCredentials.message, {
@@ -31,6 +30,7 @@ export class AuthenticateUserService {
 		return {
 			user: {
 				id: user._id.toString(),
+				role: user.role,
 			},
 		};
 	}

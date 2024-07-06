@@ -14,5 +14,3 @@ export const createUserSchema = z.object({
 	password: userPasswordValidation,
 	role: userRoleValidation,
 });
-
-export type CreateUserReqBody = z.infer<typeof createUserSchema>;

@@ -1,7 +1,7 @@
 import { Schema, model, models } from 'mongoose';
-import { IUser, UserRolesEnum } from '@/modules/accounts/entities/user.entity';
+import { User, UserRolesEnum } from '@/modules/accounts/entities/user.entity';
 
-export const UserSchema = new Schema<IUser>(
+export const UserSchema = new Schema<User>(
 	{
 		name: { type: String, required: true },
 		surname: { type: String, required: true },
@@ -22,4 +22,4 @@ export const UserSchema = new Schema<IUser>(
 	},
 );
 
-export const User = models['users'] || model<IUser>('users', UserSchema);
+export const UserModel = models['users'] || model<User>('users', UserSchema);

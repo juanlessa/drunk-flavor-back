@@ -1,4 +1,4 @@
-import { CreateUserController } from '@/modules/accounts/useCases/createUser/CreateUser.controller';
+import { CreateUserController } from '@/modules/accounts/useCases/createUser/createUser.controller';
 import { createUserSchema } from '@/modules/accounts/useCases/createUser/createUser.schema';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { pluginGenerator } from '../helpers/fastify.helpers';

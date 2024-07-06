@@ -7,7 +7,7 @@ export enum UserRolesEnum {
 
 export type UserRole = keyof typeof UserRolesEnum;
 
-export type IUser = DatabaseCommonInfo & {
+export type User = DatabaseCommonInfo & {
 	name: string;
 	surname: string;
 	email: string;
