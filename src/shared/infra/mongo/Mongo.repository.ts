@@ -1,23 +1,14 @@
 import mongoose, { Model } from 'mongoose';
 import { logger } from '@/shared/logger';
 import { env } from '@/env';
+import { buildConnectionStringFromEnv } from './mongo.helpers';
 
 export class MongoRepository {
 	private connectionString: string;
 	private static _instance: MongoRepository;
 
 	private constructor() {
-		if (!env.MONGO_USERNAME || !env.MONGO_PASSWORD || !env.MONGO_HOST || !env.MONGO_PORT || !env.MONGO_DATABASE) {
-			throw new Error(
-				'Missing connection options. Ensure MONGO_MAX_POOL_SIZE, MONGO_CONNECT_TIMEOUT_MS, and MONGO_SERVER_SELECTION_TIMEOUT_MS are set.',
-			);
-		}
-
-		const credentials = `${env.MONGO_USERNAME}:${env.MONGO_PASSWORD}`;
-		const address = `${env.MONGO_HOST}:${env.MONGO_PORT}`;
-		const database = env.MONGO_DATABASE;
-		const params = env.MONGO_PARAMS;
-		this.connectionString = `mongodb://${credentials}@${address}/${database}?${params}`;
+		this.connectionString = buildConnectionStringFromEnv(env);
 	}
 
 	static get Instance() {
@@ -28,11 +19,14 @@ export class MongoRepository {
 		return mongoose.connection.getClient();
 	}
 
-	async start() {
+	async start(url?: string) {
 		if (!env.MONGO_MAX_POOL_SIZE || !env.MONGO_CONNECT_TIMEOUT_MS || !env.MONGO_SERVER_SELECTION_TIMEOUT_MS) {
 			throw new Error(
 				'Missing connection options. Ensure MONGO_MAX_POOL_SIZE, MONGO_CONNECT_TIMEOUT_MS, and MONGO_SERVER_SELECTION_TIMEOUT_MS are set.',
 			);
+		}
+		if (url) {
+			this.connectionString = url;
 		}
 
 		await mongoose.connect(this.connectionString, {
