@@ -3,7 +3,7 @@ import { HTTP_STATUS } from '@/shared/constants/httpStatus';
 import { Controller } from '@/shared/infra/fastify/types/fastify.types';
 import { CreateUserReqBody } from './createUser.dtos';
 
-export const CreateUserController: Controller = async (request, response) => {
+export const createUserController: Controller = async (request, response) => {
 	const { name, surname, email, password, role } = request.body as CreateUserReqBody;
 
 	const service = resolveCreateUserService();
