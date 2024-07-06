@@ -1,9 +1,9 @@
 {
-    "name": "vitest-environment-mongo",
-    "version": "1.0.0",
-    "description": "",
-    "main": "mongo-test-environment.ts",
-    "keywords": [],
-    "author": "",
-    "license": "ISC"
+	"name": "vitest-environment-mongo",
+	"version": "1.0.0",
+	"description": "",
+	"main": "mongo-test-environment.ts",
+	"keywords": [],
+	"author": "Juan Lessa",
+	"license": "ISC"
 }
