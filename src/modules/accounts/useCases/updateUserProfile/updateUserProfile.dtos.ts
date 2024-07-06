@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { updateUserSchema } from './updateUserProfile.schema';
+import { updateUserProfileSchema } from './updateUserProfile.schema';
 
-export type UpdateUserReqBody = z.infer<typeof updateUserSchema>;
+export type UpdateUserProfileReqBody = z.infer<typeof updateUserProfileSchema>;
 
 export type UpdateUserProfile = {
 	id: string;

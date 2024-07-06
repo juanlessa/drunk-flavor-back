@@ -8,6 +8,8 @@ import { getUserProfileController } from '@/modules/accounts/useCases/getUserPro
 import { deleteUserSchema } from '@/modules/accounts/useCases/deleteUser/deleteUser.schema';
 import { deleteUserController } from '@/modules/accounts/useCases/deleteUser/deleteUser.controller';
 import { listUsersController } from '@/modules/accounts/useCases/listUsers/listUsers.controller';
+import { updateUserProfileSchema } from '@/modules/accounts/useCases/updateUserProfile/updateUserProfile.schema';
+import { updateUserProfileController } from '@/modules/accounts/useCases/updateUserProfile/updateUserProfile.controller';
 
 const routes: Routes = (server) => {
 	server
@@ -17,6 +19,14 @@ const routes: Routes = (server) => {
 	server.get('/users/me', { onRequest: [verifyAndRenewToken] }, getUserProfileController);
 
 	server.get('/users', { onRequest: [verifyAndRenewToken] }, listUsersController);
+
+	server
+		.withTypeProvider<ZodTypeProvider>()
+		.patch(
+			'/users',
+			{ schema: { body: updateUserProfileSchema }, onRequest: [verifyAndRenewToken] },
+			updateUserProfileController,
+		);
 
 	server
 		.withTypeProvider<ZodTypeProvider>()
