@@ -4,7 +4,7 @@ import { AUTH_COOKIE } from './cookie.constants';
 import { mapDecodedTokenToUser, retrieveRefreshTokenFromSession } from '../helpers/jwt.helpers';
 
 export const TOKEN_OPTIONS = {
-	secret: env.TOKEN_SECRET,
+	secret: env.ACCESS_TOKEN_SECRET,
 	sign: {
 		expiresIn: env.ACCESS_TOKEN_EXPIRES_IN_SECONDS,
 	},
@@ -16,7 +16,7 @@ export const TOKEN_OPTIONS = {
 } satisfies FastifyJWTOptions;
 
 export const REFRESH_TOKEN_OPTIONS = {
-	secret: env.TOKEN_SECRET,
+	secret: env.REFRESH_TOKEN_SECRET,
 	namespace: 'session',
 	sign: {
 		expiresIn: env.REFRESH_TOKEN_EXPIRES_IN_SECONDS,
