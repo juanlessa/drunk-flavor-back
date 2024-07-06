@@ -12,7 +12,7 @@ let service: DeleteUserService;
 
 // test constants
 const planPassword = '123456789';
-const email = 'user@/test.com';
+const email = 'user@test.com';
 const name = 'User';
 const surname = 'Test';
 const role = UserRolesEnum.admin;

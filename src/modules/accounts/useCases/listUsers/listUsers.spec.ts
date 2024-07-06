@@ -13,11 +13,11 @@ let service: ListUsersService;
 // test constants
 const partnerName = 'Partner';
 const partnerSurname = 'Test';
-const partnerEmail = 'partner.user@/test.com';
+const partnerEmail = 'partner.user@test.com';
 const partnerPlanPassword = '987654321';
 const adminName = 'Admin';
 const adminSurname = 'Test';
-const adminEmail = 'admin.user@/test.com';
+const adminEmail = 'admin.user@test.com';
 const adminPlanPassword = '123456789';
 
 describe('List Users', () => {
