@@ -1,5 +1,5 @@
 import { AuthenticateUser } from './authenticateUser.dtos';
-import { AUTHENTICATION_MESSAGES } from '@/shared/constants/ResponseMessages';
+import { AUTHENTICATION_MESSAGES } from '@/modules/accounts/constants/users.constants';
 import { IUsersRepository } from '@/modules/accounts/repositories/IUsers.repository';
 import { IEncryptionProvider } from '@/shared/providers/encryption/IEncryption.provider';
 import { BadRequestError } from '@/shared/error/error.lib';

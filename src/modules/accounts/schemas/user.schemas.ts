@@ -1,4 +1,4 @@
-import { USER_MESSAGES } from '@/shared/constants/ResponseMessages';
+import { USER_MESSAGES } from '@/modules/accounts/constants/users.constants';
 import { z } from 'zod';
 import { UserRolesEnum } from '../entities/user.entity';
 

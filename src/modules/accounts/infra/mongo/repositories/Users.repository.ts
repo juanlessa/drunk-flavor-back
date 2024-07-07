@@ -3,7 +3,7 @@ import { User } from '@/modules/accounts/entities/user.entity';
 import { IUsersRepository } from '@/modules/accounts/repositories/IUsers.repository';
 import { UserModel } from '@/modules/accounts/infra/mongo/entities/user.model';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { USER_MESSAGES } from '@/shared/constants/ResponseMessages';
+import { USER_MESSAGES } from '@/modules/accounts/constants/users.constants';
 
 export class UsersRepository implements IUsersRepository {
 	async create(data: CreateUser): Promise<User> {

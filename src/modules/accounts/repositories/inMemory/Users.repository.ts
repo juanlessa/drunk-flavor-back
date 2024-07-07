@@ -3,7 +3,7 @@ import { CreateUser, UpdateUser, UserWithoutPassword } from '@/modules/accounts/
 import { ObjectId } from 'mongodb';
 import { User } from '@/modules/accounts/entities/user.entity';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { USER_MESSAGES } from '@/shared/constants/ResponseMessages';
+import { USER_MESSAGES } from '@/modules/accounts/constants/users.constants';
 import { omitUserPassword } from '../../mappers/user.mappers';
 
 export class UsersRepositoryInMemory implements IUsersRepository {

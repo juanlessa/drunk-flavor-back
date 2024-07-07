@@ -2,7 +2,7 @@ import { IUsersRepository } from '@/modules/accounts/repositories/IUsers.reposit
 import { GetUserProfile } from './getUserProfile.dtos';
 import { omitUserPassword } from '@/modules/accounts/mappers/user.mappers';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { USER_MESSAGES } from '@/shared/constants/ResponseMessages';
+import { USER_MESSAGES } from '@/modules/accounts/constants/users.constants';
 
 export class GetUserProfileService {
 	constructor(private usersRepository: IUsersRepository) {}

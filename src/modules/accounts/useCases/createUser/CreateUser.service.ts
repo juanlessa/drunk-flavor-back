@@ -2,7 +2,7 @@ import { CreateUser } from '@/modules/accounts/dtos/user.dtos';
 import { IUsersRepository } from '@/modules/accounts/repositories/IUsers.repository';
 import { IEncryptionProvider } from '@/shared/providers/encryption/IEncryption.provider';
 import { BadRequestError } from '@/shared/error/error.lib';
-import { USER_MESSAGES } from '@/shared/constants/ResponseMessages';
+import { USER_MESSAGES } from '@/modules/accounts/constants/users.constants';
 
 export class CreateUserService {
 	constructor(

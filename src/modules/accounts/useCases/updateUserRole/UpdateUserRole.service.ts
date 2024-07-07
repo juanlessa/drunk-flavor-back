@@ -1,6 +1,6 @@
 import { UpdateUserRole } from '@/modules/accounts/dtos/user.dtos';
 import { IUsersRepository } from '@/modules/accounts/repositories/IUsers.repository';
-import { USER_MESSAGES } from '@/shared/constants/ResponseMessages';
+import { USER_MESSAGES } from '@/modules/accounts/constants/users.constants';
 import { BadRequestError } from '@/shared/error/error.lib';
 
 export class UpdateUserRoleService {

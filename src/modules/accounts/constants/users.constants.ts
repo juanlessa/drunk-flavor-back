@@ -99,8 +99,3 @@ export const AUTHENTICATION_MESSAGES = {
 		i18nKey: 'apiResponses.authentication.invalidCredentials',
 	},
 };
-
-export const RESPONSE_MESSAGES = {
-	user: { ...USER_MESSAGES },
-	authentication: { ...AUTHENTICATION_MESSAGES },
-};
