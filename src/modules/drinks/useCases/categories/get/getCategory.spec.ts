@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CategoriesRepositoryInMemory } from '@/modules/drinks/repositories/inMemory/Categories.repository';
-import { ObjectId } from 'bson';
+import { ObjectId } from 'mongodb';
 import { GetCategoryService } from './GetCategory.service';
 import { Translations } from '@/modules/drinks/types/translations';
 import { CategoryTranslation } from '@/modules/drinks/entities/category.entity';
