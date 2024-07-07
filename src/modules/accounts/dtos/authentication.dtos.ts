@@ -6,14 +6,9 @@ export type IAuthenticateUser = {
 export type IAuthenticateUserResponse = {
 	user: {
 		name: string;
+		surname: string;
 		email: string;
 	};
-	token: {
-		token: string;
-		expires: Date;
-	};
-	refresh_token: {
-		token: string;
-		expires: Date;
-	};
+	accessToken: string;
+	refreshToken: string;
 };

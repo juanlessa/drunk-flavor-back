@@ -1,5 +1,4 @@
 import { UsersRepositoryInMemory } from '@modules/accounts/repositories/inMemory/Users.repository';
-import { UsersTokensRepositoryInMemory } from '@modules/accounts/repositories/inMemory/UsersTokens.repository';
 import { ROLES } from '@modules/accounts/types/roles';
 import { DayjsDateProvider } from '@shared/container/providers/date/implementations/DayjsDateProvider';
 import { BcryptProvider } from '@shared/container/providers/encryption/implementations/Bcrypt.provider';
@@ -9,7 +8,6 @@ import { AuthenticateUserService } from '@modules/accounts/useCases/authenticate
 import { BadRequestError } from '@shared/errors/error.lib';
 
 let usersRepositoryInMemory: UsersRepositoryInMemory;
-let usersTokensRepositoryInMemory: UsersTokensRepositoryInMemory;
 let authenticateUserService: AuthenticateUserService;
 let dateProvider: DayjsDateProvider;
 let jwtProvider: JsonwebtokenProvider;
@@ -24,13 +22,11 @@ const planPassword = '123456789';
 describe('Authenticate User', () => {
 	beforeEach(async () => {
 		usersRepositoryInMemory = new UsersRepositoryInMemory();
-		usersTokensRepositoryInMemory = new UsersTokensRepositoryInMemory();
 		dateProvider = new DayjsDateProvider();
 		jwtProvider = new JsonwebtokenProvider();
 		encryptionProvider = new BcryptProvider();
 		authenticateUserService = new AuthenticateUserService(
 			usersRepositoryInMemory,
-			usersTokensRepositoryInMemory,
 			dateProvider,
 			jwtProvider,
 			encryptionProvider
@@ -51,8 +47,8 @@ describe('Authenticate User', () => {
 			password: planPassword
 		});
 
-		expect(result).toHaveProperty('token');
-		expect(result).toHaveProperty('refresh_token');
+		expect(result).toHaveProperty('accessToken');
+		expect(result).toHaveProperty('refreshToken');
 	});
 
 	it('should not be able to authenticate an nonexistent user', async () => {

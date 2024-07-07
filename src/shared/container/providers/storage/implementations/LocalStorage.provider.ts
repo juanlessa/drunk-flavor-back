@@ -1,5 +1,5 @@
 import { IStorageProvider } from '../IStorage.provider';
-import apiConfig from '@config/api';
+import { apiConfig } from '@config/api';
 import fs from 'node:fs';
 import multer from 'multer';
 import { resolve } from 'node:path';
@@ -8,7 +8,7 @@ import { hashedFileName } from './utils/hashedFileName';
 
 export class LocalStorageProvider implements IStorageProvider {
 	getFileURL(fileName: string): string {
-		return `${apiConfig.host}:${apiConfig.port}/files/${fileName}`;
+		return `${apiConfig.HOST}:${apiConfig.PORT}/files/${fileName}`;
 	}
 	async deleteFile(fileName: string): Promise<void> {
 		fileName = `./tmp/drink/${fileName}`;

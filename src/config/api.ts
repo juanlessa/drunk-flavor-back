@@ -1,7 +1,6 @@
-import * as dotenv from 'dotenv';
-dotenv.config();
+import { env } from '@/env';
 
-export default {
-	port: Number(process.env.API_PORT) || 3333,
-	host: process.env.API_HOST || 'http://localhost'
+export const apiConfig = {
+	PORT: env.API_PORT,
+	HOST: env.API_HOST
 };
