@@ -1,11 +1,8 @@
-import * as dotenv from 'dotenv';
-dotenv.config();
+import { env } from '@/env';
 
-export default {
-	secret_token: process.env.TOKEN_SECRET || 'test-token-secret',
-	expires_in_token: process.env.TOKEN_EXPIRES_IN || '1h',
-	expires_token_hours: Number(process.env.TOKEN_EXPIRES_HOURS) || 1,
-	secret_refresh_token: process.env.REFRESH_TOKEN_SECRET || 'test-refresh-token-secret',
-	expires_in_refresh_token: process.env.REFRESH_TOKEN_EXPIRES_IN || '1d',
-	expires_refresh_token_seconds: Number(process.env.REFRESH_TOKEN_EXPIRES_SECONDS) || 86400 // 1 day
+export const authConfig = {
+	ACCESS_TOKEN_SECRET: env.ACCESS_TOKEN_SECRET,
+	ACCESS_TOKEN_EXPIRES_IN: env.ACCESS_TOKEN_EXPIRES_IN,
+	REFRESH_TOKEN_SECRET: env.REFRESH_TOKEN_SECRET,
+	REFRESH_TOKEN_EXPIRES_IN: env.REFRESH_TOKEN_EXPIRES_IN
 };

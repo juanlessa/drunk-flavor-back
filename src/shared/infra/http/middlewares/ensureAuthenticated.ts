@@ -1,37 +1,69 @@
-import auth from '@config/auth';
-import { AUTHENTICATION_ERRORS } from '@modules/accounts/errors/authentication.errors';
-import { USER_ERRORS } from '@modules/accounts/errors/user.errors';
-import { UsersRepository } from '@modules/accounts/infra/mongo/repositories/Users.repository';
-import { JsonwebtokenProvider } from '@shared/container/providers/jwt/implementations/Jsonwebtoken.provider';
+import { authConfig } from '@config/auth';
 import { AppNextFunction, AppRequest, AppResponse } from '../types';
-import { UnauthorizedError } from '@shared/errors/error.lib';
+import { ForbiddenError, NotFoundError } from '@shared/errors/error.lib';
+import { resolveJwtProvider } from '@shared/container/providers/jwt';
+import { cookiesConfig } from '@config/cookies';
+
+export const signOut = async (request: AppRequest, response: AppResponse) => {
+	void response.clearCookie('authorization');
+	return { ok: true };
+};
 
 export async function ensureAuthenticated(request: AppRequest, response: AppResponse, next: AppNextFunction) {
-	const authHeader = request.headers.authorization;
-	if (!authHeader) {
-		throw new UnauthorizedError(AUTHENTICATION_ERRORS.missing_token, { path: 'ensureAuthenticated.middleware' });
+	const signedToken = request.cookies.authorization as string | undefined;
+	const accessToken = (request.headers.authorization || signedToken || '').replace('Bearer ', '');
+
+	if (!accessToken) {
+		void signOut(request, response);
+		throw new NotFoundError('invalid resource', { cause: accessToken, path: 'auth.fastify.verifyAndRenewToken.1' });
 	}
 
-	const [, token] = authHeader.split(' ');
+	const jwtProvider = resolveJwtProvider();
 
-	try {
-		const jwtProvider = new JsonwebtokenProvider();
+	const data = jwtProvider.verifyToken({ token: accessToken, secret: authConfig.ACCESS_TOKEN_SECRET });
+	const isExpired = data.isExpired;
+	let userId = data.subject;
 
-		const { sub: user_id } = jwtProvider.verifyToken({ token, secret: auth.secret_token });
-
-		const usersRepository = new UsersRepository();
-
-		const user = await usersRepository.findById(user_id);
-		if (!user) {
-			throw new UnauthorizedError(USER_ERRORS.not_exist, { path: 'ensureAuthenticated.middleware' });
-		}
-
-		request.user = {
-			id: user_id
-		};
-
-		next();
-	} catch {
-		throw new UnauthorizedError(AUTHENTICATION_ERRORS.invalid_token, { path: 'ensureAuthenticated.middleware' });
+	if (!isExpired && !userId) {
+		void signOut(request, response);
+		throw new NotFoundError('invalid resource', { cause: accessToken, path: 'auth.fastify.verifyAndRenewToken.2' });
 	}
+
+	if (!isExpired) {
+		response.cookie('authorization', accessToken, cookiesConfig);
+		request.user = { id: userId };
+		return next();
+	}
+
+	const session = request.session?.refreshToken;
+
+	if (!session) {
+		throw new NotFoundError('invalid resource', {
+			cause: 'no session found',
+			path: 'auth.fastify.verifyAndRenewToken.3'
+		});
+	}
+
+	const refreshToken = session.refreshToken;
+	userId = session.userId;
+
+	const refreshTokenData = jwtProvider.verifyToken({ token: refreshToken, secret: authConfig.REFRESH_TOKEN_SECRET });
+	const isRefreshTokenExpired = refreshTokenData.isExpired;
+
+	if (isRefreshTokenExpired) {
+		void signOut(request, response);
+		throw new ForbiddenError('invalid token', { cause: refreshToken, path: 'auth.fastify.verifyAndRenewToken.2' });
+	}
+
+	const newAccessToken = jwtProvider.createToken({
+		subject: userId,
+		secret: authConfig.ACCESS_TOKEN_SECRET,
+		expires_in: authConfig.ACCESS_TOKEN_EXPIRES_IN
+	});
+
+	request.user = { id: userId };
+	request.session.refreshToken = { refreshToken, userId: userId };
+	response.cookie('authorization', newAccessToken, cookiesConfig);
+
+	return next();
 }
