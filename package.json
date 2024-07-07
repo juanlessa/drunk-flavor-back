@@ -11,9 +11,17 @@
 		"lint:fix": "eslint . --fix",
 		"lint:staged": "lint-staged",
 		"prepare": "husky",
+		"clean": "rm -Rf dist",
+		"start": "NODE_ENV=production node dist/server.js",
 		"dev": "tsx src/server.ts",
 		"dev:watch": "tsx watch src/server.ts",
-		"test": "NODE_ENV=testing vitest run -c vitest.config.ts"
+		"build": "tsup src",
+		"test": "NODE_ENV=testing vitest run -c vitest.config.ts",
+		"test:watch": "NODE_ENV=testing vitest -c vitest.config.ts",
+		"test:coverage": "vitest run -c vitest.config.ts --coverage",
+		"test:e2e:setup": "npm link ./src/shared/infra/mongo/vitest-environment-mongo",
+		"test:e2e": "NODE_ENV=e2e dotenv -e .env.testing -- vitest run -c vitest-e2e.config.ts",
+		"test:e2e:watch": "NODE_ENV=e2e dotenv -e .env.testing -- vitest -c vitest-e2e.config.ts"
 	},
 	"dependencies": {
 		"@fastify/cookie": "^9.3.1",

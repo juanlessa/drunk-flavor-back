@@ -4,7 +4,7 @@ secret_key
 *.log*
 .env
 .env.testing
-/build/
+/dist/
 .DS_Store
 coverage
 .vscode/*

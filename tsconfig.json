@@ -14,7 +14,7 @@
 		"forceConsistentCasingInFileNames": true,
 		"allowSyntheticDefaultImports": true,
 		"importHelpers": true,
-		"outDir": "build",
+		"outDir": "dist",
 		"sourceMap": true,
 		"typeRoots": ["./node_modules/@types"],
 		"experimentalDecorators": true,
