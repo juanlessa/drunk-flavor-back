@@ -23,15 +23,9 @@ const routes: Routes = (server) => {
 
 	server
 		.withTypeProvider<ZodTypeProvider>()
-		.get(
-			'/categories/:id',
-			{ schema: { params: getCategorySchema }, onRequest: [verifyAndRenewToken] },
-			getCategoryController,
-		);
+		.get('/categories/:id', { schema: { params: getCategorySchema } }, getCategoryController);
 
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.get('/categories', { onRequest: [verifyAndRenewToken] }, listCategoriesController);
+	server.withTypeProvider<ZodTypeProvider>().get('/categories', {}, listCategoriesController);
 
 	server
 		.withTypeProvider<ZodTypeProvider>()
