@@ -4,7 +4,7 @@ import { IIngredientsRepository } from '@/modules/drinks/repositories/IIngredien
 import { IngredientModel } from '@/modules/drinks/infra/mongo/entities/ingredient.model';
 import { getNameCompareQuery } from '../helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { INGREDIENT_MESSAGES } from '@/shared/constants/ResponseMessages';
+import { INGREDIENT_MESSAGES } from '@/modules/drinks/constants/ingredients.constants';
 
 export class IngredientsRepository implements IIngredientsRepository {
 	async create(data: CreateIngredient): Promise<Ingredient> {

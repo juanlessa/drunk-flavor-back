@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb';
 import { Drink } from '@/modules/drinks/entities/drink.entity';
 import { compareTranslationsName } from '@/modules/drinks/helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { DRINK_MESSAGES } from '@/shared/constants/ResponseMessages';
+import { DRINK_MESSAGES } from '@/modules/drinks/constants/drinks.constants';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helpers';
 
 export class DrinksRepositoryInMemory implements IDrinksRepository {

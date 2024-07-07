@@ -5,7 +5,7 @@ import { ObjectId } from 'mongodb';
 import { compareTranslationsName } from '@/modules/drinks/helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helpers';
-import { CATEGORY_MESSAGES } from '@/shared/constants/ResponseMessages';
+import { CATEGORY_MESSAGES } from '@/modules/drinks/constants/categories.constants';
 
 export class CategoriesRepositoryInMemory implements ICategoriesRepository {
 	categories: Category[] = [];

@@ -4,7 +4,7 @@ import { CreateDrink, FindDrinkByName, UpdateDrink } from '@/modules/drinks/dtos
 import { DrinkModel } from '@/modules/drinks/infra/mongo/entities/drink.model';
 import { getNameCompareQuery } from '../helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { DRINK_MESSAGES } from '@/shared/constants/ResponseMessages';
+import { DRINK_MESSAGES } from '@/modules/drinks/constants/drinks.constants';
 
 export class DrinksRepository implements IDrinksRepository {
 	async create(data: CreateDrink): Promise<Drink> {

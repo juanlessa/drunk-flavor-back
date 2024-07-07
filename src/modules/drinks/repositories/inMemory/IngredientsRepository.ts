@@ -5,7 +5,7 @@ import { IIngredientsRepository } from '@/modules/drinks/repositories/IIngredien
 import { ObjectId } from 'mongodb';
 import { compareTranslationsName } from '@/modules/drinks/helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { INGREDIENT_MESSAGES } from '@/shared/constants/ResponseMessages';
+import { INGREDIENT_MESSAGES } from '@/modules/drinks/constants/ingredients.constants';
 
 export class IngredientsRepositoryInMemory implements IIngredientsRepository {
 	ingredients: Ingredient[] = [];

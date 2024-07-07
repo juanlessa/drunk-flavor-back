@@ -1,4 +1,4 @@
-import { CATEGORY_MESSAGES } from '@/shared/constants/ResponseMessages';
+import { CATEGORY_MESSAGES } from '@/modules/drinks/constants/categories.constants';
 import { z } from 'zod';
 
 // fields validation

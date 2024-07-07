@@ -4,7 +4,7 @@ import { ICategoriesRepository } from '@/modules/drinks/repositories/ICategories
 import { CategoryModel } from '../entities/category.model';
 import { getNameCompareQuery } from '../helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { CATEGORY_MESSAGES } from '@/shared/constants/ResponseMessages';
+import { CATEGORY_MESSAGES } from '@/modules/drinks/constants/categories.constants';
 
 export class CategoriesRepository implements ICategoriesRepository {
 	async create(data: CreateCategory): Promise<Category> {

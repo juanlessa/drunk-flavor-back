@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DRINK_MESSAGES } from '@/shared/constants/ResponseMessages';
+import { DRINK_MESSAGES } from '@/modules/drinks/constants/drinks.constants';
 
 // Fields validation
 export const drinkIdValidation = z

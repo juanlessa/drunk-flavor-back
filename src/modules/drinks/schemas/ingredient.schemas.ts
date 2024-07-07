@@ -1,4 +1,4 @@
-import { INGREDIENT_MESSAGES } from '@/shared/constants/ResponseMessages';
+import { INGREDIENT_MESSAGES } from '@/modules/drinks/constants/ingredients.constants';
 import { z } from 'zod';
 
 // Fields validation
