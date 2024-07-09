@@ -5,20 +5,14 @@ import { BcryptProvider } from '@/shared/providers/encryption/implementations/Bc
 import { ListUsersService } from '@/modules/accounts/useCases/listUsers/ListUsers.service';
 import { IEncryptionProvider } from '@/shared/providers/encryption/IEncryption.provider';
 import { IUsersRepository } from '@/modules/accounts/repositories/IUsers.repository';
+import { createUserFactory } from '@/modules/accounts/container';
 
 let usersRepositoryInMemory: IUsersRepository;
 let encryptionProvider: IEncryptionProvider;
 let service: ListUsersService;
 
-// test constants
-const partnerName = 'Partner';
-const partnerSurname = 'Test';
-const partnerEmail = 'partner.user@test.com';
-const partnerPlanPassword = '987654321';
-const adminName = 'Admin';
-const adminSurname = 'Test';
-const adminEmail = 'admin.user@test.com';
-const adminPlanPassword = '123456789';
+const adminUserData = createUserFactory({ role: UserRolesEnum.admin });
+const partnerUserData = createUserFactory({ email: 'partner@example.com', role: UserRolesEnum.partner });
 
 describe('List Users', () => {
 	beforeEach(() => {
@@ -29,18 +23,18 @@ describe('List Users', () => {
 
 	it('should be able to list users', async () => {
 		await usersRepositoryInMemory.create({
-			name: partnerName,
-			surname: partnerSurname,
-			email: partnerEmail,
-			role: UserRolesEnum.partner,
-			password: await encryptionProvider.hash(partnerPlanPassword),
+			name: partnerUserData.name,
+			surname: partnerUserData.surname,
+			email: partnerUserData.email,
+			role: partnerUserData.role,
+			password: await encryptionProvider.hash(partnerUserData.password),
 		});
 		const createdAdminUser = await usersRepositoryInMemory.create({
-			name: adminName,
-			surname: adminSurname,
-			email: adminEmail,
-			role: UserRolesEnum.admin,
-			password: await encryptionProvider.hash(adminPlanPassword),
+			name: adminUserData.name,
+			surname: adminUserData.surname,
+			email: adminUserData.email,
+			role: adminUserData.role,
+			password: await encryptionProvider.hash(adminUserData.password),
 		});
 
 		const users = await service.execute(createdAdminUser._id.toString());

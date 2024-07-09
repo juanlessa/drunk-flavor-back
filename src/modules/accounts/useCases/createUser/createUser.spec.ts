@@ -1,29 +1,16 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CreateUser } from '@/modules/accounts/dtos/user.dtos';
 import { UsersRepositoryInMemory } from '@/modules/accounts/repositories/inMemory/Users.repository';
 import { BcryptProvider } from '@/shared/providers/encryption/implementations/Bcrypt.provider';
 import { CreateUserService } from '@/modules/accounts/useCases/createUser/CreateUser.service';
 import { BadRequestError } from '@/shared/error/error.lib';
-import { UserRolesEnum } from '@/modules/accounts/entities/user.entity';
 import { IUsersRepository } from '@/modules/accounts/repositories/IUsers.repository';
+import { createUserFactory } from '@/modules/accounts/container';
 
 let usersRepositoryInMemory: IUsersRepository;
 let encryptionProvider: BcryptProvider;
 let service: CreateUserService;
 
-// test constants
-const planPassword = '123456789';
-const email = 'user@test.com';
-const name = 'User';
-const surname = 'Test';
-const role = UserRolesEnum.admin;
-let createTestUser: CreateUser = {
-	name,
-	surname,
-	role,
-	email,
-	password: planPassword,
-};
+const { name, surname, email, password, role } = createUserFactory();
 
 describe('Create User', () => {
 	beforeEach(async () => {
@@ -32,8 +19,8 @@ describe('Create User', () => {
 		service = new CreateUserService(usersRepositoryInMemory, encryptionProvider);
 	});
 
-	it('Should be able to create an user', async () => {
-		await service.execute(createTestUser);
+	it('Should be able to create a user', async () => {
+		await service.execute({ name, surname, email, password, role });
 
 		const verifyUser = await usersRepositoryInMemory.findByEmail(email);
 
@@ -46,15 +33,15 @@ describe('Create User', () => {
 		expect(verifyUser).toHaveProperty('updated_at');
 	});
 
-	it('Should not be able to create an user with an existing email', async () => {
+	it('Should not be able to create a user with an existing email', async () => {
 		await usersRepositoryInMemory.create({
 			name,
 			surname,
 			email,
 			role,
-			password: await encryptionProvider.hash(planPassword),
+			password: await encryptionProvider.hash(password),
 		});
 
-		await expect(service.execute(createTestUser)).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ name, surname, email, password, role })).rejects.toBeInstanceOf(BadRequestError);
 	});
 });

@@ -2,19 +2,15 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { UsersRepositoryInMemory } from '@/modules/accounts/repositories/inMemory/Users.repository';
 import { ObjectId } from 'mongodb';
 import { GetUserProfileService } from './GetUserProfile.service';
-import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
+import { NotFoundError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/modules/accounts/repositories/IUsers.repository';
-import { User, UserRolesEnum } from '@/modules/accounts/entities/user.entity';
+import { User } from '@/modules/accounts/entities/user.entity';
+import { createUserFactory } from '@/modules/accounts/container';
 
 let usersRepositoryInMemory: IUsersRepository;
 let service: GetUserProfileService;
 
-// test constants
-const email = 'user@test.com';
-const password = '123456789';
-const name = 'User';
-const surname = 'Test';
-const role = UserRolesEnum.partner;
+const { name, surname, email, password, role } = createUserFactory();
 
 describe('User Profile', () => {
 	beforeEach(() => {

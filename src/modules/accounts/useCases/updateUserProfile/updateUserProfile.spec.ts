@@ -1,4 +1,4 @@
-import { User, UserRolesEnum } from '@/modules/accounts/entities/user.entity';
+import { User } from '@/modules/accounts/entities/user.entity';
 import { UsersRepositoryInMemory } from '@/modules/accounts/repositories/inMemory/Users.repository';
 import { BcryptProvider } from '@/shared/providers/encryption/implementations/Bcrypt.provider';
 import { ObjectId } from 'mongodb';
@@ -6,21 +6,19 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateUserProfileService } from './UpdateUserProfile.service';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/modules/accounts/repositories/IUsers.repository';
+import { createUserFactory } from '@/modules/accounts/container';
 
 let usersRepositoryInMemory: IUsersRepository;
 let encryptionProvider: BcryptProvider;
 let service: UpdateUserProfileService;
 
-// test constants
-const planPassword = '123456789';
-const email = 'user@test.com';
-const name = 'User';
-const surname = 'Test';
-const role = UserRolesEnum.admin;
-const updatedName = 'New';
-const updatedSurname = 'User';
-const updatedEmail = 'new.user@test.com';
-const updatedPlanPassword = '987654321';
+const { name, surname, email, password, role } = createUserFactory();
+const {
+	name: updatedName,
+	surname: updatedSurname,
+	email: updatedEmail,
+	password: updatedPassword,
+} = createUserFactory({ surname: 'updated', email: 'updated@example.com', password: 'updated-strong-password' });
 
 describe('Update User', () => {
 	beforeEach(async () => {
@@ -29,20 +27,20 @@ describe('Update User', () => {
 		service = new UpdateUserProfileService(usersRepositoryInMemory, encryptionProvider);
 	});
 
-	it('Should be able to update an user', async () => {
+	it('Should be able to update a user', async () => {
 		const createdUser = await usersRepositoryInMemory.create({
 			name,
 			surname,
 			email,
 			role,
-			password: await encryptionProvider.hash(planPassword),
+			password: await encryptionProvider.hash(password),
 		});
 		await service.execute({
 			id: createdUser._id.toString(),
 			name: updatedName,
 			surname: updatedSurname,
 			email: updatedEmail,
-			password: updatedPlanPassword,
+			password: updatedPassword,
 		});
 
 		const verifyUser = (await usersRepositoryInMemory.findById(createdUser._id.toString())) as User;
@@ -60,14 +58,14 @@ describe('Update User', () => {
 			surname,
 			email,
 			role,
-			password: await encryptionProvider.hash(planPassword),
+			password: await encryptionProvider.hash(password),
 		});
 		await usersRepositoryInMemory.create({
 			name: updatedName,
 			surname: updatedSurname,
 			email: updatedEmail,
 			role,
-			password: await encryptionProvider.hash(updatedPlanPassword),
+			password: await encryptionProvider.hash(updatedPassword),
 		});
 
 		await expect(
@@ -76,7 +74,7 @@ describe('Update User', () => {
 				name: updatedName,
 				surname: updatedSurname,
 				email: updatedEmail,
-				password: updatedPlanPassword,
+				password: updatedPassword,
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});
@@ -89,7 +87,7 @@ describe('Update User', () => {
 				name: updatedName,
 				surname: updatedSurname,
 				email: updatedEmail,
-				password: updatedPlanPassword,
+				password: updatedPassword,
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});

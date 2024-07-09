@@ -3,18 +3,14 @@ import { UsersRepositoryInMemory } from '@/modules/accounts/repositories/inMemor
 import { BcryptProvider } from '@/shared/providers/encryption/implementations/Bcrypt.provider';
 import { AuthenticateUserService } from '@/modules/accounts/useCases/authenticateUser/AuthenticateUser.service';
 import { BadRequestError } from '@/shared/error/error.lib';
-import { UserRolesEnum } from '@/modules/accounts/entities/user.entity';
 import { IUsersRepository } from '@/modules/accounts/repositories/IUsers.repository';
+import { createUserFactory } from '@/modules/accounts/container';
 
 let usersRepositoryInMemory: IUsersRepository;
 let encryptionProvider: BcryptProvider;
 let service: AuthenticateUserService;
 
-// test constants
-const email = 'user@test.com';
-const name = 'User';
-const surname = 'Test';
-const planPassword = '123456789';
+const { name, surname, email, password, role } = createUserFactory();
 
 describe('Authenticate User', () => {
 	beforeEach(async () => {
@@ -23,34 +19,34 @@ describe('Authenticate User', () => {
 		service = new AuthenticateUserService(usersRepositoryInMemory, encryptionProvider);
 	});
 
-	it('should be able to authenticate an user', async () => {
+	it('should be able to authenticate a user', async () => {
 		await usersRepositoryInMemory.create({
 			name,
 			surname,
 			email,
-			password: await encryptionProvider.hash(planPassword),
-			role: UserRolesEnum.partner,
+			password: await encryptionProvider.hash(password),
+			role,
 		});
 
 		const result = await service.execute({
-			email: email,
-			password: planPassword,
+			email,
+			password,
 		});
 
 		expect(result).toHaveProperty('user');
 	});
 
 	it('should not be able to authenticate an nonexistent user', async () => {
-		await expect(service.execute({ email, password: planPassword })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ email, password })).rejects.toBeInstanceOf(BadRequestError);
 	});
 
-	it('should not be able to authenticate an user with incorrect password', async () => {
+	it('should not be able to authenticate a user with incorrect password', async () => {
 		await usersRepositoryInMemory.create({
 			name,
 			surname,
 			email,
-			password: await encryptionProvider.hash(planPassword),
-			role: UserRolesEnum.partner,
+			password: await encryptionProvider.hash(password),
+			role: role,
 		});
 
 		await expect(service.execute({ email: email, password: 'incorrectPassword' })).rejects.toBeInstanceOf(

@@ -20,12 +20,14 @@ export class CreateUserService {
 
 		const passwordHash = await this.encryptionProvider.hash(password);
 
-		await this.usersRepository.create({
+		const user = await this.usersRepository.create({
 			name,
 			password: passwordHash,
 			surname,
 			email,
 			role,
 		});
+
+		return user;
 	}
 }

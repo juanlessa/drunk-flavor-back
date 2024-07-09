@@ -6,16 +6,13 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateUserRoleService } from './UpdateUserRole.service';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/modules/accounts/repositories/IUsers.repository';
+import { createUserFactory } from '@/modules/accounts/container';
 
 let usersRepositoryInMemory: IUsersRepository;
 let encryptionProvider: BcryptProvider;
 let service: UpdateUserRoleService;
 
-// test constants
-const partnerName = 'partner';
-const partnerSurname = 'Test';
-const partnerEmail = 'partner.user@test.com';
-const partnerPlanPassword = '987654321';
+const { name, surname, email, password, role } = createUserFactory({ role: UserRolesEnum.partner });
 
 describe('Update User Role', () => {
 	beforeEach(async () => {
@@ -24,13 +21,13 @@ describe('Update User Role', () => {
 		service = new UpdateUserRoleService(usersRepositoryInMemory);
 	});
 
-	it('Should be able to update the role of an user', async () => {
+	it('Should be able to update the role of a user', async () => {
 		const createdPartnerUser = await usersRepositoryInMemory.create({
-			name: partnerName,
-			surname: partnerSurname,
-			email: partnerEmail,
-			role: UserRolesEnum.partner,
-			password: await encryptionProvider.hash(partnerPlanPassword),
+			name,
+			surname,
+			email,
+			role,
+			password: await encryptionProvider.hash(password),
 		});
 
 		await service.execute({ user_id: createdPartnerUser._id.toString(), role: UserRolesEnum.admin });
