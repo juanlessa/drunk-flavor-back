@@ -8,5 +8,10 @@ export default defineConfig({
 	test: {
 		include: ['src/**/*.e2e-spec.ts'],
 		environment: 'mongo',
+		poolOptions: {
+			threads: {
+				singleThread: true,
+			},
+		},
 	},
 });
