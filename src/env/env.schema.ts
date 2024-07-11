@@ -22,7 +22,7 @@ export const mongoParamsValidation = z.string();
 export const mongoMaxPoolSizeValidation = z.coerce.number();
 export const mongoServerSelectionTimeoutMsValidation = z.coerce.number();
 export const mongoConnectTimeoutMsValidation = z.coerce.number();
-// testing
+// Testing
 export const testingMongoDatabaseModeValidation = z.enum(['inMemory', 'persistent']);
 // Auth
 export const cookieSecretValidation = z.string();
@@ -68,7 +68,7 @@ export const envSchema = z
 		MONGO_MAX_POOL_SIZE: mongoMaxPoolSizeValidation,
 		MONGO_SERVER_SELECTION_TIMEOUT_MS: mongoServerSelectionTimeoutMsValidation,
 		MONGO_CONNECT_TIMEOUT_MS: mongoConnectTimeoutMsValidation,
-		// testing
+		// Testing
 		TESTING_MONGO_DATABASE_MODE: testingMongoDatabaseModeValidation,
 		// Storage type
 		STORAGE_TYPE: storageTypeValidation,
