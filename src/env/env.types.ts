@@ -26,6 +26,7 @@ import {
 	awsAccessKeyIdValidation,
 	awsSecretAccessKeyValidation,
 	awsDefaultRegionValidation,
+	testingMongoDatabaseModeValidation,
 } from './env.schema';
 
 export type EnvType = {
@@ -55,6 +56,8 @@ export type EnvType = {
 	MONGO_MAX_POOL_SIZE: z.infer<typeof mongoMaxPoolSizeValidation>;
 	MONGO_SERVER_SELECTION_TIMEOUT_MS: z.infer<typeof mongoServerSelectionTimeoutMsValidation>;
 	MONGO_CONNECT_TIMEOUT_MS: z.infer<typeof mongoConnectTimeoutMsValidation>;
+	// testing
+	TESTING_MONGO_DATABASE_MODE: z.infer<typeof testingMongoDatabaseModeValidation>;
 	// Storage type
 	STORAGE_TYPE: z.infer<typeof storageTypeValidation>;
 	// S3

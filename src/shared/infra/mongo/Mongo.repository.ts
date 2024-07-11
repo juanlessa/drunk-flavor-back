@@ -19,14 +19,14 @@ export class MongoRepository {
 		return mongoose.connection.getClient();
 	}
 
-	async start(url?: string) {
+	async start(connectionString?: string) {
 		if (!env.MONGO_MAX_POOL_SIZE || !env.MONGO_CONNECT_TIMEOUT_MS || !env.MONGO_SERVER_SELECTION_TIMEOUT_MS) {
 			throw new Error(
 				'Missing connection options. Ensure MONGO_MAX_POOL_SIZE, MONGO_CONNECT_TIMEOUT_MS, and MONGO_SERVER_SELECTION_TIMEOUT_MS are set.',
 			);
 		}
-		if (url) {
-			this.connectionString = url;
+		if (connectionString) {
+			this.connectionString = connectionString;
 		}
 
 		await mongoose.connect(this.connectionString, {

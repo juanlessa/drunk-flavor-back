@@ -11,7 +11,7 @@ export const apiPortValidation = z.coerce.number();
 // Logger
 export const logEnabledValidation = z.coerce.boolean();
 export const logLevelValidation = z.enum(['silent', 'trace', 'debug', 'info', 'warn', 'error', 'fatal']);
-// Auth
+// MongoDB
 export const mongoProtocolValidation = z.string();
 export const mongoUsernameValidation = z.string();
 export const mongoPasswordValidation = z.string();
@@ -22,7 +22,9 @@ export const mongoParamsValidation = z.string();
 export const mongoMaxPoolSizeValidation = z.coerce.number();
 export const mongoServerSelectionTimeoutMsValidation = z.coerce.number();
 export const mongoConnectTimeoutMsValidation = z.coerce.number();
-// MongoDB
+// testing
+export const testingMongoDatabaseModeValidation = z.enum(['inMemory', 'persistent']);
+// Auth
 export const cookieSecretValidation = z.string();
 export const sessionSecreteValidation = z.string();
 export const accessTokenSecretValidation = z.string();
@@ -66,6 +68,8 @@ export const envSchema = z
 		MONGO_MAX_POOL_SIZE: mongoMaxPoolSizeValidation,
 		MONGO_SERVER_SELECTION_TIMEOUT_MS: mongoServerSelectionTimeoutMsValidation,
 		MONGO_CONNECT_TIMEOUT_MS: mongoConnectTimeoutMsValidation,
+		// testing
+		TESTING_MONGO_DATABASE_MODE: testingMongoDatabaseModeValidation,
 		// Storage type
 		STORAGE_TYPE: storageTypeValidation,
 		// S3
