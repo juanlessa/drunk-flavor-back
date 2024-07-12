@@ -2,28 +2,19 @@ import { CategoriesRepositoryInMemory } from '@/modules/drinks/repositories/inMe
 import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateCategoryService } from './UpdateCategory.service';
-import { Category, CategoryTranslation } from '@/modules/drinks/entities/category.entity';
-import { Translations } from '@/modules/drinks/types/translations';
+import { Category } from '@/modules/drinks/entities/category.entity';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { ICategoriesRepository } from '@/modules/drinks/repositories/ICategories.repository';
+import { createCategoryFactory } from '@/modules/drinks/container';
 
 let categoriesRepositoryInMemory: ICategoriesRepository;
 let service: UpdateCategoryService;
 
-// test constants
-const translations: Translations<CategoryTranslation> = {
-	en: {
-		name: 'en name',
-	},
-	pt: { name: 'pt name' },
-};
+const { translations } = createCategoryFactory();
+const { translations: updatedTranslations } = createCategoryFactory({
+	translations: { en: { name: 'Juice' }, pt: { name: 'Suco' } },
+});
 
-const updatedTranslations: Translations<CategoryTranslation> = {
-	en: {
-		name: 'updated en name',
-	},
-	pt: { name: 'updated pt different name' },
-};
 describe('Update Category', () => {
 	beforeEach(() => {
 		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();

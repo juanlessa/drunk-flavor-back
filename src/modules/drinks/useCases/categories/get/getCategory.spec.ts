@@ -6,17 +6,12 @@ import { Translations } from '@/modules/drinks/types/translations';
 import { CategoryTranslation } from '@/modules/drinks/entities/category.entity';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { ICategoriesRepository } from '@/modules/drinks/repositories/ICategories.repository';
+import { createCategoryFactory } from '@/modules/drinks/container';
 
 let categoriesRepositoryInMemory: ICategoriesRepository;
 let service: GetCategoryService;
 
-// test constants
-const translations: Translations<CategoryTranslation> = {
-	en: {
-		name: 'en name',
-	},
-	pt: { name: 'pt name' },
-};
+const { translations } = createCategoryFactory();
 
 describe('Get Ingredient', () => {
 	beforeEach(async () => {

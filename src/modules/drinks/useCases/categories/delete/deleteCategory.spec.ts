@@ -6,17 +6,12 @@ import { CategoryTranslation } from '@/modules/drinks/entities/category.entity';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { DeleteCategoryService } from './DeleteCategory.service';
 import { ICategoriesRepository } from '@/modules/drinks/repositories/ICategories.repository';
+import { createCategoryFactory } from '@/modules/drinks/container';
 
 let categoriesRepositoryInMemory: ICategoriesRepository;
 let service: DeleteCategoryService;
 
-// test constants
-const translations: Translations<CategoryTranslation> = {
-	en: {
-		name: 'en name',
-	},
-	pt: { name: 'pt name' },
-};
+const { translations } = createCategoryFactory();
 
 describe('Delete category', () => {
 	beforeEach(() => {

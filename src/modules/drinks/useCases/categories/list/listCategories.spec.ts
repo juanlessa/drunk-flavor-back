@@ -4,28 +4,22 @@ import { CategoriesRepositoryInMemory } from '@/modules/drinks/repositories/inMe
 import { ListCategoriesService } from './ListCategories.service';
 import { Translations } from '@/modules/drinks/types/translations';
 import { ICategoriesRepository } from '@/modules/drinks/repositories/ICategories.repository';
+import { createCategoryFactory } from '@/modules/drinks/container';
 
 let categoriesRepositoryInMemory: ICategoriesRepository;
 let service: ListCategoriesService;
 
-// test constants
-const translations: Translations<CategoryTranslation> = {
-	en: { name: 'en name' },
-	pt: { name: 'pt name' },
-};
-
-let createdCategory: Category;
+const { translations } = createCategoryFactory();
 
 describe('List Categories', () => {
 	beforeEach(async () => {
 		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
 		service = new ListCategoriesService(categoriesRepositoryInMemory);
-
-		// test constants
-		createdCategory = await categoriesRepositoryInMemory.create({ translations });
 	});
 
 	it('should be able to list all categories', async () => {
+		await categoriesRepositoryInMemory.create({ translations });
+
 		const categoriesFound = await service.execute();
 
 		expect(categoriesFound.length).toEqual(1);
