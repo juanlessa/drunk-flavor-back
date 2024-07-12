@@ -1,4 +1,5 @@
 import { EnvType } from '@/env/env.types';
+import { Types } from 'mongoose';
 
 export const buildConnectionStringFromEnv = ({
 	MONGO_PROTOCOL,
@@ -23,3 +24,5 @@ export const buildConnectionStringFromEnv = ({
 
 	return `${protocol}://${credentials}@${address}/${database}?${params}`;
 };
+
+export const instanceOfMongoObjectId = (obj: unknown): obj is Types.ObjectId => obj instanceof Types.ObjectId;

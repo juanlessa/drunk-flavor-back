@@ -1,4 +1,5 @@
 import { DeepPartial } from '@/shared/types/utility.types';
+import { instanceOfMongoObjectId } from '../infra/mongo/mongo.helpers';
 
 /**
  * Recursively updates properties of an object with values from a partial update object.
@@ -53,6 +54,9 @@ export const deepUpdate = <T extends object>(newRecord: DeepPartial<T>, currentR
 			return { ...acc, [newKey]: value };
 		}
 
+		if (instanceOfMongoObjectId(newValue) || newValue instanceof Date) {
+			return { ...acc, [newKey]: newValue };
+		}
 		if (typeof newValue === 'object' && newValue !== null && !Array.isArray(newValue)) {
 			return { ...acc, [newKey]: deepUpdate<typeof value>(newValue, value) };
 		} else {
