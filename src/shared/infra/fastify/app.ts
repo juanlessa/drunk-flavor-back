@@ -1,10 +1,11 @@
+import fastify from 'fastify';
+import cors from '@fastify/cors';
 import fastifyCookie from '@fastify/cookie';
 import fastifyJwt from '@fastify/jwt';
-import fastify from 'fastify';
-import { jsonSchemaTransform, serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import session from '@fastify/secure-session';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUI from '@fastify/swagger-ui';
+import { jsonSchemaTransform, serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import { errorHandler } from './middlewares/errorHandler';
 import { REFRESH_TOKEN_OPTIONS, TOKEN_OPTIONS } from './constants/jwt.constants';
 import { SESSION_OPTIONS } from './constants/session.constants';
@@ -40,6 +41,16 @@ app.setErrorHandler(errorHandler);
 
 export const start = async () => {
 	LoggerRepository.setLogger(app.log);
+
+	const origin = 'localhost';
+	const originRgx = new RegExp(`${origin}`);
+	const originUrl = `https://${origin}`;
+	await app.register(cors, {
+		credentials: true,
+		methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
+		cacheControl: 600,
+		origin: [originUrl, originRgx],
+	});
 
 	try {
 		await app.ready();
