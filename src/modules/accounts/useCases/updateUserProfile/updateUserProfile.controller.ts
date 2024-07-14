@@ -1,5 +1,5 @@
 import { resolveUpdateUserProfileService } from './updateUserProfile.container';
-import { HTTP_STATUS } from '@/shared/constants/httpStatus';
+import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { Controller } from '@/shared/infra/fastify/types/fastify.types';
 import { UpdateUserProfileReqBody } from './updateUserProfile.dtos';
 
