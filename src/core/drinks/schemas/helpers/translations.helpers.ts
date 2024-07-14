@@ -25,27 +25,22 @@ export const generateTranslationsSchema = <Schema extends z.ZodType>(schema: Sch
  * @param fieldSchema - The Zod schema to validate the specified fields.
  * @returns A Zod object schema with the specified fields validation rules.
  */
-export const generateTranslationsFieldSchema = <Schema extends z.ZodType, Field extends keyof z.infer<Schema>>(
+export const generateTranslationsFieldSchema = <
+	Schema extends z.ZodTypeAny,
+	Field extends keyof z.infer<Schema>,
+	Validation extends z.ZodTypeAny,
+>(
 	_translationSchema: Schema,
 	fields: Field[],
-	fieldSchema: z.ZodType,
+	fieldSchema: Validation,
 ) => {
 	const languages = Object.keys(LanguagesEnum) as Array<keyof typeof LanguagesEnum>;
 
-	type Query = {
-		[key: string]: z.infer<typeof fieldSchema>;
-	};
-
-	const fieldsSchema = fields.reduce<Query>((acc, field) => {
-		const fieldLanguagesSchema = languages.reduce<Query>(
-			(langAcc, lang) => ({
-				...langAcc,
-				[`translations.${lang}.${String(field)}`]: fieldSchema,
-			}),
-			{},
-		);
-
-		return { ...acc, ...fieldLanguagesSchema };
+	const fieldsSchema = fields.reduce<Record<string, Validation>>((acc, field) => {
+		languages.forEach((lang) => {
+			acc[`translations.${lang}.${String(field)}`] = fieldSchema;
+		});
+		return acc;
 	}, {});
 
 	return z.object(fieldsSchema);
