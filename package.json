@@ -19,7 +19,7 @@
 		"test": "NODE_ENV=testing vitest run -c vitest.config.ts",
 		"test:watch": "NODE_ENV=testing vitest -c vitest.config.ts",
 		"test:coverage": "vitest run -c vitest.config.ts --coverage",
-		"test:e2e:setup": "npm link ./src/infra/mongo/vitest-environment-mongo",
+		"test:e2e:setup": "npm link ./src/infrastructure/mongo/vitest-environment-mongo",
 		"test:e2e": "NODE_ENV=e2e dotenv -e .env.testing -- vitest run -c vitest-e2e.config.ts",
 		"test:e2e:watch": "NODE_ENV=e2e dotenv -e .env.testing -- vitest -c vitest-e2e.config.ts"
 	},
