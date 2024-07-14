@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+    app:
+        build: .
+        container_name: app
+        ports:
+            - '3333:3333'
+        environment:
+            - MONGO_HOST=mongodb
+            - MONGO_DATABASE=
+        depends_on:
+            - mongodb
+        networks:
+            - node-network
+
+    mongodb:
+        image: mongo:6-jammy
+        restart: always
+        container_name: mongodb
+        ports:
+            - '27017:27017'
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME}
+            - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+        volumes:
+            - dbdata6:/data/db
+        networks:
+            - node-network
+
+volumes:
+    dbdata6:
+
+networks:
+    node-network:
+        driver: bridge
