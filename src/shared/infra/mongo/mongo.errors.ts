@@ -1,4 +1,4 @@
-import { HTTP_STATUS } from '@/shared/constants/httpStatus';
+import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { ErrorResponse } from '@/shared/error/error.dtos';
 import { logger } from '@/shared/logger';
 import { MongoError } from 'mongodb';
