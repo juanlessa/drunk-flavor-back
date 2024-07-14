@@ -5,6 +5,8 @@ import { CategoryModel } from '../entities/category.model';
 import { getNameCompareQuery } from '../helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { CATEGORY_MESSAGES } from '@/modules/drinks/constants/categories.constants';
+import { QueryParams } from '@/shared/types/query.types';
+import { buildQuery } from '@/shared/infra/mongo/helpers/query.helpers';
 
 export class CategoriesRepository implements ICategoriesRepository {
 	async create(data: CreateCategory): Promise<Category> {
@@ -40,7 +42,8 @@ export class CategoriesRepository implements ICategoriesRepository {
 		return CategoryModel.findById<Category>(id).exec();
 	}
 
-	async findAll(): Promise<Category[]> {
-		return CategoryModel.find<Category>().exec();
+	async findAll(query: QueryParams): Promise<Category[]> {
+		const mongooseQuery = buildQuery(query, CategoryModel);
+		return mongooseQuery.exec();
 	}
 }
