@@ -1,5 +1,5 @@
 import { resolveDeleteUserService } from '@/modules/accounts/useCases/deleteUser/deleteUser.container';
-import { HTTP_STATUS } from '@/shared/constants/httpStatus';
+import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { Controller } from '@/shared/infra/fastify/types/fastify.types';
 import { deleteUserReqBody } from './deleteUser.dtos';
 

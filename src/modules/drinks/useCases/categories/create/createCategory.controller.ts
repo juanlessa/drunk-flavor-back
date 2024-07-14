@@ -1,6 +1,6 @@
 import { Controller } from '@/shared/infra/fastify/types/fastify.types';
 import { resolveCreateCategoryService } from './createCategory.container';
-import { HTTP_STATUS } from '@/shared/constants/httpStatus';
+import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { CreateCategoryReqBody } from './createCategory.dtos';
 
 export const createCategoryController: Controller = async (request, reply) => {

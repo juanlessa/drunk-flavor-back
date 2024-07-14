@@ -1,4 +1,4 @@
-import { HTTP_STATUS } from '@/shared/constants/httpStatus';
+import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { UpdateUserRoleReqBody } from './updateUserRole.dtos';
 import { Controller } from '@/shared/infra/fastify/types/fastify.types';
 import { resolveUpdateUserRoleService } from './updateUserRole.container';

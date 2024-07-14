@@ -1,6 +1,6 @@
 import { Controller } from '@/shared/infra/fastify/types/fastify.types';
 import { resolveDeleteIngredientService } from './deleteIngredient.container';
-import { HTTP_STATUS } from '@/shared/constants/httpStatus';
+import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { DeleteIngredientReqBody } from './deleteIngredient.dtos';
 
 export const deleteIngredientController: Controller = async (request, reply) => {

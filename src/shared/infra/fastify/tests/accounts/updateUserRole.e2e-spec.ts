@@ -4,7 +4,7 @@ import { UserRolesEnum } from '@/modules/accounts/entities/user.entity';
 import { app } from '@/shared/infra/fastify/app';
 import { MongoRepository } from '@/shared/infra/mongo/Mongo.repository';
 import { createUserFactory } from '@/modules/accounts/container';
-import { HTTP_STATUS } from '@/shared/constants/httpStatus';
+import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { createAndAuthenticateUser, createUser } from '../helpers/authentication.helpers';
 import { UserModel } from '@/modules/accounts/infra/mongo/entities/user.model';
 

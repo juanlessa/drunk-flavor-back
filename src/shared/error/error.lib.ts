@@ -1,4 +1,4 @@
-import { HTTP_STATUS } from '@/shared/constants/httpStatus';
+import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { AppErrorOptions } from './error.dtos';
 import { logger } from '@/shared/logger';
 
