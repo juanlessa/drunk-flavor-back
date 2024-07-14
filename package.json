@@ -15,7 +15,7 @@
 		"start": "NODE_ENV=production node dist/server.js",
 		"dev": "tsx src/server.ts",
 		"dev:watch": "tsx watch src/server.ts",
-		"build": "tsup src",
+		"build": "tsup src/server.ts",
 		"test": "NODE_ENV=testing vitest run -c vitest.config.ts",
 		"test:watch": "NODE_ENV=testing vitest -c vitest.config.ts",
 		"test:coverage": "vitest run -c vitest.config.ts --coverage",
