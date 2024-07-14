@@ -1,4 +1,4 @@
-import { Controller } from '@/infra/fastify/types/fastify.types';
+import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { resolveListIngredientsService } from './listIngredients.container';
 
 export const listIngredientsController: Controller = async (request, reply) => {

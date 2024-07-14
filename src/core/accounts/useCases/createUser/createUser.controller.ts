@@ -1,6 +1,6 @@
 import { resolveCreateUserService } from '@/core/accounts/useCases/createUser/createUser.container';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
-import { Controller } from '@/infra/fastify/types/fastify.types';
+import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { CreateUserReqBody } from './createUser.dtos';
 
 export const createUserController: Controller = async (request, response) => {

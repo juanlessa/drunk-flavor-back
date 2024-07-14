@@ -1,4 +1,4 @@
-import { Controller } from '@/infra/fastify/types/fastify.types';
+import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { resolveUpdateCategoryService } from './updateCategory.container';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { UpdateCategoryReqBody } from './updateCategory.dtos';

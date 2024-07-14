@@ -1,6 +1,6 @@
 import type { Environment } from 'vitest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { MongoRepository } from '@/infra/mongo/Mongo.repository';
+import { MongoRepository } from '@/infrastructure/mongo/Mongo.repository';
 import { env } from '@/env';
 
 let mongod: MongoMemoryServer | undefined = undefined;

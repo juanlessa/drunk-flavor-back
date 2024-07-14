@@ -1,6 +1,6 @@
 import '@fastify/secure-session';
-import { AuthSessionData } from '@/infra/fastify/types/session.types';
-import { AUTH_SESSION } from '@/infra/fastify/constants/session.constants';
+import { AuthSessionData } from '@/infrastructure/fastify/types/session.types';
+import { AUTH_SESSION } from '@/infrastructure/fastify/constants/session.constants';
 
 declare module '@fastify/secure-session' {
 	interface SessionData {

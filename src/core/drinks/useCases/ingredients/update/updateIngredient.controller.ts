@@ -1,5 +1,5 @@
 import { UpdateIngredientReqBody } from './updateIngredient.dtos';
-import { Controller } from '@/infra/fastify/types/fastify.types';
+import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { resolveUpdateIngredientService } from './updateIngredient.container';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 

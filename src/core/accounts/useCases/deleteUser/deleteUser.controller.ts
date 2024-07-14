@@ -1,6 +1,6 @@
 import { resolveDeleteUserService } from '@/core/accounts/useCases/deleteUser/deleteUser.container';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
-import { Controller } from '@/infra/fastify/types/fastify.types';
+import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { deleteUserReqBody } from './deleteUser.dtos';
 
 export const deleteUserController: Controller = async (request, reply) => {

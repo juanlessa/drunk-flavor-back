@@ -1,4 +1,4 @@
-import { Controller } from '@/infra/fastify/types/fastify.types';
+import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { resolveDeleteIngredientService } from './deleteIngredient.container';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { DeleteIngredientReqBody } from './deleteIngredient.dtos';

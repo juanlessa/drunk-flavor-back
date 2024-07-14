@@ -6,7 +6,7 @@ import { getNameCompareQuery } from '../helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { CATEGORY_MESSAGES } from '@/core/drinks/constants/categories.constants';
 import { QueryParams } from '@/shared/types/query.types';
-import { buildQuery } from '@/infra/mongo/helpers/query.helpers';
+import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
 
 export class CategoriesRepository implements ICategoriesRepository {
 	async create(data: CreateCategory): Promise<Category> {

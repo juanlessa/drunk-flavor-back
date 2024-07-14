@@ -1,4 +1,4 @@
-import { Controller } from '@/infra/fastify/types/fastify.types';
+import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { resolveGetCategoryService } from './getCategory.container';
 import { GetCategoryReqParams } from './getCategory.dtos';
 

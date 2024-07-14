@@ -1,4 +1,4 @@
-import { DatabaseCommonInfo } from '@/infra/mongo/types';
+import { DatabaseCommonInfo } from '@/infrastructure/mongo/types';
 import { Ingredient } from './ingredient.entity';
 import { Translations } from '@/core/drinks/types/translations';
 

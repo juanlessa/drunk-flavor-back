@@ -1,5 +1,5 @@
 import { Category } from './category.entity';
-import { DatabaseCommonInfo } from '@/infra/mongo/types';
+import { DatabaseCommonInfo } from '@/infrastructure/mongo/types';
 import { Translations } from '@/core/drinks/types/translations';
 
 export type IngredientTranslation = {

@@ -1,6 +1,6 @@
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { UpdateUserRoleReqBody } from './updateUserRole.dtos';
-import { Controller } from '@/infra/fastify/types/fastify.types';
+import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { resolveUpdateUserRoleService } from './updateUserRole.container';
 
 export const updateUserRoleController: Controller = async (request, reply) => {
