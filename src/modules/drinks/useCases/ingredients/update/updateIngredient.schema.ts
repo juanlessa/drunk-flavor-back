@@ -1,4 +1,4 @@
-import { getZodTranslationsSchema } from '@/modules/drinks/schemas/helpers/translations.helpers';
+import { generateTranslationsSchema } from '@/modules/drinks/schemas/helpers/translations.helpers';
 import {
 	ingredientCategoryIdValidation,
 	ingredientIdValidation,
@@ -9,7 +9,7 @@ import { z } from 'zod';
 
 export const updateIngredientSchema = z.object({
 	id: ingredientIdValidation,
-	translations: getZodTranslationsSchema(ingredientTranslationSchema),
+	translations: generateTranslationsSchema(ingredientTranslationSchema),
 	is_alcoholic: ingredientIsAlcoholicValidation,
 	category_id: ingredientCategoryIdValidation,
 });

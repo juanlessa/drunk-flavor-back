@@ -8,6 +8,7 @@ import { deleteCategorySchema } from '@/modules/drinks/useCases/categories/delet
 import { deleteCategoryController } from '@/modules/drinks/useCases/categories/delete/deleteCategory.controller';
 import { getCategorySchema } from '@/modules/drinks/useCases/categories/get/getCategory.schema';
 import { getCategoryController } from '@/modules/drinks/useCases/categories/get/getCategory.controller';
+import { listCategoryQuerySchema } from '@/modules/drinks/useCases/categories/list/listCategories.schema';
 import { listCategoriesController } from '@/modules/drinks/useCases/categories/list/listCategories.controller';
 import { updateCategorySchema } from '@/modules/drinks/useCases/categories/update/updateCategory.schema';
 import { updateCategoryController } from '@/modules/drinks/useCases/categories/update/updateCategory.controller';
@@ -25,7 +26,9 @@ const routes: Routes = (server) => {
 		.withTypeProvider<ZodTypeProvider>()
 		.get('/categories/:id', { schema: { params: getCategorySchema } }, getCategoryController);
 
-	server.withTypeProvider<ZodTypeProvider>().get('/categories', {}, listCategoriesController);
+	server
+		.withTypeProvider<ZodTypeProvider>()
+		.get('/categories', { schema: { querystring: listCategoryQuerySchema } }, listCategoriesController);
 
 	server
 		.withTypeProvider<ZodTypeProvider>()
