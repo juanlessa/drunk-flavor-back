@@ -5,7 +5,7 @@ import { Drink } from '@/core/drinks/entities/drink.entity';
 import { compareTranslationsName } from '@/core/drinks/helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { DRINK_MESSAGES } from '@/core/drinks/constants/drinks.constants';
-import { deepUpdate } from '@/shared/helpers/deepUpdate.helpers';
+import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 
 export class DrinksRepositoryInMemory implements IDrinksRepository {
 	drinks: Drink[] = [];

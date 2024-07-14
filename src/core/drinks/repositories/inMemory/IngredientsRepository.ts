@@ -1,4 +1,4 @@
-import { deepUpdate } from '@/shared/helpers/deepUpdate.helpers';
+import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { CreateIngredient, FindIngredientByName, UpdateIngredient } from '@/core/drinks/dtos/ingredient.dtos';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';

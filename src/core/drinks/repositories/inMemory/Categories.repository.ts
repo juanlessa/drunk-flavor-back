@@ -4,7 +4,7 @@ import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.re
 import { ObjectId } from 'mongodb';
 import { compareTranslationsName } from '@/core/drinks/helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { deepUpdate } from '@/shared/helpers/deepUpdate.helpers';
+import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { CATEGORY_MESSAGES } from '@/core/drinks/constants/categories.constants';
 import { QueryParams } from '@/shared/types/query.types';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
