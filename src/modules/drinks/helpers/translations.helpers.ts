@@ -26,8 +26,7 @@ import { DeepPartial } from '@/shared/types/utility.types';
  * const namesToCompare = {
  *   en: { name: "Hello" }
  * };
- * const result = compareTranslationsName(translations, namesToCompare);
- * console.log(result); // true
+ * compareTranslationsName(translations, namesToCompare); // true
  */
 export const compareTranslationsName = (
 	translations: Translations<TranslationAnyWithNameKey>,

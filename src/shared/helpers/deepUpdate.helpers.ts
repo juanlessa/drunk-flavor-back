@@ -32,9 +32,8 @@ import { instanceOfMongoObjectId } from '../infra/mongo/mongo.helpers';
  *     }
  *   }
  * };
- * const result = deepUpdate(update, current);
- * console.log(result);
- * // Output:
+ * deepUpdate(update, current);
+ * // return:
  * // {
  * //   user: {
  * //     name: "Alice",
