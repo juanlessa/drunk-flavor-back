@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/IngredientsRepository';
-import { ObjectId } from 'bson';
+import { ObjectId } from 'mongodb';
 import { UpdateIngredientService } from './UpdateIngredient.service';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { BadRequestError } from '@/shared/error/error.lib';

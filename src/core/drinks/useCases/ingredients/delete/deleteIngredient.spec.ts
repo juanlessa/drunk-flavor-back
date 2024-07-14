@@ -1,7 +1,7 @@
 import { Category } from '@/core/drinks/entities/category.entity';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/IngredientsRepository';
-import { ObjectId } from 'bson';
+import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { DeleteIngredientService } from './DeleteIngredient.service';
 import { BadRequestError } from '@/shared/error/error.lib';
