@@ -1,4 +1,4 @@
-import { Controller } from '@/shared/infra/fastify/types/fastify.types';
+import { Controller } from '@/infra/fastify/types/fastify.types';
 import { resolveGetUserProfileService } from './getUserProfile.container';
 
 export const getUserProfileController: Controller = async (request, reply) => {

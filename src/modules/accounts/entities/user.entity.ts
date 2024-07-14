@@ -1,4 +1,4 @@
-import { DatabaseCommonInfo } from '@/shared/infra/mongo/types';
+import { DatabaseCommonInfo } from '@/infra/mongo/types';
 
 export enum UserRolesEnum {
 	admin = 'admin',

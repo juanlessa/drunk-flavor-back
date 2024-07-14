@@ -1,13 +1,13 @@
 import { P, match } from 'ts-pattern';
 import { ZodError } from 'zod';
 import { AppError } from '@/shared/error/error.lib';
-import { handleMongoError, instanceOfMongoError } from '@/shared/infra/mongo/mongo.errors';
-import { handleMongooseError, instanceOfMongooseError } from '@/shared/infra/mongo/mongoose.errors';
+import { handleMongoError, instanceOfMongoError } from '@/infra/mongo/mongo.errors';
+import { handleMongooseError, instanceOfMongooseError } from '@/infra/mongo/mongoose.errors';
 import { handleAppError } from '@/shared/error/handleAppError';
 import { unhandledError } from '@/shared/error/unhandledError';
 import { ErrorResponse } from '@/shared/error/error.dtos';
-import { handleFastifyZodError } from '@/shared/infra/fastify/errors/fastifyZodError';
-import { handleFastifyError, instanceOfFastifyError } from '@/shared/infra/fastify/errors/fastifyError';
+import { handleFastifyZodError } from '@/infra/fastify/errors/fastifyZodError';
+import { handleFastifyError, instanceOfFastifyError } from '@/infra/fastify/errors/fastifyError';
 import { ErrorHandler } from '../types/fastify.types';
 
 export const handleCustomError = (error: unknown) =>

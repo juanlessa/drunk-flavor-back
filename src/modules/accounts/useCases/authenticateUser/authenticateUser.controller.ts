@@ -1,7 +1,7 @@
 import { resolveAuthenticateUserService } from './authenticateUser.container';
-import { AUTH_SESSION } from '@/shared/infra/fastify/constants/session.constants';
-import { AUTH_COOKIE, AUTH_COOKIE_OPTIONS } from '@/shared/infra/fastify/constants/cookie.constants';
-import type { Controller } from '@/shared/infra/fastify/types/fastify.types';
+import { AUTH_SESSION } from '@/infra/fastify/constants/session.constants';
+import { AUTH_COOKIE, AUTH_COOKIE_OPTIONS } from '@/infra/fastify/constants/cookie.constants';
+import type { Controller } from '@/infra/fastify/types/fastify.types';
 import type { AuthenticateUserReqBody } from './authenticateUser.dtos';
 
 export const authenticateUserController: Controller = async (request, reply) => {

@@ -1,14 +1,14 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { UserRolesEnum } from '@/modules/accounts/entities/user.entity';
-import { app } from '@/shared/infra/fastify/app';
-import { MongoRepository } from '@/shared/infra/mongo/Mongo.repository';
+import { app } from '@/infra/fastify/app';
+import { MongoRepository } from '@/infra/mongo/Mongo.repository';
 import { createUserFactory } from '@/modules/accounts/container';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
-import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
+import { createAndAuthenticateUser, createUser } from '../helpers/authentication.helpers';
 import { UserModel } from '@/modules/accounts/infra/mongo/entities/user.model';
 
-describe('Create User', () => {
+describe('Update User Role', () => {
 	beforeAll(async () => {
 		await app.ready();
 	});
@@ -21,13 +21,16 @@ describe('Create User', () => {
 		await MongoRepository.Instance.emptyCollection(UserModel);
 	});
 
-	it('Should be able to create a user', async () => {
+	it('Should be able to update the role of a user', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: UserRolesEnum.admin });
 
-		const createUserData = createUserFactory({ email: 'partner@example.com', role: UserRolesEnum.partner });
+		const userToUpdate = await createUser(app, { email: 'partner@example.com', role: UserRolesEnum.partner });
 
-		const response = await request(app.server).post('/users').set('Cookie', cookies).send(createUserData);
+		const response = await request(app.server).patch('/users/role').set('Cookie', cookies).send({
+			user_id: userToUpdate.id,
+			role: UserRolesEnum.partner,
+		});
 
-		expect(response.status).toBe(HTTP_STATUS.created);
+		expect(response.status).toBe(HTTP_STATUS.no_content);
 	});
 });

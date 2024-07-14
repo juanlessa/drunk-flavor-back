@@ -1,7 +1,7 @@
 import { env } from '@/env';
 import { logger } from '@/shared/logger';
-import { app, start } from '@/shared/infra/fastify/app';
-import { MongoRepository } from '@/shared/infra/mongo/Mongo.repository';
+import { app, start } from '@/infra/fastify/app';
+import { MongoRepository } from '@/infra/mongo/Mongo.repository';
 
 process.on('unhandledRejection', (err) => {
 	logger.error(err);

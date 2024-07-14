@@ -1,6 +1,6 @@
 import { resolveUpdateUserProfileService } from './updateUserProfile.container';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
-import { Controller } from '@/shared/infra/fastify/types/fastify.types';
+import { Controller } from '@/infra/fastify/types/fastify.types';
 import { UpdateUserProfileReqBody } from './updateUserProfile.dtos';
 
 export const updateUserProfileController: Controller = async (request, reply) => {

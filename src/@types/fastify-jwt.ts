@@ -1,7 +1,7 @@
 import '@fastify/jwt';
 import 'fastify';
 import { VerifyPayloadType, SignPayloadType, FastifyJwtSignOptions, FastifyJwtVerifyOptions } from '@fastify/jwt';
-import { DecodedToken } from '@/shared/infra/fastify/types/jwt.types';
+import { DecodedToken } from '@/infra/fastify/types/jwt.types';
 
 declare module '@fastify/jwt' {
 	interface FastifyJWT {

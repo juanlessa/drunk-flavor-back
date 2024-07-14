@@ -1,4 +1,4 @@
-import { Controller } from '@/shared/infra/fastify/types/fastify.types';
+import { Controller } from '@/infra/fastify/types/fastify.types';
 import { resolveGetIngredientService } from './getIngredient.container';
 import { GetIngredientReqParams } from './getIngredient.dtos';
 

@@ -1,4 +1,4 @@
-import { Controller } from '@/shared/infra/fastify/types/fastify.types';
+import { Controller } from '@/infra/fastify/types/fastify.types';
 import { resolveListCategoriesService } from './listCategories.container';
 import { ListCategoriesReqQuery } from './listCategories.dtos';
 
