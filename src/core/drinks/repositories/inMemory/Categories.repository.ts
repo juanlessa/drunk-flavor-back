@@ -6,6 +6,9 @@ import { compareTranslationsName } from '@/core/drinks/helpers/translations.help
 import { NotFoundError } from '@/shared/error/error.lib';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helpers';
 import { CATEGORY_MESSAGES } from '@/core/drinks/constants/categories.constants';
+import { QueryParams } from '@/shared/types/query.types';
+import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
+import { filterItemsBySearchCriteria, paginateItems, sortItemsByFields } from '@/shared/helpers/query.helpers';
 
 export class CategoriesRepositoryInMemory implements ICategoriesRepository {
 	categories: Category[] = [];
@@ -60,9 +63,24 @@ export class CategoriesRepositoryInMemory implements ICategoriesRepository {
 		return category || null;
 	}
 
-	async findAll(): Promise<Category[]> {
-		const categories = [...this.categories];
-		return categories;
+	async findAll(query: QueryParams): Promise<Category[]> {
+		let foundCategories = [...this.categories];
+
+		if (query.search) {
+			foundCategories = filterItemsBySearchCriteria(foundCategories, query.search);
+		}
+
+		if (query.sort) {
+			foundCategories = sortItemsByFields(foundCategories, query.sort);
+		}
+
+		foundCategories = paginateItems(
+			foundCategories,
+			query.limit || DEFAULT_QUERY_PARAMS.limit,
+			query.page || DEFAULT_QUERY_PARAMS.page,
+		);
+
+		return foundCategories;
 	}
 
 	async findByIdList(ids: string[]): Promise<Category[]> {
