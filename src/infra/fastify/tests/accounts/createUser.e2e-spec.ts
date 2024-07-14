@@ -1,12 +1,12 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
-import { UserRolesEnum } from '@/modules/accounts/entities/user.entity';
+import { UserRolesEnum } from '@/core/accounts/entities/user.entity';
 import { app } from '@/infra/fastify/app';
 import { MongoRepository } from '@/infra/mongo/Mongo.repository';
-import { createUserFactory } from '@/modules/accounts/container';
+import { createUserFactory } from '@/core/accounts/container';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
-import { UserModel } from '@/modules/accounts/infra/mongo/entities/user.model';
+import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 
 describe('Create User', () => {
 	beforeAll(async () => {

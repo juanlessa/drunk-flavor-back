@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
-import { UserRolesEnum } from '@/modules/accounts/entities/user.entity';
+import { UserRolesEnum } from '@/core/accounts/entities/user.entity';
 import { app } from '@/infra/fastify/app';
-import { UserModel } from '@/modules/accounts/infra/mongo/entities/user.model';
+import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { MongoRepository } from '@/infra/mongo/Mongo.repository';
 import { createUser } from '../helpers/authentication.helpers';
 

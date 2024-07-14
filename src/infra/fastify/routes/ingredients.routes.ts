@@ -2,15 +2,15 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { pluginGenerator } from '../helpers/fastify.helpers';
 import { Routes } from '../types/fastify.types';
 import { verifyAndRenewToken } from '../middlewares/verifyAndRenewToken';
-import { createIngredientSchema } from '@/modules/drinks/useCases/ingredients/create/createIngredient.schema';
-import { createIngredientController } from '@/modules/drinks/useCases/ingredients/create/CreateIngredient.controller';
-import { getIngredientSchema } from '@/modules/drinks/useCases/ingredients/get/getIngredient.schema';
-import { getIngredientController } from '@/modules/drinks/useCases/ingredients/get/getIngredient.controller';
-import { listIngredientsController } from '@/modules/drinks/useCases/ingredients/list/listIngredients.controller';
-import { updateIngredientSchema } from '@/modules/drinks/useCases/ingredients/update/updateIngredient.schema';
-import { updateIngredientController } from '@/modules/drinks/useCases/ingredients/update/updateIngredient.controller';
-import { deleteIngredientSchema } from '@/modules/drinks/useCases/ingredients/delete/deleteIngredient.schema';
-import { deleteIngredientController } from '@/modules/drinks/useCases/ingredients/delete/deleteIngredient.controller';
+import { createIngredientSchema } from '@/core/drinks/useCases/ingredients/create/createIngredient.schema';
+import { createIngredientController } from '@/core/drinks/useCases/ingredients/create/CreateIngredient.controller';
+import { getIngredientSchema } from '@/core/drinks/useCases/ingredients/get/getIngredient.schema';
+import { getIngredientController } from '@/core/drinks/useCases/ingredients/get/getIngredient.controller';
+import { listIngredientsController } from '@/core/drinks/useCases/ingredients/list/listIngredients.controller';
+import { updateIngredientSchema } from '@/core/drinks/useCases/ingredients/update/updateIngredient.schema';
+import { updateIngredientController } from '@/core/drinks/useCases/ingredients/update/updateIngredient.controller';
+import { deleteIngredientSchema } from '@/core/drinks/useCases/ingredients/delete/deleteIngredient.schema';
+import { deleteIngredientController } from '@/core/drinks/useCases/ingredients/delete/deleteIngredient.controller';
 
 const routes: Routes = (server) => {
 	server

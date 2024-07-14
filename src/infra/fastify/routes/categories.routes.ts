@@ -2,16 +2,16 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { pluginGenerator } from '../helpers/fastify.helpers';
 import { Routes } from '../types/fastify.types';
 import { verifyAndRenewToken } from '../middlewares/verifyAndRenewToken';
-import { createCategorySchema } from '@/modules/drinks/useCases/categories/create/createCategory.schema';
-import { createCategoryController } from '@/modules/drinks/useCases/categories/create/createCategory.controller';
-import { deleteCategorySchema } from '@/modules/drinks/useCases/categories/delete/deleteCategory.schema';
-import { deleteCategoryController } from '@/modules/drinks/useCases/categories/delete/deleteCategory.controller';
-import { getCategorySchema } from '@/modules/drinks/useCases/categories/get/getCategory.schema';
-import { getCategoryController } from '@/modules/drinks/useCases/categories/get/getCategory.controller';
-import { listCategoryQuerySchema } from '@/modules/drinks/useCases/categories/list/listCategories.schema';
-import { listCategoriesController } from '@/modules/drinks/useCases/categories/list/listCategories.controller';
-import { updateCategorySchema } from '@/modules/drinks/useCases/categories/update/updateCategory.schema';
-import { updateCategoryController } from '@/modules/drinks/useCases/categories/update/updateCategory.controller';
+import { createCategorySchema } from '@/core/drinks/useCases/categories/create/createCategory.schema';
+import { createCategoryController } from '@/core/drinks/useCases/categories/create/createCategory.controller';
+import { deleteCategorySchema } from '@/core/drinks/useCases/categories/delete/deleteCategory.schema';
+import { deleteCategoryController } from '@/core/drinks/useCases/categories/delete/deleteCategory.controller';
+import { getCategorySchema } from '@/core/drinks/useCases/categories/get/getCategory.schema';
+import { getCategoryController } from '@/core/drinks/useCases/categories/get/getCategory.controller';
+import { listCategoryQuerySchema } from '@/core/drinks/useCases/categories/list/listCategories.schema';
+import { listCategoriesController } from '@/core/drinks/useCases/categories/list/listCategories.controller';
+import { updateCategorySchema } from '@/core/drinks/useCases/categories/update/updateCategory.schema';
+import { updateCategoryController } from '@/core/drinks/useCases/categories/update/updateCategory.controller';
 
 const routes: Routes = (server) => {
 	server

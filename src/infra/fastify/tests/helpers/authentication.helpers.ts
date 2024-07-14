@@ -1,10 +1,10 @@
 import request from 'supertest';
 import { FastifyInstance } from 'fastify';
-import { resolveCreateUserService } from '@/modules/accounts/useCases/createUser/createUser.container';
-import { UserRole } from '@/modules/accounts/entities/user.entity';
-import { createUserFactory } from '@/modules/accounts/container';
+import { resolveCreateUserService } from '@/core/accounts/useCases/createUser/createUser.container';
+import { UserRole } from '@/core/accounts/entities/user.entity';
+import { createUserFactory } from '@/core/accounts/container';
 import { DeepPartial } from '@/shared/types/utility.types';
-import { CreateUser } from '@/modules/accounts/dtos/user.dtos';
+import { CreateUser } from '@/core/accounts/dtos/user.dtos';
 
 export const createUser = async (_app: FastifyInstance, userOptions?: DeepPartial<CreateUser>) => {
 	const userData = createUserFactory(userOptions);
