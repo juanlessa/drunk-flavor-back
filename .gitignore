@@ -10,5 +10,6 @@ secret_key
 coverage
 .vscode/*
 !.vscode/launch.json
+!.vscode/settings.json
 tmp/*
 !tmp/.gitkeep
