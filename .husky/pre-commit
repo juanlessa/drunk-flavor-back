@@ -1,5 +1,3 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
 
 echo "\nRunning Prettier to format staged files..."
 npm run format:staged --silent
