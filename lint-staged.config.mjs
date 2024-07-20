@@ -1,3 +1,3 @@
 export default {
-	'*': 'eslint',
+	'./**/*.{ts,tsx,js,jsx}': 'eslint',
 };
