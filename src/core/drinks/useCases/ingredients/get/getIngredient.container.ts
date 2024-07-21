@@ -1,7 +1,7 @@
 import { resolveIngredientsRepository } from '@/core/drinks/container';
 import { GetIngredientService } from './GetIngredient.service';
 
-const ingredientRepository = resolveIngredientsRepository();
+const ingredientsRepository = resolveIngredientsRepository();
 
-const getIngredientService = new GetIngredientService(ingredientRepository);
+const getIngredientService = new GetIngredientService(ingredientsRepository);
 export const resolveGetIngredientService = () => getIngredientService;

@@ -80,7 +80,7 @@ describe('List Ingredients', () => {
 		expect(found.length).toEqual(2);
 	});
 
-	it('should be able to list categories using sort', async () => {
+	it('should be able to list ingredients using sort', async () => {
 		const found = await service.execute({
 			query: { limit: 2, page: 1, sort: { 'translations.en.name': -1 } },
 		});

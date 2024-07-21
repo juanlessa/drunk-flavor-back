@@ -2,7 +2,7 @@ import { resolveCategoriesRepository, resolveIngredientsRepository } from '@/cor
 import { CreateIngredientService } from './CreateIngredient.service';
 
 const categoriesRepository = resolveCategoriesRepository();
-const ingredientRepository = resolveIngredientsRepository();
+const ingredientsRepository = resolveIngredientsRepository();
 
-const createIngredientService = new CreateIngredientService(ingredientRepository, categoriesRepository);
+const createIngredientService = new CreateIngredientService(ingredientsRepository, categoriesRepository);
 export const resolveCreateIngredientService = () => createIngredientService;
