@@ -1,8 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { Category, CategoryTranslation } from '@/core/drinks/entities/category.entity';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { ListCategoriesService } from './ListCategories.service';
-import { Translations } from '@/core/drinks/types/translations';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { createCategoryFactory } from '@/core/drinks/container';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';

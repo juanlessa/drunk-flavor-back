@@ -1,6 +1,6 @@
 import { Category } from '@/core/drinks/entities/category.entity';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
-import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/IngredientsRepository';
+import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Ingredients.repository';
 import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CreateIngredientService } from './CreateIngredient.service';
