@@ -6,6 +6,9 @@ import { compareTranslationsName } from '@/core/drinks/helpers/translations.help
 import { NotFoundError } from '@/shared/error/error.lib';
 import { DRINK_MESSAGES } from '@/core/drinks/constants/drinks.constants';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
+import { QueryParams } from '@/shared/types/query.types';
+import { filterItemsBySearchCriteria, paginateItems, sortItemsByFields } from '@/shared/helpers/query.helpers';
+import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 
 export class DrinksRepositoryInMemory implements IDrinksRepository {
 	drinks: Drink[] = [];
@@ -63,8 +66,23 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 		return drink || null;
 	}
 
-	async findAll(): Promise<Drink[]> {
-		let drinks = [...this.drinks];
-		return drinks;
+	async findAll(query: QueryParams): Promise<Drink[]> {
+		let found = [...this.drinks];
+
+		if (query.search) {
+			found = filterItemsBySearchCriteria(found, query.search);
+		}
+
+		if (query.sort) {
+			found = sortItemsByFields(found, query.sort);
+		}
+
+		found = paginateItems(
+			found,
+			query.limit || DEFAULT_QUERY_PARAMS.limit,
+			query.page || DEFAULT_QUERY_PARAMS.page,
+		);
+
+		return found;
 	}
 }

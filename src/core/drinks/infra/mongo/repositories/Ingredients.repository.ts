@@ -5,6 +5,8 @@ import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.m
 import { getNameCompareQuery } from '../helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { INGREDIENT_MESSAGES } from '@/core/drinks/constants/ingredients.constants';
+import { QueryParams } from '@/shared/types/query.types';
+import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
 
 export class IngredientsRepository implements IIngredientsRepository {
 	async create(data: CreateIngredient): Promise<Ingredient> {
@@ -40,9 +42,11 @@ export class IngredientsRepository implements IIngredientsRepository {
 		return IngredientModel.findById<Ingredient>(id).exec();
 	}
 
-	async findAll(): Promise<Ingredient[]> {
-		return IngredientModel.find<Ingredient>().exec();
+	async findAll(query: QueryParams): Promise<Ingredient[]> {
+		const mongooseQuery = buildQuery(query, IngredientModel);
+		return mongooseQuery.exec();
 	}
+
 	async findByIdList(ids: string[]): Promise<Ingredient[]> {
 		return IngredientModel.find<Ingredient>({ _id: { $in: ids } }).exec();
 	}

@@ -1,6 +1,7 @@
 import { Drink } from '@/core/drinks/entities/drink.entity';
 import { CreateDrink, UpdateDrink } from '@/core/drinks/dtos/drink.dtos';
 import { FindIngredientByName } from '@/core/drinks/dtos/ingredient.dtos';
+import { QueryParams } from '@/shared/types/query.types';
 
 export interface IDrinksRepository {
 	create(data: CreateDrink): Promise<Drink>;
@@ -8,5 +9,5 @@ export interface IDrinksRepository {
 	delete(id: string): Promise<Drink>;
 	findByName(data: FindIngredientByName): Promise<Drink | null>;
 	findById(id: string): Promise<Drink | null>;
-	findAll(): Promise<Drink[]>;
+	findAll(query: QueryParams): Promise<Drink[]>;
 }

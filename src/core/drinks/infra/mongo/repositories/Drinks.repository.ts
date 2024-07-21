@@ -5,6 +5,8 @@ import { DrinkModel } from '@/core/drinks/infra/mongo/entities/drink.model';
 import { getNameCompareQuery } from '../helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { DRINK_MESSAGES } from '@/core/drinks/constants/drinks.constants';
+import { QueryParams } from '@/shared/types/query.types';
+import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
 
 export class DrinksRepository implements IDrinksRepository {
 	async create(data: CreateDrink): Promise<Drink> {
@@ -41,7 +43,8 @@ export class DrinksRepository implements IDrinksRepository {
 		return DrinkModel.findById<Drink>(id).exec();
 	}
 
-	async findAll(): Promise<Drink[]> {
-		return DrinkModel.find<Drink>().exec();
+	async findAll(query: QueryParams): Promise<Drink[]> {
+		const mongooseQuery = buildQuery(query, DrinkModel);
+		return mongooseQuery.exec();
 	}
 }

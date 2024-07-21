@@ -6,6 +6,9 @@ import { ObjectId } from 'mongodb';
 import { compareTranslationsName } from '@/core/drinks/helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { INGREDIENT_MESSAGES } from '@/core/drinks/constants/ingredients.constants';
+import { QueryParams } from '@/shared/types/query.types';
+import { filterItemsBySearchCriteria, paginateItems, sortItemsByFields } from '@/shared/helpers/query.helpers';
+import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 
 export class IngredientsRepositoryInMemory implements IIngredientsRepository {
 	ingredients: Ingredient[] = [];
@@ -62,9 +65,24 @@ export class IngredientsRepositoryInMemory implements IIngredientsRepository {
 		return ingredient || null;
 	}
 
-	async findAll(): Promise<Ingredient[]> {
-		const ingredients = [...this.ingredients];
-		return ingredients;
+	async findAll(query: QueryParams): Promise<Ingredient[]> {
+		let found = [...this.ingredients];
+
+		if (query.search) {
+			found = filterItemsBySearchCriteria(found, query.search);
+		}
+
+		if (query.sort) {
+			found = sortItemsByFields(found, query.sort);
+		}
+
+		found = paginateItems(
+			found,
+			query.limit || DEFAULT_QUERY_PARAMS.limit,
+			query.page || DEFAULT_QUERY_PARAMS.page,
+		);
+
+		return found;
 	}
 
 	async findByIdList(ids: string[]): Promise<Ingredient[]> {
