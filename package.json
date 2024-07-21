@@ -21,7 +21,8 @@
 		"test:coverage": "vitest run -c vitest.config.ts --coverage",
 		"test:e2e:setup": "npm link ./src/infrastructure/mongo/vitest-environment-mongo",
 		"test:e2e": "NODE_ENV=e2e dotenv -e .env.testing -- vitest run -c vitest-e2e.config.ts",
-		"test:e2e:watch": "NODE_ENV=e2e dotenv -e .env.testing -- vitest -c vitest-e2e.config.ts"
+		"test:e2e:watch": "NODE_ENV=e2e dotenv -e .env.testing -- vitest -c vitest-e2e.config.ts",
+		"generate-secret-key": "npx @fastify/secure-session > secret-key"
 	},
 	"dependencies": {
 		"@fastify/cookie": "^9.3.1",
