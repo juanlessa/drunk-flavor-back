@@ -7,6 +7,7 @@ import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.
 import { DeepPartial } from '@/shared/types/utility.types';
 import { CreateCategoryReqBody } from '@/core/drinks/useCases/categories/create/createCategory.dtos';
 import { CreateIngredientReqBody } from '@/core/drinks/useCases/ingredients/create/createIngredient.dtos';
+import { CreateDrinkReqBody } from '../useCases/drinks/create/createDrink.dtos';
 
 // repositories
 const categoriesRepository: ICategoriesRepository = new CategoriesRepository();
@@ -46,4 +47,17 @@ export const createIngredientFactory = (
 	},
 	is_alcoholic: ingredient?.is_alcoholic || false,
 	category_id: ingredient?.category_id || '',
+});
+export const createDrinkFactory = (drink?: DeepPartial<CreateDrinkReqBody>): CreateDrinkReqBody => ({
+	translations: {
+		en: {
+			name: drink?.translations?.en?.name || 'Tequila sunrise',
+			method: drink?.translations?.en?.method || 'preparation instructions ...',
+		},
+		pt: {
+			name: drink?.translations?.pt?.name || 'Tequila sunrise',
+			method: drink?.translations?.pt?.method || 'Modo de preparo ...',
+		},
+	},
+	ingredients: [],
 });
