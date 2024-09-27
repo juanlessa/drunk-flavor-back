@@ -8,6 +8,7 @@ export const FileMetadataSchema = new Schema<FileMetadata>(
 	{
 		name: { type: String },
 		mimetype: { type: String },
+		url: { type: String, default: '' },
 	},
 	{
 		_id: false,

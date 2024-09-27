@@ -30,8 +30,9 @@ export class UpdateDrinkCoverService {
 		}
 
 		name = generateHashedName(name);
+		const url = '';
 
 		await this.storageProvider.uploadFile({ fileStream, name, mimetype });
-		await this.drinksRepository.update({ id: drinkId, cover: { name, mimetype } });
+		await this.drinksRepository.update({ id: drinkId, cover: { name, mimetype, url } });
 	}
 }

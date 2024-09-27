@@ -13,10 +13,10 @@ export class ListDrinksService {
 
 		const drinksWithImagesURL = drinks.map((d) => {
 			if (d.cover) {
-				d.cover.name = this.storageProvider.getFileURL(d.cover.name);
+				d.cover.url = this.storageProvider.getFileURL(d.cover.name);
 			}
 			if (d.thumbnail) {
-				d.thumbnail.name = this.storageProvider.getFileURL(d.thumbnail.name);
+				d.thumbnail.url = this.storageProvider.getFileURL(d.thumbnail.name);
 			}
 			return d;
 		});

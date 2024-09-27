@@ -8,10 +8,13 @@ import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.re
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { DrinksRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Drinks.repository';
+import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
+import { LocalStorageProvider } from '@/shared/providers/storage/implementations/LocalStorage.provider';
 
 let categoriesRepositoryInMemory: ICategoriesRepository;
 let ingredientsRepositoryInMemory: IIngredientsRepository;
 let drinksRepositoryInMemory: IDrinksRepository;
+let storageProvider: IStorageProvider;
 let service: ListDrinksService;
 
 const createCategory1 = createCategoryFactory({
@@ -38,8 +41,9 @@ describe('List Drinks', () => {
 	beforeEach(async () => {
 		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
 		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory();
+		storageProvider = new LocalStorageProvider();
 		drinksRepositoryInMemory = new DrinksRepositoryInMemory();
-		service = new ListDrinksService(drinksRepositoryInMemory);
+		service = new ListDrinksService(drinksRepositoryInMemory, storageProvider);
 
 		const category1 = await categoriesRepositoryInMemory.create(createCategory1);
 		const ingredient1 = await ingredientsRepositoryInMemory.create({
