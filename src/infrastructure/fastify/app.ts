@@ -3,6 +3,8 @@ import cors from '@fastify/cors';
 import fastifyCookie from '@fastify/cookie';
 import fastifyJwt from '@fastify/jwt';
 import session from '@fastify/secure-session';
+import fastifyMultipart from '@fastify/multipart';
+import fastifyStatic from '@fastify/static';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUI from '@fastify/swagger-ui';
 import { jsonSchemaTransform, serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
@@ -15,7 +17,9 @@ import { FASTIFY_LOGGER_OPTIONS } from './constants/logger.constants';
 import { logger } from '@/shared/logger';
 import { LoggerRepository } from '@/shared/logger/logger.repository';
 import { env } from '@/env';
-import { DOCS_ROUTE_PATH, SWAGGER_OPTIONS, SWAGGER_UI_OPTIONS } from './constants/swagger.constants';
+import { DOCS_ROUTE_PATH, DOCS_URL, SWAGGER_OPTIONS, SWAGGER_UI_OPTIONS } from './constants/swagger.constants';
+import { MULTIPART_OPTIONS } from './constants/multipart.constants';
+import { STATIC_FILES_OPTIONS, STATIC_FILES_URL } from './constants/static.constants';
 
 export const app = fastify({
 	logger: FASTIFY_LOGGER_OPTIONS,
@@ -25,6 +29,8 @@ app.register(fastifyCookie, FASTIFY_COOKIE_OPTIONS);
 app.register(fastifyJwt, TOKEN_OPTIONS);
 app.register(fastifyJwt, REFRESH_TOKEN_OPTIONS);
 app.register(session, SESSION_OPTIONS);
+app.register(fastifyMultipart, MULTIPART_OPTIONS);
+app.register(fastifyStatic, STATIC_FILES_OPTIONS);
 
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
@@ -65,7 +71,8 @@ export const start = async () => {
 				}),
 		);
 
-		logger.info(`Documentation running at http://${env.API_HOST}:${env.API_PORT}${DOCS_ROUTE_PATH} \n`);
+		logger.info(`Documentation running at ${DOCS_URL} \n`);
+		logger.info(`Static files served at ${STATIC_FILES_URL} \n`);
 
 		await app.listen({ host: env.API_HOST, port: env.API_PORT });
 	} catch (err) {
