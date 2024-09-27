@@ -17,8 +17,8 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 		const drink: Drink = {
 			translations,
 			ingredients,
-			cover: '',
-			thumbnail: '',
+			cover: undefined,
+			thumbnail: undefined,
 			_id: new ObjectId(),
 			created_at: new Date(),
 			updated_at: new Date(),

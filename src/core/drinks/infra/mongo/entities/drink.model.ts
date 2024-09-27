@@ -2,6 +2,17 @@ import { Schema, model, models } from 'mongoose';
 import { IngredientSchema } from '@/core/drinks/infra/mongo/entities/ingredient.model';
 import { Drink, DrinkIngredient, DrinkTranslation } from '@/core/drinks/entities/drink.entity';
 import { getTranslationsSchema } from '../helpers/translations.helpers';
+import { FileMetadata } from '@/shared/types/file.types';
+
+export const FileMetadataSchema = new Schema<FileMetadata>(
+	{
+		name: { type: String },
+		mimetype: { type: String },
+	},
+	{
+		_id: false,
+	},
+);
 
 export const DrinkTranslationSchema = new Schema<DrinkTranslation>(
 	{
@@ -29,8 +40,8 @@ export const DrinkSchema = new Schema<Drink>(
 			type: getTranslationsSchema(DrinkTranslationSchema),
 			required: true,
 		},
-		cover: { type: String, default: '' },
-		thumbnail: { type: String, default: '' },
+		cover: { type: FileMetadataSchema, default: undefined },
+		thumbnail: { type: FileMetadataSchema, default: undefined },
 		ingredients: { type: [DrinkIngredientSchema], required: true },
 	},
 	{

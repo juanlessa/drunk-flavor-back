@@ -8,6 +8,8 @@ import { listDrinksSchema } from '@/core/drinks/useCases/drinks/list/listDrinks.
 import { listDrinksController } from '@/core/drinks/useCases/drinks/list/listDrinks.controller';
 import { deleteDrinkSchema } from '@/core/drinks/useCases/drinks/delete/deleteDrink.schema';
 import { deleteDrinkController } from '@/core/drinks/useCases/drinks/delete/deleteDrink.controller';
+import { updateDrinkCoverSchema } from '@/core/drinks/useCases/drinks/updateCover/updateDrinkCover.schema';
+import { updateDrinkCoverController } from '@/core/drinks/useCases/drinks/updateCover/updateDrinkCover.controller';
 
 const routes: Routes = (server) => {
 	server
@@ -33,6 +35,10 @@ const routes: Routes = (server) => {
 			{ schema: { body: createDrinkSchema }, onRequest: [verifyAndRenewToken] },
 			createDrinkController,
 		);
+
+	server
+		.withTypeProvider<ZodTypeProvider>()
+		.patch('/drinks/:id/cover', { schema: { params: updateDrinkCoverSchema } }, updateDrinkCoverController);
 
 	server
 		.withTypeProvider<ZodTypeProvider>()

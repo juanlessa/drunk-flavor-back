@@ -1,6 +1,8 @@
-import { DrinkTranslation } from '@/core/drinks/entities/drink.entity';
+import { Drink, DrinkTranslation } from '@/core/drinks/entities/drink.entity';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { Translations } from '@/core/drinks/types/translations';
+import { DatabaseCommonInfo } from '@/infrastructure/mongo/types';
+import { FileMetadata } from '@/shared/types/file.types';
 import { DeepPartial } from '@/shared/types/utility.types';
 
 export type CreateDrink = {
@@ -11,15 +13,7 @@ export type CreateDrink = {
 	}[];
 };
 
-export type UpdateDrink = { id: string } & DeepPartial<{
-	translations: Translations<DrinkTranslation>;
-	cover: string;
-	thumbnail: string;
-	ingredients: {
-		ingredient: Ingredient;
-		quantity: number;
-	}[];
-}>;
+export type UpdateDrink = { id: string } & DeepPartial<Omit<Drink, keyof DatabaseCommonInfo>>;
 
 export type UpdateDrinkCover = {
 	id: string;
