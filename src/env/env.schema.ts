@@ -1,81 +1,91 @@
 import { z } from 'zod';
-import { requireAwsFieldsForStorageS3 } from './env.helpers';
+import {
+	apiEnvOptions,
+	logLevelOptions,
+	mongoPersistenceModeOptions,
+	nodeEnvOptions,
+	storageTypeOptions,
+} from './env.constants';
+import { schemaDefaultBasedOnNodeEnv } from './env.helpers';
 
-// fields validation
-// Environment
-export const nodeEnvValidation = z.enum(['development', 'testing', 'e2e', 'production']).default('development');
-// API
-export const apiEnvValidation = z.enum(['development', 'staging', 'production']);
-export const apiHostValidation = z.string();
-export const apiPortValidation = z.coerce.number();
-// Logger
-export const logEnabledValidation = z.coerce.boolean();
-export const logLevelValidation = z.enum(['silent', 'trace', 'debug', 'info', 'warn', 'error', 'fatal']);
-// MongoDB
-export const mongoProtocolValidation = z.string();
-export const mongoUsernameValidation = z.string();
-export const mongoPasswordValidation = z.string();
-export const mongoDatabaseValidation = z.string();
-export const mongoHostValidation = z.string();
-export const mongoPortValidation = z.coerce.number();
-export const mongoParamsValidation = z.string();
-export const mongoMaxPoolSizeValidation = z.coerce.number();
-export const mongoServerSelectionTimeoutMsValidation = z.coerce.number();
-export const mongoConnectTimeoutMsValidation = z.coerce.number();
-// Testing
-export const testingMongoDatabaseModeValidation = z.enum(['inMemory', 'persistent']);
-// Auth
-export const cookieSecretValidation = z.string();
-export const sessionSecreteValidation = z.string();
-export const accessTokenSecretValidation = z.string();
-export const accessTokenExpiresInSecondsValidation = z.coerce.number();
-export const refreshTokenSecretValidation = z.string();
-export const refreshTokenExpiresInSecondsValidation = z.coerce.number();
-// Storage type
-export const storageTypeValidation = z.enum(['local', 's3']);
-// S3
-export const awsS3BucketNameValidation = z.string().optional();
-export const awsAccessKeyIdValidation = z.string().optional();
-export const awsSecretAccessKeyValidation = z.string().optional();
-export const awsDefaultRegionValidation = z.string().optional();
-
-// schemas
-export const envSchema = z
-	.object({
-		// Environment
-		NODE_ENV: nodeEnvValidation,
-		// API
-		API_ENV: apiEnvValidation,
-		API_HOST: apiHostValidation,
-		API_PORT: apiPortValidation,
-		// Logger
-		LOG_ENABLED: logEnabledValidation,
-		LOG_LEVEL: logLevelValidation,
-		// Auth
-		COOKIE_SECRET: cookieSecretValidation,
-		ACCESS_TOKEN_SECRET: accessTokenSecretValidation,
-		ACCESS_TOKEN_EXPIRES_IN_SECONDS: accessTokenExpiresInSecondsValidation,
-		REFRESH_TOKEN_SECRET: refreshTokenSecretValidation,
-		REFRESH_TOKEN_EXPIRES_IN_SECONDS: refreshTokenExpiresInSecondsValidation,
-		// MongoDB
-		MONGO_PROTOCOL: mongoProtocolValidation,
-		MONGO_USERNAME: mongoUsernameValidation,
-		MONGO_PASSWORD: mongoPasswordValidation,
-		MONGO_DATABASE: mongoDatabaseValidation,
-		MONGO_HOST: mongoHostValidation,
-		MONGO_PORT: mongoPortValidation,
-		MONGO_PARAMS: mongoParamsValidation,
-		MONGO_MAX_POOL_SIZE: mongoMaxPoolSizeValidation,
-		MONGO_SERVER_SELECTION_TIMEOUT_MS: mongoServerSelectionTimeoutMsValidation,
-		MONGO_CONNECT_TIMEOUT_MS: mongoConnectTimeoutMsValidation,
-		// Testing
-		TESTING_MONGO_DATABASE_MODE: testingMongoDatabaseModeValidation,
-		// Storage type
-		STORAGE_TYPE: storageTypeValidation,
-		// S3
-		AWS_S3_BUCKET_NAME: awsS3BucketNameValidation,
-		AWS_ACCESS_KEY_ID: awsAccessKeyIdValidation,
-		AWS_SECRET_ACCESS_KEY: awsSecretAccessKeyValidation,
-		AWS_DEFAULT_REGION: awsDefaultRegionValidation,
-	})
-	.superRefine(requireAwsFieldsForStorageS3);
+export const envSchema = z.object({
+	// Environment
+	NODE_ENV: z.enum(nodeEnvOptions).default('development'),
+	// API
+	API_ENV: schemaDefaultBasedOnNodeEnv(z.enum(apiEnvOptions), {
+		environments: ['development', 'e2e', 'testing'],
+		defaultValue: 'development',
+	}),
+	API_HOST: schemaDefaultBasedOnNodeEnv(z.string(), {
+		environments: ['development', 'e2e', 'testing', 'production'],
+		defaultValue: '0.0.0.0',
+	}),
+	API_PORT: schemaDefaultBasedOnNodeEnv(z.coerce.number(), {
+		environments: ['development', 'e2e', 'testing', 'production'],
+		defaultValue: 3333,
+	}),
+	// Logger
+	LOG_LEVEL: schemaDefaultBasedOnNodeEnv(z.enum(logLevelOptions), {
+		environments: ['development', 'e2e', 'testing', 'production'],
+		defaultValue: 'debug',
+	}),
+	// Auth
+	COOKIE_SECRET: z.string(),
+	ACCESS_TOKEN_SECRET: z.string(),
+	ACCESS_TOKEN_EXPIRES_IN_SECONDS: z.coerce.number(),
+	REFRESH_TOKEN_SECRET: z.string(),
+	REFRESH_TOKEN_EXPIRES_IN_SECONDS: z.coerce.number(),
+	// MongoDB
+	MONGO_PROTOCOL: schemaDefaultBasedOnNodeEnv(z.string(), {
+		environments: ['development', 'e2e', 'testing', 'production'],
+		defaultValue: 'mongodb',
+	}),
+	MONGO_USERNAME: schemaDefaultBasedOnNodeEnv(z.string(), {
+		environments: ['development', 'e2e', 'testing'],
+		defaultValue: '',
+	}),
+	MONGO_PASSWORD: schemaDefaultBasedOnNodeEnv(z.string(), {
+		environments: ['development', 'e2e', 'testing'],
+		defaultValue: '',
+	}),
+	MONGO_DATABASE: schemaDefaultBasedOnNodeEnv(z.string(), {
+		environments: ['development', 'e2e', 'testing'],
+		defaultValue: '',
+	}),
+	MONGO_HOST: schemaDefaultBasedOnNodeEnv(z.string(), {
+		environments: ['development', 'e2e', 'testing'],
+		defaultValue: 'localhost',
+	}),
+	MONGO_PORT: schemaDefaultBasedOnNodeEnv(z.coerce.number(), {
+		environments: ['development', 'e2e', 'testing'],
+		defaultValue: 27017,
+	}),
+	MONGO_PARAMS: schemaDefaultBasedOnNodeEnv(z.string(), {
+		environments: ['development', 'e2e', 'testing', 'production'],
+		defaultValue: '',
+	}),
+	MONGO_MAX_POOL_SIZE: schemaDefaultBasedOnNodeEnv(z.coerce.number(), {
+		environments: ['development', 'e2e', 'testing', 'production'],
+		defaultValue: 25,
+	}),
+	MONGO_SERVER_SELECTION_TIMEOUT_MS: schemaDefaultBasedOnNodeEnv(z.coerce.number(), {
+		environments: ['development', 'e2e', 'testing', 'production'],
+		defaultValue: 5000,
+	}),
+	MONGO_CONNECT_TIMEOUT_MS: schemaDefaultBasedOnNodeEnv(z.coerce.number(), {
+		environments: ['development', 'e2e', 'testing', 'production'],
+		defaultValue: 5000,
+	}),
+	MONGO_PERSISTENCE_MODE: schemaDefaultBasedOnNodeEnv(
+		z.enum(mongoPersistenceModeOptions),
+		{ environments: ['development', 'production'], defaultValue: 'inDisk' },
+		{ environments: ['testing', 'e2e'], defaultValue: 'inMemory' },
+	),
+	// Storage type
+	STORAGE_TYPE: z.enum(storageTypeOptions),
+	// S3
+	AWS_S3_BUCKET_NAME: z.string().optional(),
+	AWS_ACCESS_KEY_ID: z.string().optional(),
+	AWS_SECRET_ACCESS_KEY: z.string().optional(),
+	AWS_DEFAULT_REGION: z.string().optional(),
+});
