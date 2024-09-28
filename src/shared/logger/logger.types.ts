@@ -1,14 +1,4 @@
-export enum LogLevelEnum {
-	silent = 'silent',
-	trace = 'trace',
-	debug = 'debug',
-	info = 'info',
-	warn = 'warn',
-	error = 'error',
-	fatal = 'fatal',
-}
-
-export type LogLevel = keyof typeof LogLevelEnum;
+import { LogLevel } from '@/env/env.types';
 
 type LogFunction = {
 	<T extends object>(obj: T, msg?: string, ...args: unknown[]): void;
