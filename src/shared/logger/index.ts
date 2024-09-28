@@ -1,3 +1,11 @@
-import { LoggerRepository } from './logger.repository';
+import { env } from '@/env';
+import { BaseLogger } from './logger.types';
 
-export const logger = LoggerRepository.Instance.logger;
+let logger: BaseLogger = console;
+logger.level = env.LOG_LEVEL;
+
+const setLogger = <T>(newLogger: T) => {
+	logger = newLogger as BaseLogger;
+};
+
+export { logger, setLogger };
