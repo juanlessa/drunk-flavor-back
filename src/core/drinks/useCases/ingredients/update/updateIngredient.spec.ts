@@ -89,7 +89,7 @@ describe('Update Ingredient', () => {
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});
-	it('should not be able to update an ingredient to a nonexistent category', async () => {
+	it('should not be able to update an ingredient with a nonexistent category', async () => {
 		await expect(
 			service.execute({
 				id: createdIngredient._id.toString(),
