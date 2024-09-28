@@ -3,7 +3,6 @@ import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { DRINK_MESSAGES } from '@/core/drinks/constants/drinks.constants';
 import { UpdateDrinkCoverDTO } from './updateDrinkCover.dtos';
-import { FileMetadata } from '@/shared/types/file.types';
 import { generateHashedName, isImageFile } from '@/shared/helpers/file.helpers';
 
 export class UpdateDrinkCoverService {
