@@ -82,10 +82,26 @@ export const envSchema = z.object({
 		{ environments: ['testing', 'e2e'], defaultValue: 'inMemory' },
 	),
 	// Storage type
-	STORAGE_TYPE: z.enum(storageTypeOptions),
+	STORAGE_TYPE: schemaDefaultBasedOnNodeEnv(
+		z.enum(storageTypeOptions),
+		{ environments: ['development', 'testing', 'e2e'], defaultValue: 'local' },
+		{ environments: ['production'], defaultValue: 's3' },
+	),
 	// S3
-	AWS_S3_BUCKET_NAME: z.string().optional(),
-	AWS_ACCESS_KEY_ID: z.string().optional(),
-	AWS_SECRET_ACCESS_KEY: z.string().optional(),
-	AWS_DEFAULT_REGION: z.string().optional(),
+	AWS_S3_BUCKET_NAME: schemaDefaultBasedOnNodeEnv(z.string(), {
+		environments: ['development', 'testing', 'e2e', 'production'],
+		defaultValue: '',
+	}),
+	AWS_ACCESS_KEY_ID: schemaDefaultBasedOnNodeEnv(z.string(), {
+		environments: ['development', 'testing', 'e2e', 'production'],
+		defaultValue: '',
+	}),
+	AWS_SECRET_ACCESS_KEY: schemaDefaultBasedOnNodeEnv(z.string(), {
+		environments: ['development', 'testing', 'e2e', 'production'],
+		defaultValue: '',
+	}),
+	AWS_DEFAULT_REGION: schemaDefaultBasedOnNodeEnv(z.string(), {
+		environments: ['development', 'testing', 'e2e', 'production'],
+		defaultValue: '',
+	}),
 });
