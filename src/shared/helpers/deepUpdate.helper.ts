@@ -1,5 +1,5 @@
 import { DeepPartial } from '@/shared/types/utility.types';
-import { instanceOfMongoObjectId } from '../../infrastructure/mongo/mongo.helpers';
+import { instanceOfMongoObjectId } from '@/infrastructure/mongo/helpers/mongo.helpers';
 
 /**
  * Recursively updates properties of an object with values from a partial update object.
