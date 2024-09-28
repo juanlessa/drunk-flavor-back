@@ -14,12 +14,12 @@ import { SESSION_OPTIONS } from './constants/session.constants';
 import { FASTIFY_COOKIE_OPTIONS } from './constants/cookie.constants';
 import { router } from './routes';
 import { FASTIFY_LOGGER_OPTIONS } from './constants/logger.constants';
-import { logger } from '@/shared/logger';
 import { LoggerRepository } from '@/shared/logger/logger.repository';
 import { env } from '@/env';
-import { DOCS_ROUTE_PATH, DOCS_URL, SWAGGER_OPTIONS, SWAGGER_UI_OPTIONS } from './constants/swagger.constants';
+import { DOCS_URL, SWAGGER_OPTIONS, SWAGGER_UI_OPTIONS } from './constants/swagger.constants';
 import { MULTIPART_OPTIONS } from './constants/multipart.constants';
 import { STATIC_FILES_OPTIONS, STATIC_FILES_URL } from './constants/static.constants';
+import { setLogger, logger } from '@/shared/logger';
 
 export const app = fastify({
 	logger: FASTIFY_LOGGER_OPTIONS,
@@ -47,6 +47,7 @@ app.setErrorHandler(errorHandler);
 
 export const start = async () => {
 	LoggerRepository.setLogger(app.log);
+	setLogger(app.log);
 
 	const origin = 'localhost';
 	const originRgx = new RegExp(`${origin}`);
