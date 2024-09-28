@@ -4,12 +4,14 @@ import { Routes } from '../types/fastify.types';
 import { verifyAndRenewToken } from '../middlewares/verifyAndRenewToken';
 import { createDrinkSchema } from '@/core/drinks/useCases/drinks/create/createDrink.schema';
 import { createDrinkController } from '@/core/drinks/useCases/drinks/create/createDrink.controller';
+import { getDrinkSchema } from '@/core/drinks/useCases/drinks/get/getDrink.schema';
+import { getDrinkController } from '@/core/drinks/useCases/drinks/get/getDrink.controller';
 import { listDrinksSchema } from '@/core/drinks/useCases/drinks/list/listDrinks.schema';
 import { listDrinksController } from '@/core/drinks/useCases/drinks/list/listDrinks.controller';
-import { deleteDrinkSchema } from '@/core/drinks/useCases/drinks/delete/deleteDrink.schema';
-import { deleteDrinkController } from '@/core/drinks/useCases/drinks/delete/deleteDrink.controller';
 import { updateDrinkCoverSchema } from '@/core/drinks/useCases/drinks/updateCover/updateDrinkCover.schema';
 import { updateDrinkCoverController } from '@/core/drinks/useCases/drinks/updateCover/updateDrinkCover.controller';
+import { deleteDrinkSchema } from '@/core/drinks/useCases/drinks/delete/deleteDrink.schema';
+import { deleteDrinkController } from '@/core/drinks/useCases/drinks/delete/deleteDrink.controller';
 
 const routes: Routes = (server) => {
 	server
@@ -22,7 +24,7 @@ const routes: Routes = (server) => {
 
 	server
 		.withTypeProvider<ZodTypeProvider>()
-		.get('/drinks/:id', { schema: { params: createDrinkSchema } }, createDrinkController);
+		.get('/drinks/:id', { schema: { params: getDrinkSchema } }, getDrinkController);
 
 	server
 		.withTypeProvider<ZodTypeProvider>()
