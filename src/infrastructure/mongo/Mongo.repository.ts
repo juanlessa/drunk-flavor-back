@@ -1,15 +1,9 @@
 import mongoose, { Model } from 'mongoose';
 import { logger } from '@/shared/logger';
-import { env } from '@/env';
-import { buildConnectionStringFromEnv } from './mongo.helpers';
+import { buildConnectionOptionsFromEnv, buildConnectionStringFromEnv } from './helpers/mongoose.helpers';
 
 export class MongoRepository {
-	private connectionString: string;
 	private static _instance: MongoRepository;
-
-	private constructor() {
-		this.connectionString = buildConnectionStringFromEnv(env);
-	}
 
 	static get Instance() {
 		return this._instance || (this._instance = new this());
@@ -20,19 +14,16 @@ export class MongoRepository {
 	}
 
 	async start(connectionString?: string) {
-		if (!env.MONGO_MAX_POOL_SIZE || !env.MONGO_CONNECT_TIMEOUT_MS || !env.MONGO_SERVER_SELECTION_TIMEOUT_MS) {
-			throw new Error(
-				'Missing connection options. Ensure MONGO_MAX_POOL_SIZE, MONGO_CONNECT_TIMEOUT_MS, and MONGO_SERVER_SELECTION_TIMEOUT_MS are set.',
-			);
-		}
-		if (connectionString) {
-			this.connectionString = connectionString;
+		if (!connectionString) {
+			connectionString = buildConnectionStringFromEnv();
 		}
 
-		await mongoose.connect(this.connectionString, {
-			maxPoolSize: env.MONGO_MAX_POOL_SIZE,
-			serverSelectionTimeoutMS: env.MONGO_SERVER_SELECTION_TIMEOUT_MS,
-			connectTimeoutMS: env.MONGO_CONNECT_TIMEOUT_MS,
+		const { maxPoolSize, serverSelectionTimeoutMS, connectTimeoutMS } = buildConnectionOptionsFromEnv();
+
+		await mongoose.connect(connectionString, {
+			maxPoolSize,
+			serverSelectionTimeoutMS,
+			connectTimeoutMS,
 			autoCreate: true,
 		});
 		logger.info('Mongo connection has been stablish.');
