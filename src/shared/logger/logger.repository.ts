@@ -22,4 +22,4 @@ export class LoggerRepository {
 	}
 }
 
-export default LoggerRepository.Instance;
+export const loggerInstance = LoggerRepository.Instance;
