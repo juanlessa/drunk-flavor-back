@@ -2,6 +2,7 @@ import fastify from 'fastify';
 import cors from '@fastify/cors';
 import fastifyCookie from '@fastify/cookie';
 import fastifyJwt from '@fastify/jwt';
+import helmet from '@fastify/helmet';
 import session from '@fastify/secure-session';
 import fastifyMultipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
@@ -25,6 +26,7 @@ export const app = fastify({
 	logger: FASTIFY_LOGGER_OPTIONS,
 });
 
+app.register(helmet);
 app.register(fastifyCookie, FASTIFY_COOKIE_OPTIONS);
 app.register(fastifyJwt, TOKEN_OPTIONS);
 app.register(fastifyJwt, REFRESH_TOKEN_OPTIONS);
