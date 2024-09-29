@@ -18,9 +18,6 @@ let drinksRepositoryInMemory: IDrinksRepository;
 let service: UpdateDrinkService;
 
 const { translations: categoryTranslations } = createCategoryFactory();
-const { translations: updatedCategoryTranslations } = createCategoryFactory({
-	translations: { en: { name: 'Juice' }, pt: { name: 'Suco' } },
-});
 const { translations: translationsIngredient } = createIngredientFactory();
 
 const { translations } = createDrinkFactory();

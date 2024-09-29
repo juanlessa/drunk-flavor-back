@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Ingredients.repository';
 import { ListDrinksService } from './ListDrinks.service';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
@@ -9,7 +9,8 @@ import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemor
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { DrinksRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Drinks.repository';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
-import { LocalStorageProvider } from '@/shared/providers/storage/implementations/LocalStorage.provider';
+import { Drink } from '@/core/drinks/entities/drink.entity';
+import { MockStorageProvider } from '@/shared/providers/storage/implementations/MockStorage.provider';
 
 let categoriesRepositoryInMemory: ICategoriesRepository;
 let ingredientsRepositoryInMemory: IIngredientsRepository;
@@ -37,11 +38,15 @@ const { translations: translationsDrink3 } = createDrinkFactory({
 	translations: { en: { name: 'Tequila sunrise' }, pt: { name: 'Tequila sunrise' } },
 });
 
+let createdDrink1: Drink;
+
 describe('List Drinks', () => {
 	beforeEach(async () => {
+		vi.clearAllMocks();
+
 		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
 		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory();
-		storageProvider = new LocalStorageProvider();
+		storageProvider = new MockStorageProvider();
 		drinksRepositoryInMemory = new DrinksRepositoryInMemory();
 		service = new ListDrinksService(drinksRepositoryInMemory, storageProvider);
 
@@ -56,7 +61,7 @@ describe('List Drinks', () => {
 			is_alcoholic: false,
 			category: category1,
 		});
-		await drinksRepositoryInMemory.create({
+		createdDrink1 = await drinksRepositoryInMemory.create({
 			translations: translationsDrink1,
 			ingredients: [{ ingredient: ingredient1, quantity: 60 }],
 		});
@@ -71,6 +76,10 @@ describe('List Drinks', () => {
 				{ ingredient: ingredient2, quantity: 30 },
 			],
 		});
+	});
+
+	afterAll(async () => {
+		vi.clearAllMocks();
 	});
 
 	it('should be able to list drinks', async () => {
@@ -100,5 +109,18 @@ describe('List Drinks', () => {
 		expect(found.length).toEqual(2);
 		expect(found[0].translations.en.name).toEqual(translationsDrink3.en.name);
 		expect(found[1].translations.en.name).toEqual(translationsDrink2.en.name);
+	});
+
+	it('should be able to add the cover and thumbnail url to the found drinks', async () => {
+		await drinksRepositoryInMemory.update({
+			id: createdDrink1._id.toString(),
+			cover: { name: 'coverFile.png', mimetype: 'image/png', url: '' },
+			thumbnail: { name: 'thumbnailFile.jpeg', mimetype: 'image/jpeg', url: '' },
+		});
+
+		const drinksFound = await service.execute({ query: { limit: 3, page: 1 } });
+
+		expect(drinksFound.length).toBe(3);
+		expect(storageProvider.getFileURL).toHaveBeenCalledTimes(2);
 	});
 });

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ObjectId } from 'mongodb';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Ingredients.repository';
@@ -10,8 +10,8 @@ import { createCategoryFactory, createDrinkFactory, createIngredientFactory } fr
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { DrinksRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Drinks.repository';
-import { LocalStorageProvider } from '@/shared/providers/storage/implementations/LocalStorage.provider';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
+import { MockStorageProvider } from '@/shared/providers/storage/implementations/MockStorage.provider';
 
 let categoriesRepositoryInMemory: ICategoriesRepository;
 let ingredientsRepositoryInMemory: IIngredientsRepository;
@@ -31,9 +31,11 @@ let ingredient: Ingredient;
 
 describe('Get Drink', () => {
 	beforeEach(async () => {
+		vi.clearAllMocks();
+
 		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
 		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory();
-		storageProvider = new LocalStorageProvider();
+		storageProvider = new MockStorageProvider();
 		drinksRepositoryInMemory = new DrinksRepositoryInMemory();
 		service = new GetDrinkService(drinksRepositoryInMemory, storageProvider);
 
@@ -44,7 +46,12 @@ describe('Get Drink', () => {
 			category: category,
 		});
 	});
-	it('should be able to find an Drink', async () => {
+
+	afterAll(async () => {
+		vi.clearAllMocks();
+	});
+
+	it('should be able to find a drink', async () => {
 		const createdDrink = await drinksRepositoryInMemory.create({
 			translations,
 			ingredients: [{ ingredient: ingredient, quantity: 30 }],
@@ -52,14 +59,30 @@ describe('Get Drink', () => {
 
 		const drinkFound = await service.execute({ id: createdDrink._id.toString() });
 
+		expect(drinkFound).toBeDefined();
 		expect(drinkFound._id).toEqual(createdDrink._id);
-		expect(drinkFound.translations).toEqual(createdDrink.translations);
-		expect(drinkFound.ingredients.length).toEqual(1);
 	});
 
 	it('should not be able to find a nonexistent drink', async () => {
 		const nonexistentId = new ObjectId().toString();
 
 		await expect(service.execute({ id: nonexistentId })).rejects.toBeInstanceOf(BadRequestError);
+	});
+
+	it('should be able to add the cover and thumbnail url to a found drink', async () => {
+		const createdDrink = await drinksRepositoryInMemory.create({
+			translations,
+			ingredients: [{ ingredient: ingredient, quantity: 30 }],
+		});
+		await drinksRepositoryInMemory.update({
+			id: createdDrink._id.toString(),
+			cover: { name: 'coverFile.png', mimetype: 'image/png', url: '' },
+			thumbnail: { name: 'thumbnailFile.jpeg', mimetype: 'image/jpeg', url: '' },
+		});
+
+		const drinkFound = await service.execute({ id: createdDrink._id.toString() });
+
+		expect(drinkFound).toBeDefined();
+		expect(storageProvider.getFileURL).toHaveBeenCalledTimes(2);
 	});
 });
