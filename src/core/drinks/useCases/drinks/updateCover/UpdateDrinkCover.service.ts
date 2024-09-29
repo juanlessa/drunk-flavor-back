@@ -3,7 +3,12 @@ import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { DRINK_MESSAGES } from '@/core/drinks/constants/drinks.constants';
 import { UpdateDrinkCoverDTO } from './updateDrinkCover.dtos';
-import { generateHashedName, isImageFile } from '@/shared/helpers/file.helpers';
+import {
+	generateHashedName,
+	hasFileExtension,
+	isSupportedFileType,
+	setFileExtension,
+} from '@/shared/helpers/file.helpers';
 
 export class UpdateDrinkCoverService {
 	constructor(
@@ -12,7 +17,7 @@ export class UpdateDrinkCoverService {
 	) {}
 
 	async execute({ drinkId, fileStream, name, mimetype }: UpdateDrinkCoverDTO): Promise<void> {
-		if (!isImageFile(mimetype)) {
+		if (!isSupportedFileType('image', mimetype)) {
 			throw new BadRequestError('invalid file type', {
 				path: 'UpdateDrinkCover.service.1',
 				cause: 'invalid email',
@@ -28,6 +33,9 @@ export class UpdateDrinkCoverService {
 			await this.storageProvider.deleteFile(drink.cover.name);
 		}
 
+		if (!hasFileExtension(name, mimetype)) {
+			name = setFileExtension(name, mimetype);
+		}
 		name = generateHashedName(name);
 		const url = '';
 
