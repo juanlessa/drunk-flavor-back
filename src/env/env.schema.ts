@@ -30,11 +30,26 @@ export const envSchema = z.object({
 		defaultValue: 'debug',
 	}),
 	// Auth
-	COOKIE_SECRET: z.string(),
-	ACCESS_TOKEN_SECRET: z.string(),
-	ACCESS_TOKEN_EXPIRES_IN_SECONDS: z.coerce.number(),
-	REFRESH_TOKEN_SECRET: z.string(),
-	REFRESH_TOKEN_EXPIRES_IN_SECONDS: z.coerce.number(),
+	COOKIE_SECRET: schemaDefaultBasedOnNodeEnv(z.string(), {
+		environments: ['e2e', 'testing'],
+		defaultValue: 'bad-cookie-secret',
+	}),
+	ACCESS_TOKEN_SECRET: schemaDefaultBasedOnNodeEnv(z.string(), {
+		environments: ['e2e', 'testing'],
+		defaultValue: 'bad-access-token-secret',
+	}),
+	ACCESS_TOKEN_EXPIRES_IN_SECONDS: schemaDefaultBasedOnNodeEnv(z.coerce.number(), {
+		environments: ['e2e', 'testing'],
+		defaultValue: 2,
+	}),
+	REFRESH_TOKEN_SECRET: schemaDefaultBasedOnNodeEnv(z.string(), {
+		environments: ['e2e', 'testing'],
+		defaultValue: 'bad-refresh-token-secret',
+	}),
+	REFRESH_TOKEN_EXPIRES_IN_SECONDS: schemaDefaultBasedOnNodeEnv(z.coerce.number(), {
+		environments: ['e2e', 'testing'],
+		defaultValue: 5,
+	}),
 	// MongoDB
 	MONGO_PROTOCOL: schemaDefaultBasedOnNodeEnv(z.string(), {
 		environments: ['development', 'e2e', 'testing', 'production'],
