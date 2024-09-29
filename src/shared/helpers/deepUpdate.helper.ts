@@ -45,6 +45,10 @@ import { instanceOfMongoObjectId } from '@/infrastructure/mongo/helpers/mongo.he
  * // }
  */
 export const deepUpdate = <T extends object>(newRecord: DeepPartial<T>, currentRecord: T): T => {
+	if (!currentRecord) {
+		return newRecord as T;
+	}
+
 	return Object.entries(currentRecord).reduce((acc, [key, value]) => {
 		const newKey = key as keyof T;
 		const newValue = newRecord[newKey];
