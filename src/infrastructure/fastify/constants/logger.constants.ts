@@ -3,7 +3,7 @@ import { env } from '@/env';
 const EnvToLogger = {
 	development: {
 		level: env.LOG_LEVEL,
-		enabled: env.LOG_ENABLED,
+		enabled: true,
 		transport: {
 			target: 'pino-pretty',
 			options: {
@@ -15,7 +15,7 @@ const EnvToLogger = {
 	},
 	production: {
 		level: env.LOG_LEVEL,
-		enabled: env.LOG_ENABLED,
+		enabled: true,
 		transport: {
 			target: 'pino-pretty',
 			options: {
