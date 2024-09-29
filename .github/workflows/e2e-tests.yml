@@ -42,6 +42,7 @@ jobs:
 
             - name: Run tests
               run: |
+                  npm run generate-secret-key
                   npm run test:e2e:setup
                   npm run test:e2e
               env:
