@@ -12,6 +12,8 @@ import { updateDrinkSchema } from '@/core/drinks/useCases/drinks/update/updateDr
 import { updateDrinkController } from '@/core/drinks/useCases/drinks/update/updateDrink.controller';
 import { updateDrinkCoverSchema } from '@/core/drinks/useCases/drinks/updateCover/updateDrinkCover.schema';
 import { updateDrinkCoverController } from '@/core/drinks/useCases/drinks/updateCover/updateDrinkCover.controller';
+import { updateDrinkThumbnailSchema } from '@/core/drinks/useCases/drinks/updateThumbnail/updateDrinkThumbnail.schema';
+import { updateDrinkThumbnailController } from '@/core/drinks/useCases/drinks/updateThumbnail/updateDrinkThumbnail.controller';
 import { deleteDrinkSchema } from '@/core/drinks/useCases/drinks/delete/deleteDrink.schema';
 import { deleteDrinkController } from '@/core/drinks/useCases/drinks/delete/deleteDrink.controller';
 
@@ -43,6 +45,14 @@ const routes: Routes = (server) => {
 	server
 		.withTypeProvider<ZodTypeProvider>()
 		.patch('/drinks/:id/cover', { schema: { params: updateDrinkCoverSchema } }, updateDrinkCoverController);
+
+	server
+		.withTypeProvider<ZodTypeProvider>()
+		.patch(
+			'/drinks/:id/thumbnail',
+			{ schema: { params: updateDrinkThumbnailSchema } },
+			updateDrinkThumbnailController,
+		);
 
 	server
 		.withTypeProvider<ZodTypeProvider>()
