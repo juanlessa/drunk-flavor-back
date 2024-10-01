@@ -1,4 +1,4 @@
-import { FileStream } from '@/infrastructure/fastify/types/storage,types';
+import { FileStream } from '@/infrastructure/fastify/types/multipart.types';
 
 export type UploadFileOptions = {
 	fileStream: FileStream;
