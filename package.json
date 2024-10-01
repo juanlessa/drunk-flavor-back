@@ -22,6 +22,10 @@
 		"test:e2e:setup": "npm link ./src/infrastructure/mongo/vitest-environment-mongo",
 		"test:e2e": "NODE_ENV=e2e dotenv -e .env.testing -- vitest run -c vitest-e2e.config.ts",
 		"test:e2e:watch": "NODE_ENV=e2e dotenv -e .env.testing -- vitest -c vitest-e2e.config.ts",
+		"test:template": "NODE_ENV=testing vitest run -c vitest.config.ts 'src/shared/providers/template/implementations/views/'",
+		"test:template:watch": "NODE_ENV=testing vitest -c vitest.config.ts 'src/shared/providers/template/implementations/views/'",
+		"test:template:output": "NODE_ENV=testing STORE_TEMPLATES=true vitest run -c vitest.config.ts 'src/shared/providers/template/implementations/views/'",
+		"test:template:output:watch": "NODE_ENV=testing STORE_TEMPLATES=true vitest -c vitest.config.ts 'src/shared/providers/template/implementations/views/'",
 		"generate-secret-key": "npx @fastify/secure-session > secret-key"
 	},
 	"dependencies": {
@@ -40,8 +44,10 @@
 		"dotenv": "^16.4.5",
 		"fastify": "^5.0.0",
 		"fastify-type-provider-zod": "^3.0.0",
+		"mjml": "^4.15.3",
 		"mongodb": "^6.8.0",
 		"mongoose": "^8.4.4",
+		"nodemailer": "^6.9.15",
 		"pino": "^9.2.0",
 		"pino-http": "^10.1.0",
 		"pino-pretty": "^11.2.1",
@@ -50,7 +56,9 @@
 	},
 	"devDependencies": {
 		"@types/bcryptjs": "^2.4.6",
+		"@types/mjml": "^4.7.4",
 		"@types/node": "^20.14.9",
+		"@types/nodemailer": "^6.4.16",
 		"@types/supertest": "^6.0.2",
 		"dotenv-cli": "^7.4.2",
 		"eslint": "^8.57.0",
