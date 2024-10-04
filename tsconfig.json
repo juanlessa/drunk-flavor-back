@@ -24,6 +24,6 @@
 			"@/*": ["./src/*"]
 		}
 	},
-	"include": ["src/**/*", "vitest.config.ts"],
+	"include": ["src/**/*", "vitest.config.mts", "vitest-e2e.config.mts"],
 	"exclude": ["node_modules", "build", "docs", "infra"]
 }

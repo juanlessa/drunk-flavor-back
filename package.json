@@ -3,7 +3,7 @@
 	"version": "0.0.1",
 	"description": "",
 	"main": "server.ts",
-	"type": "module",
+	"type": "commonjs",
 	"scripts": {
 		"format": "prettier --write 'src/**/*.ts'",
 		"format:staged": "pretty-quick --staged",
@@ -16,12 +16,12 @@
 		"dev": "tsx src/server.ts",
 		"dev:watch": "tsx watch src/server.ts",
 		"build": "tsup src/server.ts",
-		"test": "NODE_ENV=testing vitest run -c vitest.config.ts",
-		"test:watch": "NODE_ENV=testing vitest -c vitest.config.ts",
-		"test:coverage": "vitest run -c vitest.config.ts --coverage",
+		"test": "NODE_ENV=testing vitest run -c vitest.config.mts",
+		"test:watch": "NODE_ENV=testing vitest -c vitest.config.mts",
+		"test:coverage": "vitest run -c vitest.config.mts --coverage",
 		"test:e2e:setup": "npm link ./src/infrastructure/mongo/vitest-environment-mongo",
-		"test:e2e": "NODE_ENV=e2e dotenv -e .env.testing -- vitest run -c vitest-e2e.config.ts",
-		"test:e2e:watch": "NODE_ENV=e2e dotenv -e .env.testing -- vitest -c vitest-e2e.config.ts",
+		"test:e2e": "NODE_ENV=e2e dotenv -e .env.testing -- vitest run -c vitest-e2e.config.mts",
+		"test:e2e:watch": "NODE_ENV=e2e dotenv -e .env.testing -- vitest -c vitest-e2e.config.mts",
 		"generate-secret-key": "npx @fastify/secure-session > secret-key"
 	},
 	"dependencies": {
