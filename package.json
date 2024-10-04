@@ -58,7 +58,7 @@
 		"eslint-plugin-vitest": "0.5.4",
 		"husky": "9.1.6",
 		"lint-staged": "15.2.10",
-		"mongodb-memory-server": "9.4.1",
+		"mongodb-memory-server": "10.0.1",
 		"prettier": "3.3.3",
 		"pretty-quick": "4.0.0",
 		"supertest": "7.0.0",
