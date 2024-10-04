@@ -3,7 +3,7 @@
 	"version": "0.0.1",
 	"description": "",
 	"main": "server.ts",
-	"type": "commonjs",
+	"type": "module",
 	"scripts": {
 		"format": "prettier --write 'src/**/*.ts'",
 		"format:staged": "pretty-quick --staged",
@@ -66,8 +66,8 @@
 		"tsx": "4.19.1",
 		"typescript": "5.6.2",
 		"typescript-eslint": "7.18.0",
-		"vite-tsconfig-paths": "4.3.2",
-		"vitest": "1.6.0"
+		"vite-tsconfig-paths": "5.0.1",
+		"vitest": "2.1.2"
 	},
 	"repository": {
 		"type": "git",
