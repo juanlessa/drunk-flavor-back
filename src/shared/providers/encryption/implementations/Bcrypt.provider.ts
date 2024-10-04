@@ -1,4 +1,4 @@
-import { compare, hash } from 'bcryptjs';
+import { compare, hash } from 'bcrypt';
 import { IEncryptionProvider } from '../IEncryption.provider';
 
 export class BcryptProvider implements IEncryptionProvider {
