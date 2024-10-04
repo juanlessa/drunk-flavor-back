@@ -15,7 +15,7 @@ services:
             - node-network
 
     mongodb:
-        image: mongo:6-jammy
+        image: mongo:7-jammy
         restart: always
         container_name: mongodb
         ports:
