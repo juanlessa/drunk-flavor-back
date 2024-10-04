@@ -2,9 +2,9 @@
 	"$schema": "https://json.schemastore.org/tsconfig",
 	"compilerOptions": {
 		"lib": ["es2023"],
+		"target": "es2022",
 		"module": "ESNext",
 		"moduleResolution": "Node",
-		"target": "es2022",
 		"declaration": true,
 		"allowJs": true,
 		"strict": true,
@@ -24,6 +24,6 @@
 			"@/*": ["./src/*"]
 		}
 	},
-	"include": ["src/**/*", "vitest.config.ts"],
+	"include": ["src/**/*", "vitest.config.mts", "vitest-e2e.config.mts"],
 	"exclude": ["node_modules", "build", "docs", "infra"]
 }
