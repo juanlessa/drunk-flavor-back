@@ -2,7 +2,7 @@
 
 import tsEslint from 'typescript-eslint';
 import eslintConfigPrettier from 'eslint-config-prettier';
-import vitest from 'eslint-plugin-vitest';
+import vitest from '@vitest/eslint-plugin';
 
 const typescriptConfig = tsEslint.config({
 	files: ['./**/*.ts'],
