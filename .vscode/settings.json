@@ -1,3 +1,14 @@
 {
-	"cSpell.words": ["camelcase", "dayjs", "dtos", "fastify", "mjml", "openapi", "pino", "tsup", "unsign"]
+	"cSpell.words": [
+		"camelcase",
+		"dayjs",
+		"drunkflavor",
+		"dtos",
+		"fastify",
+		"mjml",
+		"openapi",
+		"pino",
+		"tsup",
+		"unsign"
+	]
 }
