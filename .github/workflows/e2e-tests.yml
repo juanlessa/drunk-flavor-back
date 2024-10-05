@@ -53,4 +53,4 @@ jobs:
                   MONGO_HOST: 'localhost'
                   MONGO_PORT: '27017'
                   MONGO_PARAMS: 'authMechanism=DEFAULT&authSource=admin'
-                  TESTING_MONGO_DATABASE_MODE: 'persistent'
+                  MONGO_PERSISTENCE_MODE: 'inDisk'
