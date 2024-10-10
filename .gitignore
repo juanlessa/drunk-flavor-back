@@ -6,6 +6,7 @@ secret_key
 .env.testing
 /dist/
 /build/
+/templates/
 .DS_Store
 coverage
 .vscode/*

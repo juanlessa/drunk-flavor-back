@@ -96,6 +96,18 @@ export const envSchema = z.object({
 		{ environments: ['development', 'production'], defaultValue: 'inDisk' },
 		{ environments: ['testing', 'e2e'], defaultValue: 'inMemory' },
 	),
+	// SMTP
+	SMTP_DOMAIN: schemaDefaultBasedOnNodeEnv(z.string(), {
+		environments: ['testing', 'e2e', 'development', 'production'],
+		defaultValue: 'drunkflavor.com',
+	}),
+	SMTP_HOST: schemaDefaultBasedOnNodeEnv(z.string(), { environments: ['testing', 'e2e'], defaultValue: '' }),
+	SMTP_PORT: schemaDefaultBasedOnNodeEnv(z.coerce.number(), {
+		environments: ['testing', 'e2e', 'development', 'production'],
+		defaultValue: 587,
+	}),
+	SMTP_USERNAME: schemaDefaultBasedOnNodeEnv(z.string(), { environments: ['testing', 'e2e'], defaultValue: '' }),
+	SMTP_PASSWORD: schemaDefaultBasedOnNodeEnv(z.string(), { environments: ['testing', 'e2e'], defaultValue: '' }),
 	// Storage type
 	STORAGE_TYPE: schemaDefaultBasedOnNodeEnv(
 		z.enum(storageTypeOptions),

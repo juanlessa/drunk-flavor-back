@@ -22,6 +22,10 @@
 		"test:e2e:setup": "npm link ./src/infrastructure/mongo/vitest-environment-mongo",
 		"test:e2e": "NODE_ENV=e2e dotenv -e .env.testing -- vitest run -c vitest-e2e.config.mts",
 		"test:e2e:watch": "NODE_ENV=e2e dotenv -e .env.testing -- vitest -c vitest-e2e.config.mts",
+		"test:template": "NODE_ENV=testing vitest run -c vitest.config.mts 'src/shared/providers/template/implementations/views/'",
+		"test:template:watch": "NODE_ENV=testing vitest -c vitest.config.mts 'src/shared/providers/template/implementations/views/'",
+		"test:template:output": "NODE_ENV=testing STORE_TEMPLATES=true vitest run -c vitest.config.mts 'src/shared/providers/template/implementations/views/'",
+		"test:template:output:watch": "NODE_ENV=testing STORE_TEMPLATES=true vitest -c vitest.config.mts 'src/shared/providers/template/implementations/views/'",
 		"generate-secret-key": "npx @fastify/secure-session > secret-key"
 	},
 	"dependencies": {
@@ -50,6 +54,8 @@
 	},
 	"devDependencies": {
 		"@types/bcrypt": "5.0.2",
+		"@types/mjml": "4.7.4",
+		"@types/nodemailer": "6.4.16",
 		"@types/node": "20.16.11",
 		"@types/supertest": "6.0.2",
 		"dotenv-cli": "7.4.2",
