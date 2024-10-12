@@ -2,7 +2,7 @@ import { DatabaseCommonInfo } from '@/infrastructure/mongo/types';
 
 export enum TokenTypeEnum {
 	'email-verification' = 'email-verification',
-	'reset-password' = 'reset-password',
+	'forgot-password' = 'forgot-password',
 }
 
 export type TokenType = keyof typeof TokenTypeEnum;

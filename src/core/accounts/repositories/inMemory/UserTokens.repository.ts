@@ -1,11 +1,11 @@
 import { ObjectId } from 'mongodb';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { TokenType, UserToken } from '../../entities/userToken.entity';
+import { UserToken } from '../../entities/userToken.entity';
 import { IUserTokensRepository } from '../IUserTokens.repository';
 import { CreateUserToken, FindByUserIdAndType, UpdateUserToken } from '../../dtos/userToken.dtos';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 
-export class UserTokenRepositoryInMemory implements IUserTokensRepository {
+export class UserTokensRepositoryInMemory implements IUserTokensRepository {
 	collection: UserToken[] = [];
 
 	async create({ token, type, user_id }: CreateUserToken): Promise<UserToken> {
@@ -24,7 +24,7 @@ export class UserTokenRepositoryInMemory implements IUserTokensRepository {
 	async update({ id, ...data }: UpdateUserToken): Promise<UserToken> {
 		const recordIndex = this.collection.findIndex((u) => u._id.toString() === id);
 		if (recordIndex === -1) {
-			throw new NotFoundError('token not found', {
+			throw new NotFoundError('apiResponses.auth.tokenNotFound', {
 				path: 'UsersTokens.repository.update',
 				cause: 'Error on findOneAndUpdate operation',
 			});
@@ -41,7 +41,7 @@ export class UserTokenRepositoryInMemory implements IUserTokensRepository {
 	async delete(id: string): Promise<UserToken> {
 		const recordIndex = this.collection.findIndex((rec) => rec._id.toString() === id);
 		if (recordIndex === -1) {
-			throw new NotFoundError('token not found', {
+			throw new NotFoundError('apiResponses.auth.tokenNotFound', {
 				path: 'UsersTokens.repository.delete',
 				cause: 'Error on findOneAndDelete operation',
 			});
