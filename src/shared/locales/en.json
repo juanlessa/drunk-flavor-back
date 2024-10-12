@@ -1,6 +1,8 @@
 {
 	"apiResponses.internalServerError": "Internal server error",
 
+	"apiResponses.template.parseFailed": "Failed to parse the template",
+
 	"apiResponses.auth.badRequestErrorMessage": "Format is Authorization: Bearer [token]",
 	"apiResponses.auth.badCookieRequestErrorMessage": "Cookie could not be parsed in request",
 	"apiResponses.auth.noAuthorizationInHeaderMessage": "No Authorization was found in request.headers",
@@ -9,6 +11,9 @@
 	"apiResponses.auth.authorizationTokenUntrusted": "Untrusted authorization token",
 	"apiResponses.auth.authorizationTokenUnsigned": "Unsigned authorization token",
 	"apiResponses.auth.authorizationTokenInvalid": "Authorization token is invalid ",
+	"apiResponses.auth.invalidCredentials": "Email or password incorrect",
+	"apiResponses.auth.actionAlreadyRequested": "A request has already been made recently. Please check your email or try again later.",
+	"apiResponses.auth.tokenNotFound": "Token not found",
 
 	"apiResponses.users.notExist": "User does not exist",
 	"apiResponses.users.alreadyExist": "User already exists",
@@ -25,16 +30,6 @@
 	"apiResponses.users.invalidPasswordFormat": "Password must have a minimum of 8 characters",
 	"apiResponses.users.requiredRole": "Role is required",
 	"apiResponses.users.invalidRoleFormat": "Invalid role",
-
-	"apiResponses.authentication.missingToken": "Token is missing",
-	"apiResponses.authentication.requiredToken": "Token is required",
-	"apiResponses.authentication.invalidToken": "Invalid token",
-	"apiResponses.authentication.notExistRefreshToken": "Refresh Token does not exist",
-	"apiResponses.authentication.requiredRefreshToken": "Refresh token is required",
-	"apiResponses.authentication.invalidRefreshToken": "Invalid refresh token",
-	"apiResponses.authentication.invalidPermission": "Invalid permission",
-	"apiResponses.authentication.notAuthenticated": "User is not authenticated",
-	"apiResponses.authentication.invalidCredentials": "Email or password incorrect",
 
 	"apiResponses.categories.notExist": "Category does not exist",
 	"apiResponses.categories.alreadyExist": "Category already exists",
