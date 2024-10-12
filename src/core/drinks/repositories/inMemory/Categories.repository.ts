@@ -5,7 +5,6 @@ import { ObjectId } from 'mongodb';
 import { compareTranslationsName } from '@/core/drinks/helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
-import { CATEGORY_MESSAGES } from '@/core/drinks/constants/categories.constants';
 import { QueryParams } from '@/shared/types/query.types';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 import { filterItemsBySearchCriteria, paginateItems, sortItemsByFields } from '@/shared/helpers/query.helpers';
@@ -28,7 +27,7 @@ export class CategoriesRepositoryInMemory implements ICategoriesRepository {
 	async update({ id, ...data }: UpdateCategory): Promise<Category> {
 		const categoryIndex = this.categories.findIndex((cat) => cat._id.toString() === id);
 		if (categoryIndex === -1) {
-			throw new NotFoundError(CATEGORY_MESSAGES.notFound.message, {
+			throw new NotFoundError('apiResponses.categories.notFound', {
 				path: 'CategoriesInMemory.repository',
 				cause: 'Error on findByIdAndUpdate operation',
 			});
@@ -44,7 +43,7 @@ export class CategoriesRepositoryInMemory implements ICategoriesRepository {
 	async delete(id: string): Promise<Category> {
 		const categoryIndex = this.categories.findIndex((cat) => cat._id.toString() === id);
 		if (categoryIndex === -1) {
-			throw new NotFoundError(CATEGORY_MESSAGES.notFound.message, {
+			throw new NotFoundError('apiResponses.categories.notFound', {
 				path: 'CategoriesInMemory.repository',
 				cause: 'Error on findByIdAndDelete operation',
 			});

@@ -1,7 +1,6 @@
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { BadRequestError } from '@/shared/error/error.lib';
-import { DRINK_MESSAGES } from '@/core/drinks/constants/drinks.constants';
 
 import {
 	generateHashedName,
@@ -19,7 +18,7 @@ export class UpdateDrinkThumbnailService {
 
 	async execute({ drinkId, fileStream, name, mimetype }: UpdateDrinkThumbnailDTO): Promise<void> {
 		if (!isSupportedFileType('image', mimetype)) {
-			throw new BadRequestError('invalid file type', {
+			throw new BadRequestError('apiResponses.drinks.invalidFileType', {
 				path: 'UpdateDrinkThumbnail.service.1',
 				cause: 'invalid email',
 			});
@@ -27,7 +26,7 @@ export class UpdateDrinkThumbnailService {
 
 		const drink = await this.drinksRepository.findById(drinkId);
 		if (!drink) {
-			throw new BadRequestError(DRINK_MESSAGES.notExist.message, { path: 'UpdateDrinkThumbnail.service.2' });
+			throw new BadRequestError('apiResponses.drinks.notExist', { path: 'UpdateDrinkThumbnail.service.2' });
 		}
 
 		if (drink.thumbnail) {

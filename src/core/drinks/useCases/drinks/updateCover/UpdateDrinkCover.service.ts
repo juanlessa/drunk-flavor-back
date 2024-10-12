@@ -1,7 +1,6 @@
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { BadRequestError } from '@/shared/error/error.lib';
-import { DRINK_MESSAGES } from '@/core/drinks/constants/drinks.constants';
 import { UpdateDrinkCoverDTO } from './updateDrinkCover.dtos';
 import {
 	generateHashedName,
@@ -18,7 +17,7 @@ export class UpdateDrinkCoverService {
 
 	async execute({ drinkId, fileStream, name, mimetype }: UpdateDrinkCoverDTO): Promise<void> {
 		if (!isSupportedFileType('image', mimetype)) {
-			throw new BadRequestError('invalid file type', {
+			throw new BadRequestError('apiResponses.drinks.invalidFileType', {
 				path: 'UpdateDrinkCover.service.1',
 				cause: 'invalid email',
 			});
@@ -26,7 +25,7 @@ export class UpdateDrinkCoverService {
 
 		const drink = await this.drinksRepository.findById(drinkId);
 		if (!drink) {
-			throw new BadRequestError(DRINK_MESSAGES.notExist.message, { path: 'UpdateDrinkCover.service.2' });
+			throw new BadRequestError('apiResponses.drinks.notExist', { path: 'UpdateDrinkCover.service.2' });
 		}
 
 		if (drink.cover) {
