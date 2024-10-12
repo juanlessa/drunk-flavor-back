@@ -3,8 +3,8 @@ import { authenticateUserSchema } from '@/core/accounts/useCases/authenticateUse
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { pluginGenerator } from '../helpers/fastify.helpers';
 import { Routes } from '../types/fastify.types';
-import { resetUserPasswordSchema } from '@/core/accounts/useCases/resetUserPassword/resetUserPassword.schema';
-import { resetUserPasswordController } from '@/core/accounts/useCases/resetUserPassword/resetUserPassword.controller';
+import { forgotPasswordSchema } from '@/core/accounts/useCases/forgotPassword/forgotPassword.schema';
+import { forgotPasswordController } from '@/core/accounts/useCases/forgotPassword/forgotPassword.controller';
 
 const routes: Routes = (server) => {
 	server
@@ -13,7 +13,7 @@ const routes: Routes = (server) => {
 
 	server
 		.withTypeProvider<ZodTypeProvider>()
-		.post('/reset-password', { schema: { body: resetUserPasswordSchema } }, resetUserPasswordController);
+		.post('/forgot-password', { schema: { body: forgotPasswordSchema } }, forgotPasswordController);
 };
 
 export const authenticateRoutes = pluginGenerator(routes);
