@@ -50,6 +50,14 @@ export const envSchema = z.object({
 		environments: ['e2e', 'testing'],
 		defaultValue: 5,
 	}),
+	USER_TOKEN_EXPIRES_IN_SECONDS: schemaDefaultBasedOnNodeEnv(z.coerce.number(), {
+		environments: ['e2e', 'testing'],
+		defaultValue: 5,
+	}),
+	USER_TOKEN_SIZE: schemaDefaultBasedOnNodeEnv(z.coerce.number(), {
+		environments: ['e2e', 'testing', 'development'],
+		defaultValue: 16,
+	}),
 	// MongoDB
 	MONGO_PROTOCOL: schemaDefaultBasedOnNodeEnv(z.string(), {
 		environments: ['development', 'e2e', 'testing', 'production'],
