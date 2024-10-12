@@ -1,4 +1,4 @@
-import { resolveUsersRepository } from '@/core/accounts/container';
+import { resolveUsersRepository } from '@/core/accounts/infra/mongo/container';
 import { GetUserProfileService } from './GetUserProfile.service';
 
 const usersRepository = resolveUsersRepository();

@@ -1,13 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
-import { BcryptProvider } from '@/shared/providers/encryption/implementations/Bcrypt.provider';
 import { CreateUserService } from '@/core/accounts/useCases/createUser/CreateUser.service';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
-import { createUserFactory } from '@/core/accounts/container';
+import { createUserFactory } from '../../factories/user.factories';
+import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
+import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
 
 let usersRepositoryInMemory: IUsersRepository;
-let encryptionProvider: BcryptProvider;
+let hashProvider: IHashProvider;
 let service: CreateUserService;
 
 const { name, surname, email, password, role } = createUserFactory();
@@ -15,8 +16,8 @@ const { name, surname, email, password, role } = createUserFactory();
 describe('Create User', () => {
 	beforeEach(async () => {
 		usersRepositoryInMemory = new UsersRepositoryInMemory();
-		encryptionProvider = new BcryptProvider();
-		service = new CreateUserService(usersRepositoryInMemory, encryptionProvider);
+		hashProvider = new BcryptHashProvider();
+		service = new CreateUserService(usersRepositoryInMemory, hashProvider);
 	});
 
 	it('Should be able to create a user', async () => {
@@ -39,7 +40,7 @@ describe('Create User', () => {
 			surname,
 			email,
 			role,
-			password: await encryptionProvider.hash(password),
+			password: await hashProvider.hash(password),
 		});
 
 		await expect(service.execute({ name, surname, email, password, role })).rejects.toBeInstanceOf(BadRequestError);

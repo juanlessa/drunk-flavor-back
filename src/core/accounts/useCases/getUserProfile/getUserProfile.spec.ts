@@ -5,7 +5,7 @@ import { GetUserProfileService } from './GetUserProfile.service';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { User } from '@/core/accounts/entities/user.entity';
-import { createUserFactory } from '@/core/accounts/container';
+import { createUserFactory } from '@/core/accounts/infra/mongo/container';
 
 let usersRepositoryInMemory: IUsersRepository;
 let service: GetUserProfileService;

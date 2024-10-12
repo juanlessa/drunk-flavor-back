@@ -1,11 +1,11 @@
 import { ObjectId } from 'mongodb';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { UserToken } from '../../entities/userToken.entity';
-import { IUsersTokensRepository } from '../IUsersTokens.repository';
-import { CreateUserToken, UpdateUserToken } from '../../dtos/userToken.dtos';
+import { TokenType, UserToken } from '../../entities/userToken.entity';
+import { IUserTokensRepository } from '../IUserTokens.repository';
+import { CreateUserToken, FindByUserIdAndType, UpdateUserToken } from '../../dtos/userToken.dtos';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 
-export class UsersTokensRepositoryInMemory implements IUsersTokensRepository {
+export class UserTokenRepositoryInMemory implements IUserTokensRepository {
 	collection: UserToken[] = [];
 
 	async create({ token, type, user_id }: CreateUserToken): Promise<UserToken> {
@@ -53,6 +53,11 @@ export class UsersTokensRepositoryInMemory implements IUsersTokensRepository {
 
 	async findByToken(token: string): Promise<UserToken | null> {
 		const recordFound = this.collection.find((rec) => rec.token === token);
+		return recordFound || null;
+	}
+
+	async findByUserIdAndType({ user_id, type }: FindByUserIdAndType): Promise<UserToken | null> {
+		const recordFound = this.collection.find((rec) => rec.user_id === user_id && rec.type === type);
 		return recordFound || null;
 	}
 

@@ -1,9 +1,9 @@
-import { resolveUsersRepository } from '@/core/accounts/container';
-import { resolveEncryptionProvider } from '@/shared/providers/encryption';
+import { resolveUsersRepository } from '@/core/accounts/infra/mongo/container';
 import { CreateUserService } from '@/core/accounts/useCases/createUser/CreateUser.service';
+import { resolveHashProvider } from '@/shared/providers/cryptography';
 
-const encryptionProvider = resolveEncryptionProvider();
+const hashProvider = resolveHashProvider();
 const usersRepository = resolveUsersRepository();
 
-const createUserService = new CreateUserService(usersRepository, encryptionProvider);
+const createUserService = new CreateUserService(usersRepository, hashProvider);
 export const resolveCreateUserService = () => createUserService;

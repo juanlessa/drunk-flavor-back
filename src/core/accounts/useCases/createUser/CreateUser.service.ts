@@ -1,13 +1,13 @@
 import { CreateUser } from '@/core/accounts/dtos/user.dtos';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
-import { IEncryptionProvider } from '@/shared/providers/encryption/IEncryption.provider';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { USER_MESSAGES } from '@/core/accounts/constants/users.constants';
+import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 
 export class CreateUserService {
 	constructor(
 		private usersRepository: IUsersRepository,
-		private encryptionProvider: IEncryptionProvider,
+		private hashProvider: IHashProvider,
 	) {}
 
 	async execute({ name, surname, email, password, role }: CreateUser) {
@@ -18,7 +18,7 @@ export class CreateUserService {
 			});
 		}
 
-		const passwordHash = await this.encryptionProvider.hash(password);
+		const passwordHash = await this.hashProvider.hash(password);
 
 		const user = await this.usersRepository.create({
 			name,

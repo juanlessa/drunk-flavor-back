@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb';
 import { DeleteUserService } from './DeleteUser.service';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
-import { createUserFactory } from '@/core/accounts/container';
+import { createUserFactory } from '@/core/accounts/infra/mongo/container';
 
 let usersRepositoryInMemory: IUsersRepository;
 let service: DeleteUserService;

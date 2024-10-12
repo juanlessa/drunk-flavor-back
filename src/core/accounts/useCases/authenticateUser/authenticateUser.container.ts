@@ -1,9 +1,9 @@
 import { AuthenticateUserService } from '@/core/accounts/useCases/authenticateUser/AuthenticateUser.service';
-import { resolveEncryptionProvider } from '@/shared/providers/encryption';
-import { resolveUsersRepository } from '@/core/accounts/container';
+import { resolveUsersRepository } from '@/core/accounts/infra/mongo/container';
+import { resolveHashProvider } from '@/shared/providers/cryptography';
 
-const encryptionProvider = resolveEncryptionProvider();
+const hashProvider = resolveHashProvider();
 const usersRepository = resolveUsersRepository();
 
-const authenticateUserService = new AuthenticateUserService(usersRepository, encryptionProvider);
+const authenticateUserService = new AuthenticateUserService(usersRepository, hashProvider);
 export const resolveAuthenticateUserService = () => authenticateUserService;

@@ -1,13 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
-import { BcryptProvider } from '@/shared/providers/encryption/implementations/Bcrypt.provider';
 import { AuthenticateUserService } from '@/core/accounts/useCases/authenticateUser/AuthenticateUser.service';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
-import { createUserFactory } from '@/core/accounts/container';
+import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
+import { createUserFactory } from '../../factories/user.factories';
+import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
 
 let usersRepositoryInMemory: IUsersRepository;
-let encryptionProvider: BcryptProvider;
+let hashProvider: IHashProvider;
 let service: AuthenticateUserService;
 
 const { name, surname, email, password, role } = createUserFactory();
@@ -15,8 +16,8 @@ const { name, surname, email, password, role } = createUserFactory();
 describe('Authenticate User', () => {
 	beforeEach(async () => {
 		usersRepositoryInMemory = new UsersRepositoryInMemory();
-		encryptionProvider = new BcryptProvider();
-		service = new AuthenticateUserService(usersRepositoryInMemory, encryptionProvider);
+		hashProvider = new BcryptHashProvider();
+		service = new AuthenticateUserService(usersRepositoryInMemory, hashProvider);
 	});
 
 	it('should be able to authenticate a user', async () => {
@@ -24,7 +25,7 @@ describe('Authenticate User', () => {
 			name,
 			surname,
 			email,
-			password: await encryptionProvider.hash(password),
+			password: await hashProvider.hash(password),
 			role,
 		});
 
@@ -45,7 +46,7 @@ describe('Authenticate User', () => {
 			name,
 			surname,
 			email,
-			password: await encryptionProvider.hash(password),
+			password: await hashProvider.hash(password),
 			role: role,
 		});
 

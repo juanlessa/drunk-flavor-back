@@ -1,10 +1,10 @@
 import { NotFoundError } from '@/shared/error/error.lib';
-import { IUsersTokensRepository } from '@/core/accounts/repositories/IUsersTokens.repository';
+import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
 import { UserTokenModel } from '../entities/userToken.model';
-import { CreateUserToken, UpdateUserToken } from '@/core/accounts/dtos/userToken.dtos';
-import { UserToken } from '@/core/accounts/entities/userToken.entity';
+import { CreateUserToken, FindByUserIdAndType, UpdateUserToken } from '@/core/accounts/dtos/userToken.dtos';
+import { TokenType, UserToken } from '@/core/accounts/entities/userToken.entity';
 
-export class UsersTokensRepository implements IUsersTokensRepository {
+export class UserTokensRepository implements IUserTokensRepository {
 	private model = UserTokenModel;
 
 	async create(data: CreateUserToken): Promise<UserToken> {
@@ -39,6 +39,10 @@ export class UsersTokensRepository implements IUsersTokensRepository {
 
 	async findByToken(token: string): Promise<UserToken | null> {
 		return this.model.findOne<UserToken>({ token }).exec();
+	}
+
+	async findByUserIdAndType({ user_id, type }: FindByUserIdAndType): Promise<UserToken | null> {
+		return this.model.findOne<UserToken>({ user_id, type }).exec();
 	}
 
 	async findAll(): Promise<UserToken[]> {

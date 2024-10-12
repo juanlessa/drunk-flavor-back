@@ -11,3 +11,8 @@ export type UpdateUserToken = { id: string } & Partial<{
 	user_id: string;
 	type: TokenType;
 }>;
+
+export type FindByUserIdAndType = {
+	user_id: string;
+	type: TokenType;
+};

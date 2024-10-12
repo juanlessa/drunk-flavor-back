@@ -1,13 +1,13 @@
 import { AuthenticateUser } from './authenticateUser.dtos';
 import { AUTHENTICATION_MESSAGES } from '@/core/accounts/constants/users.constants';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
-import { IEncryptionProvider } from '@/shared/providers/encryption/IEncryption.provider';
 import { BadRequestError } from '@/shared/error/error.lib';
+import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 
 export class AuthenticateUserService {
 	constructor(
 		private usersRepository: IUsersRepository,
-		private encryptionProvider: IEncryptionProvider,
+		private hashProvider: IHashProvider,
 	) {}
 
 	async execute({ email, password }: AuthenticateUser) {
@@ -19,11 +19,11 @@ export class AuthenticateUserService {
 			});
 		}
 
-		const passwordMatch = await this.encryptionProvider.compare(password, user.password);
+		const passwordMatch = await this.hashProvider.compare(password, user.password);
 		if (!passwordMatch) {
 			throw new BadRequestError(AUTHENTICATION_MESSAGES.invalidCredentials.message, {
 				path: 'AuthenticateUser.service.2',
-				cause: 'Error on encryptionProvider.compare',
+				cause: 'Error on hashProvider.compare',
 			});
 		}
 
