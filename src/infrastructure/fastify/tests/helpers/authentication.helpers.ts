@@ -1,10 +1,9 @@
 import request from 'supertest';
 import { FastifyInstance } from 'fastify';
 import { resolveCreateUserService } from '@/core/accounts/useCases/createUser/createUser.container';
-import { UserRole } from '@/core/accounts/entities/user.entity';
-import { createUserFactory } from '@/core/accounts/infra/mongo/container';
 import { DeepPartial } from '@/shared/types/utility.types';
 import { CreateUser } from '@/core/accounts/dtos/user.dtos';
+import { createUserFactory } from '@/core/accounts/factories/user.factories';
 
 export const createUser = async (_app: FastifyInstance, userOptions?: DeepPartial<CreateUser>) => {
 	const userData = createUserFactory(userOptions);
