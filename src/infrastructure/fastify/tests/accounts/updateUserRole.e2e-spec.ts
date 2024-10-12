@@ -3,7 +3,6 @@ import request from 'supertest';
 import { UserRolesEnum } from '@/core/accounts/entities/user.entity';
 import { app } from '@/infrastructure/fastify/app';
 import { MongoRepository } from '@/infrastructure/mongo/Mongo.repository';
-import { createUserFactory } from '@/core/accounts/container';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { createAndAuthenticateUser, createUser } from '../helpers/authentication.helpers';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';

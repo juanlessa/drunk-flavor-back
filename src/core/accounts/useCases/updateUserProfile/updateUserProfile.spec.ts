@@ -1,15 +1,16 @@
 import { User } from '@/core/accounts/entities/user.entity';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
-import { BcryptProvider } from '@/shared/providers/encryption/implementations/Bcrypt.provider';
 import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateUserProfileService } from './UpdateUserProfile.service';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
-import { createUserFactory } from '@/core/accounts/container';
+import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
+import { createUserFactory } from '../../factories/user.factories';
+import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
 
 let usersRepositoryInMemory: IUsersRepository;
-let encryptionProvider: BcryptProvider;
+let hashProvider: IHashProvider;
 let service: UpdateUserProfileService;
 
 const { name, surname, email, password, role } = createUserFactory();
@@ -23,8 +24,8 @@ const {
 describe('Update User', () => {
 	beforeEach(async () => {
 		usersRepositoryInMemory = new UsersRepositoryInMemory();
-		encryptionProvider = new BcryptProvider();
-		service = new UpdateUserProfileService(usersRepositoryInMemory, encryptionProvider);
+		hashProvider = new BcryptHashProvider();
+		service = new UpdateUserProfileService(usersRepositoryInMemory, hashProvider);
 	});
 
 	it('Should be able to update a user', async () => {
@@ -33,7 +34,7 @@ describe('Update User', () => {
 			surname,
 			email,
 			role,
-			password: await encryptionProvider.hash(password),
+			password: await hashProvider.hash(password),
 		});
 		await service.execute({
 			id: createdUser._id.toString(),
@@ -58,14 +59,14 @@ describe('Update User', () => {
 			surname,
 			email,
 			role,
-			password: await encryptionProvider.hash(password),
+			password: await hashProvider.hash(password),
 		});
 		await usersRepositoryInMemory.create({
 			name: updatedName,
 			surname: updatedSurname,
 			email: updatedEmail,
 			role,
-			password: await encryptionProvider.hash(updatedPassword),
+			password: await hashProvider.hash(updatedPassword),
 		});
 
 		await expect(
