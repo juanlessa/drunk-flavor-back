@@ -11,6 +11,6 @@ export const handleMongooseError = (error: MongooseError): ErrorResponse => {
 
 	return {
 		statusCode: HTTP_STATUS.internal_server_error,
-		message: error.message,
+		localeKey: 'apiResponses.internalServerError',
 	};
 };

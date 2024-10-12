@@ -13,7 +13,7 @@ export class AuthenticateUserService {
 	async execute({ email, password }: AuthenticateUser) {
 		const user = await this.usersRepository.findByEmail(email);
 		if (!user) {
-			throw new BadRequestError(AUTHENTICATION_MESSAGES.invalidCredentials.message, {
+			throw new BadRequestError('apiResponses.authentication.invalidCredentials', {
 				path: 'AuthenticateUser.service.1',
 				cause: 'invalid email',
 			});
@@ -21,7 +21,7 @@ export class AuthenticateUserService {
 
 		const passwordMatch = await this.hashProvider.compare(password, user.password);
 		if (!passwordMatch) {
-			throw new BadRequestError(AUTHENTICATION_MESSAGES.invalidCredentials.message, {
+			throw new BadRequestError('apiResponses.authentication.invalidCredentials', {
 				path: 'AuthenticateUser.service.2',
 				cause: 'Error on hashProvider.compare',
 			});

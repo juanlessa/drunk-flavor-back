@@ -4,7 +4,6 @@ import { ObjectId } from 'mongodb';
 import { Drink } from '@/core/drinks/entities/drink.entity';
 import { compareTranslationsName } from '@/core/drinks/helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { DRINK_MESSAGES } from '@/core/drinks/constants/drinks.constants';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { QueryParams } from '@/shared/types/query.types';
 import { filterItemsBySearchCriteria, paginateItems, sortItemsByFields } from '@/shared/helpers/query.helpers';
@@ -30,7 +29,7 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 	async update({ id, ...data }: UpdateDrink): Promise<Drink> {
 		const drinkIndex = this.drinks.findIndex((d) => d._id.toString() === id);
 		if (drinkIndex === -1) {
-			throw new NotFoundError(DRINK_MESSAGES.notFound.message, {
+			throw new NotFoundError('apiResponses.drinks.notFound', {
 				path: 'drinksInMemory.repository',
 				cause: 'Error on findOneAndUpdate operation',
 			});
@@ -47,7 +46,7 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 	async delete(id: string): Promise<Drink> {
 		const drinkIndex = this.drinks.findIndex((d) => d._id.toString() === id);
 		if (drinkIndex === -1) {
-			throw new NotFoundError(DRINK_MESSAGES.notFound.message, {
+			throw new NotFoundError('apiResponses.drinks.notFound', {
 				path: 'drinksInMemory.repository',
 				cause: 'Error on findOneAndDelete operation',
 			});

@@ -1,4 +1,3 @@
-import { INGREDIENT_MESSAGES } from '@/core/drinks/constants/ingredients.constants';
 import { mapToTranslationsName } from '@/core/drinks/mappers/translations.mappers';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
@@ -15,13 +14,13 @@ export class CreateIngredientService {
 		const translationsName = mapToTranslationsName(translations);
 		const ingredientALreadyExists = await this.ingredientsRepository.findByName(translationsName);
 		if (ingredientALreadyExists) {
-			throw new BadRequestError(INGREDIENT_MESSAGES.alreadyExist.message, { path: 'CreateIngredient.service.1' });
+			throw new BadRequestError('apiResponses.ingredients.alreadyExist', { path: 'CreateIngredient.service.1' });
 		}
 
 		const categoryExists = await this.categoriesRepository.findById(category_id);
 
 		if (!categoryExists) {
-			throw new BadRequestError(INGREDIENT_MESSAGES.invalidCategoryFormat.message, {
+			throw new BadRequestError('apiResponses.ingredients.invalidCategoryFormat', {
 				path: 'CreateIngredient.service.2',
 			});
 		}

@@ -1,13 +1,14 @@
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { AppErrorOptions } from './error.dtos';
 import { logger } from '@/shared/logger';
+import { LocaleKey } from '../types/locale.types';
 
 export class AppError extends Error {
 	public type: string;
 	public status: number;
 	public path?: string;
 
-	constructor(message: string, options: AppErrorOptions & { status: number; type: string }) {
+	constructor(message: LocaleKey, options: AppErrorOptions & { status: number; type: string }) {
 		super(message, options);
 		this.status = options.status;
 		this.type = options.type;
@@ -24,7 +25,7 @@ export class AppError extends Error {
 }
 
 export class ValidationError extends AppError {
-	constructor(message: string, options: AppErrorOptions) {
+	constructor(message: LocaleKey, options: AppErrorOptions) {
 		super(message, {
 			...options,
 			status: HTTP_STATUS.bad_request,
@@ -34,7 +35,7 @@ export class ValidationError extends AppError {
 }
 
 export class BadRequestError extends AppError {
-	constructor(message: string, options: AppErrorOptions) {
+	constructor(message: LocaleKey, options: AppErrorOptions) {
 		super(message, {
 			...options,
 			status: HTTP_STATUS.bad_request,
@@ -44,7 +45,7 @@ export class BadRequestError extends AppError {
 }
 
 export class UnauthorizedError extends AppError {
-	constructor(message: string, options: AppErrorOptions) {
+	constructor(message: LocaleKey, options: AppErrorOptions) {
 		super(message, {
 			...options,
 			status: HTTP_STATUS.unauthorized,
@@ -54,7 +55,7 @@ export class UnauthorizedError extends AppError {
 }
 
 export class ForbiddenError extends AppError {
-	constructor(message: string, options: AppErrorOptions) {
+	constructor(message: LocaleKey, options: AppErrorOptions) {
 		super(message, {
 			...options,
 			status: HTTP_STATUS.forbidden,
@@ -64,7 +65,7 @@ export class ForbiddenError extends AppError {
 }
 
 export class NotFoundError extends AppError {
-	constructor(message: string, options: AppErrorOptions) {
+	constructor(message: LocaleKey, options: AppErrorOptions) {
 		super(message, {
 			...options,
 			status: HTTP_STATUS.not_found,
@@ -74,7 +75,7 @@ export class NotFoundError extends AppError {
 }
 
 export class ServerError extends AppError {
-	constructor(message: string, options: AppErrorOptions) {
+	constructor(message: LocaleKey, options: AppErrorOptions) {
 		super(message, {
 			...options,
 			status: HTTP_STATUS.internal_server_error,

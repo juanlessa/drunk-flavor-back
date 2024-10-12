@@ -26,6 +26,7 @@ const typescriptConfig = tsEslint.config({
 		'@typescript-eslint/camelcase': 0,
 		'@typescript-eslint/no-var-requires': 0,
 	},
+	ignores: ['build/*', 'node_modules/*'],
 });
 
 const vitestConfig = {
