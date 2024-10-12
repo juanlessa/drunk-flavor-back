@@ -3,7 +3,7 @@ export type EmailVerificationProps = {
 	verificationLink: string;
 };
 
-export type PasswordResetProps = {
+export type ForgotPasswordProps = {
 	userName: string;
 	resetLink: string;
 };

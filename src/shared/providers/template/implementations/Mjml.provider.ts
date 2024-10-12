@@ -1,10 +1,10 @@
 import mjml2html from 'mjml';
 import { ITemplateProvider } from '../ITemplate.provider';
-import { EmailVerificationProps, PasswordResetProps } from '../template.dtos';
+import { EmailVerificationProps, ForgotPasswordProps } from '../template.dtos';
 import { ServerError } from '@/shared/error/error.lib';
 import { emailVerificationTemplate } from './views/emailVerification.template';
 import { MJMLJsonObject } from './mjml.types';
-import { passwordResetTemplate } from './views/passwordReset.template';
+import { forgotPasswordTemplate } from './views/forgotPassword.template';
 import { logger } from '@/shared/logger';
 
 export class MjmlProvider implements ITemplateProvider {
@@ -12,7 +12,7 @@ export class MjmlProvider implements ITemplateProvider {
 		const parseResult = mjml2html(template);
 		if (parseResult.errors.length !== 0) {
 			logger.error(`Failed to parse the template ${id}`);
-			throw new ServerError('Failed to parse the template', { path: 'MjmlProvider.parseToHtml' });
+			throw new ServerError('apiResponses.template.parseFailed', { path: 'MjmlProvider.parseToHtml' });
 		}
 		return parseResult.html;
 	}
@@ -22,8 +22,8 @@ export class MjmlProvider implements ITemplateProvider {
 		const html = this.parseToHtml(id, template);
 		return html;
 	}
-	passwordReset(data: PasswordResetProps): string {
-		const [id, template] = passwordResetTemplate(data);
+	forgotPassword(data: ForgotPasswordProps): string {
+		const [id, template] = forgotPasswordTemplate(data);
 		const html = this.parseToHtml(id, template);
 		return html;
 	}

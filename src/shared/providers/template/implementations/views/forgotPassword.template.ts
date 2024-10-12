@@ -1,8 +1,8 @@
 import { MJMLJsonObject } from '../mjml.types';
-import { PasswordResetProps } from '../../template.dtos';
+import { ForgotPasswordProps } from '../../template.dtos';
 
-export const passwordResetTemplate = ({ userName, resetLink }: PasswordResetProps): [string, MJMLJsonObject] => {
-	const templateId = 'reset-password';
+export const forgotPasswordTemplate = ({ userName, resetLink }: ForgotPasswordProps): [string, MJMLJsonObject] => {
+	const templateId = 'forgot-password';
 	return [
 		templateId,
 		{

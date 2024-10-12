@@ -1,6 +1,6 @@
-import { EmailVerificationProps, PasswordResetProps } from './template.dtos';
+import { EmailVerificationProps, ForgotPasswordProps } from './template.dtos';
 
 export interface ITemplateProvider {
 	emailVerification(data: EmailVerificationProps): string;
-	passwordReset(data: PasswordResetProps): string;
+	forgotPassword(data: ForgotPasswordProps): string;
 }
