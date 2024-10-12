@@ -2,6 +2,18 @@ import { env } from '@/env';
 import { FastifyJWTOptions, SignOptions, VerifyOptions } from '@fastify/jwt';
 import { AUTH_COOKIE } from './cookie.constants';
 import { mapDecodedTokenToUser, retrieveRefreshTokenFromSession } from '../helpers/jwt.helpers';
+import { LocaleKey } from '@/shared/types/locale.types';
+
+const CUSTOM_MESSAGES = {
+	badRequestErrorMessage: 'apiResponses.auth.badRequestErrorMessage',
+	badCookieRequestErrorMessage: 'apiResponses.auth.badCookieRequestErrorMessage',
+	noAuthorizationInHeaderMessage: 'apiResponses.auth.noAuthorizationInHeaderMessage',
+	noAuthorizationInCookieMessage: 'apiResponses.auth.noAuthorizationInCookieMessage',
+	authorizationTokenExpiredMessage: 'apiResponses.auth.authorizationTokenExpiredMessage',
+	authorizationTokenUntrusted: 'apiResponses.auth.authorizationTokenUntrusted',
+	authorizationTokenUnsigned: 'apiResponses.auth.authorizationTokenUnsigned',
+	authorizationTokenInvalid: 'apiResponses.auth.authorizationTokenInvalid',
+} satisfies Record<keyof FastifyJWTOptions['messages'], LocaleKey>;
 
 export const TOKEN_SECRET = env.ACCESS_TOKEN_SECRET;
 export const TOKEN_SIGN_OPTIONS = {
@@ -10,6 +22,7 @@ export const TOKEN_SIGN_OPTIONS = {
 
 export const TOKEN_OPTIONS = {
 	secret: TOKEN_SECRET,
+	messages: CUSTOM_MESSAGES,
 	sign: TOKEN_SIGN_OPTIONS,
 	formatUser: mapDecodedTokenToUser,
 	cookie: {
@@ -26,6 +39,7 @@ export const REFRESH_TOKEN_SIGN_OPTIONS = {
 export const REFRESH_TOKEN_OPTIONS = {
 	secret: REFRESH_TOKEN_SECRET,
 	namespace: 'session',
+	messages: CUSTOM_MESSAGES,
 	sign: REFRESH_TOKEN_SIGN_OPTIONS,
 	verify: {
 		extractToken: retrieveRefreshTokenFromSession,

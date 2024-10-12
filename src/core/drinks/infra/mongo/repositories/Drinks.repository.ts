@@ -4,7 +4,6 @@ import { CreateDrink, FindDrinkByName, UpdateDrink } from '@/core/drinks/dtos/dr
 import { DrinkModel } from '@/core/drinks/infra/mongo/entities/drink.model';
 import { getNameCompareQuery } from '../helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { DRINK_MESSAGES } from '@/core/drinks/constants/drinks.constants';
 import { QueryParams } from '@/shared/types/query.types';
 import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
 
@@ -16,7 +15,7 @@ export class DrinksRepository implements IDrinksRepository {
 	async update({ id, ...data }: UpdateDrink): Promise<Drink> {
 		const drink = await DrinkModel.findByIdAndUpdate<Drink>(id, data, { new: true }).exec();
 		if (!drink) {
-			throw new NotFoundError(DRINK_MESSAGES.notFound.message, {
+			throw new NotFoundError('apiResponses.drinks.notFound', {
 				path: 'drinks.repository',
 				cause: 'Error on findOneAndUpdate operation',
 			});
@@ -27,7 +26,7 @@ export class DrinksRepository implements IDrinksRepository {
 	async delete(id: string): Promise<Drink> {
 		const drink = await DrinkModel.findByIdAndDelete<Drink>(id).exec();
 		if (!drink) {
-			throw new NotFoundError(DRINK_MESSAGES.notFound.message, {
+			throw new NotFoundError('apiResponses.drinks.notFound', {
 				path: 'drinks.repository',
 				cause: 'Error on findOneAndDelete operation',
 			});

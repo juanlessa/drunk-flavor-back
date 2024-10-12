@@ -3,7 +3,6 @@ import { CreateUser, UpdateUser, UserWithoutPassword } from '@/core/accounts/dto
 import { ObjectId } from 'mongodb';
 import { User } from '@/core/accounts/entities/user.entity';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { USER_MESSAGES } from '@/core/accounts/constants/users.constants';
 import { omitUserPassword } from '../../mappers/user.mappers';
 
 export class UsersRepositoryInMemory implements IUsersRepository {
@@ -27,7 +26,7 @@ export class UsersRepositoryInMemory implements IUsersRepository {
 	async update({ id, ...data }: UpdateUser): Promise<User> {
 		const userIndex = this.users.findIndex((u) => u._id.toString() === id);
 		if (userIndex === -1) {
-			throw new NotFoundError(USER_MESSAGES.notFound.message, {
+			throw new NotFoundError('apiResponses.users.notFound', {
 				path: 'Users.repository.update',
 				cause: 'Error on findOneAndUpdate operation',
 			});
@@ -48,7 +47,7 @@ export class UsersRepositoryInMemory implements IUsersRepository {
 	async delete(id: string): Promise<User> {
 		const userIndex = this.users.findIndex((u) => u._id.toString() === id);
 		if (userIndex === -1) {
-			throw new NotFoundError(USER_MESSAGES.notFound.message, {
+			throw new NotFoundError('apiResponses.users.notFound', {
 				path: 'Users.repository.delete',
 				cause: 'Error on findOneAndDelete operation',
 			});

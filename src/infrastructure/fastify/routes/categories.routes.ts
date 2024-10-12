@@ -18,7 +18,7 @@ const routes: Routes = (server) => {
 		.withTypeProvider<ZodTypeProvider>()
 		.post(
 			'/categories',
-			{ schema: { body: createCategorySchema }, onRequest: [verifyAndRenewToken] },
+			{ schema: { body: createCategorySchema }, preValidation: [verifyAndRenewToken] },
 			createCategoryController,
 		);
 
@@ -34,7 +34,7 @@ const routes: Routes = (server) => {
 		.withTypeProvider<ZodTypeProvider>()
 		.patch(
 			'/categories',
-			{ schema: { body: updateCategorySchema }, onRequest: [verifyAndRenewToken] },
+			{ schema: { body: updateCategorySchema }, preValidation: [verifyAndRenewToken] },
 			updateCategoryController,
 		);
 
@@ -42,7 +42,7 @@ const routes: Routes = (server) => {
 		.withTypeProvider<ZodTypeProvider>()
 		.delete(
 			'/categories',
-			{ schema: { body: deleteCategorySchema }, onRequest: [verifyAndRenewToken] },
+			{ schema: { body: deleteCategorySchema }, preValidation: [verifyAndRenewToken] },
 			deleteCategoryController,
 		);
 };

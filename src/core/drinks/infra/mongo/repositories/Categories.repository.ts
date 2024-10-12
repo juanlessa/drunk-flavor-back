@@ -4,7 +4,6 @@ import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.re
 import { CategoryModel } from '../entities/category.model';
 import { getNameCompareQuery } from '../helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { CATEGORY_MESSAGES } from '@/core/drinks/constants/categories.constants';
 import { QueryParams } from '@/shared/types/query.types';
 import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
 
@@ -15,7 +14,7 @@ export class CategoriesRepository implements ICategoriesRepository {
 	async update({ id, ...data }: UpdateCategory): Promise<Category> {
 		const category = await CategoryModel.findByIdAndUpdate<Category>(id, data, { new: true }).exec();
 		if (!category) {
-			throw new NotFoundError(CATEGORY_MESSAGES.notFound.message, {
+			throw new NotFoundError('apiResponses.categories.notFound', {
 				path: 'Categories.repository',
 				cause: 'Error on findByIdAndUpdate operation',
 			});
@@ -26,7 +25,7 @@ export class CategoriesRepository implements ICategoriesRepository {
 	async delete(id: string): Promise<Category> {
 		const category = await CategoryModel.findByIdAndDelete<Category>(id).exec();
 		if (!category) {
-			throw new NotFoundError(CATEGORY_MESSAGES.notFound.message, {
+			throw new NotFoundError('apiResponses.categories.notFound', {
 				path: 'Categories.repository',
 				cause: 'Error on findOneAndDelete operation',
 			});

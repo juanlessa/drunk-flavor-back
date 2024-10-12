@@ -4,7 +4,6 @@ import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.
 import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.model';
 import { getNameCompareQuery } from '../helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { INGREDIENT_MESSAGES } from '@/core/drinks/constants/ingredients.constants';
 import { QueryParams } from '@/shared/types/query.types';
 import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
 
@@ -15,7 +14,7 @@ export class IngredientsRepository implements IIngredientsRepository {
 	async update({ id, ...data }: UpdateIngredient): Promise<Ingredient> {
 		const ingredient = await IngredientModel.findByIdAndUpdate<Ingredient>(id, data, { new: true }).exec();
 		if (!ingredient) {
-			throw new NotFoundError(INGREDIENT_MESSAGES.notFound.message, {
+			throw new NotFoundError('apiResponses.ingredients.notFound', {
 				path: 'Ingredients.repository',
 				cause: 'Error on findOneAndUpdate operation',
 			});
@@ -26,7 +25,7 @@ export class IngredientsRepository implements IIngredientsRepository {
 	async delete(id: string): Promise<Ingredient> {
 		const ingredient = await IngredientModel.findByIdAndDelete<Ingredient>(id).exec();
 		if (!ingredient) {
-			throw new NotFoundError(INGREDIENT_MESSAGES.notFound.message, {
+			throw new NotFoundError('apiResponses.ingredients.notFound', {
 				path: 'Ingredients.repository',
 				cause: 'Error on findOneAndDelete operation',
 			});

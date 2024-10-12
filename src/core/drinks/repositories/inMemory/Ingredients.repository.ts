@@ -5,7 +5,6 @@ import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.
 import { ObjectId } from 'mongodb';
 import { compareTranslationsName } from '@/core/drinks/helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { INGREDIENT_MESSAGES } from '@/core/drinks/constants/ingredients.constants';
 import { QueryParams } from '@/shared/types/query.types';
 import { filterItemsBySearchCriteria, paginateItems, sortItemsByFields } from '@/shared/helpers/query.helpers';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
@@ -29,7 +28,7 @@ export class IngredientsRepositoryInMemory implements IIngredientsRepository {
 	async update({ id, ...data }: UpdateIngredient): Promise<Ingredient> {
 		const ingredientIndex = this.ingredients.findIndex((ing) => ing._id.toString() === id);
 		if (ingredientIndex === -1) {
-			throw new NotFoundError(INGREDIENT_MESSAGES.notFound.message, {
+			throw new NotFoundError('apiResponses.ingredients.notFound', {
 				path: 'IngredientsInMemory.repository',
 				cause: 'Error on findOneAndUpdate operation',
 			});
@@ -46,7 +45,7 @@ export class IngredientsRepositoryInMemory implements IIngredientsRepository {
 	async delete(id: string): Promise<Ingredient> {
 		const ingredientIndex = this.ingredients.findIndex((ing) => ing._id.toString() === id);
 		if (ingredientIndex === -1) {
-			throw new NotFoundError(INGREDIENT_MESSAGES.notFound.message, {
+			throw new NotFoundError('apiResponses.ingredients.notFound', {
 				path: 'IngredientsInMemory.repository',
 				cause: 'Error on findOneAndDelete operation',
 			});

@@ -7,6 +7,6 @@ export const unhandledError = (error: unknown): ErrorResponse => {
 	logger.error(error);
 	return {
 		statusCode: HTTP_STATUS.internal_server_error,
-		message: 'Internal Server Error',
+		localeKey: 'apiResponses.internalServerError',
 	};
 };

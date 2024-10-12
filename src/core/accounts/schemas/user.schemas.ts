@@ -1,35 +1,35 @@
-import { USER_MESSAGES } from '@/core/accounts/constants/users.constants';
 import { z } from 'zod';
 import { UserRolesEnum } from '../entities/user.entity';
+import { LocaleKey } from '@/shared/types/locale.types';
 
 // fields validation
 export const userIdValidation = z
-	.string({ required_error: USER_MESSAGES.requiredId.message })
-	.length(24, { message: USER_MESSAGES.invalidIdFormat.message });
+	.string({ required_error: 'apiResponses.users.requiredId' satisfies LocaleKey })
+	.length(24, { message: 'apiResponses.users.invalidIdFormat' satisfies LocaleKey });
 
 export const userNameValidation = z
-	.string({ required_error: USER_MESSAGES.requiredName.message })
+	.string({ required_error: 'apiResponses.users.requiredName' satisfies LocaleKey })
 	.trim()
 	.toLowerCase()
-	.min(1, { message: USER_MESSAGES.invalidNameFormat.message })
+	.min(1, { message: 'apiResponses.users.invalidNameFormat' satisfies LocaleKey })
 	.transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`);
 
 export const userSurnameValidation = z
-	.string({ required_error: USER_MESSAGES.requiredSurname.message })
+	.string({ required_error: 'apiResponses.users.requiredSurname' satisfies LocaleKey })
 	.trim()
 	.toLowerCase()
-	.min(1, { message: USER_MESSAGES.invalidSurnameFormat.message })
+	.min(1, { message: 'apiResponses.users.invalidSurnameFormat' satisfies LocaleKey })
 	.transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`);
 
 export const userEmailValidation = z
-	.string({ required_error: USER_MESSAGES.requiredEmail.message })
-	.email({ message: USER_MESSAGES.invalidEmailFormat.message });
+	.string({ required_error: 'apiResponses.users.requiredEmail' satisfies LocaleKey })
+	.email({ message: 'apiResponses.users.invalidEmailFormat' satisfies LocaleKey });
 
 export const userPasswordValidation = z
-	.string({ required_error: USER_MESSAGES.requiredPassword.message })
-	.min(8, { message: USER_MESSAGES.invalidPasswordFormat.message });
+	.string({ required_error: 'apiResponses.users.requiredPassword' satisfies LocaleKey })
+	.min(8, { message: 'apiResponses.users.invalidPasswordFormat' satisfies LocaleKey });
 
 export const userRoleValidation = z.enum([UserRolesEnum.admin, UserRolesEnum.partner], {
-	required_error: USER_MESSAGES.requiredRole.message,
-	message: USER_MESSAGES.invalidRoleFormat.message,
+	required_error: 'apiResponses.users.requiredRole' satisfies LocaleKey,
+	message: 'apiResponses.users.invalidRoleFormat' satisfies LocaleKey,
 });

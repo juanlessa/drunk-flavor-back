@@ -16,17 +16,21 @@ import { updateUserRoleController } from '@/core/accounts/useCases/updateUserRol
 const routes: Routes = (server) => {
 	server
 		.withTypeProvider<ZodTypeProvider>()
-		.post('/users', { schema: { body: createUserSchema }, onRequest: [verifyAndRenewToken] }, createUserController);
+		.post(
+			'/users',
+			{ schema: { body: createUserSchema }, preValidation: [verifyAndRenewToken] },
+			createUserController,
+		);
 
-	server.get('/users/me', { onRequest: [verifyAndRenewToken] }, getUserProfileController);
+	server.get('/users/me', { preValidation: [verifyAndRenewToken] }, getUserProfileController);
 
-	server.get('/users', { onRequest: [verifyAndRenewToken] }, listUsersController);
+	server.get('/users', { preValidation: [verifyAndRenewToken] }, listUsersController);
 
 	server
 		.withTypeProvider<ZodTypeProvider>()
 		.patch(
 			'/users/me',
-			{ schema: { body: updateUserProfileSchema }, onRequest: [verifyAndRenewToken] },
+			{ schema: { body: updateUserProfileSchema }, preValidation: [verifyAndRenewToken] },
 			updateUserProfileController,
 		);
 
@@ -34,7 +38,7 @@ const routes: Routes = (server) => {
 		.withTypeProvider<ZodTypeProvider>()
 		.patch(
 			'/users/role',
-			{ schema: { body: updateUserRoleSchema }, onRequest: [verifyAndRenewToken] },
+			{ schema: { body: updateUserRoleSchema }, preValidation: [verifyAndRenewToken] },
 			updateUserRoleController,
 		);
 
@@ -42,7 +46,7 @@ const routes: Routes = (server) => {
 		.withTypeProvider<ZodTypeProvider>()
 		.delete(
 			'/users',
-			{ schema: { body: deleteUserSchema }, onRequest: [verifyAndRenewToken] },
+			{ schema: { body: deleteUserSchema }, preValidation: [verifyAndRenewToken] },
 			deleteUserController,
 		);
 };

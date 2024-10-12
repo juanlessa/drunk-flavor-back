@@ -5,7 +5,6 @@ import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.
 import { BadRequestError } from '@/shared/error/error.lib';
 import { CreateDrinkDTO } from './createDrink.dtos';
 import { mapToTranslationsName } from '@/core/drinks/mappers/translations.mappers';
-import { DRINK_MESSAGES } from '@/core/drinks/constants/drinks.constants';
 
 export class CreateDrinkService {
 	constructor(
@@ -17,14 +16,14 @@ export class CreateDrinkService {
 		const translationsName = mapToTranslationsName(translations);
 		const drinkALreadyExists = await this.drinksRepository.findByName(translationsName);
 		if (drinkALreadyExists) {
-			throw new BadRequestError(DRINK_MESSAGES.alreadyExist.message, { path: 'CreateDrink.service' });
+			throw new BadRequestError('apiResponses.drinks.alreadyExist', { path: 'CreateDrink.service' });
 		}
 
 		const ingredientsExists = await this.ingredientsRepository.findByIdList(
 			ingredients.map((ing) => ing.ingredient_id),
 		);
 		if (ingredientsExists.length !== ingredients.length) {
-			throw new BadRequestError(DRINK_MESSAGES.someIngredientsNotExist.message, { path: 'CreateDrink.service' });
+			throw new BadRequestError('apiResponses.drinks.someIngredientsNotExist', { path: 'CreateDrink.service' });
 		}
 
 		const ingredientsMap = ingredientsExists.reduce(
