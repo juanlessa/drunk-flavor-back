@@ -41,7 +41,7 @@ describe('Delete Profile', () => {
 		await expect(service.execute({ id: nonexistentId })).rejects.toBeInstanceOf(BadRequestError);
 	});
 
-	it('should be able to delete all profile tokens', async () => {
+	it('should be able to delete all existing profile tokens', async () => {
 		const createdUser = await usersRepository.create(userData);
 		await userTokensRepository.create({
 			user_id: createdUser._id.toString(),

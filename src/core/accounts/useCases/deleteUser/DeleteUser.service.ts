@@ -1,9 +1,13 @@
-import { DeleteUser } from '@/core/accounts/dtos/user.dtos';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { BadRequestError } from '@/shared/error/error.lib';
+import { IUserTokensRepository } from '../../repositories/IUserTokens.repository';
+import { DeleteUser } from './deleteUser.dtos';
 
 export class DeleteUserService {
-	constructor(private usersRepository: IUsersRepository) {}
+	constructor(
+		private usersRepository: IUsersRepository,
+		private userTokensRepository: IUserTokensRepository,
+	) {}
 
 	async execute({ id }: DeleteUser) {
 		const user = await this.usersRepository.findById(id);
@@ -12,5 +16,6 @@ export class DeleteUserService {
 		}
 
 		await this.usersRepository.delete(id);
+		await this.userTokensRepository.deleteByUserId(id);
 	}
 }

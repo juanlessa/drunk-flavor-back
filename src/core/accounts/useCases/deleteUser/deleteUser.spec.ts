@@ -5,24 +5,33 @@ import { DeleteUserService } from './DeleteUser.service';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
+import { UserTokensRepositoryInMemory } from '../../repositories/inMemory/UserTokens.repository';
+import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
+import { IUserTokensRepository } from '../../repositories/IUserTokens.repository';
+import { TokenTypeEnum } from '../../entities/userToken.entity';
+import { env } from '@/env';
 
-let usersRepositoryInMemory: IUsersRepository;
+let cryptoProvider: NodeCryptoProvider;
+let usersRepository: IUsersRepository;
+let userTokensRepository: IUserTokensRepository;
 let service: DeleteUserService;
 
 const userData = createUserFactory();
 
 describe('Delete User', () => {
 	beforeEach(() => {
-		usersRepositoryInMemory = new UsersRepositoryInMemory();
-		service = new DeleteUserService(usersRepositoryInMemory);
+		cryptoProvider = new NodeCryptoProvider();
+		usersRepository = new UsersRepositoryInMemory();
+		userTokensRepository = new UserTokensRepositoryInMemory();
+		service = new DeleteUserService(usersRepository, userTokensRepository);
 	});
 
 	it('should be able to delete a user', async () => {
-		const createdUser = await usersRepositoryInMemory.create(userData);
+		const createdUser = await usersRepository.create(userData);
 
 		await service.execute({ id: createdUser._id.toString() });
 
-		const findDeledUser = await usersRepositoryInMemory.findById(createdUser._id.toString());
+		const findDeledUser = await usersRepository.findById(createdUser._id.toString());
 
 		expect(findDeledUser).toBeNull();
 	});
@@ -30,5 +39,27 @@ describe('Delete User', () => {
 	it('should not be able to delete a nonexistent user', async () => {
 		const nonexistentId = new ObjectId().toString();
 		await expect(service.execute({ id: nonexistentId })).rejects.toBeInstanceOf(BadRequestError);
+	});
+
+	it('should be able to delete all existing user tokens', async () => {
+		const createdUser = await usersRepository.create(userData);
+		await userTokensRepository.create({
+			user_id: createdUser._id.toString(),
+			token: await cryptoProvider.generateToken(env.USER_TOKEN_SIZE),
+			type: TokenTypeEnum['forgot-password'],
+		});
+		await userTokensRepository.create({
+			user_id: createdUser._id.toString(),
+			token: await cryptoProvider.generateToken(env.USER_TOKEN_SIZE),
+			type: TokenTypeEnum['email-verification'],
+		});
+
+		await service.execute({ id: createdUser._id.toString() });
+
+		const findDeledUser = await usersRepository.findById(createdUser._id.toString());
+		const findDeledTokens = await userTokensRepository.findByUserId(createdUser._id.toString());
+
+		expect(findDeledUser).toBeNull();
+		expect(findDeledTokens).toHaveLength(0);
 	});
 });

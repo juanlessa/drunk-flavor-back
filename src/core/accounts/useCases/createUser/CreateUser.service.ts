@@ -40,8 +40,6 @@ export class CreateUserService {
 			type: TokenTypeEnum['email-verification'],
 			user_id: newUser._id.toString(),
 		});
-
-		return newUser;
 	}
 
 	private isTokenExpired(createdAt: Date): boolean {

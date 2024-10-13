@@ -1,7 +1,7 @@
-import { DeleteUser } from '@/core/accounts/dtos/user.dtos';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { IUserTokensRepository } from '../../repositories/IUserTokens.repository';
+import { DeleteProfile } from './deleteProfile.dtos';
 
 export class DeleteProfileService {
 	constructor(
@@ -9,7 +9,7 @@ export class DeleteProfileService {
 		private userTokensRepository: IUserTokensRepository,
 	) {}
 
-	async execute({ id }: DeleteUser) {
+	async execute({ id }: DeleteProfile) {
 		const user = await this.usersRepository.findById(id);
 		if (!user) {
 			throw new BadRequestError('apiResponses.users.notExist', { path: 'DeleteUser.service' });

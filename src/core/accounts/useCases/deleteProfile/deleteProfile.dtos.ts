@@ -1,3 +1,3 @@
-export type deleteProfile = {
+export type DeleteProfile = {
 	id: string;
 };
