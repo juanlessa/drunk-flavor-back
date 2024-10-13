@@ -6,6 +6,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { createUserFactory } from '../../factories/user.factories';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
+import { User, UserStatusEnum } from '../../entities/user.entity';
 
 let usersRepositoryInMemory: IUsersRepository;
 let hashProvider: IHashProvider;
@@ -21,17 +22,16 @@ describe('Create User', () => {
 	});
 
 	it('Should be able to create a user', async () => {
-		await service.execute({ name, surname, email, password, role, status });
+		await service.execute({ name, surname, email, password, role });
 
-		const verifyUser = await usersRepositoryInMemory.findByEmail(email);
+		const verifyUser = (await usersRepositoryInMemory.findByEmail(email)) as User;
 
 		expect(verifyUser).not.toBeNull();
-		expect(verifyUser?.email).toEqual(email);
-		expect(verifyUser?.name).toEqual(name);
-		expect(verifyUser?.surname).toEqual(surname);
-		expect(verifyUser).toHaveProperty('_id');
-		expect(verifyUser).toHaveProperty('created_at');
-		expect(verifyUser).toHaveProperty('updated_at');
+		expect(verifyUser.email).toEqual(email);
+		expect(verifyUser.name).toEqual(name);
+		expect(verifyUser.surname).toEqual(surname);
+		expect(verifyUser.role).toEqual(role);
+		expect(verifyUser.status).toEqual(UserStatusEnum['pending']);
 	});
 
 	it('Should not be able to create a user with an existing email', async () => {
@@ -44,8 +44,6 @@ describe('Create User', () => {
 			password: await hashProvider.hash(password),
 		});
 
-		await expect(service.execute({ name, surname, email, password, role, status })).rejects.toBeInstanceOf(
-			BadRequestError,
-		);
+		await expect(service.execute({ name, surname, email, password, role })).rejects.toBeInstanceOf(BadRequestError);
 	});
 });
