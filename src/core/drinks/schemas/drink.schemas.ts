@@ -1,10 +1,12 @@
+import { getObjectIdSchema } from '@/infrastructure/mongo/schemas/helpers/objectId.helpers';
 import { LocaleKey } from '@/shared/types/locale.types';
 import { z } from 'zod';
 
 // Fields validation
-export const drinkIdValidation = z
-	.string({ required_error: 'apiResponses.drinks.requiredId' satisfies LocaleKey })
-	.length(24, { message: 'apiResponses.drinks.invalidIdFormat' satisfies LocaleKey });
+export const drinkIdValidation = getObjectIdSchema({
+	required: 'apiResponses.drinks.requiredId',
+	invalid: 'apiResponses.drinks.invalidIdFormat',
+});
 
 export const drinkNameValidation = z
 	.string({ required_error: 'apiResponses.drinks.requiredName' satisfies LocaleKey })
@@ -29,9 +31,10 @@ export const drinkThumbnailValidation = z
 export const drinkIngredientsValidation = z
 	.array(
 		z.object({
-			ingredient_id: z
-				.string({ required_error: 'apiResponses.drinks.requiredIngredientId' satisfies LocaleKey })
-				.length(24, { message: 'apiResponses.drinks.invalidIngredientIdFormat' satisfies LocaleKey }),
+			ingredient_id: getObjectIdSchema({
+				required: 'apiResponses.drinks.requiredIngredientId',
+				invalid: 'apiResponses.drinks.invalidIngredientIdFormat',
+			}),
 			quantity: z
 				.number({ required_error: 'apiResponses.drinks.requiredQuantity' satisfies LocaleKey })
 				.gt(0, { message: 'apiResponses.drinks.invalidQuantityFormat' satisfies LocaleKey }),

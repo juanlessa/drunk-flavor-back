@@ -1,11 +1,13 @@
 import { z } from 'zod';
 import { UserRolesEnum } from '../entities/user.entity';
 import { LocaleKey } from '@/shared/types/locale.types';
+import { getObjectIdSchema } from '@/infrastructure/mongo/schemas/helpers/objectId.helpers';
 
 // fields validation
-export const userIdValidation = z
-	.string({ required_error: 'apiResponses.users.requiredId' satisfies LocaleKey })
-	.length(24, { message: 'apiResponses.users.invalidIdFormat' satisfies LocaleKey });
+export const userIdValidation = getObjectIdSchema({
+	required: 'apiResponses.users.requiredId',
+	invalid: 'apiResponses.users.invalidIdFormat',
+});
 
 export const userNameValidation = z
 	.string({ required_error: 'apiResponses.users.requiredName' satisfies LocaleKey })
