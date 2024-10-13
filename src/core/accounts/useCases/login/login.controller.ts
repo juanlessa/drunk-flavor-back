@@ -1,13 +1,13 @@
-import { resolveAuthenticateUserService } from './authenticateUser.container';
+import { resolveLoginServiceService } from './login.container';
 import { AUTH_SESSION } from '@/infrastructure/fastify/constants/session.constants';
 import { AUTH_COOKIE, AUTH_COOKIE_OPTIONS } from '@/infrastructure/fastify/constants/cookie.constants';
 import type { Controller } from '@/infrastructure/fastify/types/fastify.types';
-import type { AuthenticateUserReqBody } from './authenticateUser.dtos';
+import { LoginReqBody } from './login.dtos';
 
-export const authenticateUserController: Controller = async (request, reply) => {
-	const { password, email } = request.body as AuthenticateUserReqBody;
+export const loginController: Controller = async (request, reply) => {
+	const { password, email } = request.body as LoginReqBody;
 
-	const service = resolveAuthenticateUserService();
+	const service = resolveLoginServiceService();
 
 	const { user } = await service.execute({
 		password,

@@ -6,7 +6,7 @@ import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { MongoRepository } from '@/infrastructure/mongo/Mongo.repository';
 import { createUser } from '../helpers/authentication.helpers';
 
-describe('Authenticate User', () => {
+describe('Login', () => {
 	beforeAll(async () => {
 		await app.ready();
 	});
@@ -19,7 +19,7 @@ describe('Authenticate User', () => {
 		await MongoRepository.Instance.emptyCollection(UserModel);
 	});
 
-	it('should be able to authenticate a user', async () => {
+	it('should be able to login', async () => {
 		const user = await createUser(app, { role: UserRolesEnum.partner });
 
 		const response = await request(app.server)

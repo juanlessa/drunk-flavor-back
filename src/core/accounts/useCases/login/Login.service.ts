@@ -1,19 +1,19 @@
-import { AuthenticateUser } from './authenticateUser.dtos';
+import { Login } from './login.dtos';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 
-export class AuthenticateUserService {
+export class LoginService {
 	constructor(
 		private usersRepository: IUsersRepository,
 		private hashProvider: IHashProvider,
 	) {}
 
-	async execute({ email, password }: AuthenticateUser) {
+	async execute({ email, password }: Login) {
 		const user = await this.usersRepository.findByEmail(email);
 		if (!user) {
 			throw new BadRequestError('apiResponses.auth.invalidCredentials', {
-				path: 'AuthenticateUser.service.1',
+				path: 'Login.service.1',
 				cause: 'invalid email',
 			});
 		}
@@ -21,7 +21,7 @@ export class AuthenticateUserService {
 		const passwordMatch = await this.hashProvider.compare(password, user.password);
 		if (!passwordMatch) {
 			throw new BadRequestError('apiResponses.auth.invalidCredentials', {
-				path: 'AuthenticateUser.service.2',
+				path: 'Login.service.2',
 				cause: 'Error on hashProvider.compare',
 			});
 		}
