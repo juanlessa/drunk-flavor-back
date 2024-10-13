@@ -33,7 +33,7 @@ const fileMimetype = 'image/png';
 
 const mockedFileStream = Object.assign(
 	new Readable({
-		read(size) {
+		read(_size) {
 			this.push(null);
 		},
 	}),

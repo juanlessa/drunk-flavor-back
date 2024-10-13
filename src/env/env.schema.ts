@@ -50,6 +50,19 @@ export const envSchema = z.object({
 		environments: ['e2e', 'testing'],
 		defaultValue: 5,
 	}),
+	USER_TOKEN_EXPIRES_IN_SECONDS: schemaDefaultBasedOnNodeEnv(z.coerce.number(), {
+		environments: ['e2e', 'testing'],
+		defaultValue: 5,
+	}),
+	USER_TOKEN_SIZE: schemaDefaultBasedOnNodeEnv(z.coerce.number(), {
+		environments: ['e2e', 'testing', 'development'],
+		defaultValue: 16,
+	}),
+	PASSWORD_HASH_ROUNDS: schemaDefaultBasedOnNodeEnv(
+		z.coerce.number(),
+		{ environments: ['e2e', 'testing'], defaultValue: 3 },
+		{ environments: ['development'], defaultValue: 8 },
+	),
 	// MongoDB
 	MONGO_PROTOCOL: schemaDefaultBasedOnNodeEnv(z.string(), {
 		environments: ['development', 'e2e', 'testing', 'production'],
@@ -96,6 +109,18 @@ export const envSchema = z.object({
 		{ environments: ['development', 'production'], defaultValue: 'inDisk' },
 		{ environments: ['testing', 'e2e'], defaultValue: 'inMemory' },
 	),
+	// SMTP
+	SMTP_DOMAIN: schemaDefaultBasedOnNodeEnv(z.string(), {
+		environments: ['testing', 'e2e', 'development', 'production'],
+		defaultValue: 'drunkflavor.com',
+	}),
+	SMTP_HOST: schemaDefaultBasedOnNodeEnv(z.string(), { environments: ['testing', 'e2e'], defaultValue: '' }),
+	SMTP_PORT: schemaDefaultBasedOnNodeEnv(z.coerce.number(), {
+		environments: ['testing', 'e2e', 'development', 'production'],
+		defaultValue: 587,
+	}),
+	SMTP_USERNAME: schemaDefaultBasedOnNodeEnv(z.string(), { environments: ['testing', 'e2e'], defaultValue: '' }),
+	SMTP_PASSWORD: schemaDefaultBasedOnNodeEnv(z.string(), { environments: ['testing', 'e2e'], defaultValue: '' }),
 	// Storage type
 	STORAGE_TYPE: schemaDefaultBasedOnNodeEnv(
 		z.enum(storageTypeOptions),

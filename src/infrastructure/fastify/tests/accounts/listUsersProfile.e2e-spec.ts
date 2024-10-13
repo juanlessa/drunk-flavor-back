@@ -4,7 +4,7 @@ import { app } from '@/infrastructure/fastify/app';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { MongoRepository } from '@/infrastructure/mongo/Mongo.repository';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
-import { createAndAuthenticateUser, createUser } from '../helpers/authentication.helpers';
+import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
 import { UserRolesEnum } from '@/core/accounts/entities/user.entity';
 
 describe('List Users', () => {
