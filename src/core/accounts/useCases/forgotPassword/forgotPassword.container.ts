@@ -1,4 +1,4 @@
-import { resolveUsersRepository, resolveUsersTokensRepository } from '@/core/accounts/infra/mongo/container';
+import { resolveUsersRepository, resolveUserTokensRepository } from '@/core/accounts/infra/mongo/container';
 import { resolveMailerProvider } from '@/shared/providers/mailer';
 import { resolveTemplateProvider } from '@/shared/providers/template';
 import { resolveCryptoProvider } from '@/shared/providers/cryptography';
@@ -10,7 +10,7 @@ const cryptoProvider = resolveCryptoProvider();
 const mailerProvider = resolveMailerProvider();
 const templateProvider = resolveTemplateProvider();
 const usersRepository = resolveUsersRepository();
-const userTokensRepository = resolveUsersTokensRepository();
+const userTokensRepository = resolveUserTokensRepository();
 
 const forgotPasswordService = new ForgotPasswordService(
 	usersRepository,
