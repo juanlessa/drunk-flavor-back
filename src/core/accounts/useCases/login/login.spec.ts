@@ -6,6 +6,7 @@ import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { createUserFactory } from '../../factories/user.factories';
 import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
 import { LoginService } from './Login.service';
+import { UserStatusEnum } from '../../entities/user.entity';
 
 let usersRepositoryInMemory: IUsersRepository;
 let hashProvider: IHashProvider;
@@ -42,18 +43,29 @@ describe('Login', () => {
 		await expect(service.execute({ email, password })).rejects.toBeInstanceOf(BadRequestError);
 	});
 
+	it('should not be able to login a non-active account', async () => {
+		await usersRepositoryInMemory.create({
+			name,
+			surname,
+			email,
+			role,
+			password: await hashProvider.hash(password),
+			status: UserStatusEnum['pending'],
+		});
+
+		await expect(service.execute({ email, password })).rejects.toBeInstanceOf(BadRequestError);
+	});
+
 	it('should not be able to login an account with incorrect password', async () => {
 		await usersRepositoryInMemory.create({
 			name,
 			surname,
 			email,
-			password: await hashProvider.hash(password),
-			role: role,
+			role,
 			status,
+			password: await hashProvider.hash(password),
 		});
 
-		await expect(service.execute({ email: email, password: 'incorrectPassword' })).rejects.toBeInstanceOf(
-			BadRequestError,
-		);
+		await expect(service.execute({ email, password: 'incorrectPassword' })).rejects.toBeInstanceOf(BadRequestError);
 	});
 });
