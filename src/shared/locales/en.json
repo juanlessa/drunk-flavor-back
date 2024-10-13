@@ -14,6 +14,7 @@
 	"apiResponses.auth.invalidCredentials": "Email or password incorrect",
 	"apiResponses.auth.actionAlreadyRequested": "A request has already been made recently. Please check your email or try again later.",
 	"apiResponses.auth.tokenNotFound": "Token not found",
+	"apiResponses.auth.emailVerificationPending": "An account with this email already exists and is pending email verification. Please check your email to complete the verification process",
 
 	"apiResponses.users.notExist": "User does not exist",
 	"apiResponses.users.alreadyExist": "User already exists",
