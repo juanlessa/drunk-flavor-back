@@ -95,7 +95,7 @@ describe('Signup', () => {
 		await expect(service.execute({ name, surname, email, password })).rejects.toBeInstanceOf(BadRequestError);
 	});
 
-	it('Should be able to sign up a non-active existing user without an email verification token', async () => {
+	it('Should be able to signup a non-active existing user if the email verification token does not exist', async () => {
 		await usersRepository.create({
 			name,
 			surname,
@@ -124,7 +124,7 @@ describe('Signup', () => {
 		expect(mailerProvider.send).toHaveBeenCalledTimes(1);
 	});
 
-	it('Should be able to sign up a non-active existing user with an expired email verification token', async () => {
+	it('Should be able to signup a non-active existing user if the email verification token is expired', async () => {
 		const createdUser = await usersRepository.create({
 			name,
 			surname,
