@@ -18,8 +18,4 @@ export type UpdateUser = { id: string } & Partial<{
 	status: UserStatus;
 }>;
 
-export type DeleteUser = {
-	id: string;
-};
-
 export type UserWithoutPassword = Omit<User, 'password'>;
