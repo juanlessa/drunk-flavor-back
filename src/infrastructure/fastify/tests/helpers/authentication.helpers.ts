@@ -1,21 +1,23 @@
 import request from 'supertest';
 import { FastifyInstance } from 'fastify';
-import { resolveCreateUserService } from '@/core/accounts/useCases/createUser/createUser.container';
 import { DeepPartial } from '@/shared/types/utility.types';
 import { CreateUser } from '@/core/accounts/dtos/user.dtos';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
+import { resolveUsersRepository } from '@/core/accounts/infra/mongo/container';
+import { resolveHashProvider } from '@/shared/providers/cryptography';
 
 export const createUser = async (_app: FastifyInstance, userOptions?: DeepPartial<CreateUser>) => {
-	const userData = createUserFactory(userOptions);
-	const createUserService = resolveCreateUserService();
-	const user = await createUserService.execute(userData);
-	return { ...userData, id: user._id.toString() };
+	const usersRepository = resolveUsersRepository();
+	const hashProvider = resolveHashProvider();
+	const { password, ...userData } = createUserFactory(userOptions);
+	const user = await usersRepository.create({ ...userData, password: await hashProvider.hash(password) });
+	return { ...userData, password, id: user._id.toString() };
 };
 
 export async function createAndAuthenticateUser(app: FastifyInstance, userOptions?: DeepPartial<CreateUser>) {
 	const user = await createUser(app, userOptions);
 
-	const response = await request(app.server).post('/sessions').send({
+	const response = await request(app.server).post('/login').send({
 		email: user.email,
 		password: user.password,
 	});

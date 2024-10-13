@@ -3,13 +3,14 @@ import request from 'supertest';
 import { UserRolesEnum } from '@/core/accounts/entities/user.entity';
 import { app } from '@/infrastructure/fastify/app';
 import { MongoRepository } from '@/infrastructure/mongo/Mongo.repository';
-import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
-import { UserTokenModel } from '@/core/accounts/infra/mongo/entities/userToken.model';
+import { CategoryModel } from '@/core/drinks/infra/mongo/entities/category.model';
+import { createCategory } from '../helpers/category.helpers';
+import { createCategoryFactory } from '@/core/drinks/container';
 
-describe('Create User', () => {
+describe('Update Category', () => {
 	beforeAll(async () => {
 		await app.ready();
 	});
@@ -19,23 +20,23 @@ describe('Create User', () => {
 	});
 
 	beforeEach(async () => {
+		await MongoRepository.Instance.emptyCollection(CategoryModel);
 		await MongoRepository.Instance.emptyCollection(UserModel);
-		await MongoRepository.Instance.emptyCollection(UserTokenModel);
 	});
 
-	it('Should be able to create a user', async () => {
+	it('Should be able to update a category', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: UserRolesEnum.admin });
+		const { id } = await createCategory();
 
-		const { name, surname, email, password, role } = createUserFactory({
-			email: 'partner@example.com',
-			role: UserRolesEnum.partner,
+		const { translations } = createCategoryFactory({
+			translations: { en: { name: 'Juice' }, pt: { name: 'Suco' } },
 		});
 
 		const response = await request(app.server)
-			.post('/users')
+			.patch('/categories')
 			.set('Cookie', cookies)
-			.send({ name, surname, email, password, role });
+			.send({ id, translations });
 
-		expect(response.status).toBe(HTTP_STATUS.created);
+		expect(response.status).toBe(HTTP_STATUS.no_content);
 	});
 });

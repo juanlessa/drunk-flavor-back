@@ -6,6 +6,7 @@ import { MongoRepository } from '@/infrastructure/mongo/Mongo.repository';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { createAndAuthenticateUser, createUser } from '../helpers/authentication.helpers';
 import { UserRolesEnum } from '@/core/accounts/entities/user.entity';
+import { UserTokenModel } from '@/core/accounts/infra/mongo/entities/userToken.model';
 
 describe('Delete User', () => {
 	beforeAll(async () => {
@@ -18,6 +19,7 @@ describe('Delete User', () => {
 
 	beforeEach(async () => {
 		await MongoRepository.Instance.emptyCollection(UserModel);
+		await MongoRepository.Instance.emptyCollection(UserTokenModel);
 	});
 
 	it('Should be able to delete a user', async () => {

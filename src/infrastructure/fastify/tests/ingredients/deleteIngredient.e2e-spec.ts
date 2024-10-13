@@ -6,8 +6,11 @@ import { MongoRepository } from '@/infrastructure/mongo/Mongo.repository';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
+import { CategoryModel } from '@/core/drinks/infra/mongo/entities/category.model';
+import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.model';
+import { createIngredient } from '../helpers/ingredient.helpers';
 
-describe('Update User Profile', () => {
+describe('Delete Ingredient', () => {
 	beforeAll(async () => {
 		await app.ready();
 	});
@@ -17,19 +20,16 @@ describe('Update User Profile', () => {
 	});
 
 	beforeEach(async () => {
+		await MongoRepository.Instance.emptyCollection(CategoryModel);
+		await MongoRepository.Instance.emptyCollection(IngredientModel);
 		await MongoRepository.Instance.emptyCollection(UserModel);
 	});
 
-	it('Should be able to update the user profile', async () => {
-		const { cookies, user } = await createAndAuthenticateUser(app, { role: UserRolesEnum.partner });
+	it('Should be able to delete an ingredient', async () => {
+		const { cookies } = await createAndAuthenticateUser(app, { role: UserRolesEnum.admin });
+		const { id } = await createIngredient();
 
-		const response = await request(app.server).patch('/users/me').set('Cookie', cookies).send({
-			id: user.id,
-			name: user.name,
-			surname: 'updated',
-			email: 'updated@example.com',
-			password: user.password,
-		});
+		const response = await request(app.server).delete('/ingredients').set('Cookie', cookies).send({ id });
 
 		expect(response.status).toBe(HTTP_STATUS.no_content);
 	});

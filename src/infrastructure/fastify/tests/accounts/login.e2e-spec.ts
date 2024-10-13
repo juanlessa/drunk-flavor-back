@@ -20,11 +20,9 @@ describe('Login', () => {
 	});
 
 	it('should be able to login', async () => {
-		const user = await createUser(app, { role: UserRolesEnum.partner });
+		const { email, password } = await createUser(app, { role: UserRolesEnum.partner });
 
-		const response = await request(app.server)
-			.post('/sessions')
-			.send({ email: user.email, password: user.password });
+		const response = await request(app.server).post('/login').send({ email, password });
 
 		expect(response.status).toBe(200);
 	});
