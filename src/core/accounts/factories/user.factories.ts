@@ -5,7 +5,7 @@ export const createUserFactory = (user?: DeepPartial<CreateUser>): CreateUser =>
 	name: user?.name || 'John',
 	surname: user?.surname || 'Doe',
 	email: user?.email || 'johndoe@example.com',
-	password: user?.password || '12345678',
+	password: user?.password || 'Password-12345678',
 	role: user?.role || 'member',
 	status: user?.status || 'active',
 });
