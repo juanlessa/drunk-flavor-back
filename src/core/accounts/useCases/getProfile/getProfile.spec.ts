@@ -1,37 +1,37 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
 import { ObjectId } from 'mongodb';
-import { GetUserProfileService } from './GetUserProfile.service';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { User } from '@/core/accounts/entities/user.entity';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
+import { GetProfileService } from './GetProfile.service';
 
 let usersRepositoryInMemory: IUsersRepository;
-let service: GetUserProfileService;
+let service: GetProfileService;
 
 const { name, surname, email, password, role, status } = createUserFactory();
 
-describe('User Profile', () => {
+describe('Get Profile', () => {
 	beforeEach(() => {
 		usersRepositoryInMemory = new UsersRepositoryInMemory();
-		service = new GetUserProfileService(usersRepositoryInMemory);
+		service = new GetProfileService(usersRepositoryInMemory);
 	});
 
-	it('should be able to find a user profile', async () => {
-		await usersRepositoryInMemory.create({ name, surname, email, password, role, status });
-		const userTest = (await usersRepositoryInMemory.findByEmail(email)) as User;
+	it('should be able to find the profile', async () => {
+		const createdUser = await usersRepositoryInMemory.create({ name, surname, email, password, role, status });
 
-		const result = await service.execute({ id: userTest._id.toString() });
+		const result = await service.execute({ id: createdUser._id.toString() });
 
-		expect(result._id).toEqual(userTest._id);
-		expect(result.email).toEqual(userTest.email);
-		expect(result.name).toEqual(userTest.name);
-		expect(result.surname).toEqual(userTest.surname);
-		expect(result.role).toEqual(userTest.role);
+		expect(result._id).toEqual(createdUser._id);
+		expect(result.email).toEqual(createdUser.email);
+		expect(result.name).toEqual(createdUser.name);
+		expect(result.surname).toEqual(createdUser.surname);
+		expect(result.role).toEqual(createdUser.role);
+		expect(result).not.toHaveProperty('password');
 	});
 
-	it('Should not be able to find a nonexistent user profile', async () => {
+	it('Should not be able to find a nonexistent profile', async () => {
 		const nonexistentId = new ObjectId().toString();
 		await expect(service.execute({ id: nonexistentId })).rejects.toBeInstanceOf(NotFoundError);
 	});
