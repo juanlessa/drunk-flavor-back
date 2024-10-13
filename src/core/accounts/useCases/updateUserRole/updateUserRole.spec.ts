@@ -13,7 +13,7 @@ let usersRepositoryInMemory: IUsersRepository;
 let hashProvider: IHashProvider;
 let service: UpdateUserRoleService;
 
-const { name, surname, email, password, role } = createUserFactory({ role: UserRolesEnum.partner });
+const { name, surname, email, password, role, status } = createUserFactory({ role: UserRolesEnum.partner });
 
 describe('Update User Role', () => {
 	beforeEach(async () => {
@@ -28,6 +28,7 @@ describe('Update User Role', () => {
 			surname,
 			email,
 			role,
+			status,
 			password: await hashProvider.hash(password),
 		});
 

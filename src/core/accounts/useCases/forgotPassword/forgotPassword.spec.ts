@@ -25,7 +25,7 @@ let mailerProvider: IMailerProvider;
 let templateProvider: ITemplateProvider;
 let service: ForgotPasswordService;
 
-const { name, surname, email, password, role } = createUserFactory();
+const { name, surname, email, password, role, status } = createUserFactory();
 
 describe('ForgotPassword', () => {
 	beforeEach(async () => {
@@ -57,7 +57,7 @@ describe('ForgotPassword', () => {
 	});
 
 	it('Should be able to request a forgot password', async () => {
-		const createdUser = await usersRepository.create({ name, surname, email, password, role });
+		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
 
 		await service.execute({ email });
 
@@ -76,7 +76,7 @@ describe('ForgotPassword', () => {
 	});
 
 	it('Should not be able to request forgot password when it has been recently requested', async () => {
-		const createdUser = await usersRepository.create({ name, surname, email, password, role });
+		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
 		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({
 			token,
@@ -88,7 +88,7 @@ describe('ForgotPassword', () => {
 	});
 
 	it('Should be able to request a forgot password after the token expiration time', async () => {
-		const createdUser = await usersRepository.create({ name, surname, email, password, role });
+		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
 		const initialToken = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({
 			token: initialToken,

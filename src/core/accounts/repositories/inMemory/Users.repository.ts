@@ -8,14 +8,10 @@ import { omitUserPassword } from '../../mappers/user.mappers';
 export class UsersRepositoryInMemory implements IUsersRepository {
 	users: User[] = [];
 
-	async create({ surname, email, name, password, role }: CreateUser): Promise<User> {
+	async create(data: CreateUser): Promise<User> {
 		const user: User = {
 			_id: new ObjectId(),
-			surname,
-			email,
-			name,
-			password,
-			role,
+			...data,
 			created_at: new Date(),
 			updated_at: new Date(),
 		};

@@ -27,6 +27,7 @@ describe('List Users', () => {
 			surname: partnerUserData.surname,
 			email: partnerUserData.email,
 			role: partnerUserData.role,
+			status: partnerUserData.status,
 			password: await hashProvider.hash(partnerUserData.password),
 		});
 		const createdAdminUser = await usersRepositoryInMemory.create({
@@ -34,6 +35,7 @@ describe('List Users', () => {
 			surname: adminUserData.surname,
 			email: adminUserData.email,
 			role: adminUserData.role,
+			status: adminUserData.status,
 			password: await hashProvider.hash(adminUserData.password),
 		});
 

@@ -51,7 +51,7 @@ export class ForgotPasswordService {
 
 		const template = this.templateProvider.forgotPassword({
 			userName: user.name,
-			resetLink: `${FRONTEND_BASE_URL}${FRONTEND_PAGE_PATHS}/${token}`,
+			resetLink: `${FRONTEND_BASE_URL}${FRONTEND_PAGE_PATHS.resetPassword}/${token}`,
 		});
 
 		await this.mailerProvider.send({

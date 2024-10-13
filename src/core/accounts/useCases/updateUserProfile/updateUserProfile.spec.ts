@@ -13,7 +13,7 @@ let usersRepositoryInMemory: IUsersRepository;
 let hashProvider: IHashProvider;
 let service: UpdateUserProfileService;
 
-const { name, surname, email, password, role } = createUserFactory();
+const { name, surname, email, password, role, status } = createUserFactory();
 const {
 	name: updatedName,
 	surname: updatedSurname,
@@ -34,6 +34,7 @@ describe('Update User', () => {
 			surname,
 			email,
 			role,
+			status,
 			password: await hashProvider.hash(password),
 		});
 		await service.execute({
@@ -59,6 +60,7 @@ describe('Update User', () => {
 			surname,
 			email,
 			role,
+			status,
 			password: await hashProvider.hash(password),
 		});
 		await usersRepositoryInMemory.create({
@@ -66,6 +68,7 @@ describe('Update User', () => {
 			surname: updatedSurname,
 			email: updatedEmail,
 			role,
+			status,
 			password: await hashProvider.hash(updatedPassword),
 		});
 

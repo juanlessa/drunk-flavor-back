@@ -11,7 +11,7 @@ let usersRepositoryInMemory: IUsersRepository;
 let hashProvider: IHashProvider;
 let service: CreateUserService;
 
-const { name, surname, email, password, role } = createUserFactory();
+const { name, surname, email, password, role, status } = createUserFactory();
 
 describe('Create User', () => {
 	beforeEach(async () => {
@@ -21,7 +21,7 @@ describe('Create User', () => {
 	});
 
 	it('Should be able to create a user', async () => {
-		await service.execute({ name, surname, email, password, role });
+		await service.execute({ name, surname, email, password, role, status });
 
 		const verifyUser = await usersRepositoryInMemory.findByEmail(email);
 
@@ -40,9 +40,12 @@ describe('Create User', () => {
 			surname,
 			email,
 			role,
+			status,
 			password: await hashProvider.hash(password),
 		});
 
-		await expect(service.execute({ name, surname, email, password, role })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ name, surname, email, password, role, status })).rejects.toBeInstanceOf(
+			BadRequestError,
+		);
 	});
 });

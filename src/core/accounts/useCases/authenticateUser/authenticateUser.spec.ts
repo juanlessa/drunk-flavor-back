@@ -11,7 +11,7 @@ let usersRepositoryInMemory: IUsersRepository;
 let hashProvider: IHashProvider;
 let service: AuthenticateUserService;
 
-const { name, surname, email, password, role } = createUserFactory();
+const { name, surname, email, password, role, status } = createUserFactory();
 
 describe('Authenticate User', () => {
 	beforeEach(async () => {
@@ -27,6 +27,7 @@ describe('Authenticate User', () => {
 			email,
 			password: await hashProvider.hash(password),
 			role,
+			status,
 		});
 
 		const result = await service.execute({
@@ -48,6 +49,7 @@ describe('Authenticate User', () => {
 			email,
 			password: await hashProvider.hash(password),
 			role: role,
+			status,
 		});
 
 		await expect(service.execute({ email: email, password: 'incorrectPassword' })).rejects.toBeInstanceOf(

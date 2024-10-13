@@ -10,7 +10,7 @@ import { createUserFactory } from '@/core/accounts/factories/user.factories';
 let usersRepositoryInMemory: IUsersRepository;
 let service: GetUserProfileService;
 
-const { name, surname, email, password, role } = createUserFactory();
+const { name, surname, email, password, role, status } = createUserFactory();
 
 describe('User Profile', () => {
 	beforeEach(() => {
@@ -19,7 +19,7 @@ describe('User Profile', () => {
 	});
 
 	it('should be able to find a user profile', async () => {
-		await usersRepositoryInMemory.create({ name, surname, email, password, role });
+		await usersRepositoryInMemory.create({ name, surname, email, password, role, status });
 		const userTest = (await usersRepositoryInMemory.findByEmail(email)) as User;
 
 		const result = await service.execute({ id: userTest._id.toString() });

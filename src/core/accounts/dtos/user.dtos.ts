@@ -1,4 +1,4 @@
-import { User, UserRole } from '@/core/accounts/entities/user.entity';
+import { User, UserRole, UserStatus } from '@/core/accounts/entities/user.entity';
 
 export type CreateUser = {
 	name: string;
@@ -6,6 +6,7 @@ export type CreateUser = {
 	email: string;
 	password: string;
 	role: UserRole;
+	status: UserStatus;
 };
 
 export type UpdateUser = { id: string } & Partial<{
@@ -14,15 +15,11 @@ export type UpdateUser = { id: string } & Partial<{
 	email: string;
 	password: string;
 	role: UserRole;
+	status: UserStatus;
 }>;
 
 export type DeleteUser = {
 	id: string;
-};
-
-export type UpdateUserRole = {
-	user_id: string;
-	role: UserRole;
 };
 
 export type UserWithoutPassword = Omit<User, 'password'>;

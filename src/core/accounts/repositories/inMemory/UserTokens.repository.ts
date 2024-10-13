@@ -8,12 +8,10 @@ import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 export class UserTokensRepositoryInMemory implements IUserTokensRepository {
 	collection: UserToken[] = [];
 
-	async create({ token, type, user_id }: CreateUserToken): Promise<UserToken> {
+	async create(data: CreateUserToken): Promise<UserToken> {
 		const record: UserToken = {
 			_id: new ObjectId(),
-			token,
-			type,
-			user_id,
+			...data,
 			created_at: new Date(),
 			updated_at: new Date(),
 		};
