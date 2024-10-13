@@ -15,6 +15,9 @@
 	"apiResponses.auth.actionAlreadyRequested": "A request has already been made recently. Please check your email or try again later.",
 	"apiResponses.auth.tokenNotFound": "Token not found",
 	"apiResponses.auth.emailVerificationPending": "An account with this email already exists and is pending email verification. Please check your email to complete the verification process",
+	"apiResponses.auth.expiredToken": "token is expired",
+	"apiResponses.auth.requiredToken": "token is required",
+	"apiResponses.auth.invalidTokenFormat": "Invalid token format",
 
 	"apiResponses.users.notExist": "User does not exist",
 	"apiResponses.users.alreadyExist": "User already exists",
@@ -28,7 +31,9 @@
 	"apiResponses.users.requiredEmail": "Email is required",
 	"apiResponses.users.invalidEmailFormat": "Invalid email format",
 	"apiResponses.users.requiredPassword": "Password is required",
-	"apiResponses.users.invalidPasswordFormat": "Password must have a minimum of 8 characters",
+	"apiResponses.users.invalidPasswordMinSize": "Password must have a minimum of 8 characters",
+	"apiResponses.users.invalidPasswordMaxSize": "Password must have a maximum of 64 characters",
+	"apiResponses.users.weakPassword": "Your password must include at least one uppercase letter, one lowercase letter, one digit, and one special character (e.g., @, #, $, etc.). Please ensure your password meets these requirements for enhanced security",
 	"apiResponses.users.requiredRole": "Role is required",
 	"apiResponses.users.invalidRoleFormat": "Invalid role",
 

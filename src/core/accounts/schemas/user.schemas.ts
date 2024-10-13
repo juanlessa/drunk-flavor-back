@@ -25,9 +25,12 @@ export const userEmailValidation = z
 	.string({ required_error: 'apiResponses.users.requiredEmail' satisfies LocaleKey })
 	.email({ message: 'apiResponses.users.invalidEmailFormat' satisfies LocaleKey });
 
+const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+=\-{}\[\]:;"'<>,.?/~`]).{8,64}$/;
 export const userPasswordValidation = z
 	.string({ required_error: 'apiResponses.users.requiredPassword' satisfies LocaleKey })
-	.min(8, { message: 'apiResponses.users.invalidPasswordFormat' satisfies LocaleKey });
+	.min(8, { message: 'apiResponses.users.invalidPasswordMinSize' satisfies LocaleKey })
+	.max(64, { message: 'apiResponses.users.invalidPasswordMaxSize' satisfies LocaleKey })
+	.regex(passwordPattern, { message: 'apiResponses.users.weakPassword' satisfies LocaleKey });
 
 export const userRoleValidation = z.enum([UserRolesEnum.admin, UserRolesEnum.partner], {
 	required_error: 'apiResponses.users.requiredRole' satisfies LocaleKey,
