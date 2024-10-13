@@ -58,6 +58,11 @@ export const envSchema = z.object({
 		environments: ['e2e', 'testing', 'development'],
 		defaultValue: 16,
 	}),
+	PASSWORD_HASH_ROUNDS: schemaDefaultBasedOnNodeEnv(
+		z.coerce.number(),
+		{ environments: ['testing'], defaultValue: 5 },
+		{ environments: ['e2e', 'development'], defaultValue: 8 },
+	),
 	// MongoDB
 	MONGO_PROTOCOL: schemaDefaultBasedOnNodeEnv(z.string(), {
 		environments: ['development', 'e2e', 'testing', 'production'],
