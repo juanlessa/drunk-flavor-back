@@ -6,10 +6,10 @@ import { logger } from '@/shared/logger';
 export class NodeCryptoProvider implements ICryptoProvider {
 	async generateToken(length: number): Promise<string> {
 		return new Promise((resolve, reject) => {
-			randomBytes(length, (err, bytes) => {
+			randomBytes(length / 2, (err, bytes) => {
 				if (err) {
 					logger.error(err, 'Error on randomBytes method from node:crypto');
-					const error = new ServerError('Failed to generate token', {
+					const error = new ServerError('apiResponses.internalServerError', {
 						path: 'NodeCryptoProvider.generateToken',
 						cause: err.message,
 					});
