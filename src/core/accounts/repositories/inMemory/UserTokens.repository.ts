@@ -49,6 +49,13 @@ export class UserTokensRepositoryInMemory implements IUserTokensRepository {
 		return deletedRecord;
 	}
 
+	async deleteByUserId(user_id: string): Promise<number> {
+		const initialCount = this.collection.length;
+		this.collection = this.collection.filter((rec) => rec.user_id !== user_id);
+		const deletedCount = initialCount - this.collection.length;
+		return deletedCount;
+	}
+
 	async findByToken(token: string): Promise<UserToken | null> {
 		const recordFound = this.collection.find((rec) => rec.token === token);
 		return recordFound || null;
@@ -62,6 +69,11 @@ export class UserTokensRepositoryInMemory implements IUserTokensRepository {
 	async findById(id: string): Promise<UserToken | null> {
 		const recordFound = this.collection.find((rec) => rec._id.toString() === id);
 		return recordFound || null;
+	}
+
+	async findByUserId(user_id: string): Promise<UserToken[]> {
+		const recordsFound = this.collection.filter((rec) => rec.user_id === user_id);
+		return recordsFound;
 	}
 
 	async findAll(): Promise<UserToken[]> {

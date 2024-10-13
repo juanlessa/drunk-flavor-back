@@ -7,4 +7,4 @@ const usersRepository: IUsersRepository = new UsersRepository();
 export const resolveUsersRepository = () => usersRepository;
 
 const userTokensRepository: IUserTokensRepository = new UserTokensRepository();
-export const resolveUsersTokensRepository = () => userTokensRepository;
+export const resolveUserTokensRepository = () => userTokensRepository;

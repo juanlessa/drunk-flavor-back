@@ -14,7 +14,7 @@ export class UserTokensRepository implements IUserTokensRepository {
 	async update({ id, ...data }: UpdateUserToken): Promise<UserToken> {
 		const record = await this.model.findByIdAndUpdate(id, data, { new: true }).exec();
 		if (!record) {
-			throw new NotFoundError('token not found', {
+			throw new NotFoundError('apiResponses.auth.tokenNotFound', {
 				path: 'UsersTokens.repository.update',
 				cause: 'Error on findOneAndUpdate operation',
 			});
@@ -25,12 +25,16 @@ export class UserTokensRepository implements IUserTokensRepository {
 	async delete(id: string): Promise<UserToken> {
 		const record = await this.model.findByIdAndDelete<UserToken>(id).exec();
 		if (!record) {
-			throw new NotFoundError('token not found', {
+			throw new NotFoundError('apiResponses.auth.tokenNotFound', {
 				path: 'UsersTokens.repository.delete',
 				cause: 'Error on findOneAndDelete operation',
 			});
 		}
 		return record;
+	}
+	async deleteByUserId(user_id: string): Promise<number> {
+		const result = await this.model.deleteMany({ user_id }).exec();
+		return result.deletedCount;
 	}
 
 	async findById(id: string): Promise<UserToken | null> {
@@ -43,6 +47,11 @@ export class UserTokensRepository implements IUserTokensRepository {
 
 	async findByUserIdAndType({ user_id, type }: FindByUserIdAndType): Promise<UserToken | null> {
 		return this.model.findOne<UserToken>({ user_id, type }).exec();
+	}
+
+	async findByUserId(user_id: string): Promise<UserToken[]> {
+		const records: UserToken[] = await this.model.find<UserToken>({ user_id }).exec();
+		return records;
 	}
 
 	async findAll(): Promise<UserToken[]> {
