@@ -34,6 +34,9 @@
 	"apiResponses.users.invalidPasswordMinSize": "Password must have a minimum of 8 characters",
 	"apiResponses.users.invalidPasswordMaxSize": "Password must have a maximum of 64 characters",
 	"apiResponses.users.weakPassword": "Your password must include at least one uppercase letter, one lowercase letter, one digit, and one special character (e.g., @, #, $, etc.). Please ensure your password meets these requirements for enhanced security",
+	"apiResponses.users.passwordsDoNotMatchConfirm": "The confirmation password does not match",
+	"apiResponses.users.newPasswordCannotMatchCurrent": "The new password cannot be the same as the current password",
+	"apiResponses.users.invalidCurrentPassword": "The current password is invalid",
 	"apiResponses.users.requiredRole": "Role is required",
 	"apiResponses.users.invalidRoleFormat": "Invalid role",
 
