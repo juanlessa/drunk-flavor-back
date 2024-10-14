@@ -109,9 +109,20 @@ STORAGE_TYPE="local"
 # Auth secrets
 COOKIE_SECRET="bad-cookie-secret"
 ACCESS_TOKEN_SECRET='bad-access-token-secret'
-ACCESS_TOKEN_EXPIRES_IN_SECONDS=3600 # 1h
+ACCESS_TOKEN_EXPIRES_IN_SECONDS=1440 # 4h
 REFRESH_TOKEN_SECRET='bad-refresh-token-secret'
-REFRESH_TOKEN_EXPIRES_IN_SECONDS=86400 # 1day
+REFRESH_TOKEN_EXPIRES_IN_SECONDS=864000 # 10 days
+USER_TOKEN_EXPIRES_IN_SECONDS=86400 # 1 day
+USER_TOKEN_SIZE=16
+PASSWORD_HASH_ROUNDS=8
+
+# SMTP
+# use some tool like ethereal (https://ethereal.email/) to easy get a mail trap credentials
+SMTP_DOMAIN=''
+SMTP_HOST=''
+SMTP_PORT=587
+SMTP_USERNAME=''
+SMTP_PASSWORD=''
 ```
 
 **Notes:**
