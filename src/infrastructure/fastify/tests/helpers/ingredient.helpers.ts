@@ -1,7 +1,8 @@
-import { createIngredientFactory, resolveIngredientsRepository } from '@/core/drinks/container';
+import { resolveIngredientsRepository } from '@/core/drinks/infra/mongo/container';
 import { CreateIngredient } from '@/core/drinks/dtos/ingredient.dtos';
 import { DeepPartial } from '@/shared/types/utility.types';
 import { createCategory } from './category.helpers';
+import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 
 export const createIngredient = async (ingredientOptions?: DeepPartial<CreateIngredient>) => {
 	const ingredientsRepository = resolveIngredientsRepository();

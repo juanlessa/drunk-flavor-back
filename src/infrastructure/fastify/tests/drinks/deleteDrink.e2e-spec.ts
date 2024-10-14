@@ -8,10 +8,10 @@ import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { CategoryModel } from '@/core/drinks/infra/mongo/entities/category.model';
 import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.model';
-import { createCategory } from '../helpers/category.helpers';
-import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
+import { createDrink } from '../helpers/drink.helpers';
+import { DrinkModel } from '@/core/drinks/infra/mongo/entities/drink.model';
 
-describe('Create Ingredient', () => {
+describe('Delete Drink', () => {
 	beforeAll(async () => {
 		await app.ready();
 	});
@@ -23,20 +23,16 @@ describe('Create Ingredient', () => {
 	beforeEach(async () => {
 		await MongoRepository.Instance.emptyCollection(CategoryModel);
 		await MongoRepository.Instance.emptyCollection(IngredientModel);
+		await MongoRepository.Instance.emptyCollection(DrinkModel);
 		await MongoRepository.Instance.emptyCollection(UserModel);
 	});
 
-	it('Should be able to create an ingredient', async () => {
+	it('Should be able to delete a drink', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: UserRolesEnum.admin });
-		const { id: category_id } = await createCategory();
+		const { id } = await createDrink();
 
-		const { translations, is_alcoholic } = createIngredientFactory();
+		const response = await request(app.server).delete('/drinks').set('Cookie', cookies).send({ id });
 
-		const response = await request(app.server)
-			.post('/ingredients')
-			.set('Cookie', cookies)
-			.send({ translations, is_alcoholic, category_id });
-
-		expect(response.status).toBe(HTTP_STATUS.created);
+		expect(response.status).toBe(HTTP_STATUS.no_content);
 	});
 });

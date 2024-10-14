@@ -21,7 +21,7 @@ describe('List Ingredients', () => {
 		await MongoRepository.Instance.emptyCollection(IngredientModel);
 	});
 
-	it('Should be able to list the categories', async () => {
+	it('Should be able to list the ingredients', async () => {
 		await createIngredient();
 
 		const response = await request(app.server).get('/ingredients').send();

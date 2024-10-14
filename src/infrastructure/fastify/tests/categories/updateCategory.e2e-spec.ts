@@ -8,7 +8,7 @@ import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { CategoryModel } from '@/core/drinks/infra/mongo/entities/category.model';
 import { createCategory } from '../helpers/category.helpers';
-import { createCategoryFactory } from '@/core/drinks/container';
+import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 
 describe('Update Category', () => {
 	beforeAll(async () => {

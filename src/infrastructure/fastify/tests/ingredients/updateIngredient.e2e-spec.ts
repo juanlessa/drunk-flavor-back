@@ -7,7 +7,7 @@ import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { CategoryModel } from '@/core/drinks/infra/mongo/entities/category.model';
-import { createIngredientFactory } from '@/core/drinks/container';
+import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.model';
 import { createIngredient } from '../helpers/ingredient.helpers';
 

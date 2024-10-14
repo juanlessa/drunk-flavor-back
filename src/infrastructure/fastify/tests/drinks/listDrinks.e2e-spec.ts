@@ -5,9 +5,10 @@ import { MongoRepository } from '@/infrastructure/mongo/Mongo.repository';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { CategoryModel } from '@/core/drinks/infra/mongo/entities/category.model';
 import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.model';
-import { createIngredient } from '../helpers/ingredient.helpers';
+import { DrinkModel } from '@/core/drinks/infra/mongo/entities/drink.model';
+import { createDrink } from '../helpers/drink.helpers';
 
-describe('Get Ingredient', () => {
+describe('List Drink', () => {
 	beforeAll(async () => {
 		await app.ready();
 	});
@@ -19,12 +20,13 @@ describe('Get Ingredient', () => {
 	beforeEach(async () => {
 		await MongoRepository.Instance.emptyCollection(CategoryModel);
 		await MongoRepository.Instance.emptyCollection(IngredientModel);
+		await MongoRepository.Instance.emptyCollection(DrinkModel);
 	});
 
-	it('Should be able to get an ingredient', async () => {
-		const { id } = await createIngredient();
+	it('Should be able to list the drinks', async () => {
+		await createDrink();
 
-		const response = await request(app.server).get(`/ingredients/${id}`).send();
+		const response = await request(app.server).get('/drinks').send();
 
 		expect(response.status).toBe(HTTP_STATUS.ok);
 	});

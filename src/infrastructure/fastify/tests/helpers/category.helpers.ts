@@ -1,6 +1,7 @@
-import { createCategoryFactory, resolveCategoriesRepository } from '@/core/drinks/container';
+import { resolveCategoriesRepository } from '@/core/drinks/infra/mongo/container';
 import { CreateCategory } from '@/core/drinks/dtos/category.dtos';
 import { DeepPartial } from '@/shared/types/utility.types';
+import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 
 export const createCategory = async (categoryOptions?: DeepPartial<CreateCategory>) => {
 	const categoriesRepository = resolveCategoriesRepository();
