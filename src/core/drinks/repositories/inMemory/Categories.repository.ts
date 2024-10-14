@@ -10,80 +10,75 @@ import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 import { filterItemsBySearchCriteria, paginateItems, sortItemsByFields } from '@/shared/helpers/query.helpers';
 
 export class CategoriesRepositoryInMemory implements ICategoriesRepository {
-	categories: Category[] = [];
+	collection: Category[] = [];
 
 	async create({ ...data }: CreateCategory): Promise<Category> {
-		const category: Category = {
+		const record: Category = {
 			_id: new ObjectId(),
 			...data,
 			created_at: new Date(),
 			updated_at: new Date(),
 		};
 
-		this.categories.push(category);
-		return category;
+		this.collection.push(record);
+		return record;
 	}
 
 	async update({ id, ...data }: UpdateCategory): Promise<Category> {
-		const categoryIndex = this.categories.findIndex((cat) => cat._id.toString() === id);
-		if (categoryIndex === -1) {
+		const recordIndex = this.collection.findIndex((rec) => rec._id.toString() === id);
+		if (recordIndex === -1) {
 			throw new NotFoundError('apiResponses.categories.notFound', {
 				path: 'CategoriesInMemory.repository',
 				cause: 'Error on findByIdAndUpdate operation',
 			});
 		}
-		let category = this.categories[categoryIndex];
-		category = deepUpdate<Category>(data, category);
-		category.updated_at = new Date();
+		let record = this.collection[recordIndex];
+		record = deepUpdate<Category>(data, record);
+		record.updated_at = new Date();
 
-		this.categories[categoryIndex] = category;
-		return category;
+		this.collection[recordIndex] = record;
+		return record;
 	}
 
 	async delete(id: string): Promise<Category> {
-		const categoryIndex = this.categories.findIndex((cat) => cat._id.toString() === id);
-		if (categoryIndex === -1) {
+		const recordIndex = this.collection.findIndex((rec) => rec._id.toString() === id);
+		if (recordIndex === -1) {
 			throw new NotFoundError('apiResponses.categories.notFound', {
 				path: 'CategoriesInMemory.repository',
 				cause: 'Error on findByIdAndDelete operation',
 			});
 		}
-		const [deletedCategory] = this.categories.splice(categoryIndex, 1);
-		return deletedCategory;
+		const [deletedRecord] = this.collection.splice(recordIndex, 1);
+		return deletedRecord;
 	}
 
 	async findByName(translations: FindCategoryByName): Promise<Category | null> {
-		const category = this.categories.find((cat) => compareTranslationsName(cat.translations, translations));
-		return category || null;
+		const record = this.collection.find((rec) => compareTranslationsName(rec.translations, translations));
+		return record || null;
 	}
 
 	async findById(id: string): Promise<Category | null> {
-		const category = this.categories.find((cat) => cat._id.toString() === id);
-		return category || null;
+		const record = this.collection.find((rec) => rec._id.toString() === id);
+		return record || null;
 	}
 
 	async findAll(query: QueryParams): Promise<Category[]> {
-		let foundCategories = [...this.categories];
+		let found = [...this.collection];
 
 		if (query.search) {
-			foundCategories = filterItemsBySearchCriteria(foundCategories, query.search);
+			found = filterItemsBySearchCriteria(found, query.search);
 		}
 
 		if (query.sort) {
-			foundCategories = sortItemsByFields(foundCategories, query.sort);
+			found = sortItemsByFields(found, query.sort);
 		}
 
-		foundCategories = paginateItems(
-			foundCategories,
+		found = paginateItems(
+			found,
 			query.limit || DEFAULT_QUERY_PARAMS.limit,
 			query.page || DEFAULT_QUERY_PARAMS.page,
 		);
 
-		return foundCategories;
-	}
-
-	async findByIdList(ids: string[]): Promise<Category[]> {
-		const categories = this.categories.filter((cat) => ids.includes(cat._id.toString()));
-		return categories;
+		return found;
 	}
 }
