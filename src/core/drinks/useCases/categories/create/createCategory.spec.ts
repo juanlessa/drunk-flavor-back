@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { CreateCategoryService } from './CreateCategory.service';
-import { Category, CategoryTranslation } from '@/core/drinks/entities/category.entity';
+import { Category } from '@/core/drinks/entities/category.entity';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
-import { createCategoryFactory } from '@/core/drinks/container';
+import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 
 let categoriesRepositoryInMemory: ICategoriesRepository;
 let service: CreateCategoryService;

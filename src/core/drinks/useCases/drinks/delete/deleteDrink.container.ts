@@ -1,4 +1,4 @@
-import { resolveDrinksRepository } from '@/core/drinks/container';
+import { resolveDrinksRepository } from '@/core/drinks/infra/mongo/container';
 import { DeleteDrinkService } from './DeleteDrink.service';
 
 const drinksRepository = resolveDrinksRepository();

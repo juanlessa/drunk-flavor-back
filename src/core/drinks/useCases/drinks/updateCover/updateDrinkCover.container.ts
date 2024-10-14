@@ -1,4 +1,4 @@
-import { resolveDrinksRepository } from '@/core/drinks/container';
+import { resolveDrinksRepository } from '@/core/drinks/infra/mongo/container';
 import { resolveStorageProvider } from '@/shared/providers/storage';
 import { UpdateDrinkCoverService } from './UpdateDrinkCover.service';
 

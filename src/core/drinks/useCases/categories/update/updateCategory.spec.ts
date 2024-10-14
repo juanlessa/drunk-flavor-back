@@ -5,7 +5,7 @@ import { UpdateCategoryService } from './UpdateCategory.service';
 import { Category } from '@/core/drinks/entities/category.entity';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
-import { createCategoryFactory } from '@/core/drinks/container';
+import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 
 let categoriesRepositoryInMemory: ICategoriesRepository;
 let service: UpdateCategoryService;

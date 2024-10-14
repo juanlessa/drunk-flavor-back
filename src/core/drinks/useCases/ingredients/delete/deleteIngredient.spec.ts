@@ -5,7 +5,8 @@ import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { DeleteIngredientService } from './DeleteIngredient.service';
 import { BadRequestError } from '@/shared/error/error.lib';
-import { createCategoryFactory, createIngredientFactory } from '@/core/drinks/container';
+import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
+import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 

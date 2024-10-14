@@ -6,7 +6,8 @@ import { GetIngredientService } from './GetIngredient.service';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
-import { createCategoryFactory, createIngredientFactory } from '@/core/drinks/container';
+import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
+import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 import { Category } from '@/core/drinks/entities/category.entity';
 
 let categoriesRepositoryInMemory: ICategoriesRepository;

@@ -1,12 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { ObjectId } from 'mongodb';
-import { Translations } from '@/core/drinks/types/translations';
-import { CategoryTranslation } from '@/core/drinks/entities/category.entity';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { DeleteCategoryService } from './DeleteCategory.service';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
-import { createCategoryFactory } from '@/core/drinks/container';
+import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 
 let categoriesRepositoryInMemory: ICategoriesRepository;
 let service: DeleteCategoryService;

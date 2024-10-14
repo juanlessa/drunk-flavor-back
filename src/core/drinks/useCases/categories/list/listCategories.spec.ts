@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { ListCategoriesService } from './ListCategories.service';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
-import { createCategoryFactory } from '@/core/drinks/container';
+import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 
 let categoriesRepositoryInMemory: ICategoriesRepository;

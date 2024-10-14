@@ -6,7 +6,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { CreateIngredientService } from './CreateIngredient.service';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { BadRequestError } from '@/shared/error/error.lib';
-import { createCategoryFactory, createIngredientFactory } from '@/core/drinks/container';
+import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
+import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 
