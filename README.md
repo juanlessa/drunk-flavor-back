@@ -182,7 +182,7 @@ npm run test:watch
 
 ### Template Tests
 
-To run only tests for email templates, use the following commands:
+To run only the tests for email templates, use the following commands:
 
 -   Run template tests:
 
