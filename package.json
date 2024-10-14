@@ -1,6 +1,6 @@
 {
 	"name": "drunk-flavor-back",
-	"version": "0.0.1",
+	"version": "2.0.0",
 	"description": "",
 	"main": "server.ts",
 	"type": "commonjs",
@@ -82,16 +82,16 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/juanlessa/drunk-fastify.git"
+		"url": "git+https://github.com/juanlessa/drunk-flavor-back"
 	},
 	"engines": {
 		"node": ">=20.0.0"
 	},
 	"author": "Juan Lessa",
 	"license": "ISC",
-	"homepage": "https://github.com/juanlessa/drunk-fastify#readme",
+	"homepage": "https://github.com/juanlessa/drunk-flavor-back#readme",
 	"bugs": {
-		"url": "https://github.com/juanlessa/drunk-fastify/issues"
+		"url": "https://github.com/juanlessa/drunk-flavor-back/issues"
 	},
 	"keywords": [
 		"DrunkFlavor",
