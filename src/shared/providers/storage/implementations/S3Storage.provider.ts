@@ -10,19 +10,14 @@ export class S3StorageProvider implements IStorageProvider {
 	private readonly DEFAULT_REGION: string;
 
 	constructor() {
-		const { AWS_DEFAULT_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_S3_BUCKET_NAME } = env;
-
-		if (!AWS_ACCESS_KEY_ID || !AWS_DEFAULT_REGION || !AWS_SECRET_ACCESS_KEY || !AWS_S3_BUCKET_NAME) {
-			throw new Error('invalid AWS credentials');
-		}
-		this.BUCKET_NAME = AWS_S3_BUCKET_NAME;
-		this.DEFAULT_REGION = AWS_DEFAULT_REGION;
+		this.BUCKET_NAME = env.AWS_S3_BUCKET_NAME;
+		this.DEFAULT_REGION = env.AWS_DEFAULT_REGION;
 
 		this.s3Client = new S3Client({
-			region: AWS_DEFAULT_REGION,
+			region: env.AWS_DEFAULT_REGION,
 			credentials: {
-				accessKeyId: AWS_ACCESS_KEY_ID,
-				secretAccessKey: AWS_SECRET_ACCESS_KEY,
+				accessKeyId: env.AWS_ACCESS_KEY_ID,
+				secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
 			},
 		});
 	}

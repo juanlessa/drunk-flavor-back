@@ -6,12 +6,13 @@ import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemor
 import { BadRequestError } from '@/shared/error/error.lib';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
-import { createCategoryFactory, createIngredientFactory } from '@/core/drinks/container';
+import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
+import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 import { Category } from '@/core/drinks/entities/category.entity';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 
-let categoriesRepositoryInMemory: ICategoriesRepository;
-let ingredientsRepositoryInMemory: IIngredientsRepository;
+let categoriesRepository: ICategoriesRepository;
+let ingredientsRepository: IIngredientsRepository;
 let service: UpdateIngredientService;
 
 const { translations: categoryTranslations } = createCategoryFactory();
@@ -32,13 +33,13 @@ let createdIngredient: Ingredient;
 
 describe('Update Ingredient', () => {
 	beforeEach(async () => {
-		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
-		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory();
-		service = new UpdateIngredientService(ingredientsRepositoryInMemory, categoriesRepositoryInMemory);
+		categoriesRepository = new CategoriesRepositoryInMemory();
+		ingredientsRepository = new IngredientsRepositoryInMemory();
+		service = new UpdateIngredientService(ingredientsRepository, categoriesRepository);
 
-		createdCategory = await categoriesRepositoryInMemory.create({ translations: categoryTranslations });
-		updatedCategory = await categoriesRepositoryInMemory.create({ translations: updatedCategoryTranslations });
-		createdIngredient = await ingredientsRepositoryInMemory.create({
+		createdCategory = await categoriesRepository.create({ translations: categoryTranslations });
+		updatedCategory = await categoriesRepository.create({ translations: updatedCategoryTranslations });
+		createdIngredient = await ingredientsRepository.create({
 			translations,
 			is_alcoholic,
 			category: createdCategory,
@@ -53,7 +54,7 @@ describe('Update Ingredient', () => {
 			is_alcoholic: updatedIsAlcoholic,
 		});
 
-		const findUpdatedIngredient = (await ingredientsRepositoryInMemory.findById(
+		const findUpdatedIngredient = (await ingredientsRepository.findById(
 			createdIngredient._id.toString(),
 		)) as Ingredient;
 
@@ -74,7 +75,7 @@ describe('Update Ingredient', () => {
 	});
 
 	it('should not be able to update an ingredient name to an existing name', async () => {
-		await ingredientsRepositoryInMemory.create({
+		await ingredientsRepository.create({
 			translations: updatedTranslations,
 			category: updatedCategory,
 			is_alcoholic: updatedIsAlcoholic,

@@ -5,7 +5,9 @@ import { ObjectId } from 'mongodb';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DeleteDrinkService } from './DeleteDrink.service';
 import { BadRequestError } from '@/shared/error/error.lib';
-import { createCategoryFactory, createDrinkFactory, createIngredientFactory } from '@/core/drinks/container';
+import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
+import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
+import { createDrinkFactory } from '@/core/drinks/factories/drink.factories';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
@@ -15,9 +17,9 @@ import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { MockStorageProvider } from '@/shared/providers/storage/implementations/MockStorage.provider';
 import { Drink } from '@/core/drinks/entities/drink.entity';
 
-let categoriesRepositoryInMemory: ICategoriesRepository;
-let ingredientsRepositoryInMemory: IIngredientsRepository;
-let drinksRepositoryInMemory: IDrinksRepository;
+let categoriesRepository: ICategoriesRepository;
+let ingredientsRepository: IIngredientsRepository;
+let drinksRepository: IDrinksRepository;
 let storageProvider: IStorageProvider;
 let service: DeleteDrinkService;
 
@@ -33,19 +35,19 @@ describe('Delete Drink', () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
-		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
-		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory();
-		drinksRepositoryInMemory = new DrinksRepositoryInMemory();
+		categoriesRepository = new CategoriesRepositoryInMemory();
+		ingredientsRepository = new IngredientsRepositoryInMemory();
+		drinksRepository = new DrinksRepositoryInMemory();
 		storageProvider = new MockStorageProvider();
-		service = new DeleteDrinkService(drinksRepositoryInMemory, storageProvider);
+		service = new DeleteDrinkService(drinksRepository, storageProvider);
 
-		createdCategory = await categoriesRepositoryInMemory.create({ translations: categoryTranslations });
-		createdIngredient = await ingredientsRepositoryInMemory.create({
+		createdCategory = await categoriesRepository.create({ translations: categoryTranslations });
+		createdIngredient = await ingredientsRepository.create({
 			translations: ingredientTranslations,
 			is_alcoholic: ingredientIsAlcoholic,
 			category: createdCategory,
 		});
-		createdDrink = await drinksRepositoryInMemory.create({
+		createdDrink = await drinksRepository.create({
 			translations,
 			ingredients: [{ ingredient: createdIngredient, quantity: 60 }],
 		});
@@ -58,7 +60,7 @@ describe('Delete Drink', () => {
 	it('should be able to delete a drink', async () => {
 		await service.execute({ id: createdDrink._id.toString() });
 
-		const found = await drinksRepositoryInMemory.findById(createdDrink._id.toString());
+		const found = await drinksRepository.findById(createdDrink._id.toString());
 
 		expect(found).toBeNull();
 	});
@@ -69,7 +71,7 @@ describe('Delete Drink', () => {
 	});
 
 	it('should be able to delete the cover and thumbnail during delete a drink', async () => {
-		await drinksRepositoryInMemory.update({
+		await drinksRepository.update({
 			id: createdDrink._id.toString(),
 			cover: { name: 'coverFile.png', mimetype: 'image/png', url: '' },
 			thumbnail: { name: 'thumbnailFile.jpeg', mimetype: 'image/jpeg', url: '' },
@@ -77,7 +79,7 @@ describe('Delete Drink', () => {
 
 		await service.execute({ id: createdDrink._id.toString() });
 
-		const found = await drinksRepositoryInMemory.findById(createdDrink._id.toString());
+		const found = await drinksRepository.findById(createdDrink._id.toString());
 
 		expect(storageProvider.deleteFile).toBeCalledTimes(2);
 	});

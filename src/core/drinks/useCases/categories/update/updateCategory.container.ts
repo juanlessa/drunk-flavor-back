@@ -1,4 +1,4 @@
-import { resolveCategoriesRepository } from '@/core/drinks/container';
+import { resolveCategoriesRepository } from '@/core/drinks/infra/mongo/container';
 import { UpdateCategoryService } from './UpdateCategory.service';
 
 const categoriesRepository = resolveCategoriesRepository();

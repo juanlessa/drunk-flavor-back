@@ -12,7 +12,7 @@ const sortSchema = z.object({
 	...generateTranslationsFieldSchema(categoryTranslationSchema, ['name'], sortOrderSchema).shape,
 });
 
-export const listCategoryQuerySchema = z.object({
+export const listCategoriesQuerySchema = z.object({
 	limit: z.coerce.number().optional(),
 	page: z.coerce.number().optional(),
 	search: stringifiedJSONSchema(searchSchema).optional(),

@@ -6,6 +6,7 @@ import helmet from '@fastify/helmet';
 import session from '@fastify/secure-session';
 import fastifyMultipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
+import i18n from 'fastify-i18n';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUI from '@fastify/swagger-ui';
 import { jsonSchemaTransform, serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
@@ -21,12 +22,14 @@ import { DOCS_URL, SWAGGER_OPTIONS, SWAGGER_UI_OPTIONS } from './constants/swagg
 import { MULTIPART_OPTIONS } from './constants/multipart.constants';
 import { STATIC_FILES_OPTIONS, STATIC_FILES_URL } from './constants/static.constants';
 import { setLogger, logger } from '@/shared/logger';
+import { I18N_OPTIONS } from './constants/i18n.constants';
 
 export const app = fastify({
 	logger: FASTIFY_LOGGER_OPTIONS,
 });
 
 app.register(helmet);
+app.register(i18n, I18N_OPTIONS);
 app.register(fastifyCookie, FASTIFY_COOKIE_OPTIONS);
 app.register(fastifyJwt, TOKEN_OPTIONS);
 app.register(fastifyJwt, REFRESH_TOKEN_OPTIONS);

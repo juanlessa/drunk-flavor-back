@@ -1,16 +1,18 @@
-import { CATEGORY_MESSAGES } from '@/core/drinks/constants/categories.constants';
+import { getObjectIdSchema } from '@/infrastructure/mongo/schemas/helpers/objectId.helpers';
+import { LocaleKey } from '@/shared/types/locale.types';
 import { z } from 'zod';
 
 // fields validation
-export const categoryIdValidation = z
-	.string({ required_error: CATEGORY_MESSAGES.requiredId.message })
-	.length(24, { message: CATEGORY_MESSAGES.invalidIdFormat.message });
+export const categoryIdValidation = getObjectIdSchema({
+	required: 'apiResponses.categories.requiredId',
+	invalid: 'apiResponses.categories.invalidIdFormat',
+});
 
 export const categoryNameValidation = z
-	.string({ required_error: CATEGORY_MESSAGES.requiredName.message })
+	.string({ required_error: 'apiResponses.categories.requiredName' satisfies LocaleKey })
 	.trim()
 	.toLowerCase()
-	.min(1, { message: CATEGORY_MESSAGES.invalidNameFormat.message })
+	.min(1, { message: 'apiResponses.categories.invalidNameFormat' satisfies LocaleKey })
 	.transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`);
 
 // schemas

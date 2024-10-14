@@ -22,7 +22,7 @@ const routes: Routes = (server) => {
 		.withTypeProvider<ZodTypeProvider>()
 		.post(
 			'/drinks',
-			{ schema: { body: createDrinkSchema }, onRequest: [verifyAndRenewToken] },
+			{ schema: { body: createDrinkSchema }, preValidation: [verifyAndRenewToken] },
 			createDrinkController,
 		);
 
@@ -38,7 +38,7 @@ const routes: Routes = (server) => {
 		.withTypeProvider<ZodTypeProvider>()
 		.patch(
 			'/drinks',
-			{ schema: { body: updateDrinkSchema }, onRequest: [verifyAndRenewToken] },
+			{ schema: { body: updateDrinkSchema }, preValidation: [verifyAndRenewToken] },
 			updateDrinkController,
 		);
 
@@ -58,7 +58,7 @@ const routes: Routes = (server) => {
 		.withTypeProvider<ZodTypeProvider>()
 		.delete(
 			'/drinks',
-			{ schema: { body: deleteDrinkSchema }, onRequest: [verifyAndRenewToken] },
+			{ schema: { body: deleteDrinkSchema }, preValidation: [verifyAndRenewToken] },
 			deleteDrinkController,
 		);
 };

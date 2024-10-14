@@ -6,15 +6,17 @@ import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemor
 import { BadRequestError } from '@/shared/error/error.lib';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
-import { createCategoryFactory, createDrinkFactory, createIngredientFactory } from '@/core/drinks/container';
+import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
+import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
+import { createDrinkFactory } from '@/core/drinks/factories/drink.factories';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { DrinksRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Drinks.repository';
 import { Drink } from '@/core/drinks/entities/drink.entity';
 
-let categoriesRepositoryInMemory: ICategoriesRepository;
-let ingredientsRepositoryInMemory: IIngredientsRepository;
-let drinksRepositoryInMemory: IDrinksRepository;
+let categoriesRepository: ICategoriesRepository;
+let ingredientsRepository: IIngredientsRepository;
+let drinksRepository: IDrinksRepository;
 let service: UpdateDrinkService;
 
 const { translations: categoryTranslations } = createCategoryFactory();
@@ -34,18 +36,18 @@ let createdDrink: Drink;
 
 describe('Update Drink', () => {
 	beforeEach(async () => {
-		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
-		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory();
-		drinksRepositoryInMemory = new DrinksRepositoryInMemory();
-		service = new UpdateDrinkService(drinksRepositoryInMemory, ingredientsRepositoryInMemory);
+		categoriesRepository = new CategoriesRepositoryInMemory();
+		ingredientsRepository = new IngredientsRepositoryInMemory();
+		drinksRepository = new DrinksRepositoryInMemory();
+		service = new UpdateDrinkService(drinksRepository, ingredientsRepository);
 
-		const category = await categoriesRepositoryInMemory.create({ translations: categoryTranslations });
-		ingredient = await ingredientsRepositoryInMemory.create({
+		const category = await categoriesRepository.create({ translations: categoryTranslations });
+		ingredient = await ingredientsRepository.create({
 			translations: translationsIngredient,
 			is_alcoholic: false,
 			category: category,
 		});
-		createdDrink = await drinksRepositoryInMemory.create({
+		createdDrink = await drinksRepository.create({
 			translations,
 			ingredients: [{ quantity: 30, ingredient }],
 		});
@@ -58,7 +60,7 @@ describe('Update Drink', () => {
 			ingredients: [{ quantity: 60, ingredient_id: ingredient._id.toString() }],
 		});
 
-		const findUpdatedDrink = (await drinksRepositoryInMemory.findById(createdDrink._id.toString())) as Drink;
+		const findUpdatedDrink = (await drinksRepository.findById(createdDrink._id.toString())) as Drink;
 
 		expect(findUpdatedDrink.translations).toEqual(updatedTranslations);
 		expect(findUpdatedDrink.ingredients.length).toEqual(1);
@@ -76,7 +78,7 @@ describe('Update Drink', () => {
 	});
 
 	it('should not be able to update a drink name to an existing name', async () => {
-		await drinksRepositoryInMemory.create({
+		await drinksRepository.create({
 			translations: updatedTranslations,
 			ingredients: [{ quantity: 30, ingredient }],
 		});

@@ -2,13 +2,14 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Ingredients.repository';
 import { ListIngredientsService } from './ListIngredients.service';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
-import { createCategoryFactory, createIngredientFactory } from '@/core/drinks/container';
+import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
+import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 
-let categoriesRepositoryInMemory: ICategoriesRepository;
-let ingredientsRepositoryInMemory: IIngredientsRepository;
+let categoriesRepository: ICategoriesRepository;
+let ingredientsRepository: IIngredientsRepository;
 let service: ListIngredientsService;
 
 const createCategory1 = createCategoryFactory({
@@ -33,28 +34,28 @@ const { translations: translationsIngredient4 } = createIngredientFactory({
 
 describe('List Ingredients', () => {
 	beforeEach(async () => {
-		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
-		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory();
-		service = new ListIngredientsService(ingredientsRepositoryInMemory);
+		categoriesRepository = new CategoriesRepositoryInMemory();
+		ingredientsRepository = new IngredientsRepositoryInMemory();
+		service = new ListIngredientsService(ingredientsRepository);
 
-		const category1 = await categoriesRepositoryInMemory.create(createCategory1);
-		const category2 = await categoriesRepositoryInMemory.create(createCategory2);
-		await ingredientsRepositoryInMemory.create({
+		const category1 = await categoriesRepository.create(createCategory1);
+		const category2 = await categoriesRepository.create(createCategory2);
+		await ingredientsRepository.create({
 			translations: translationsIngredient1,
 			is_alcoholic: false,
 			category: category1,
 		});
-		await ingredientsRepositoryInMemory.create({
+		await ingredientsRepository.create({
 			translations: translationsIngredient2,
 			is_alcoholic: false,
 			category: category1,
 		});
-		await ingredientsRepositoryInMemory.create({
+		await ingredientsRepository.create({
 			translations: translationsIngredient3,
 			is_alcoholic: false,
 			category: category2,
 		});
-		await ingredientsRepositoryInMemory.create({
+		await ingredientsRepository.create({
 			translations: translationsIngredient4,
 			is_alcoholic: false,
 			category: category2,

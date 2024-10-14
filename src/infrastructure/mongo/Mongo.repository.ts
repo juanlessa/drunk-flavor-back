@@ -35,10 +35,20 @@ export class MongoRepository {
 	}
 
 	async dropAllCollections() {
-		const collections = await mongoose.connection.db.collections();
-		for (let collection of collections) {
-			await collection.drop();
+		if (mongoose.connection.readyState !== 1 || !mongoose.connection.db) {
+			throw new Error('Mongoose is not connected to the database');
 		}
+		const collections = await mongoose.connection.db.collections();
+		const dropPromises = collections.map(async (collection) => {
+			try {
+				await collection.drop();
+			} catch (error) {
+				if (error instanceof Error && error.message !== 'ns not found') {
+					logger.error(`Failed to drop collection ${collection.collectionName}:`, error);
+				}
+			}
+		});
+		await Promise.all(dropPromises);
 	}
 
 	async dropCollection(model: Model<any>) {

@@ -26,6 +26,7 @@ Github repositories:
     -   [mongodb](#mongodb)
     -   [node.js](#nodejs)
     -   [dotenv](#dotenv)
+    -   [secret-key](#secret-key)
 -   [Dev](#dev)
 -   [Testing](#dev)
 -   [Build](#build)
@@ -122,6 +123,20 @@ REFRESH_TOKEN_EXPIRES_IN_SECONDS=86400 # 1day
 
 Now your environment setup is ready.
 
+### secret-key
+
+Our application uses the @fastify/secure-session library, which requires a secret key to encrypt and sign session
+cookies. To generate this key, you can use the script included in the project:
+
+```shell
+npm run generate-secret-key
+```
+
+Make sure to securely store the generated key as it will be needed to run the application. For more details on how
+@fastify/secure-session works, you can refer to the official documentation.
+
+Now your secret key setup is ready.
+
 ## Dev
 
 Once your setup is ready, you are able to run the drunkflavor API in development mode by using the command below.
@@ -151,38 +166,77 @@ If you are using a different operating system, please refer to the documentation
 
 In this project, we use Vitest as our testing library.
 
-The unit tests (.spec.ts fales) can be run by using the command below.
+### Unit Tests
 
-```shel
+You can run the unit tests (.spec.ts files) using the following command:
+
+```shell
 npm run test
 ```
 
-For the integration tests (.e2e-spec.ts fales) you need to add a file named `.env.testing` at the root project folder,
-containing the testing database environment variables. You can use the sample below changing the values to your mongodb
-testing database:
+You can also run the unit tests in watch mode:
 
-```dotenv
-# MongoDB
-MONGO_USERNAME='drunkflavor'
-MONGO_PASSWORD='drunkflavor'
-MONGO_DATABASE='drunk-flavor'
-MONGO_HOST='localhost'
-MONGO_PORT='27017'
-MONGO_PARAMS=''
-
-# Environment
-NODE_ENV=testing
-
-# Logger
-LOGGER_ENABLED='false'
-LOGGER_LEVEL='error'
+```shell
+npm run test:watch
 ```
 
-after that you can run the integration tests by using the command below:
+Template Tests
 
-```shel
+To run only tests for email templates, use the following commands:
+
+-   Run template tests:
+
+```shell
+npm run test:template
+```
+
+-   Run template tests in watch mode:
+
+```shell
+npm run test:template:watch
+```
+
+-   Run template tests and persist the output in the templates folder:
+
+```shell
+npm run test:template:output
+```
+
+-   Run template tests with persisted output in watch mode:
+
+```shell
+npm run test:template:output:watch
+```
+
+### End-to-End (E2E) Tests
+
+Before running the E2E tests, you need to set up the Vitest MongoDB environment by executing:
+
+```shell
+npm run test:e2e:setup
+```
+
+This step only needs to be done once, unless you delete the node_modules folder.
+
+After setup, you can run the E2E tests using:
+
+```shell
 npm run test:e2e
 ```
+
+You can also run the E2E tests in watch mode:
+
+```shell
+npm run test:e2e:watch
+```
+
+**Notes:**
+
+-   By default, the E2E tests use an in-memory MongoDB database. However, you can change this to use a traditional
+    MongoDB instance by setting the MONGO_PERSISTENCE_MODE environment variable. In this case make sure to also
+    configure the MongoDB connection variables.
+-   You can override any default testing environment variables by adding a `.env.testing` file in the project root,
+    following the structure of `.env.example`.
 
 ## Build
 

@@ -8,6 +8,9 @@ export default defineConfig({
 	test: {
 		include: ['src/**/*.e2e-spec.ts'],
 		environment: 'mongo',
+		testTimeout: 20000,
+		fileParallelism: false,
+		pool: 'forks',
 		poolOptions: {
 			forks: {
 				singleFork: true,

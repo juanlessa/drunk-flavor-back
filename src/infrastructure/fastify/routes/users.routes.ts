@@ -4,37 +4,43 @@ import { Routes } from '../types/fastify.types';
 import { verifyAndRenewToken } from '../middlewares/verifyAndRenewToken';
 import { createUserController } from '@/core/accounts/useCases/createUser/createUser.controller';
 import { createUserSchema } from '@/core/accounts/useCases/createUser/createUser.schema';
-import { getUserProfileController } from '@/core/accounts/useCases/getUserProfile/getUserProfile.controller';
 import { deleteUserSchema } from '@/core/accounts/useCases/deleteUser/deleteUser.schema';
 import { deleteUserController } from '@/core/accounts/useCases/deleteUser/deleteUser.controller';
+import { listUsersQuerySchema } from '@/core/accounts/useCases/listUsers/listUsers.schema';
 import { listUsersController } from '@/core/accounts/useCases/listUsers/listUsers.controller';
-import { updateUserProfileSchema } from '@/core/accounts/useCases/updateUserProfile/updateUserProfile.schema';
-import { updateUserProfileController } from '@/core/accounts/useCases/updateUserProfile/updateUserProfile.controller';
+import { getUserSchema } from '@/core/accounts/useCases/getUser/getUser.schema';
+import { getUserController } from '@/core/accounts/useCases/getUser/getUser.controller';
 import { updateUserRoleSchema } from '@/core/accounts/useCases/updateUserRole/updateUserRole.schema';
 import { updateUserRoleController } from '@/core/accounts/useCases/updateUserRole/updateUserRole.controller';
 
 const routes: Routes = (server) => {
 	server
 		.withTypeProvider<ZodTypeProvider>()
-		.post('/users', { schema: { body: createUserSchema }, onRequest: [verifyAndRenewToken] }, createUserController);
-
-	server.get('/users/me', { onRequest: [verifyAndRenewToken] }, getUserProfileController);
-
-	server.get('/users', { onRequest: [verifyAndRenewToken] }, listUsersController);
+		.post(
+			'/users',
+			{ schema: { body: createUserSchema }, preValidation: [verifyAndRenewToken] },
+			createUserController,
+		);
 
 	server
 		.withTypeProvider<ZodTypeProvider>()
-		.patch(
-			'/users/me',
-			{ schema: { body: updateUserProfileSchema }, onRequest: [verifyAndRenewToken] },
-			updateUserProfileController,
+		.get(
+			'/users/:id',
+			{ schema: { params: getUserSchema }, preValidation: [verifyAndRenewToken] },
+			getUserController,
 		);
+
+	server.get(
+		'/users',
+		{ schema: { querystring: listUsersQuerySchema }, preValidation: [verifyAndRenewToken] },
+		listUsersController,
+	);
 
 	server
 		.withTypeProvider<ZodTypeProvider>()
 		.patch(
 			'/users/role',
-			{ schema: { body: updateUserRoleSchema }, onRequest: [verifyAndRenewToken] },
+			{ schema: { body: updateUserRoleSchema }, preValidation: [verifyAndRenewToken] },
 			updateUserRoleController,
 		);
 
@@ -42,7 +48,7 @@ const routes: Routes = (server) => {
 		.withTypeProvider<ZodTypeProvider>()
 		.delete(
 			'/users',
-			{ schema: { body: deleteUserSchema }, onRequest: [verifyAndRenewToken] },
+			{ schema: { body: deleteUserSchema }, preValidation: [verifyAndRenewToken] },
 			deleteUserController,
 		);
 };

@@ -3,7 +3,6 @@ import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.
 import { BadRequestError } from '@/shared/error/error.lib';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { UpdateDrinkReqBody } from './updateDrink.dtos';
-import { DRINK_MESSAGES } from '@/core/drinks/constants/drinks.constants';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { DrinkIngredient } from '@/core/drinks/entities/drink.entity';
 
@@ -16,20 +15,20 @@ export class UpdateDrinkService {
 	async execute({ id, translations, ingredients }: UpdateDrinkReqBody) {
 		const drinkExists = await this.drinksRepository.findById(id);
 		if (!drinkExists) {
-			throw new BadRequestError(DRINK_MESSAGES.notExist.message, { path: 'UpdateDrink.service.1' });
+			throw new BadRequestError('apiResponses.drinks.notExist', { path: 'UpdateDrink.service.1' });
 		}
 
 		const translationsName = mapToTranslationsName(translations);
 		const drinkNameALreadyExists = await this.drinksRepository.findByName(translationsName);
 		if (drinkNameALreadyExists && drinkExists._id.toString() !== drinkNameALreadyExists._id.toString()) {
-			throw new BadRequestError(DRINK_MESSAGES.alreadyExist.message, { path: 'UpdateDrink.service.2' });
+			throw new BadRequestError('apiResponses.drinks.nameAlreadyExist', { path: 'UpdateDrink.service.2' });
 		}
 
 		const ingredientsExists = await this.ingredientsRepository.findByIdList(
 			ingredients.map((ing) => ing.ingredient_id),
 		);
 		if (ingredientsExists.length !== ingredients.length) {
-			throw new BadRequestError(DRINK_MESSAGES.someIngredientsNotExist.message, {
+			throw new BadRequestError('apiResponses.drinks.someIngredientsNotExist', {
 				path: 'UpdateDrink.service.3',
 			});
 		}

@@ -1,37 +1,41 @@
-import { INGREDIENT_MESSAGES } from '@/core/drinks/constants/ingredients.constants';
+import { getObjectIdSchema } from '@/infrastructure/mongo/schemas/helpers/objectId.helpers';
+import { LocaleKey } from '@/shared/types/locale.types';
 import { z } from 'zod';
 
 // Fields validation
-export const ingredientIdValidation = z
-	.string({ required_error: INGREDIENT_MESSAGES.requiredId.message })
-	.length(24, { message: INGREDIENT_MESSAGES.invalidIdFormat.message });
+export const ingredientIdValidation = getObjectIdSchema({
+	required: 'apiResponses.ingredients.requiredId',
+	invalid: 'apiResponses.ingredients.invalidIdFormat',
+});
 
 export const ingredientNameValidation = z
-	.string({ required_error: INGREDIENT_MESSAGES.requiredName.message })
+	.string({ required_error: 'apiResponses.ingredients.requiredName' satisfies LocaleKey })
 	.trim()
 	.toLowerCase()
-	.min(1, { message: INGREDIENT_MESSAGES.invalidNameFormat.message })
+	.min(1, { message: 'apiResponses.ingredients.invalidNameFormat' satisfies LocaleKey })
 	.transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`);
 
 export const ingredientUnitValidation = z
-	.string({ required_error: INGREDIENT_MESSAGES.requiredUnit.message })
+	.string({ required_error: 'apiResponses.ingredients.requiredUnit' satisfies LocaleKey })
 	.trim()
 	.toLowerCase()
-	.min(1, { message: INGREDIENT_MESSAGES.invalidUnitFormat.message });
+	.min(1, { message: 'apiResponses.ingredients.invalidUnitFormat' satisfies LocaleKey });
 
 export const ingredientUnitPluralValidation = z
-	.string({ required_error: INGREDIENT_MESSAGES.requiredUnitPlural.message })
+	.string({ required_error: 'apiResponses.ingredients.requiredUnitPlural' satisfies LocaleKey })
 	.trim()
 	.toLowerCase()
-	.min(1, { message: INGREDIENT_MESSAGES.invalidUnitPluralFormat.message });
-
-export const ingredientCategoryIdValidation = z
-	.string({ required_error: INGREDIENT_MESSAGES.requiredCategory.message })
-	.length(24, { message: INGREDIENT_MESSAGES.invalidCategoryFormat.message });
+	.min(1, { message: 'apiResponses.ingredients.invalidUnitPluralFormat' satisfies LocaleKey });
 
 export const ingredientIsAlcoholicValidation = z.boolean({
-	required_error: INGREDIENT_MESSAGES.requiredIsAlcoholic.message,
+	required_error: 'apiResponses.ingredients.requiredIsAlcoholic' satisfies LocaleKey,
 });
+
+export const ingredientCategoryIdValidation = getObjectIdSchema({
+	required: 'apiResponses.ingredients.requiredCategory',
+	invalid: 'apiResponses.ingredients.invalidCategoryFormat',
+});
+
 // schemas
 export const ingredientTranslationSchema = z.object({
 	name: ingredientNameValidation,

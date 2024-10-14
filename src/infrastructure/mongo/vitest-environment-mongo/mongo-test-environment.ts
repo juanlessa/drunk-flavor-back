@@ -11,7 +11,7 @@ export default <Environment>{
 	transformMode: 'ssr',
 
 	async setup() {
-		if (env.TESTING_MONGO_DATABASE_MODE === 'inMemory') {
+		if (env.MONGO_PERSISTENCE_MODE === 'inMemory') {
 			mongod = await MongoMemoryServer.create();
 			connectionString = mongod.getUri();
 		}
@@ -20,13 +20,13 @@ export default <Environment>{
 
 		return {
 			async teardown() {
-				if (env.TESTING_MONGO_DATABASE_MODE === 'persistent') {
+				if (env.MONGO_PERSISTENCE_MODE === 'inDisk') {
 					await MongoRepository.Instance.dropAllCollections();
 				}
 
 				await MongoRepository.Instance.stop();
 
-				if (env.TESTING_MONGO_DATABASE_MODE === 'inMemory' && mongod) {
+				if (env.MONGO_PERSISTENCE_MODE === 'inMemory' && mongod) {
 					await mongod.stop();
 				}
 			},

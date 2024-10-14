@@ -8,7 +8,7 @@ import { deleteCategorySchema } from '@/core/drinks/useCases/categories/delete/d
 import { deleteCategoryController } from '@/core/drinks/useCases/categories/delete/deleteCategory.controller';
 import { getCategorySchema } from '@/core/drinks/useCases/categories/get/getCategory.schema';
 import { getCategoryController } from '@/core/drinks/useCases/categories/get/getCategory.controller';
-import { listCategoryQuerySchema } from '@/core/drinks/useCases/categories/list/listCategories.schema';
+import { listCategoriesQuerySchema } from '@/core/drinks/useCases/categories/list/listCategories.schema';
 import { listCategoriesController } from '@/core/drinks/useCases/categories/list/listCategories.controller';
 import { updateCategorySchema } from '@/core/drinks/useCases/categories/update/updateCategory.schema';
 import { updateCategoryController } from '@/core/drinks/useCases/categories/update/updateCategory.controller';
@@ -18,7 +18,7 @@ const routes: Routes = (server) => {
 		.withTypeProvider<ZodTypeProvider>()
 		.post(
 			'/categories',
-			{ schema: { body: createCategorySchema }, onRequest: [verifyAndRenewToken] },
+			{ schema: { body: createCategorySchema }, preValidation: [verifyAndRenewToken] },
 			createCategoryController,
 		);
 
@@ -28,13 +28,13 @@ const routes: Routes = (server) => {
 
 	server
 		.withTypeProvider<ZodTypeProvider>()
-		.get('/categories', { schema: { querystring: listCategoryQuerySchema } }, listCategoriesController);
+		.get('/categories', { schema: { querystring: listCategoriesQuerySchema } }, listCategoriesController);
 
 	server
 		.withTypeProvider<ZodTypeProvider>()
 		.patch(
 			'/categories',
-			{ schema: { body: updateCategorySchema }, onRequest: [verifyAndRenewToken] },
+			{ schema: { body: updateCategorySchema }, preValidation: [verifyAndRenewToken] },
 			updateCategoryController,
 		);
 
@@ -42,7 +42,7 @@ const routes: Routes = (server) => {
 		.withTypeProvider<ZodTypeProvider>()
 		.delete(
 			'/categories',
-			{ schema: { body: deleteCategorySchema }, onRequest: [verifyAndRenewToken] },
+			{ schema: { body: deleteCategorySchema }, preValidation: [verifyAndRenewToken] },
 			deleteCategoryController,
 		);
 };

@@ -1,5 +1,5 @@
 import { Schema, model, models } from 'mongoose';
-import { User, UserRolesEnum } from '@/core/accounts/entities/user.entity';
+import { User, UserRolesEnum, UserStatusEnum } from '@/core/accounts/entities/user.entity';
 
 export const UserSchema = new Schema<User>(
 	{
@@ -7,7 +7,8 @@ export const UserSchema = new Schema<User>(
 		surname: { type: String, required: true },
 		email: { type: String, required: true, unique: true, lowercase: true },
 		password: { type: String, required: true },
-		role: { type: String, default: UserRolesEnum.partner, enum: UserRolesEnum },
+		role: { type: String, default: UserRolesEnum.member, enum: UserRolesEnum },
+		status: { type: String, default: UserStatusEnum.idle, enum: UserStatusEnum },
 	},
 	{
 		toJSON: {

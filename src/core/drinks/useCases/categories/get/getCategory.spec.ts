@@ -2,24 +2,22 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { ObjectId } from 'mongodb';
 import { GetCategoryService } from './GetCategory.service';
-import { Translations } from '@/core/drinks/types/translations';
-import { CategoryTranslation } from '@/core/drinks/entities/category.entity';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
-import { createCategoryFactory } from '@/core/drinks/container';
+import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 
-let categoriesRepositoryInMemory: ICategoriesRepository;
+let categoriesRepository: ICategoriesRepository;
 let service: GetCategoryService;
 
 const { translations } = createCategoryFactory();
 
 describe('Get Ingredient', () => {
 	beforeEach(async () => {
-		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
-		service = new GetCategoryService(categoriesRepositoryInMemory);
+		categoriesRepository = new CategoriesRepositoryInMemory();
+		service = new GetCategoryService(categoriesRepository);
 	});
 	it('should be able to find a Category', async () => {
-		const createdCategory = await categoriesRepositoryInMemory.create({ translations });
+		const createdCategory = await categoriesRepository.create({ translations });
 
 		const categoryFound = await service.execute({ id: createdCategory._id.toString() });
 
