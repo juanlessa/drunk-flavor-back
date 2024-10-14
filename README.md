@@ -180,7 +180,7 @@ You can also run the unit tests in watch mode:
 npm run test:watch
 ```
 
-Template Tests
+### Template Tests
 
 To run only tests for email templates, use the following commands:
 
