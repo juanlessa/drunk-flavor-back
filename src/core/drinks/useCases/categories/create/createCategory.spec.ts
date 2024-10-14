@@ -6,27 +6,27 @@ import { BadRequestError } from '@/shared/error/error.lib';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 
-let categoriesRepositoryInMemory: ICategoriesRepository;
+let categoriesRepository: ICategoriesRepository;
 let service: CreateCategoryService;
 
 const { translations } = createCategoryFactory();
 
 describe('Create Category', () => {
 	beforeEach(() => {
-		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
-		service = new CreateCategoryService(categoriesRepositoryInMemory);
+		categoriesRepository = new CategoriesRepositoryInMemory();
+		service = new CreateCategoryService(categoriesRepository);
 	});
 
 	it('should be able to create a new category', async () => {
 		await service.execute({ translations });
 
-		const createdCategory = (await categoriesRepositoryInMemory.findByName(translations)) as Category;
+		const createdCategory = (await categoriesRepository.findByName(translations)) as Category;
 
 		expect(createdCategory).toHaveProperty('_id');
 	});
 
 	it('should not be able to create a category with an existing name', async () => {
-		await categoriesRepositoryInMemory.create({ translations });
+		await categoriesRepository.create({ translations });
 
 		await expect(service.execute({ translations })).rejects.toBeInstanceOf(BadRequestError);
 	});

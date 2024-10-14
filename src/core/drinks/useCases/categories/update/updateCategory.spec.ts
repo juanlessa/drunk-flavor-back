@@ -7,7 +7,7 @@ import { BadRequestError } from '@/shared/error/error.lib';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 
-let categoriesRepositoryInMemory: ICategoriesRepository;
+let categoriesRepository: ICategoriesRepository;
 let service: UpdateCategoryService;
 
 const { translations } = createCategoryFactory();
@@ -17,21 +17,19 @@ const { translations: updatedTranslations } = createCategoryFactory({
 
 describe('Update Category', () => {
 	beforeEach(() => {
-		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
-		service = new UpdateCategoryService(categoriesRepositoryInMemory);
+		categoriesRepository = new CategoriesRepositoryInMemory();
+		service = new UpdateCategoryService(categoriesRepository);
 	});
 
 	it('should be able to update a category', async () => {
-		const createdCategory = await categoriesRepositoryInMemory.create({ translations });
+		const createdCategory = await categoriesRepository.create({ translations });
 
 		await service.execute({
 			id: createdCategory._id.toString(),
 			translations: updatedTranslations,
 		});
 
-		const findUpdatedCategory = (await categoriesRepositoryInMemory.findById(
-			createdCategory._id.toString(),
-		)) as Category;
+		const findUpdatedCategory = (await categoriesRepository.findById(createdCategory._id.toString())) as Category;
 
 		expect(findUpdatedCategory._id).toEqual(createdCategory._id);
 		expect(findUpdatedCategory.translations).toEqual(updatedTranslations);
@@ -47,9 +45,9 @@ describe('Update Category', () => {
 	});
 
 	it('should not be able to update an ingredient name to an existing name', async () => {
-		const createdCategory = await categoriesRepositoryInMemory.create({ translations });
+		const createdCategory = await categoriesRepository.create({ translations });
 
-		await categoriesRepositoryInMemory.create({ translations: updatedTranslations });
+		await categoriesRepository.create({ translations: updatedTranslations });
 
 		await expect(
 			service.execute({

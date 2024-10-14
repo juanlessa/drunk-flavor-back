@@ -19,9 +19,9 @@ import { Readable } from 'node:stream';
 import { hasFileExtension } from '@/shared/helpers/file.helpers';
 import { FileMetadata } from '@/shared/types/file.types';
 
-let categoriesRepositoryInMemory: ICategoriesRepository;
-let ingredientsRepositoryInMemory: IIngredientsRepository;
-let drinksRepositoryInMemory: IDrinksRepository;
+let categoriesRepository: ICategoriesRepository;
+let ingredientsRepository: IIngredientsRepository;
+let drinksRepository: IDrinksRepository;
 let storageProvider: IStorageProvider;
 let service: UpdateDrinkCoverService;
 
@@ -49,19 +49,19 @@ describe('Update Drink', () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
-		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
-		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory();
-		drinksRepositoryInMemory = new DrinksRepositoryInMemory();
+		categoriesRepository = new CategoriesRepositoryInMemory();
+		ingredientsRepository = new IngredientsRepositoryInMemory();
+		drinksRepository = new DrinksRepositoryInMemory();
 		storageProvider = new MockStorageProvider();
-		service = new UpdateDrinkCoverService(drinksRepositoryInMemory, storageProvider);
+		service = new UpdateDrinkCoverService(drinksRepository, storageProvider);
 
-		const category = await categoriesRepositoryInMemory.create({ translations: categoryTranslations });
-		ingredient = await ingredientsRepositoryInMemory.create({
+		const category = await categoriesRepository.create({ translations: categoryTranslations });
+		ingredient = await ingredientsRepository.create({
 			translations: translationsIngredient,
 			is_alcoholic: false,
 			category: category,
 		});
-		createdDrink = await drinksRepositoryInMemory.create({
+		createdDrink = await drinksRepository.create({
 			translations,
 			ingredients: [{ quantity: 30, ingredient }],
 		});
@@ -79,7 +79,7 @@ describe('Update Drink', () => {
 			fileStream: mockedFileStream,
 		});
 
-		const findUpdatedDrink = (await drinksRepositoryInMemory.findById(createdDrink._id.toString())) as Drink;
+		const findUpdatedDrink = (await drinksRepository.findById(createdDrink._id.toString())) as Drink;
 
 		expect(findUpdatedDrink.cover).toBeDefined();
 		expect(findUpdatedDrink.cover?.mimetype).toEqual(fileMimetype);
@@ -110,7 +110,7 @@ describe('Update Drink', () => {
 	});
 
 	it('should be able to delete the existing drink cover during the update', async () => {
-		await drinksRepositoryInMemory.update({
+		await drinksRepository.update({
 			id: createdDrink._id.toString(),
 			cover: { name: fileMimetype, mimetype: fileMimetype, url: '' },
 		});
@@ -133,7 +133,7 @@ describe('Update Drink', () => {
 			fileStream: mockedFileStream,
 		});
 
-		const foundDrink = (await drinksRepositoryInMemory.findById(createdDrink._id.toString())) as Drink;
+		const foundDrink = (await drinksRepository.findById(createdDrink._id.toString())) as Drink;
 		const drinkCover = foundDrink.cover as FileMetadata;
 
 		expect(drinkCover).toBeDefined();

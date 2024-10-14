@@ -6,17 +6,11 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { createUserFactory } from '../../factories/user.factories';
 import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
-import { IUserTokensRepository } from '../../repositories/IUserTokens.repository';
-import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
-import { env } from '@/env';
-import { TokenTypeEnum } from '../../entities/userToken.entity';
 import { ObjectId } from 'mongodb';
 import { UpdatePasswordService } from './updatePassword.service';
 
-let cryptoProvider: ICryptoProvider;
 let hashProvider: IHashProvider;
 let usersRepository: IUsersRepository;
-let userTokensRepository: IUserTokensRepository;
 let service: UpdatePasswordService;
 
 const { name, surname, email, password, role, status } = createUserFactory();

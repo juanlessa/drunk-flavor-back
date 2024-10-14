@@ -8,7 +8,7 @@ import { BcryptHashProvider } from '@/shared/providers/cryptography/implementati
 import { LoginService } from './Login.service';
 import { UserStatusEnum } from '../../entities/user.entity';
 
-let usersRepositoryInMemory: IUsersRepository;
+let usersRepository: IUsersRepository;
 let hashProvider: IHashProvider;
 let service: LoginService;
 
@@ -16,13 +16,13 @@ const { name, surname, email, password, role, status } = createUserFactory();
 
 describe('Login', () => {
 	beforeEach(async () => {
-		usersRepositoryInMemory = new UsersRepositoryInMemory();
+		usersRepository = new UsersRepositoryInMemory();
 		hashProvider = new BcryptHashProvider();
-		service = new LoginService(usersRepositoryInMemory, hashProvider);
+		service = new LoginService(usersRepository, hashProvider);
 	});
 
 	it('should be able to login', async () => {
-		await usersRepositoryInMemory.create({
+		await usersRepository.create({
 			name,
 			surname,
 			email,
@@ -44,7 +44,7 @@ describe('Login', () => {
 	});
 
 	it('should not be able to login a non-active account', async () => {
-		await usersRepositoryInMemory.create({
+		await usersRepository.create({
 			name,
 			surname,
 			email,
@@ -57,7 +57,7 @@ describe('Login', () => {
 	});
 
 	it('should not be able to login an account with incorrect password', async () => {
-		await usersRepositoryInMemory.create({
+		await usersRepository.create({
 			name,
 			surname,
 			email,

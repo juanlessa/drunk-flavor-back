@@ -10,8 +10,8 @@ import { createIngredientFactory } from '@/core/drinks/factories/ingredient.fact
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 
-let categoriesRepositoryInMemory: ICategoriesRepository;
-let ingredientsRepositoryInMemory: IIngredientsRepository;
+let categoriesRepository: ICategoriesRepository;
+let ingredientsRepository: IIngredientsRepository;
 let service: DeleteIngredientService;
 
 const { translations: categoryTranslations } = createCategoryFactory();
@@ -20,14 +20,14 @@ const { translations, is_alcoholic } = createIngredientFactory();
 
 describe('Delete Ingredient', () => {
 	beforeEach(async () => {
-		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
-		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory();
-		service = new DeleteIngredientService(ingredientsRepositoryInMemory);
+		categoriesRepository = new CategoriesRepositoryInMemory();
+		ingredientsRepository = new IngredientsRepositoryInMemory();
+		service = new DeleteIngredientService(ingredientsRepository);
 
-		createdCategory = await categoriesRepositoryInMemory.create({ translations: categoryTranslations });
+		createdCategory = await categoriesRepository.create({ translations: categoryTranslations });
 	});
 	it('should be able to delete an ingredient', async () => {
-		const createdIngredient = await ingredientsRepositoryInMemory.create({
+		const createdIngredient = await ingredientsRepository.create({
 			translations,
 			category: createdCategory,
 			is_alcoholic,
@@ -35,7 +35,7 @@ describe('Delete Ingredient', () => {
 
 		await service.execute({ id: createdIngredient._id.toString() });
 
-		const findDeledIngredient = await ingredientsRepositoryInMemory.findById(createdIngredient._id.toString());
+		const findDeledIngredient = await ingredientsRepository.findById(createdIngredient._id.toString());
 
 		expect(findDeledIngredient).toBeNull();
 	});

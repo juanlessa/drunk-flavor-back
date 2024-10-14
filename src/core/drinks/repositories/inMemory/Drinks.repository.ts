@@ -12,10 +12,9 @@ import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 export class DrinksRepositoryInMemory implements IDrinksRepository {
 	drinks: Drink[] = [];
 
-	async create({ translations, ingredients }: CreateDrink): Promise<Drink> {
+	async create({ ...data }: CreateDrink): Promise<Drink> {
 		const drink: Drink = {
-			translations,
-			ingredients,
+			...data,
 			cover: undefined,
 			thumbnail: undefined,
 			_id: new ObjectId(),

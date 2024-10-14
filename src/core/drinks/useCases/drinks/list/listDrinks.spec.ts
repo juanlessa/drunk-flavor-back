@@ -14,9 +14,9 @@ import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { Drink } from '@/core/drinks/entities/drink.entity';
 import { MockStorageProvider } from '@/shared/providers/storage/implementations/MockStorage.provider';
 
-let categoriesRepositoryInMemory: ICategoriesRepository;
-let ingredientsRepositoryInMemory: IIngredientsRepository;
-let drinksRepositoryInMemory: IDrinksRepository;
+let categoriesRepository: ICategoriesRepository;
+let ingredientsRepository: IIngredientsRepository;
+let drinksRepository: IDrinksRepository;
 let storageProvider: IStorageProvider;
 let service: ListDrinksService;
 
@@ -46,32 +46,32 @@ describe('List Drinks', () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 
-		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
-		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory();
+		categoriesRepository = new CategoriesRepositoryInMemory();
+		ingredientsRepository = new IngredientsRepositoryInMemory();
+		drinksRepository = new DrinksRepositoryInMemory();
 		storageProvider = new MockStorageProvider();
-		drinksRepositoryInMemory = new DrinksRepositoryInMemory();
-		service = new ListDrinksService(drinksRepositoryInMemory, storageProvider);
+		service = new ListDrinksService(drinksRepository, storageProvider);
 
-		const category1 = await categoriesRepositoryInMemory.create(createCategory1);
-		const ingredient1 = await ingredientsRepositoryInMemory.create({
+		const category1 = await categoriesRepository.create(createCategory1);
+		const ingredient1 = await ingredientsRepository.create({
 			translations: translationsIngredient1,
 			is_alcoholic: false,
 			category: category1,
 		});
-		const ingredient2 = await ingredientsRepositoryInMemory.create({
+		const ingredient2 = await ingredientsRepository.create({
 			translations: translationsIngredient2,
 			is_alcoholic: false,
 			category: category1,
 		});
-		createdDrink1 = await drinksRepositoryInMemory.create({
+		createdDrink1 = await drinksRepository.create({
 			translations: translationsDrink1,
 			ingredients: [{ ingredient: ingredient1, quantity: 60 }],
 		});
-		await drinksRepositoryInMemory.create({
+		await drinksRepository.create({
 			translations: translationsDrink2,
 			ingredients: [{ ingredient: ingredient2, quantity: 60 }],
 		});
-		await drinksRepositoryInMemory.create({
+		await drinksRepository.create({
 			translations: translationsDrink3,
 			ingredients: [
 				{ ingredient: ingredient1, quantity: 30 },
@@ -114,7 +114,7 @@ describe('List Drinks', () => {
 	});
 
 	it('should be able to add the cover and thumbnail url to the found drinks', async () => {
-		await drinksRepositoryInMemory.update({
+		await drinksRepository.update({
 			id: createdDrink1._id.toString(),
 			cover: { name: 'coverFile.png', mimetype: 'image/png', url: '' },
 			thumbnail: { name: 'thumbnailFile.jpeg', mimetype: 'image/jpeg', url: '' },

@@ -12,10 +12,10 @@ import { filterItemsBySearchCriteria, paginateItems, sortItemsByFields } from '@
 export class CategoriesRepositoryInMemory implements ICategoriesRepository {
 	categories: Category[] = [];
 
-	async create({ translations }: CreateCategory): Promise<Category> {
+	async create({ ...data }: CreateCategory): Promise<Category> {
 		const category: Category = {
 			_id: new ObjectId(),
-			translations,
+			...data,
 			created_at: new Date(),
 			updated_at: new Date(),
 		};

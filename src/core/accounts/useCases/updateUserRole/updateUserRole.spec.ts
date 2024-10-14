@@ -9,7 +9,7 @@ import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { createUserFactory } from '../../factories/user.factories';
 import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
 
-let usersRepositoryInMemory: IUsersRepository;
+let usersRepository: IUsersRepository;
 let hashProvider: IHashProvider;
 let service: UpdateUserRoleService;
 
@@ -18,12 +18,12 @@ const { name, surname, email, password, role, status } = createUserFactory({ rol
 describe('Update User Role', () => {
 	beforeEach(async () => {
 		hashProvider = new BcryptHashProvider();
-		usersRepositoryInMemory = new UsersRepositoryInMemory();
-		service = new UpdateUserRoleService(usersRepositoryInMemory);
+		usersRepository = new UsersRepositoryInMemory();
+		service = new UpdateUserRoleService(usersRepository);
 	});
 
 	it('Should be able to update the role of a user', async () => {
-		const createdPartnerUser = await usersRepositoryInMemory.create({
+		const createdPartnerUser = await usersRepository.create({
 			name,
 			surname,
 			email,
@@ -34,7 +34,7 @@ describe('Update User Role', () => {
 
 		await service.execute({ user_id: createdPartnerUser._id.toString(), role: UserRolesEnum.admin });
 
-		const verifyUser = (await usersRepositoryInMemory.findById(createdPartnerUser._id.toString())) as User;
+		const verifyUser = (await usersRepository.findById(createdPartnerUser._id.toString())) as User;
 
 		expect(verifyUser.role).toEqual(UserRolesEnum.admin);
 	});

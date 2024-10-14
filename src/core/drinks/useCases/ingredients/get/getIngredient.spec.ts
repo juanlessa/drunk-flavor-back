@@ -10,8 +10,8 @@ import { createCategoryFactory } from '@/core/drinks/factories/category.factorie
 import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 import { Category } from '@/core/drinks/entities/category.entity';
 
-let categoriesRepositoryInMemory: ICategoriesRepository;
-let ingredientsRepositoryInMemory: IIngredientsRepository;
+let categoriesRepository: ICategoriesRepository;
+let ingredientsRepository: IIngredientsRepository;
 let service: GetIngredientService;
 
 const { translations: categoryTranslations } = createCategoryFactory();
@@ -20,14 +20,14 @@ const { translations, is_alcoholic } = createIngredientFactory();
 
 describe('Get Ingredient', () => {
 	beforeEach(async () => {
-		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
-		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory();
-		service = new GetIngredientService(ingredientsRepositoryInMemory);
+		categoriesRepository = new CategoriesRepositoryInMemory();
+		ingredientsRepository = new IngredientsRepositoryInMemory();
+		service = new GetIngredientService(ingredientsRepository);
 
-		createdCategory = await categoriesRepositoryInMemory.create({ translations: categoryTranslations });
+		createdCategory = await categoriesRepository.create({ translations: categoryTranslations });
 	});
 	it('should be able to find an ingredient', async () => {
-		const createdIngredient = await ingredientsRepositoryInMemory.create({
+		const createdIngredient = await ingredientsRepository.create({
 			translations,
 			category: createdCategory,
 			is_alcoholic,

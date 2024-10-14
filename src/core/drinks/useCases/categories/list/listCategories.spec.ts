@@ -5,7 +5,7 @@ import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.re
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 
-let categoriesRepositoryInMemory: ICategoriesRepository;
+let categoriesRepository: ICategoriesRepository;
 let service: ListCategoriesService;
 
 const createCategory1 = createCategoryFactory({
@@ -23,13 +23,13 @@ const createCategory4 = createCategoryFactory({
 
 describe('List Categories', () => {
 	beforeEach(async () => {
-		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
-		service = new ListCategoriesService(categoriesRepositoryInMemory);
+		categoriesRepository = new CategoriesRepositoryInMemory();
+		service = new ListCategoriesService(categoriesRepository);
 
-		await categoriesRepositoryInMemory.create(createCategory1);
-		await categoriesRepositoryInMemory.create(createCategory2);
-		await categoriesRepositoryInMemory.create(createCategory3);
-		await categoriesRepositoryInMemory.create(createCategory4);
+		await categoriesRepository.create(createCategory1);
+		await categoriesRepository.create(createCategory2);
+		await categoriesRepository.create(createCategory3);
+		await categoriesRepository.create(createCategory4);
 	});
 
 	it('should be able to list categories', async () => {

@@ -7,7 +7,7 @@ import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { createUserFactory } from '../../factories/user.factories';
 import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
 
-let usersRepositoryInMemory: IUsersRepository;
+let usersRepository: IUsersRepository;
 let hashProvider: IHashProvider;
 let service: ListUsersService;
 
@@ -17,12 +17,12 @@ const partnerUserData = createUserFactory({ email: 'partner@example.com', role: 
 describe('List Users', () => {
 	beforeEach(() => {
 		hashProvider = new BcryptHashProvider();
-		usersRepositoryInMemory = new UsersRepositoryInMemory();
-		service = new ListUsersService(usersRepositoryInMemory);
+		usersRepository = new UsersRepositoryInMemory();
+		service = new ListUsersService(usersRepository);
 	});
 
 	it('should be able to list users', async () => {
-		await usersRepositoryInMemory.create({
+		await usersRepository.create({
 			name: partnerUserData.name,
 			surname: partnerUserData.surname,
 			email: partnerUserData.email,
@@ -30,7 +30,7 @@ describe('List Users', () => {
 			status: partnerUserData.status,
 			password: await hashProvider.hash(partnerUserData.password),
 		});
-		const createdAdminUser = await usersRepositoryInMemory.create({
+		const createdAdminUser = await usersRepository.create({
 			name: adminUserData.name,
 			surname: adminUserData.surname,
 			email: adminUserData.email,

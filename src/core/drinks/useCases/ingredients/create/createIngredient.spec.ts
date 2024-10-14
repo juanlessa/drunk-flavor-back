@@ -11,8 +11,8 @@ import { createIngredientFactory } from '@/core/drinks/factories/ingredient.fact
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 
-let categoriesRepositoryInMemory: ICategoriesRepository;
-let ingredientsRepositoryInMemory: IIngredientsRepository;
+let categoriesRepository: ICategoriesRepository;
+let ingredientsRepository: IIngredientsRepository;
 let service: CreateIngredientService;
 
 const { translations: categoryTranslations } = createCategoryFactory();
@@ -21,17 +21,17 @@ const { translations, is_alcoholic } = createIngredientFactory();
 
 describe('Create Ingredient', () => {
 	beforeEach(async () => {
-		categoriesRepositoryInMemory = new CategoriesRepositoryInMemory();
-		ingredientsRepositoryInMemory = new IngredientsRepositoryInMemory();
-		service = new CreateIngredientService(ingredientsRepositoryInMemory, categoriesRepositoryInMemory);
+		categoriesRepository = new CategoriesRepositoryInMemory();
+		ingredientsRepository = new IngredientsRepositoryInMemory();
+		service = new CreateIngredientService(ingredientsRepository, categoriesRepository);
 
-		createdCategory = await categoriesRepositoryInMemory.create({ translations: categoryTranslations });
+		createdCategory = await categoriesRepository.create({ translations: categoryTranslations });
 	});
 
 	it('should be able to create a new ingredient', async () => {
 		await service.execute({ translations, is_alcoholic, category_id: createdCategory._id.toString() });
 
-		const createdIngredient = (await ingredientsRepositoryInMemory.findByName(translations)) as Ingredient;
+		const createdIngredient = (await ingredientsRepository.findByName(translations)) as Ingredient;
 
 		expect(createdIngredient).toHaveProperty('_id');
 		expect(createdIngredient.translations).toEqual(translations);
@@ -40,7 +40,7 @@ describe('Create Ingredient', () => {
 	});
 
 	it('should not be able to create an ingredient with an existing name', async () => {
-		await ingredientsRepositoryInMemory.create({
+		await ingredientsRepository.create({
 			translations,
 			is_alcoholic,
 			category: createdCategory,
