@@ -66,7 +66,7 @@ describe('Confirm Email', () => {
 		const verifyUser = (await usersRepository.findById(createdUser._id.toString())) as User;
 
 		expect(verifyUser).toBeDefined();
-		expect(verifyUser.status).not.toEqual(UserStatusEnum['active']);
+		expect(verifyUser.status).toEqual(UserStatusEnum['active']);
 	});
 
 	it('should not be able to confirm the email using a nonexisting token', async () => {

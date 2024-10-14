@@ -1,18 +1,16 @@
-import { categoryTranslationSchema } from '@/core/drinks/schemas/category.schemas';
-import { generateTranslationsFieldSchema } from '@/core/drinks/schemas/helpers/translations.helpers';
 import { sortOrderSchema, searchTermSchema } from '@/shared/schemas/query.schemas';
 import { stringifiedJSONSchema } from '@/shared/schemas/stringified.schemas';
 import { z } from 'zod';
 
 const searchSchema = z.object({
-	...generateTranslationsFieldSchema(categoryTranslationSchema, ['name'], searchTermSchema).shape,
+	email: searchTermSchema,
 });
 
 const sortSchema = z.object({
-	...generateTranslationsFieldSchema(categoryTranslationSchema, ['name'], sortOrderSchema).shape,
+	email: sortOrderSchema,
 });
 
-export const listCategoriesQuerySchema = z.object({
+export const listUsersQuerySchema = z.object({
 	limit: z.coerce.number().optional(),
 	page: z.coerce.number().optional(),
 	search: stringifiedJSONSchema(searchSchema).optional(),

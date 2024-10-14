@@ -3,7 +3,6 @@ import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/U
 import { ObjectId } from 'mongodb';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
-import { User } from '@/core/accounts/entities/user.entity';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { GetProfileService } from './GetProfile.service';
 

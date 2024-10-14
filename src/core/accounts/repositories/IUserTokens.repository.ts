@@ -1,5 +1,6 @@
 import { TokenType, UserToken } from '@/core/accounts/entities/userToken.entity';
 import { CreateUserToken, FindByUserIdAndType, UpdateUserToken } from '../dtos/userToken.dtos';
+import { QueryParams } from '@/shared/types/query.types';
 
 export interface IUserTokensRepository {
 	create(data: CreateUserToken): Promise<UserToken>;
@@ -10,5 +11,5 @@ export interface IUserTokensRepository {
 	findByToken(token: string): Promise<UserToken | null>;
 	findByUserIdAndType(data: FindByUserIdAndType): Promise<UserToken | null>;
 	findByUserId(user_id: string): Promise<UserToken[]>;
-	findAll(): Promise<UserToken[]>;
+	findAll(query: QueryParams): Promise<UserToken[]>;
 }

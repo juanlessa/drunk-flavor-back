@@ -1,11 +1,12 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
+import { ListUsers } from './listUsers.dtos';
 
 export class ListUsersService {
 	constructor(private usersRepository: IUsersRepository) {}
 
-	async execute(adminId: string) {
-		const users = await this.usersRepository.findAll();
+	async execute({ query = {} }: ListUsers) {
+		const categories = await this.usersRepository.findAll(query);
 
-		return users.filter((u) => u._id.toString() !== adminId);
+		return categories;
 	}
 }

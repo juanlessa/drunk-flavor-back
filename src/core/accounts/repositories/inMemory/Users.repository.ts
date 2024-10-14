@@ -4,67 +4,82 @@ import { ObjectId } from 'mongodb';
 import { User } from '@/core/accounts/entities/user.entity';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { omitUserPassword } from '../../mappers/user.mappers';
+import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
+import { QueryParams } from '@/shared/types/query.types';
+import { filterItemsBySearchCriteria, paginateItems, sortItemsByFields } from '@/shared/helpers/query.helpers';
+import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 
 export class UsersRepositoryInMemory implements IUsersRepository {
-	users: User[] = [];
+	collection: User[] = [];
 
 	async create(data: CreateUser): Promise<User> {
-		const user: User = {
+		const record: User = {
 			_id: new ObjectId(),
 			...data,
 			created_at: new Date(),
 			updated_at: new Date(),
 		};
-		this.users.push(user);
-		return user;
+		this.collection.push(record);
+		return record;
 	}
 
 	async update({ id, ...data }: UpdateUser): Promise<User> {
-		const userIndex = this.users.findIndex((u) => u._id.toString() === id);
-		if (userIndex === -1) {
+		const recordIndex = this.collection.findIndex((rec) => rec._id.toString() === id);
+		if (recordIndex === -1) {
 			throw new NotFoundError('apiResponses.users.notFound', {
 				path: 'Users.repository.update',
 				cause: 'Error on findOneAndUpdate operation',
 			});
 		}
 
-		const user = this.users[userIndex];
-		user.name = data.name ?? user.name;
-		user.surname = data.surname ?? user.surname;
-		user.email = data.email ?? user.email;
-		user.password = data.password ?? user.password;
-		user.role = data.role ?? user.role;
-		user.updated_at = new Date();
+		let record = this.collection[recordIndex];
+		record = deepUpdate(data, record);
+		record.updated_at = new Date();
 
-		this.users[userIndex] = user;
-		return user;
+		this.collection[recordIndex] = record;
+		return record;
 	}
 
 	async delete(id: string): Promise<User> {
-		const userIndex = this.users.findIndex((u) => u._id.toString() === id);
-		if (userIndex === -1) {
+		const recordIndex = this.collection.findIndex((rec) => rec._id.toString() === id);
+		if (recordIndex === -1) {
 			throw new NotFoundError('apiResponses.users.notFound', {
 				path: 'Users.repository.delete',
 				cause: 'Error on findOneAndDelete operation',
 			});
 		}
 
-		const [deletedUser] = this.users.splice(userIndex, 1);
-		return deletedUser;
+		const [deletedRecord] = this.collection.splice(recordIndex, 1);
+		return deletedRecord;
 	}
 
 	async findByEmail(email: string): Promise<User | null> {
-		const foundUser = this.users.find((user) => user.email === email);
-		return foundUser || null;
+		const recordFound = this.collection.find((rec) => rec.email === email);
+		return recordFound || null;
 	}
 
 	async findById(id: string): Promise<User | null> {
-		const foundUser = this.users.find((user) => user._id.toString() === id);
-		return foundUser || null;
+		const recordFound = this.collection.find((rec) => rec._id.toString() === id);
+		return recordFound || null;
 	}
 
-	async findAll(): Promise<UserWithoutPassword[]> {
-		const results = [...this.users];
-		return results.map(omitUserPassword);
+	async findAll(query: QueryParams): Promise<UserWithoutPassword[]> {
+		let found = [...this.collection];
+
+		if (query.search) {
+			found = filterItemsBySearchCriteria(found, query.search);
+		}
+
+		if (query.sort) {
+			found = sortItemsByFields(found, query.sort);
+		}
+
+		found = paginateItems(
+			found,
+			query.limit || DEFAULT_QUERY_PARAMS.limit,
+			query.page || DEFAULT_QUERY_PARAMS.page,
+		);
+
+		return found.map(omitUserPassword);
 	}
 }

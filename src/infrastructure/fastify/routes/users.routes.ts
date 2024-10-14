@@ -6,7 +6,10 @@ import { createUserController } from '@/core/accounts/useCases/createUser/create
 import { createUserSchema } from '@/core/accounts/useCases/createUser/createUser.schema';
 import { deleteUserSchema } from '@/core/accounts/useCases/deleteUser/deleteUser.schema';
 import { deleteUserController } from '@/core/accounts/useCases/deleteUser/deleteUser.controller';
+import { listUsersQuerySchema } from '@/core/accounts/useCases/listUsers/listUsers.schema';
 import { listUsersController } from '@/core/accounts/useCases/listUsers/listUsers.controller';
+import { getUserSchema } from '@/core/accounts/useCases/getUser/getUser.schema';
+import { getUserController } from '@/core/accounts/useCases/getUser/getUser.controller';
 import { updateUserRoleSchema } from '@/core/accounts/useCases/updateUserRole/updateUserRole.schema';
 import { updateUserRoleController } from '@/core/accounts/useCases/updateUserRole/updateUserRole.controller';
 
@@ -19,7 +22,19 @@ const routes: Routes = (server) => {
 			createUserController,
 		);
 
-	server.get('/users', { preValidation: [verifyAndRenewToken] }, listUsersController);
+	server
+		.withTypeProvider<ZodTypeProvider>()
+		.get(
+			'/users/:id',
+			{ schema: { params: getUserSchema }, preValidation: [verifyAndRenewToken] },
+			getUserController,
+		);
+
+	server.get(
+		'/users',
+		{ schema: { querystring: listUsersQuerySchema }, preValidation: [verifyAndRenewToken] },
+		listUsersController,
+	);
 
 	server
 		.withTypeProvider<ZodTypeProvider>()
