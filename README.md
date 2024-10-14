@@ -40,7 +40,7 @@ To run the DrunkFlavor backend locally, you must have an instance of MongoDB.
 To install MongoDB on macOS, execute the command below.
 
 ```shell
-brew install mongodb-community@6.0
+brew install mongodb-community
 ```
 
 If you are using a different operating system, please refer to the installation guide on the
@@ -156,7 +156,7 @@ npm run dev:watch
 On macOS, you can execute the command below to start the MongoDB service.
 
 ```shell
-brew services start mongodb-community@6.0
+brew services start mongodb-community
 ```
 
 If you are using a different operating system, please refer to the documentation on the
