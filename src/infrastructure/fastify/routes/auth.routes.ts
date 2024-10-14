@@ -3,6 +3,8 @@ import { pluginGenerator } from '../helpers/fastify.helpers';
 import { Routes } from '../types/fastify.types';
 import { signupSchema } from '@/core/accounts/useCases/signup/signup.schema';
 import { signupController } from '@/core/accounts/useCases/signup/signup.controller';
+import { confirmEmailSchema } from '@/core/accounts/useCases/confirmEmail/confirmEmail.schema';
+import { confirmEmailController } from '@/core/accounts/useCases/confirmEmail/confirmEmail.controller';
 import { loginController } from '@/core/accounts/useCases/login/login.controller';
 import { loginSchema } from '@/core/accounts/useCases/login/login.schema';
 import { forgotPasswordSchema } from '@/core/accounts/useCases/forgotPassword/forgotPassword.schema';
@@ -19,6 +21,10 @@ import { verifyAndRenewToken } from '../middlewares/verifyAndRenewToken';
 
 const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post('/signup', { schema: { body: signupSchema } }, signupController);
+
+	server
+		.withTypeProvider<ZodTypeProvider>()
+		.post('/confirm-email', { schema: { body: confirmEmailSchema } }, confirmEmailController);
 
 	server.withTypeProvider<ZodTypeProvider>().post('/login', { schema: { body: loginSchema } }, loginController);
 
