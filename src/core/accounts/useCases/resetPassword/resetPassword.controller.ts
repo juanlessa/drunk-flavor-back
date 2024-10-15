@@ -3,8 +3,8 @@ import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { ResetPasswordReqBody } from './resetPassword.dtos';
 import { resolveResetPasswordService } from './resetPassword.container';
 
-export const resetPasswordController: Controller = async (request, reply) => {
-	const { token, password } = request.body as ResetPasswordReqBody;
+export const resetPasswordController: Controller<{ Body: ResetPasswordReqBody }> = async (request, reply) => {
+	const { token, password } = request.body;
 
 	const service = resolveResetPasswordService();
 

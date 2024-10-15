@@ -3,8 +3,8 @@ import { UpdateUserRoleReqBody } from './updateUserRole.dtos';
 import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { resolveUpdateUserRoleService } from './updateUserRole.container';
 
-export const updateUserRoleController: Controller = async (request, reply) => {
-	const { user_id, role } = request.body as UpdateUserRoleReqBody;
+export const updateUserRoleController: Controller<{ Body: UpdateUserRoleReqBody }> = async (request, reply) => {
+	const { user_id, role } = request.body;
 
 	const service = resolveUpdateUserRoleService();
 

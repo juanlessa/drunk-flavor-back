@@ -3,8 +3,8 @@ import { resolveCreateCategoryService } from './createCategory.container';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { CreateCategoryReqBody } from './createCategory.dtos';
 
-export const createCategoryController: Controller = async (request, reply) => {
-	const { translations } = request.body as CreateCategoryReqBody;
+export const createCategoryController: Controller<{ Body: CreateCategoryReqBody }> = async (request, reply) => {
+	const { translations } = request.body;
 
 	const service = resolveCreateCategoryService();
 

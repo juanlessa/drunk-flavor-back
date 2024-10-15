@@ -3,8 +3,8 @@ import { CreateIngredientReqBody } from './createIngredient.dtos';
 import { resolveCreateIngredientService } from './createIngredient.container';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 
-export const createIngredientController: Controller = async (request, reply) => {
-	const { translations, category_id, is_alcoholic } = request.body as CreateIngredientReqBody;
+export const createIngredientController: Controller<{ Body: CreateIngredientReqBody }> = async (request, reply) => {
+	const { translations, category_id, is_alcoholic } = request.body;
 
 	const service = resolveCreateIngredientService();
 

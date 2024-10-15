@@ -3,8 +3,8 @@ import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { CreateUserReqBody } from './signup.dtos';
 import { resolveSignupService } from './signup.container';
 
-export const signupController: Controller = async (request, response) => {
-	const { name, surname, email, password } = request.body as CreateUserReqBody;
+export const signupController: Controller<{ Body: CreateUserReqBody }> = async (request, response) => {
+	const { name, surname, email, password } = request.body;
 
 	const service = resolveSignupService();
 

@@ -3,8 +3,8 @@ import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { DeleteDrinkReqBody } from './deleteDrink.dtos';
 import { resolveDeleteDrinkService } from './deleteDrink.container';
 
-export const deleteDrinkController: Controller = async (request, reply) => {
-	const { id } = request.body as DeleteDrinkReqBody;
+export const deleteDrinkController: Controller<{ Body: DeleteDrinkReqBody }> = async (request, reply) => {
+	const { id } = request.body;
 
 	const service = resolveDeleteDrinkService();
 

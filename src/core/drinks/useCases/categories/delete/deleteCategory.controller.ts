@@ -3,8 +3,8 @@ import { resolveDeleteCategoryService } from './deleteCategory.container';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { DeleteCategoryReqBody } from './deleteCategory.dtos';
 
-export const deleteCategoryController: Controller = async (request, reply) => {
-	const { id } = request.body as DeleteCategoryReqBody;
+export const deleteCategoryController: Controller<{ Body: DeleteCategoryReqBody }> = async (request, reply) => {
+	const { id } = request.body;
 
 	const service = resolveDeleteCategoryService();
 
