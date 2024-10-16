@@ -24,10 +24,6 @@ export type Middleware = <Request extends FastifyRequest = FastifyRequest, Reply
 	reply: Reply,
 ) => unknown;
 
-export type ErrorHandler = <Request extends FastifyRequest = FastifyRequest, Reply extends FastifyReply = FastifyReply>(
-	error: Error,
-	request: Request,
-	reply: Reply,
-) => unknown;
+export type ErrorHandler = FastifyInstance['errorHandler'];
 
 export type Routes = <Server extends FastifyInstance = FastifyInstance>(server: Server) => unknown;
