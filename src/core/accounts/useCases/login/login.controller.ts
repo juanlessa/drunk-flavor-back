@@ -14,7 +14,7 @@ export const loginController: Controller<{ Body: LoginReqBody }> = async (reques
 		email,
 	});
 
-	const accessToken = await reply.jwtSign({}, { sign: { sub: user.id } });
+	const accessToken = await reply.jwtSign({ role: user.role }, { sign: { sub: user.id } });
 	const refreshToken = await reply.sessionJwtSign({}, { sign: { sub: user.id } });
 
 	request.session.set(AUTH_SESSION, {
