@@ -1,6 +1,6 @@
+import mongoose, { Schema } from 'mongoose';
 import { TokenTypeEnum, UserToken } from '@/core/accounts/entities/userToken.entity';
 import { env } from '@/env';
-import { Schema, model, models } from 'mongoose';
 
 export const UserTokenSchema = new Schema<UserToken>(
 	{
@@ -22,4 +22,5 @@ export const UserTokenSchema = new Schema<UserToken>(
 	},
 );
 
-export const UserTokenModel = models['users-tokens'] || model<UserToken>('users-tokens', UserTokenSchema);
+export const UserTokenModel =
+	mongoose.models['users-tokens'] || mongoose.model<UserToken>('users-tokens', UserTokenSchema);
