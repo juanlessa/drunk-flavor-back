@@ -3,8 +3,8 @@ import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { UpdateDrinkCoverReqParams } from './updateDrinkCover.dtos';
 import { resolveUpdateDrinkCoverService } from './updateDrinkCover.container';
 
-export const updateDrinkCoverController: Controller = async (request, reply) => {
-	const { id } = request.params as UpdateDrinkCoverReqParams;
+export const updateDrinkCoverController: Controller<{ Params: UpdateDrinkCoverReqParams }> = async (request, reply) => {
+	const { id } = request.params;
 	const data = await request.file();
 
 	if (!data) {

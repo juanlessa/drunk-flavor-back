@@ -2,8 +2,8 @@ import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { resolveGetCategoryService } from './getCategory.container';
 import { GetCategoryReqParams } from './getCategory.dtos';
 
-export const getCategoryController: Controller = async (request, reply) => {
-	const { id } = request.params as GetCategoryReqParams;
+export const getCategoryController: Controller<{ Params: GetCategoryReqParams }> = async (request, reply) => {
+	const { id } = request.params;
 
 	const service = resolveGetCategoryService();
 

@@ -1,4 +1,4 @@
-import { Schema, model, models } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { User, UserRolesEnum, UserStatusEnum } from '@/core/accounts/entities/user.entity';
 
 export const UserSchema = new Schema<User>(
@@ -23,4 +23,4 @@ export const UserSchema = new Schema<User>(
 	},
 );
 
-export const UserModel = models['users'] || model<User>('users', UserSchema);
+export const UserModel = mongoose.models['users'] || mongoose.model<User>('users', UserSchema);

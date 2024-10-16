@@ -3,8 +3,8 @@ import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { DeleteUserReqBody } from './deleteUser.dtos';
 
-export const deleteUserController: Controller = async (request, reply) => {
-	const { id } = request.body as DeleteUserReqBody;
+export const deleteUserController: Controller<{ Body: DeleteUserReqBody }> = async (request, reply) => {
+	const { id } = request.body;
 
 	const service = resolveDeleteUserService();
 

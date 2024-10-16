@@ -3,8 +3,8 @@ import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { ConfirmEmailReqBody } from './confirmEmail.dtos';
 import { resolveConfirmEmailService } from './confirmEmail.container';
 
-export const confirmEmailController: Controller = async (request, reply) => {
-	const { token } = request.body as ConfirmEmailReqBody;
+export const confirmEmailController: Controller<{ Body: ConfirmEmailReqBody }> = async (request, reply) => {
+	const { token } = request.body;
 
 	const service = resolveConfirmEmailService();
 

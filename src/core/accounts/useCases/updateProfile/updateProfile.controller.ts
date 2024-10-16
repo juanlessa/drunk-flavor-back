@@ -3,8 +3,8 @@ import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { UpdateUserProfileReqBody } from './updateProfile.dtos';
 import { resolveUpdateUpdateProfileService } from './updateProfile.container';
 
-export const updateProfileController: Controller = async (request, reply) => {
-	const { name, surname } = request.body as UpdateUserProfileReqBody;
+export const updateProfileController: Controller<{ Body: UpdateUserProfileReqBody }> = async (request, reply) => {
+	const { name, surname } = request.body;
 	const { id } = request.user;
 
 	const service = resolveUpdateUpdateProfileService();

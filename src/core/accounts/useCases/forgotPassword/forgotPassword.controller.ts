@@ -3,8 +3,8 @@ import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { ForgotPasswordReqBody } from './forgotPassword.dtos';
 import { resolveForgotPasswordService } from './forgotPassword.container';
 
-export const forgotPasswordController: Controller = async (request, reply) => {
-	const { email } = request.body as ForgotPasswordReqBody;
+export const forgotPasswordController: Controller<{ Body: ForgotPasswordReqBody }> = async (request, reply) => {
+	const { email } = request.body;
 
 	const service = resolveForgotPasswordService();
 

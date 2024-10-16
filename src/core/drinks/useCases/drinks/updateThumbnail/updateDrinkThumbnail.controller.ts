@@ -3,8 +3,11 @@ import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { resolveUpdateDrinkThumbnailService } from './updateDrinkThumbnail.container';
 import { UpdateDrinkThumbnailReqParams } from './updateDrinkThumbnail.dtos';
 
-export const updateDrinkThumbnailController: Controller = async (request, reply) => {
-	const { id } = request.params as UpdateDrinkThumbnailReqParams;
+export const updateDrinkThumbnailController: Controller<{ Params: UpdateDrinkThumbnailReqParams }> = async (
+	request,
+	reply,
+) => {
+	const { id } = request.params;
 	const data = await request.file();
 
 	if (!data) {

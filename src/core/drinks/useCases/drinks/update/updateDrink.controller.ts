@@ -3,8 +3,8 @@ import { resolveUpdateDrinkService } from './updateDrink.container';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { UpdateDrinkReqBody } from './updateDrink.dtos';
 
-export const updateDrinkController: Controller = async (request, reply) => {
-	const { id, translations, ingredients } = request.body as UpdateDrinkReqBody;
+export const updateDrinkController: Controller<{ Body: UpdateDrinkReqBody }> = async (request, reply) => {
+	const { id, translations, ingredients } = request.body;
 
 	const service = resolveUpdateDrinkService();
 

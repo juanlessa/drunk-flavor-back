@@ -4,8 +4,8 @@ import { AUTH_COOKIE, AUTH_COOKIE_OPTIONS } from '@/infrastructure/fastify/const
 import type { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { LoginReqBody } from './login.dtos';
 
-export const loginController: Controller = async (request, reply) => {
-	const { password, email } = request.body as LoginReqBody;
+export const loginController: Controller<{ Body: LoginReqBody }> = async (request, reply) => {
+	const { password, email } = request.body;
 
 	const service = resolveLoginServiceService();
 

@@ -2,8 +2,8 @@ import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { ListDrinksReqQuery } from './listDrinks.dtos';
 import { resolveListDrinksService } from './listDrinks.container';
 
-export const listDrinksController: Controller = async (request, reply) => {
-	const { limit, page, search, sort } = request.query as ListDrinksReqQuery;
+export const listDrinksController: Controller<{ Querystring: ListDrinksReqQuery }> = async (request, reply) => {
+	const { limit, page, search, sort } = request.query;
 
 	const service = resolveListDrinksService();
 

@@ -1,4 +1,4 @@
-import { Schema, model, models } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { Ingredient, IngredientTranslation } from '@/core/drinks/entities/ingredient.entity';
 import { CategorySchema } from '@/core/drinks/infra/mongo/entities/category.model';
 import { getTranslationsSchema } from '../helpers/translations.helpers';
@@ -36,4 +36,5 @@ export const IngredientSchema = new Schema<Ingredient>(
 	},
 );
 
-export const IngredientModel = models['ingredients'] || model<Ingredient>('ingredients', IngredientSchema);
+export const IngredientModel =
+	mongoose.models['ingredients'] || mongoose.model<Ingredient>('ingredients', IngredientSchema);
