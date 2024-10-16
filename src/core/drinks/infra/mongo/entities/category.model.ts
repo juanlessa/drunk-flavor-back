@@ -1,4 +1,4 @@
-import { Schema, model, models } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { Category, CategoryTranslation } from '@/core/drinks/entities/category.entity';
 import { getTranslationsSchema } from '../helpers/translations.helpers';
 
@@ -31,4 +31,4 @@ export const CategorySchema = new Schema<Category>(
 	},
 );
 
-export const CategoryModel = models['categories'] || model<Category>('categories', CategorySchema);
+export const CategoryModel = mongoose.models['categories'] || mongoose.model<Category>('categories', CategorySchema);
