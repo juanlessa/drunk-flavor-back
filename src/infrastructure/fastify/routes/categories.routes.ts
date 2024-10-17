@@ -12,15 +12,17 @@ import { listCategoriesQuerySchema } from '@/core/drinks/useCases/categories/lis
 import { listCategoriesController } from '@/core/drinks/useCases/categories/list/listCategories.controller';
 import { updateCategorySchema } from '@/core/drinks/useCases/categories/update/updateCategory.schema';
 import { updateCategoryController } from '@/core/drinks/useCases/categories/update/updateCategory.controller';
+import { verifyPermissions } from '../middlewares/verifyPermissions';
 
 const routes: Routes = (server) => {
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.post(
-			'/categories',
-			{ schema: { body: createCategorySchema }, preValidation: [verifyAndRenewToken] },
-			createCategoryController,
-		);
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/categories',
+		{
+			schema: { body: createCategorySchema },
+			preValidation: [verifyAndRenewToken, verifyPermissions('create', 'Category')],
+		},
+		createCategoryController,
+	);
 
 	server
 		.withTypeProvider<ZodTypeProvider>()
@@ -30,21 +32,23 @@ const routes: Routes = (server) => {
 		.withTypeProvider<ZodTypeProvider>()
 		.get('/categories', { schema: { querystring: listCategoriesQuerySchema } }, listCategoriesController);
 
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.patch(
-			'/categories',
-			{ schema: { body: updateCategorySchema }, preValidation: [verifyAndRenewToken] },
-			updateCategoryController,
-		);
+	server.withTypeProvider<ZodTypeProvider>().patch(
+		'/categories',
+		{
+			schema: { body: updateCategorySchema },
+			preValidation: [verifyAndRenewToken, verifyPermissions('update', 'Category')],
+		},
+		updateCategoryController,
+	);
 
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.delete(
-			'/categories',
-			{ schema: { body: deleteCategorySchema }, preValidation: [verifyAndRenewToken] },
-			deleteCategoryController,
-		);
+	server.withTypeProvider<ZodTypeProvider>().delete(
+		'/categories',
+		{
+			schema: { body: deleteCategorySchema },
+			preValidation: [verifyAndRenewToken, verifyPermissions('delete', 'Category')],
+		},
+		deleteCategoryController,
+	);
 };
 
 export const categoriesRoutes = pluginGenerator(routes);
