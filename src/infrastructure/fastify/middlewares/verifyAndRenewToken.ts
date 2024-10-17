@@ -41,6 +41,6 @@ export const verifyAndRenewToken: Middleware = async (request, reply) => {
 	}
 
 	// new access token
-	const newAccessToken = await reply.jwtSign({ role: user.role }, { sign: { sub: id } });
+	const newAccessToken = await reply.jwtSign({}, { sign: { sub: id } });
 	reply.setCookie(AUTH_COOKIE, newAccessToken, AUTH_COOKIE_OPTIONS);
 };
