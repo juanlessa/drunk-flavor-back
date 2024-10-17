@@ -18,6 +18,7 @@ import { updateProfileSchema } from '@/core/accounts/useCases/updateProfile/upda
 import { updateProfileController } from '@/core/accounts/useCases/updateProfile/updateProfile.controller';
 import { deleteProfileController } from '@/core/accounts/useCases/deleteProfile/deleteProfile.controller';
 import { verifyAndRenewToken } from '../middlewares/verifyAndRenewToken';
+import { refreshTokenController } from '@/core/accounts/useCases/refreshToken/refreshToken.controller';
 
 const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post('/signup', { schema: { body: signupSchema } }, signupController);
@@ -43,6 +44,8 @@ const routes: Routes = (server) => {
 			{ schema: { body: updatePasswordSchema }, preValidation: [verifyAndRenewToken] },
 			updatePasswordController,
 		);
+
+	server.withTypeProvider<ZodTypeProvider>().post('/refresh-token', {}, refreshTokenController);
 
 	server.get('/me', { preValidation: [verifyAndRenewToken] }, getProfileController);
 
