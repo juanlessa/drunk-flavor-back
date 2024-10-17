@@ -6,6 +6,7 @@ import { getNameCompareQuery } from '../helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
 import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
+import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
 
 export class IngredientsRepository implements IIngredientsRepository {
 	async create(data: CreateIngredient): Promise<Ingredient> {
@@ -34,19 +35,23 @@ export class IngredientsRepository implements IIngredientsRepository {
 	}
 
 	async findByName(data: FindIngredientByName): Promise<Ingredient | null> {
-		return IngredientModel.findOne<Ingredient>({ $or: getNameCompareQuery(data) }).exec();
+		return IngredientModel.findOne<Ingredient>({ $or: getNameCompareQuery(data) })
+			.lean<Ingredient>({ transform: removeLeanVersionKey })
+			.exec();
 	}
 
 	async findById(id: string): Promise<Ingredient | null> {
-		return IngredientModel.findById<Ingredient>(id).exec();
+		return IngredientModel.findById<Ingredient>(id).lean<Ingredient>({ transform: removeLeanVersionKey }).exec();
+	}
+
+	async findByIdList(ids: string[]): Promise<Ingredient[]> {
+		return IngredientModel.find<Ingredient>({ _id: { $in: ids } })
+			.lean<Ingredient[]>({ transform: removeLeanVersionKey })
+			.exec();
 	}
 
 	async findAll(query: QueryParams): Promise<Ingredient[]> {
 		const mongooseQuery = buildQuery(query, IngredientModel);
-		return mongooseQuery.exec();
-	}
-
-	async findByIdList(ids: string[]): Promise<Ingredient[]> {
-		return IngredientModel.find<Ingredient>({ _id: { $in: ids } }).exec();
+		return mongooseQuery.lean({ transform: removeLeanVersionKey }).exec();
 	}
 }

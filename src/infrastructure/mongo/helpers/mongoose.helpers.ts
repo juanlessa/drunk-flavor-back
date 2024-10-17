@@ -1,3 +1,4 @@
+import type { Document } from 'mongoose';
 import { env } from '@/env';
 import { mongoConnectionStringSchema, mongooseConnectionOptionsSchema } from '../schemas/mongoose.schemas';
 
@@ -23,4 +24,9 @@ export const buildConnectionOptionsFromEnv = () => {
 		serverSelectionTimeoutMS: MONGO_SERVER_SELECTION_TIMEOUT_MS,
 		connectTimeoutMS: MONGO_CONNECT_TIMEOUT_MS,
 	};
+};
+
+export const removeLeanVersionKey = <T>(ret?: T & { __v?: number }) => {
+	if (!ret) return;
+	delete ret.__v;
 };
