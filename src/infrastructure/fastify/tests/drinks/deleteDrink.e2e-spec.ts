@@ -1,6 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
-import { UserRolesEnum } from '@/core/accounts/entities/user.entity';
 import { app } from '@/infrastructure/fastify/app';
 import { MongoRepository } from '@/infrastructure/mongo/Mongo.repository';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
@@ -10,6 +9,7 @@ import { CategoryModel } from '@/core/drinks/infra/mongo/entities/category.model
 import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.model';
 import { createDrink } from '../helpers/drink.helpers';
 import { DrinkModel } from '@/core/drinks/infra/mongo/entities/drink.model';
+import { RolesEnum } from '@/shared/accessControl/roles';
 
 describe('Delete Drink', () => {
 	beforeAll(async () => {
@@ -28,7 +28,7 @@ describe('Delete Drink', () => {
 	});
 
 	it('Should be able to delete a drink', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: UserRolesEnum.admin });
+		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
 		const { id } = await createDrink();
 
 		const response = await request(app.server).delete('/drinks').set('Cookie', cookies).send({ id });

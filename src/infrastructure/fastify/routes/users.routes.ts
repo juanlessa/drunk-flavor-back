@@ -2,16 +2,17 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { pluginGenerator } from '../helpers/fastify.helpers';
 import { Routes } from '../types/fastify.types';
 import { verifyAndRenewToken } from '../middlewares/verifyAndRenewToken';
-import { createUserController } from '@/core/accounts/useCases/createUser/createUser.controller';
-import { createUserSchema } from '@/core/accounts/useCases/createUser/createUser.schema';
-import { deleteUserSchema } from '@/core/accounts/useCases/deleteUser/deleteUser.schema';
-import { deleteUserController } from '@/core/accounts/useCases/deleteUser/deleteUser.controller';
-import { listUsersQuerySchema } from '@/core/accounts/useCases/listUsers/listUsers.schema';
-import { listUsersController } from '@/core/accounts/useCases/listUsers/listUsers.controller';
-import { getUserSchema } from '@/core/accounts/useCases/getUser/getUser.schema';
-import { getUserController } from '@/core/accounts/useCases/getUser/getUser.controller';
-import { updateUserRoleSchema } from '@/core/accounts/useCases/updateUserRole/updateUserRole.schema';
-import { updateUserRoleController } from '@/core/accounts/useCases/updateUserRole/updateUserRole.controller';
+import { createUserSchema } from '@/core/accounts/useCases/users/create/createUser.schema';
+import { verifyPermissions } from '../middlewares/verifyPermissions';
+import { createUserController } from '@/core/accounts/useCases/users/create/createUser.controller';
+import { getUserSchema } from '@/core/accounts/useCases/users/get/getUser.schema';
+import { getUserController } from '@/core/accounts/useCases/users/get/getUser.controller';
+import { listUsersQuerySchema } from '@/core/accounts/useCases/users/list/listUsers.schema';
+import { listUsersController } from '@/core/accounts/useCases/users/list/listUsers.controller';
+import { updateUserRoleSchema } from '@/core/accounts/useCases/users/updateRole/updateUserRole.schema';
+import { updateUserRoleController } from '@/core/accounts/useCases/users/updateRole/updateUserRole.controller';
+import { deleteUserSchema } from '@/core/accounts/useCases/users/delete/deleteUser.schema';
+import { deleteUserController } from '@/core/accounts/useCases/users/delete/deleteUser.controller';
 
 const routes: Routes = (server) => {
 	server

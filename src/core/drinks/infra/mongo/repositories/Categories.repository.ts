@@ -6,6 +6,7 @@ import { getNameCompareQuery } from '../helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
 import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
+import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
 
 export class CategoriesRepository implements ICategoriesRepository {
 	async create(data: CreateCategory): Promise<Category> {
@@ -34,15 +35,17 @@ export class CategoriesRepository implements ICategoriesRepository {
 	}
 
 	async findByName(data: FindCategoryByName): Promise<Category | null> {
-		return CategoryModel.findOne<Category>({ $or: getNameCompareQuery(data) }).exec();
+		return CategoryModel.findOne<Category>({ $or: getNameCompareQuery(data) })
+			.lean<Category>({ transform: removeLeanVersionKey })
+			.exec();
 	}
 
 	async findById(id: string): Promise<Category | null> {
-		return CategoryModel.findById<Category>(id).exec();
+		return CategoryModel.findById<Category>(id).lean<Category>({ transform: removeLeanVersionKey }).exec();
 	}
 
 	async findAll(query: QueryParams): Promise<Category[]> {
-		const mongooseQuery = buildQuery(query, CategoryModel);
-		return mongooseQuery.exec();
+		const mongooseQuery = buildQuery<Category[]>(query, CategoryModel);
+		return mongooseQuery.lean({ transform: removeLeanVersionKey }).exec();
 	}
 }

@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { UserRolesEnum } from '../entities/user.entity';
 import { LocaleKey } from '@/shared/types/locale.types';
 import { getObjectIdSchema } from '@/infrastructure/mongo/schemas/helpers/objectId.helpers';
+import { roleSchema } from '@/shared/accessControl/roles';
 
 // fields validation
 export const userIdValidation = getObjectIdSchema({
@@ -34,7 +34,4 @@ export const userPasswordValidation = z
 	.max(64, { message: 'apiResponses.users.invalidPasswordMaxSize' satisfies LocaleKey })
 	.regex(passwordPattern, { message: 'apiResponses.users.weakPassword' satisfies LocaleKey });
 
-export const userRoleValidation = z.enum([UserRolesEnum.admin, UserRolesEnum.partner], {
-	required_error: 'apiResponses.users.requiredRole' satisfies LocaleKey,
-	message: 'apiResponses.users.invalidRoleFormat' satisfies LocaleKey,
-});
+export const userRoleValidation = roleSchema;
