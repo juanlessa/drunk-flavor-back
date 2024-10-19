@@ -18,24 +18,44 @@ const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
 		'/categories',
 		{
-			schema: { body: createCategorySchema },
+			schema: {
+				tags: ['Categories'],
+				body: createCategorySchema,
+			},
 			preValidation: [verifyAndRenewToken, verifyPermissions('create', 'Category')],
 		},
 		createCategoryController,
 	);
 
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.get('/categories/:id', { schema: { params: getCategorySchema } }, getCategoryController);
+	server.withTypeProvider<ZodTypeProvider>().get(
+		'/categories/:id',
+		{
+			schema: {
+				tags: ['Categories'],
+				params: getCategorySchema,
+			},
+		},
+		getCategoryController,
+	);
 
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.get('/categories', { schema: { querystring: listCategoriesQuerySchema } }, listCategoriesController);
+	server.withTypeProvider<ZodTypeProvider>().get(
+		'/categories',
+		{
+			schema: {
+				tags: ['Categories'],
+				querystring: listCategoriesQuerySchema,
+			},
+		},
+		listCategoriesController,
+	);
 
 	server.withTypeProvider<ZodTypeProvider>().patch(
 		'/categories',
 		{
-			schema: { body: updateCategorySchema },
+			schema: {
+				tags: ['Categories'],
+				body: updateCategorySchema,
+			},
 			preValidation: [verifyAndRenewToken, verifyPermissions('update', 'Category')],
 		},
 		updateCategoryController,
@@ -44,7 +64,10 @@ const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().delete(
 		'/categories',
 		{
-			schema: { body: deleteCategorySchema },
+			schema: {
+				tags: ['Categories'],
+				body: deleteCategorySchema,
+			},
 			preValidation: [verifyAndRenewToken, verifyPermissions('delete', 'Category')],
 		},
 		deleteCategoryController,

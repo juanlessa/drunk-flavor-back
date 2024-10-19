@@ -14,35 +14,71 @@ import { updatePasswordSchema } from '@/core/accounts/useCases/profile/updatePas
 import { updatePasswordController } from '@/core/accounts/useCases/profile/updatePassword/updatePassword.controller';
 
 const routes: Routes = (server) => {
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.post('/confirm-email', { schema: { body: confirmEmailSchema } }, confirmEmailController);
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/confirm-email',
+		{
+			schema: {
+				tags: ['Profile'],
+				body: confirmEmailSchema,
+			},
+		},
+		confirmEmailController,
+	);
 
-	server.get('/me', { preValidation: [verifyAndRenewToken] }, getProfileController);
+	server.get(
+		'/me',
+		{
+			schema: { tags: ['Profile'] },
+			preValidation: [verifyAndRenewToken],
+		},
+		getProfileController,
+	);
 
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.patch(
-			'/me',
-			{ schema: { body: updateProfileSchema }, preValidation: [verifyAndRenewToken] },
-			updateProfileController,
-		);
+	server.withTypeProvider<ZodTypeProvider>().patch(
+		'/me',
+		{
+			schema: {
+				tags: ['Profile'],
+				body: updateProfileSchema,
+			},
+			preValidation: [verifyAndRenewToken],
+		},
+		updateProfileController,
+	);
 
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.delete('/me', { preValidation: [verifyAndRenewToken] }, deleteProfileController);
+	server.withTypeProvider<ZodTypeProvider>().delete(
+		'/me',
+		{
+			schema: {
+				tags: ['Profile'],
+				preValidation: [verifyAndRenewToken],
+			},
+		},
+		deleteProfileController,
+	);
 
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.post('/reset-password', { schema: { body: resetPasswordSchema } }, resetPasswordController);
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/reset-password',
+		{
+			schema: {
+				tags: ['Profile'],
+				body: resetPasswordSchema,
+			},
+		},
+		resetPasswordController,
+	);
 
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.patch(
-			'/update-password',
-			{ schema: { body: updatePasswordSchema }, preValidation: [verifyAndRenewToken] },
-			updatePasswordController,
-		);
+	server.withTypeProvider<ZodTypeProvider>().patch(
+		'/update-password',
+		{
+			schema: {
+				tags: ['Profile'],
+				body: updatePasswordSchema,
+			},
+			preValidation: [verifyAndRenewToken],
+		},
+		updatePasswordController,
+	);
 };
 
 export const profileRoutes = pluginGenerator(routes);

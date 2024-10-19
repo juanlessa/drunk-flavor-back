@@ -10,15 +10,56 @@ import { forgotPasswordSchema } from '@/core/accounts/useCases/auth/forgotPasswo
 import { forgotPasswordController } from '@/core/accounts/useCases/auth/forgotPassword/forgotPassword.controller';
 
 const routes: Routes = (server) => {
-	server.withTypeProvider<ZodTypeProvider>().post('/signup', { schema: { body: signupSchema } }, signupController);
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/signup',
+		{
+			schema: {
+				tags: ['Auth'],
+				summary: 'Sign Up',
+				description: 'Registers a new user by creating an member account',
+				body: signupSchema,
+			},
+		},
+		signupController,
+	);
 
-	server.withTypeProvider<ZodTypeProvider>().post('/login', { schema: { body: loginSchema } }, loginController);
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/login',
+		{
+			schema: {
+				tags: ['Auth'],
+				summary: 'Login',
+				description: 'Authenticates the user',
+				body: loginSchema,
+			},
+		},
+		loginController,
+	);
 
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.post('/forgot-password', { schema: { body: forgotPasswordSchema } }, forgotPasswordController);
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/forgot-password',
+		{
+			schema: {
+				tags: ['Auth'],
+				summary: 'Forgot Password',
+				description: 'Sends a password reset link to the user email',
+				body: forgotPasswordSchema,
+			},
+		},
+		forgotPasswordController,
+	);
 
-	server.withTypeProvider<ZodTypeProvider>().post('/refresh-token', {}, refreshTokenController);
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/refresh-token',
+		{
+			schema: {
+				tags: ['Auth'],
+				summary: 'Refresh Token',
+				description: 'Refreshes the expired access token using the refresh token',
+			},
+		},
+		refreshTokenController,
+	);
 };
 
 export const authRoutes = pluginGenerator(routes);
