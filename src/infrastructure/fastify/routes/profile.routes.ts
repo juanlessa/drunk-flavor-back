@@ -51,8 +51,8 @@ const routes: Routes = (server) => {
 		{
 			schema: {
 				tags: ['Profile'],
-				preValidation: [verifyAndRenewToken],
 			},
+			preValidation: [verifyAndRenewToken],
 		},
 		deleteProfileController,
 	);
