@@ -3,6 +3,7 @@ import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.
 import { UserTokenModel } from '../entities/userToken.model';
 import { CreateUserToken, FindByUserIdAndType, UpdateUserToken } from '@/core/accounts/dtos/userToken.dtos';
 import { TokenType, UserToken } from '@/core/accounts/entities/userToken.entity';
+import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
 
 export class UserTokensRepository implements IUserTokensRepository {
 	private model = UserTokenModel;
@@ -38,23 +39,25 @@ export class UserTokensRepository implements IUserTokensRepository {
 	}
 
 	async findById(id: string): Promise<UserToken | null> {
-		return this.model.findById<UserToken>(id).exec();
+		return this.model.findById<UserToken>(id).lean<UserToken>({ transform: removeLeanVersionKey }).exec();
 	}
 
 	async findByToken(token: string): Promise<UserToken | null> {
-		return this.model.findOne<UserToken>({ token }).exec();
+		return this.model.findOne<UserToken>({ token }).lean<UserToken>({ transform: removeLeanVersionKey }).exec();
 	}
 
 	async findByUserIdAndType({ user_id, type }: FindByUserIdAndType): Promise<UserToken | null> {
-		return this.model.findOne<UserToken>({ user_id, type }).exec();
+		return this.model
+			.findOne<UserToken>({ user_id, type })
+			.lean<UserToken>({ transform: removeLeanVersionKey })
+			.exec();
 	}
 
 	async findByUserId(user_id: string): Promise<UserToken[]> {
-		const records: UserToken[] = await this.model.find<UserToken>({ user_id }).exec();
+		const records: UserToken[] = await this.model
+			.find<UserToken>({ user_id })
+			.lean<UserToken[]>({ transform: removeLeanVersionKey })
+			.exec();
 		return records;
-	}
-
-	async findAll(): Promise<UserToken[]> {
-		return this.model.find<UserToken>().exec();
 	}
 }

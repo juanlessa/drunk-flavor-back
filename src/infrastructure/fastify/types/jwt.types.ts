@@ -1,3 +1,4 @@
+import { Role } from '@/shared/accessControl/roles';
 import { FastifyError } from 'fastify';
 
 export enum JwtErrorsEnum {
@@ -22,4 +23,5 @@ export interface FastifyJwtError extends FastifyError {
 export type DecodedToken = {
 	[key: string]: any;
 	sub: string;
+	role: Role;
 };

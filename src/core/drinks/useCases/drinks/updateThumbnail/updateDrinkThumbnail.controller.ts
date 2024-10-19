@@ -13,8 +13,6 @@ export const updateDrinkThumbnailController: Controller<{ Params: UpdateDrinkThu
 	if (!data) {
 		throw new Error('error processing file');
 	}
-	console.log('controller');
-	console.log(data);
 
 	const service = resolveUpdateDrinkThumbnailService();
 

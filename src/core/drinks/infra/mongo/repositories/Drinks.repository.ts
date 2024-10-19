@@ -6,6 +6,7 @@ import { getNameCompareQuery } from '../helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
 import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
+import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
 
 export class DrinksRepository implements IDrinksRepository {
 	async create(data: CreateDrink): Promise<Drink> {
@@ -35,15 +36,17 @@ export class DrinksRepository implements IDrinksRepository {
 	}
 
 	async findByName(data: FindDrinkByName): Promise<Drink | null> {
-		return DrinkModel.findOne<Drink>({ $or: getNameCompareQuery(data) }).exec();
+		return DrinkModel.findOne<Drink>({ $or: getNameCompareQuery(data) })
+			.lean<Drink>({ transform: removeLeanVersionKey })
+			.exec();
 	}
 
 	async findById(id: string): Promise<Drink | null> {
-		return DrinkModel.findById<Drink>(id).exec();
+		return DrinkModel.findById<Drink>(id).lean<Drink>({ transform: removeLeanVersionKey }).exec();
 	}
 
 	async findAll(query: QueryParams): Promise<Drink[]> {
 		const mongooseQuery = buildQuery(query, DrinkModel);
-		return mongooseQuery.exec();
+		return mongooseQuery.lean({ transform: removeLeanVersionKey }).exec();
 	}
 }

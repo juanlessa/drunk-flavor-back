@@ -14,37 +14,63 @@ import { deleteIngredientSchema } from '@/core/drinks/useCases/ingredients/delet
 import { deleteIngredientController } from '@/core/drinks/useCases/ingredients/delete/deleteIngredient.controller';
 
 const routes: Routes = (server) => {
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.post(
-			'/ingredients',
-			{ schema: { body: createIngredientSchema }, preValidation: [verifyAndRenewToken] },
-			createIngredientController,
-		);
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/ingredients',
+		{
+			schema: {
+				tags: ['Ingredients'],
+				body: createIngredientSchema,
+			},
+			preValidation: [verifyAndRenewToken],
+		},
+		createIngredientController,
+	);
 
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.get('/ingredients/:id', { schema: { params: getIngredientSchema } }, getIngredientController);
+	server.withTypeProvider<ZodTypeProvider>().get(
+		'/ingredients/:id',
+		{
+			schema: {
+				tags: ['Ingredients'],
+				params: getIngredientSchema,
+			},
+		},
+		getIngredientController,
+	);
 
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.get('/ingredients', { schema: { querystring: listIngredientsSchema } }, listIngredientsController);
+	server.withTypeProvider<ZodTypeProvider>().get(
+		'/ingredients',
+		{
+			schema: {
+				tags: ['Ingredients'],
+				querystring: listIngredientsSchema,
+			},
+		},
+		listIngredientsController,
+	);
 
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.patch(
-			'/ingredients',
-			{ schema: { body: updateIngredientSchema }, preValidation: [verifyAndRenewToken] },
-			updateIngredientController,
-		);
+	server.withTypeProvider<ZodTypeProvider>().patch(
+		'/ingredients',
+		{
+			schema: {
+				tags: ['Ingredients'],
+				body: updateIngredientSchema,
+			},
+			preValidation: [verifyAndRenewToken],
+		},
+		updateIngredientController,
+	);
 
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.delete(
-			'/ingredients',
-			{ schema: { body: deleteIngredientSchema }, preValidation: [verifyAndRenewToken] },
-			deleteIngredientController,
-		);
+	server.withTypeProvider<ZodTypeProvider>().delete(
+		'/ingredients',
+		{
+			schema: {
+				tags: ['Ingredients'],
+				body: deleteIngredientSchema,
+			},
+			preValidation: [verifyAndRenewToken],
+		},
+		deleteIngredientController,
+	);
 };
 
 export const ingredientsRoutes = pluginGenerator(routes);

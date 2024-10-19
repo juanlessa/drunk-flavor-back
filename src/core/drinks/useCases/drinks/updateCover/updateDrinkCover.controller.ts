@@ -10,8 +10,6 @@ export const updateDrinkCoverController: Controller<{ Params: UpdateDrinkCoverRe
 	if (!data) {
 		throw new Error('error processing file');
 	}
-	console.log('controller');
-	console.log(data);
 
 	const service = resolveUpdateDrinkCoverService();
 

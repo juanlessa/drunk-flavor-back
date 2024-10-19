@@ -9,7 +9,7 @@ import { QueryParams, SortOrder } from '@/shared/types/query.types';
  * @param model - The Mongoose model to query.
  * @returns A Mongoose FilterQuery object.
  */
-export const buildQuery = <T extends Document>(queryParams: QueryParams, model: Model<T>): FilterQuery<T> => {
+export const buildQuery = <T>(queryParams: QueryParams, model: Model<Document<T>>): FilterQuery<T> => {
 	const { limit = DEFAULT_QUERY_PARAMS.limit, page = DEFAULT_QUERY_PARAMS.page, search, sort } = queryParams;
 	const skip = (page - 1) * limit;
 
