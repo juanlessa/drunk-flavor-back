@@ -26,7 +26,9 @@
 		"test:template:watch": "NODE_ENV=testing vitest -c vitest.config.ts 'src/shared/providers/template/implementations/views/'",
 		"test:template:output": "NODE_ENV=testing STORE_TEMPLATES=true vitest run -c vitest.config.ts 'src/shared/providers/template/implementations/views/'",
 		"test:template:output:watch": "NODE_ENV=testing STORE_TEMPLATES=true vitest -c vitest.config.ts 'src/shared/providers/template/implementations/views/'",
-		"generate-secret-key": "npx @fastify/secure-session > secret-key"
+		"generate-secret-key": "npx @fastify/secure-session > secret-key",
+		"seed:drinks": "tsx seed/drinks",
+		"seed:admin": "tsx seed/accounts/admin.ts"
 	},
 	"dependencies": {
 		"@aws-sdk/client-s3": "3.679.0",
