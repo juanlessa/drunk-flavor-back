@@ -52,7 +52,7 @@
 		"mjml": "4.15.3",
 		"mongodb": "6.10.0",
 		"mongoose": "8.7.3",
-		"nodemailer": "6.9.15",
+		"nodemailer": "6.9.16",
 		"pino": "9.5.0",
 		"pino-http": "10.3.0",
 		"pino-pretty": "11.3.0",
