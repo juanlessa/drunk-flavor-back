@@ -55,7 +55,7 @@
 		"nodemailer": "6.9.16",
 		"pino": "9.5.0",
 		"pino-http": "10.3.0",
-		"pino-pretty": "12.1.0",
+		"pino-pretty": "13.0.0",
 		"ts-pattern": "5.5.0",
 		"zod": "3.23.8"
 	},
