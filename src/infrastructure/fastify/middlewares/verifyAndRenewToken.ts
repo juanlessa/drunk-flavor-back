@@ -2,8 +2,8 @@ import { AUTH_COOKIE, AUTH_COOKIE_OPTIONS } from '../constants/cookie.constants'
 import { Middleware } from '../types/fastify.types';
 import { instanceOfFastifyJwtError, instanceOfJwtAuthorizationTokenExpiredError } from '../errors/fastifyJwtError';
 import { signOut } from './signOut';
-import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 import { resolveUsersRepository } from '@/core/accounts/infra/mongo/container';
+import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 
 export const verifyAndRenewToken: Middleware = async (request, reply) => {
 	// verify access token
@@ -41,6 +41,6 @@ export const verifyAndRenewToken: Middleware = async (request, reply) => {
 	}
 
 	// new access token
-	const newAccessToken = await reply.jwtSign({}, { sign: { sub: id } });
+	const newAccessToken = await reply.jwtSign({ role: user.role }, { sign: { sub: id } });
 	reply.setCookie(AUTH_COOKIE, newAccessToken, AUTH_COOKIE_OPTIONS);
 };

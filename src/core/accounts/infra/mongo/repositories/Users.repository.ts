@@ -3,6 +3,7 @@ import { User } from '@/core/accounts/entities/user.entity';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { NotFoundError } from '@/shared/error/error.lib';
+import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
 
 export class UsersRepository implements IUsersRepository {
 	async create(data: CreateUser): Promise<User> {
@@ -32,7 +33,7 @@ export class UsersRepository implements IUsersRepository {
 	}
 
 	async findById(id: string): Promise<User | null> {
-		return UserModel.findById<User>(id).exec();
+		return UserModel.findById(id).lean<User>({ transform: removeLeanVersionKey }).exec();
 	}
 
 	async findByEmail(email: string): Promise<User | null> {

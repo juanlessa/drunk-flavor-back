@@ -31,6 +31,7 @@ Github repositories:
 -   [Testing](#dev)
 -   [Build](#build)
 -   [Documentation](#documentation)
+-   [Seed](#seed)
 
 ## Setup
 
@@ -241,7 +242,7 @@ You can also run the E2E tests in watch mode:
 npm run test:e2e:watch
 ```
 
-**Notes:**
+**Note**:
 
 -   By default, the E2E tests use an in-memory MongoDB database. However, you can change this to use a traditional
     MongoDB instance by setting the MONGO_PERSISTENCE_MODE environment variable. In this case make sure to also
@@ -266,3 +267,40 @@ npm run start
 ## Documentation
 
 If you are running the API locally you also will find the documentation on path `/documentation` of you local instance.
+
+## Seed
+
+Once the application is running, it's beneficial to have a populated database to aid in testing and development, as well
+as to establish an initial admin user. For these purposes, there are several seed scripts available.
+
+**Note**: To run the seed scripts, ensure you have a valid `.env` file. The seed scripts rely on parts of the
+application code that require environment validation.
+
+### Drinks Seed
+
+Run the drinks seed script with the following command to insert a collection of sample drinks, ingredients, and
+categories into the database:
+
+```shell
+npm run seed:drinks
+```
+
+### Admin Seed
+
+Run the admin seed script with the following command to create an initial admin user:
+
+```shell
+npm run seed:admin
+```
+
+The admin is created based on the following environment variables:
+
+```dotenv
+ADMIN_NAME=''
+ADMIN_SURNAME=''
+ADMIN_EMAIL=''
+ADMIN_PASSWORD=''
+```
+
+**Security Note**: For security purposes, make sure to remove these variables from your `.env` file after creating the
+admin user.

@@ -1,10 +1,5 @@
 import { DatabaseCommonInfo } from '@/infrastructure/mongo/types';
-
-export enum UserRolesEnum {
-	admin = 'admin',
-	partner = 'partner',
-	member = 'member',
-}
+import { Role } from '@/shared/accessControl/roles';
 
 export enum UserStatusEnum {
 	idle = 'idle',
@@ -12,7 +7,6 @@ export enum UserStatusEnum {
 	active = 'active',
 }
 
-export type UserRole = keyof typeof UserRolesEnum;
 export type UserStatus = keyof typeof UserStatusEnum;
 
 export type User = DatabaseCommonInfo & {
@@ -20,6 +14,6 @@ export type User = DatabaseCommonInfo & {
 	surname: string;
 	email: string;
 	password: string;
-	role: UserRole;
+	role: Role;
 	status: UserStatus;
 };

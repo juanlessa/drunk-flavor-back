@@ -6,8 +6,8 @@ import { logger } from '@/shared/logger';
 import { NotFoundError } from '@/shared/error/error.lib';
 
 export const mapDecodedTokenToUser = (user: string | object | Buffer): FastifyJWT['user'] => {
-	const { sub } = user as DecodedToken;
-	return { id: sub };
+	const { sub, role } = user as DecodedToken;
+	return { id: sub, role };
 };
 
 export const retrieveRefreshTokenFromSession = (request: FastifyRequest) => {
@@ -17,7 +17,7 @@ export const retrieveRefreshTokenFromSession = (request: FastifyRequest) => {
 		logger.info(
 			`fastify.retrieveRefreshTokenFromSession: session not found for renew token, for ${request.routeOptions.url}`,
 		);
-		throw new NotFoundError('invalid resource', {
+		throw new NotFoundError('apiResponses.auth.invalidResource', {
 			cause: 'no session found',
 			path: 'fastify.retrieveRefreshTokenFromSession',
 		});

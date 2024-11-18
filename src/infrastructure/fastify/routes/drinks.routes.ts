@@ -16,51 +16,90 @@ import { updateDrinkThumbnailSchema } from '@/core/drinks/useCases/drinks/update
 import { updateDrinkThumbnailController } from '@/core/drinks/useCases/drinks/updateThumbnail/updateDrinkThumbnail.controller';
 import { deleteDrinkSchema } from '@/core/drinks/useCases/drinks/delete/deleteDrink.schema';
 import { deleteDrinkController } from '@/core/drinks/useCases/drinks/delete/deleteDrink.controller';
+import { verifyPermissions } from '../middlewares/verifyPermissions';
 
 const routes: Routes = (server) => {
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.post(
-			'/drinks',
-			{ schema: { body: createDrinkSchema }, preValidation: [verifyAndRenewToken] },
-			createDrinkController,
-		);
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/drinks',
+		{
+			schema: {
+				tags: ['Drinks'],
+				body: createDrinkSchema,
+			},
+			preValidation: [verifyAndRenewToken, verifyPermissions('create', 'Drink')],
+		},
+		createDrinkController,
+	);
 
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.get('/drinks/:id', { schema: { params: getDrinkSchema } }, getDrinkController);
+	server.withTypeProvider<ZodTypeProvider>().get(
+		'/drinks/:id',
+		{
+			schema: {
+				tags: ['Drinks'],
+				params: getDrinkSchema,
+			},
+		},
+		getDrinkController,
+	);
 
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.get('/drinks', { schema: { querystring: listDrinksSchema } }, listDrinksController);
+	server.withTypeProvider<ZodTypeProvider>().get(
+		'/drinks',
+		{
+			schema: {
+				tags: ['Drinks'],
+				querystring: listDrinksSchema,
+			},
+		},
+		listDrinksController,
+	);
 
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.patch(
-			'/drinks',
-			{ schema: { body: updateDrinkSchema }, preValidation: [verifyAndRenewToken] },
-			updateDrinkController,
-		);
+	server.withTypeProvider<ZodTypeProvider>().patch(
+		'/drinks',
+		{
+			schema: {
+				tags: ['Drinks'],
+				body: updateDrinkSchema,
+			},
+			preValidation: [verifyAndRenewToken, verifyPermissions('update', 'Drink')],
+		},
+		updateDrinkController,
+	);
 
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.patch('/drinks/:id/cover', { schema: { params: updateDrinkCoverSchema } }, updateDrinkCoverController);
+	server.withTypeProvider<ZodTypeProvider>().patch(
+		'/drinks/:id/cover',
+		{
+			schema: {
+				tags: ['Drinks'],
+				params: updateDrinkCoverSchema,
+			},
+			preValidation: [verifyAndRenewToken, verifyPermissions('update', 'Drink')],
+		},
+		updateDrinkCoverController,
+	);
 
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.patch(
-			'/drinks/:id/thumbnail',
-			{ schema: { params: updateDrinkThumbnailSchema } },
-			updateDrinkThumbnailController,
-		);
+	server.withTypeProvider<ZodTypeProvider>().patch(
+		'/drinks/:id/thumbnail',
+		{
+			schema: {
+				tags: ['Drinks'],
+				params: updateDrinkThumbnailSchema,
+			},
+			preValidation: [verifyAndRenewToken, verifyPermissions('update', 'Drink')],
+		},
+		updateDrinkThumbnailController,
+	);
 
-	server
-		.withTypeProvider<ZodTypeProvider>()
-		.delete(
-			'/drinks',
-			{ schema: { body: deleteDrinkSchema }, preValidation: [verifyAndRenewToken] },
-			deleteDrinkController,
-		);
+	server.withTypeProvider<ZodTypeProvider>().delete(
+		'/drinks',
+		{
+			schema: {
+				tags: ['Drinks'],
+				body: deleteDrinkSchema,
+			},
+			preValidation: [verifyAndRenewToken, verifyPermissions('delete', 'Drink')],
+		},
+		deleteDrinkController,
+	);
 };
 
 export const drinksRoutes = pluginGenerator(routes);

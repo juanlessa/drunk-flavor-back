@@ -11,5 +11,4 @@ export interface IUserTokensRepository {
 	findByToken(token: string): Promise<UserToken | null>;
 	findByUserIdAndType(data: FindByUserIdAndType): Promise<UserToken | null>;
 	findByUserId(user_id: string): Promise<UserToken[]>;
-	findAll(query: QueryParams): Promise<UserToken[]>;
 }

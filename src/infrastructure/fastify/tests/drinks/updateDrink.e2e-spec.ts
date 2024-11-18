@@ -1,6 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
-import { UserRolesEnum } from '@/core/accounts/entities/user.entity';
 import { app } from '@/infrastructure/fastify/app';
 import { MongoRepository } from '@/infrastructure/mongo/Mongo.repository';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
@@ -11,6 +10,7 @@ import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.m
 import { DrinkModel } from '@/core/drinks/infra/mongo/entities/drink.model';
 import { createDrink } from '../helpers/drink.helpers';
 import { createDrinkFactory } from '@/core/drinks/factories/drink.factories';
+import { RolesEnum } from '@/shared/accessControl/roles';
 
 describe('Update Drink', () => {
 	beforeAll(async () => {
@@ -29,7 +29,7 @@ describe('Update Drink', () => {
 	});
 
 	it('Should be able to update a drink', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: UserRolesEnum.admin });
+		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
 		const { id, ingredient_id } = await createDrink();
 
 		const { translations } = createDrinkFactory({
