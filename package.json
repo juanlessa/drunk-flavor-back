@@ -50,7 +50,7 @@
 		"fastify-i18n": "3.0.0",
 		"fastify-type-provider-zod": "4.0.2",
 		"mjml": "4.18.0",
-		"mongodb": "6.16.0",
+		"mongodb": "6.21.0",
 		"mongoose": "8.24.1",
 		"nodemailer": "7.0.13",
 		"pino": "9.7.0",
