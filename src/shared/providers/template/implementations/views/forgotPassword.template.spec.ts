@@ -5,13 +5,13 @@ import { forgotPasswordTemplate } from './forgotPassword.template';
 import { storeHtmlTemplate } from '../storeHtmlTemplate.helper';
 
 describe('Forgot Password Template', () => {
-	it('should be able to generate the template', () => {
+	it('should be able to generate the template', async () => {
 		const input: ForgotPasswordProps = {
 			userName: 'John',
 			resetLink: 'http://example.test/reset-password/',
 		};
 		const [id, template] = forgotPasswordTemplate(input);
-		const parseResult = mjml2html(template);
+		const parseResult = await mjml2html(template);
 
 		expect(parseResult.errors).toHaveLength(0);
 

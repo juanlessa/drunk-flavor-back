@@ -49,7 +49,7 @@ export class ForgotPasswordService {
 
 		const token = await this.cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 
-		const template = this.templateProvider.forgotPassword({
+		const template = await this.templateProvider.forgotPassword({
 			userName: user.name,
 			resetLink: `${FRONTEND_BASE_URL}${FRONTEND_PAGE_PATHS.resetPassword}/${token}`,
 		});
