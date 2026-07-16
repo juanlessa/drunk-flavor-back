@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import { ObjectId } from 'mongodb';
 import { LocaleKey } from '@/shared/types/locale.types';
 
@@ -17,7 +17,7 @@ type ObjectIdSchemaMessages = {
  * @returns A Zod string schema that validates ObjectId strings.
  */
 export const getObjectIdSchema = ({ required, invalid }: ObjectIdSchemaMessages) => {
-	return z.string({ required_error: required }).refine((val) => ObjectId.isValid(val), {
+	return z.string({ error: required }).refine((val) => ObjectId.isValid(val), {
 		message: invalid,
 	});
 };

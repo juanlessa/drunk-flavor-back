@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import { updateDrinkThumbnailSchema } from './updateDrinkThumbnail.schema';
 import { FileStream } from '@/infrastructure/fastify/types/multipart.types';
 

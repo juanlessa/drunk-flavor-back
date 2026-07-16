@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import { updateProfileSchema } from './updateProfile.schema';
 
 export type UpdateUserProfileReqBody = z.infer<typeof updateProfileSchema>;

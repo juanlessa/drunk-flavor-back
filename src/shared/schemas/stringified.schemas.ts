@@ -1,4 +1,4 @@
-import { z, ZodIssueCode } from 'zod';
+import { z } from 'zod/v4';
 
 /**
  * Creates a schema to parse and validate a stringified JSON.
@@ -9,16 +9,17 @@ import { z, ZodIssueCode } from 'zod';
 export const stringifiedJSONSchema = <Schema extends z.ZodType>(schema: Schema) =>
 	z
 		.string()
-		.transform((val, ctx) => {
+		.transform((val, ctx): unknown => {
 			try {
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 				return JSON.parse(val);
-			} catch (e) {
-				ctx.addIssue({
-					code: ZodIssueCode.custom,
-					message: 'Invalid JSON string',
-					path: ctx.path,
+			} catch {
+				ctx.issues.push({
+					code: 'custom',
+					input: val,
+					error: 'Invalid JSON string',
 				});
-				return z.NEVER;
+				return undefined;
 			}
 		})
 		.pipe(schema);

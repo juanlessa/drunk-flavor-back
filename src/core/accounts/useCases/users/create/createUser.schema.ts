@@ -5,7 +5,7 @@ import {
 	userRoleValidation,
 	userSurnameValidation,
 } from '@/core/accounts/schemas/user.schemas';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 export const createUserSchema = z.object({
 	name: userNameValidation,
