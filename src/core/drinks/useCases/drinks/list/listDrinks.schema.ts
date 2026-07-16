@@ -1,7 +1,7 @@
 import { generateTranslationsFieldSchema } from '@/core/drinks/schemas/helpers/translations.helpers';
 import { sortOrderSchema, searchTermSchema } from '@/shared/schemas/query.schemas';
 import { stringifiedJSONSchema } from '@/shared/schemas/stringified.schemas';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import { drinkTranslationSchema } from '@/core/drinks/schemas/drink.schemas';
 
 const searchSchema = z.object({

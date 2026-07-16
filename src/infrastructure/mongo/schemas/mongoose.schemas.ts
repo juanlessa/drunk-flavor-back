@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 export const mongoConnectionStringSchema = z.object({
 	MONGO_PROTOCOL: z.string().min(1, 'MONGO_PROTOCOL must not be empty'),

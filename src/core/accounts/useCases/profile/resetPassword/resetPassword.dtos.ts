@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import { resetPasswordSchema } from './resetPassword.schema';
 
 export type ResetPasswordReqBody = z.infer<typeof resetPasswordSchema>;

@@ -1,7 +1,7 @@
-import { ZodTypeAny } from 'zod';
+import { z } from 'zod/v4';
 import { NodeEnv } from './env.types';
 
-export const schemaDefaultBasedOnNodeEnv = <T extends ZodTypeAny>(
+export const schemaDefaultBasedOnNodeEnv = <T extends z.ZodType>(
 	schema: T,
 	...configs: { defaultValue: T['_type']; environments: NodeEnv[] }[]
 ) => {

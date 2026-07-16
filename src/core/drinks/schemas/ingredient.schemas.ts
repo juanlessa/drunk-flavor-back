@@ -1,6 +1,6 @@
 import { getObjectIdSchema } from '@/infrastructure/mongo/schemas/helpers/objectId.helpers';
 import { LocaleKey } from '@/shared/types/locale.types';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 // Fields validation
 export const ingredientIdValidation = getObjectIdSchema({
@@ -9,26 +9,26 @@ export const ingredientIdValidation = getObjectIdSchema({
 });
 
 export const ingredientNameValidation = z
-	.string({ required_error: 'apiResponses.ingredients.requiredName' satisfies LocaleKey })
+	.string({ error: 'apiResponses.ingredients.requiredName' satisfies LocaleKey })
 	.trim()
 	.toLowerCase()
-	.min(1, { message: 'apiResponses.ingredients.invalidNameFormat' satisfies LocaleKey })
+	.min(1, { error: 'apiResponses.ingredients.invalidNameFormat' satisfies LocaleKey })
 	.transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`);
 
 export const ingredientUnitValidation = z
-	.string({ required_error: 'apiResponses.ingredients.requiredUnit' satisfies LocaleKey })
+	.string({ error: 'apiResponses.ingredients.requiredUnit' satisfies LocaleKey })
 	.trim()
 	.toLowerCase()
-	.min(1, { message: 'apiResponses.ingredients.invalidUnitFormat' satisfies LocaleKey });
+	.min(1, { error: 'apiResponses.ingredients.invalidUnitFormat' satisfies LocaleKey });
 
 export const ingredientUnitPluralValidation = z
-	.string({ required_error: 'apiResponses.ingredients.requiredUnitPlural' satisfies LocaleKey })
+	.string({ error: 'apiResponses.ingredients.requiredUnitPlural' satisfies LocaleKey })
 	.trim()
 	.toLowerCase()
-	.min(1, { message: 'apiResponses.ingredients.invalidUnitPluralFormat' satisfies LocaleKey });
+	.min(1, { error: 'apiResponses.ingredients.invalidUnitPluralFormat' satisfies LocaleKey });
 
 export const ingredientIsAlcoholicValidation = z.boolean({
-	required_error: 'apiResponses.ingredients.requiredIsAlcoholic' satisfies LocaleKey,
+	error: 'apiResponses.ingredients.requiredIsAlcoholic' satisfies LocaleKey,
 });
 
 export const ingredientCategoryIdValidation = getObjectIdSchema({
