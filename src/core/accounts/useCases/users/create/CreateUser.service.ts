@@ -80,7 +80,7 @@ export class CreateUserService {
 	}
 
 	private async sendVerificationEmail(user: User, token: string) {
-		const template = this.templateProvider.emailVerification({
+		const template = await this.templateProvider.emailVerification({
 			userName: user.name,
 			verificationLink: `${FRONTEND_BASE_URL}${FRONTEND_PAGE_PATHS.verifyEmail}/${token}`,
 		});
