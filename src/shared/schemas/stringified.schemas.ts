@@ -11,7 +11,6 @@ export const stringifiedJSONSchema = <Schema extends z.ZodType>(schema: Schema) 
 		.string()
 		.transform((val, ctx): unknown => {
 			try {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 				return JSON.parse(val);
 			} catch {
 				ctx.issues.push({
