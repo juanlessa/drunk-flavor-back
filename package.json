@@ -87,7 +87,7 @@
 		"url": "git+https://github.com/juanlessa/drunk-flavor-back"
 	},
 	"engines": {
-		"node": ">=20.0.0"
+		"node": ">=22.0.0"
 	},
 	"author": "Juan Lessa",
 	"license": "ISC",
