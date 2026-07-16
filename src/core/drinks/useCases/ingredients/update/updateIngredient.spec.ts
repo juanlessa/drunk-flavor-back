@@ -59,8 +59,7 @@ describe('Update Ingredient', () => {
 		)) as Ingredient;
 
 		expect(findUpdatedIngredient.translations).toEqual(updatedTranslations);
-		expect(findUpdatedIngredient.category._id.toString()).toEqual(updatedCategory._id.toString());
-		expect(findUpdatedIngredient.category.translations).toEqual(updatedCategory.translations);
+		expect(findUpdatedIngredient.category).toEqual(updatedCategory);
 		expect(findUpdatedIngredient.is_alcoholic).toEqual(updatedIsAlcoholic);
 	});
 
