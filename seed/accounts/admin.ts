@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import { UserStatusEnum } from '@/core/accounts/entities/user.entity';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import {

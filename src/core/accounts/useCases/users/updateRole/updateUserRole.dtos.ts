@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import { updateUserRoleSchema } from './updateUserRole.schema';
 import { UserRole } from '@/core/accounts/entities/user.entity';
 

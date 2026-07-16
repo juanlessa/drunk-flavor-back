@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import { LanguagesEnum, Translations } from '@/core/drinks/types/translations';
 
 /**
@@ -26,9 +26,9 @@ export const generateTranslationsSchema = <Schema extends z.ZodType>(schema: Sch
  * @returns A Zod object schema with the specified fields validation rules.
  */
 export const generateTranslationsFieldSchema = <
-	Schema extends z.ZodTypeAny,
+	Schema extends z.ZodType,
 	Field extends keyof z.infer<Schema>,
-	Validation extends z.ZodTypeAny,
+	Validation extends z.ZodType,
 >(
 	_translationSchema: Schema,
 	fields: Field[],

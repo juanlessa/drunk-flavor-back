@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import { loginSchema } from './login.schema';
 
 export type LoginReqBody = z.infer<typeof loginSchema>;

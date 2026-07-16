@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import { Translations } from '@/core/drinks/types/translations';
 import { createDrinkSchema } from './createDrink.schema';
 import { DrinkTranslation } from '@/core/drinks/entities/drink.entity';

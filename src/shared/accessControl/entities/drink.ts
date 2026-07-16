@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 export const drinkPermissionSchema = z.object({
 	__typename: z.literal('Drink').default('Drink'),

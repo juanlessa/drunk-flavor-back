@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import { userPasswordValidation } from '@/core/accounts/schemas/user.schemas';
 import { tokenValidation } from '@/core/accounts/schemas/userToken.schemas';
 import { LocaleKey } from '@/shared/types/locale.types';
