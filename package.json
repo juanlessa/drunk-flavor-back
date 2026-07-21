@@ -73,7 +73,7 @@
 		"husky": "9.1.7",
 		"lint-staged": "17.1.0",
 		"mongodb-memory-server": "11.2.0",
-		"prettier": "3.9.5",
+		"prettier": "3.9.6",
 		"pretty-quick": "4.2.2",
 		"supertest": "7.2.2",
 		"tsup": "8.5.1",
