@@ -7,14 +7,15 @@ import { UploadFileOptions } from '../storage.dtos';
 export class S3StorageProvider implements IStorageProvider {
 	private s3Client: S3Client;
 	private readonly BUCKET_NAME: string;
-	private readonly DEFAULT_REGION: string;
+	private readonly PUBLIC_URL: string;
 
 	constructor() {
 		this.BUCKET_NAME = env.AWS_S3_BUCKET_NAME;
-		this.DEFAULT_REGION = env.AWS_DEFAULT_REGION;
+		this.PUBLIC_URL = env.AWS_S3_PUBLIC_URL;
 
 		this.s3Client = new S3Client({
-			region: env.AWS_DEFAULT_REGION,
+			region: env.AWS_DEFAULT_REGION || 'auto',
+			endpoint: env.AWS_S3_ENDPOINT,
 			credentials: {
 				accessKeyId: env.AWS_ACCESS_KEY_ID,
 				secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
@@ -23,7 +24,7 @@ export class S3StorageProvider implements IStorageProvider {
 	}
 
 	getFileURL(fileName: string): string {
-		return `https://${this.BUCKET_NAME}.s3.${this.DEFAULT_REGION}.amazonaws.com/${fileName}`;
+		return `${this.PUBLIC_URL}/${fileName}`;
 	}
 	async deleteFile(fileName: string): Promise<void> {
 		const command = new DeleteObjectCommand({
@@ -41,11 +42,18 @@ export class S3StorageProvider implements IStorageProvider {
 	}
 
 	async uploadFile({ fileStream, mimetype, name }: UploadFileOptions) {
+		const chunks: Buffer[] = [];
+		for await (const chunk of fileStream) {
+			chunks.push(Buffer.from(chunk as Buffer));
+		}
+		const fileBuffer = Buffer.concat(chunks);
+
 		const command = new PutObjectCommand({
 			Bucket: this.BUCKET_NAME,
 			Key: name,
 			ContentType: mimetype,
-			Body: fileStream,
+			Body: fileBuffer,
+			ContentLength: fileBuffer.length,
 		});
 
 		try {

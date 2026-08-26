@@ -127,7 +127,7 @@ export const envSchema = z.object({
 		{ environments: ['development', 'testing', 'e2e'], defaultValue: 'local' },
 		{ environments: ['production'], defaultValue: 's3' },
 	),
-	// S3
+	// S3 / Cloudflare R2
 	AWS_S3_BUCKET_NAME: schemaDefaultBasedOnNodeEnv(z.string(), {
 		environments: ['development', 'testing', 'e2e', 'production'],
 		defaultValue: '',
@@ -141,6 +141,14 @@ export const envSchema = z.object({
 		defaultValue: '',
 	}),
 	AWS_DEFAULT_REGION: schemaDefaultBasedOnNodeEnv(z.string(), {
+		environments: ['development', 'testing', 'e2e', 'production'],
+		defaultValue: '',
+	}),
+	AWS_S3_ENDPOINT: schemaDefaultBasedOnNodeEnv(z.string(), {
+		environments: ['development', 'testing', 'e2e', 'production'],
+		defaultValue: '',
+	}),
+	AWS_S3_PUBLIC_URL: schemaDefaultBasedOnNodeEnv(z.string(), {
 		environments: ['development', 'testing', 'e2e', 'production'],
 		defaultValue: '',
 	}),
