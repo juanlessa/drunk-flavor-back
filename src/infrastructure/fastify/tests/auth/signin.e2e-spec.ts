@@ -6,7 +6,7 @@ import { MongoRepository } from '@/infrastructure/mongo/Mongo.repository';
 import { createUser } from '../helpers/authentication.helpers';
 import { RolesEnum } from '@/shared/accessControl/roles';
 
-describe('Login', () => {
+describe('Signin', () => {
 	beforeAll(async () => {
 		await app.ready();
 	});
@@ -19,10 +19,10 @@ describe('Login', () => {
 		await MongoRepository.Instance.emptyCollection(UserModel);
 	});
 
-	it('should be able to login', async () => {
+	it('should be able to signin', async () => {
 		const { email, password } = await createUser(app, { role: RolesEnum.partner });
 
-		const response = await request(app.server).post('/login').send({ email, password });
+		const response = await request(app.server).post('/signin').send({ email, password });
 
 		expect(response.status).toBe(200);
 	});

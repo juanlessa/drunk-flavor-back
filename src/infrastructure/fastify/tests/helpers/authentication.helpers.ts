@@ -17,7 +17,7 @@ export const createUser = async (_app: FastifyInstance, userOptions?: DeepPartia
 export async function createAndAuthenticateUser(app: FastifyInstance, userOptions?: DeepPartial<CreateUser>) {
 	const user = await createUser(app, userOptions);
 
-	const response = await request(app.server).post('/login').send({
+	const response = await request(app.server).post('/signin').send({
 		email: user.email,
 		password: user.password,
 	});

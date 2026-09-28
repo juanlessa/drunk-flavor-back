@@ -5,23 +5,23 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
-import { LoginService } from './Login.service';
+import { SigninService } from './Signin.service';
 import { UserStatusEnum } from '@/core/accounts/entities/user.entity';
 
 let usersRepository: IUsersRepository;
 let hashProvider: IHashProvider;
-let service: LoginService;
+let service: SigninService;
 
 const { name, surname, email, password, role, status } = createUserFactory();
 
-describe('Login', () => {
+describe('Signin', () => {
 	beforeEach(async () => {
 		usersRepository = new UsersRepositoryInMemory();
 		hashProvider = new BcryptHashProvider();
-		service = new LoginService(usersRepository, hashProvider);
+		service = new SigninService(usersRepository, hashProvider);
 	});
 
-	it('should be able to login', async () => {
+	it('should be able to signin', async () => {
 		await usersRepository.create({
 			name,
 			surname,
@@ -39,11 +39,11 @@ describe('Login', () => {
 		expect(result).toHaveProperty('user');
 	});
 
-	it('should not be able to login an nonexistent account', async () => {
+	it('should not be able to signin an nonexistent account', async () => {
 		await expect(service.execute({ email, password })).rejects.toBeInstanceOf(BadRequestError);
 	});
 
-	it('should not be able to login a non-active account', async () => {
+	it('should not be able to signin a non-active account', async () => {
 		await usersRepository.create({
 			name,
 			surname,
@@ -56,7 +56,7 @@ describe('Login', () => {
 		await expect(service.execute({ email, password })).rejects.toBeInstanceOf(BadRequestError);
 	});
 
-	it('should not be able to login an account with incorrect password', async () => {
+	it('should not be able to signin an account with incorrect password', async () => {
 		await usersRepository.create({
 			name,
 			surname,

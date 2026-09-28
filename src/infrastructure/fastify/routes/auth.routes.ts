@@ -1,11 +1,12 @@
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { pluginGenerator } from '../helpers/fastify.helpers';
+import { signOut } from '../middlewares/signOut';
 import { Routes } from '../types/fastify.types';
 import { refreshTokenController } from '@/core/accounts/useCases/auth/refreshToken/refreshToken.controller';
 import { signupSchema } from '@/core/accounts/useCases/auth/signup/signup.schema';
 import { signupController } from '@/core/accounts/useCases/auth/signup/signup.controller';
-import { loginSchema } from '@/core/accounts/useCases/auth/login/login.schema';
-import { loginController } from '@/core/accounts/useCases/auth/login/login.controller';
+import { signinSchema } from '@/core/accounts/useCases/auth/signin/signin.schema';
+import { signinController } from '@/core/accounts/useCases/auth/signin/signin.controller';
 import { forgotPasswordSchema } from '@/core/accounts/useCases/auth/forgotPassword/forgotPassword.schema';
 import { forgotPasswordController } from '@/core/accounts/useCases/auth/forgotPassword/forgotPassword.controller';
 
@@ -24,16 +25,28 @@ const routes: Routes = (server) => {
 	);
 
 	server.withTypeProvider<ZodTypeProvider>().post(
-		'/login',
+		'/signin',
 		{
 			schema: {
 				tags: ['Auth'],
-				summary: 'Login',
+				summary: 'Sign In',
 				description: 'Authenticates the user',
-				body: loginSchema,
+				body: signinSchema,
 			},
 		},
-		loginController,
+		signinController,
+	);
+
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/signout',
+		{
+			schema: {
+				tags: ['Auth'],
+				summary: 'Sign Out',
+				description: 'Ends the current user session',
+			},
+		},
+		signOut,
 	);
 
 	server.withTypeProvider<ZodTypeProvider>().post(

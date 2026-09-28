@@ -1,11 +1,12 @@
-import { User, UserRole, UserStatus } from '@/core/accounts/entities/user.entity';
+import { User, UserStatus } from '@/core/accounts/entities/user.entity';
+import { Role } from '@/shared/accessControl/roles';
 
 export type CreateUser = {
 	name: string;
 	surname: string;
 	email: string;
 	password: string;
-	role: UserRole;
+	role: Role;
 	status: UserStatus;
 };
 
@@ -14,7 +15,7 @@ export type UpdateUser = { id: string } & Partial<{
 	surname: string;
 	email: string;
 	password: string;
-	role: UserRole;
+	role: Role;
 	status: UserStatus;
 }>;
 
