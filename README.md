@@ -17,21 +17,21 @@ welcome.
 
 Github repositories:
 
--   Backend: <https://github.com/juanlessa/drunk-flavor-back>
--   Frontend: <https://github.com/juanlessa/drunk-flavor-front>
+- Backend: <https://github.com/juanlessa/drunk-flavor-back>
+- Frontend: <https://github.com/juanlessa/drunk-flavor-front>
 
 ## Backend
 
--   [Setup](#setup)
-    -   [mongodb](#mongodb)
-    -   [node.js](#nodejs)
-    -   [dotenv](#dotenv)
-    -   [secret-key](#secret-key)
--   [Dev](#dev)
--   [Testing](#dev)
--   [Build](#build)
--   [Documentation](#documentation)
--   [Seed](#seed)
+- [Setup](#setup)
+    - [mongodb](#mongodb)
+    - [node.js](#nodejs)
+    - [dotenv](#dotenv)
+    - [secret-key](#secret-key)
+- [Dev](#dev)
+- [Testing](#dev)
+- [Build](#build)
+- [Documentation](#documentation)
+- [Seed](#seed)
 
 ## Setup
 
@@ -128,10 +128,10 @@ SMTP_PASSWORD=''
 
 **Notes:**
 
--   This sample is considering that you did the MongoDB default installation. If this is not the case for you, please
-    modify the `# MongoBD` variables to match with your database information's.
--   We do recommend you change the `COOKIE_SECRET`, `ACCESS_TOKEN_SECRET` and the `REFRESH_TOKEN_SECRET` values, you can
-    just generate random strings and place there.
+- This sample is considering that you did the MongoDB default installation. If this is not the case for you, please
+  modify the `# MongoBD` variables to match with your database information's.
+- We do recommend you change the `COOKIE_SECRET`, `ACCESS_TOKEN_SECRET` and the `REFRESH_TOKEN_SECRET` values, you can
+  just generate random strings and place there.
 
 Now your environment setup is ready.
 
@@ -196,25 +196,25 @@ npm run test:watch
 
 To run only the tests for email templates, use the following commands:
 
--   Run template tests:
+- Run template tests:
 
 ```shell
 npm run test:template
 ```
 
--   Run template tests in watch mode:
+- Run template tests in watch mode:
 
 ```shell
 npm run test:template:watch
 ```
 
--   Run template tests and persist the output in the templates folder:
+- Run template tests and persist the output in the templates folder:
 
 ```shell
 npm run test:template:output
 ```
 
--   Run template tests with persisted output in watch mode:
+- Run template tests with persisted output in watch mode:
 
 ```shell
 npm run test:template:output:watch
@@ -222,15 +222,7 @@ npm run test:template:output:watch
 
 ### End-to-End (E2E) Tests
 
-Before running the E2E tests, you need to set up the Vitest MongoDB environment by executing:
-
-```shell
-npm run test:e2e:setup
-```
-
-This step only needs to be done once, unless you delete the node_modules folder.
-
-After setup, you can run the E2E tests using:
+Run the E2E tests using:
 
 ```shell
 npm run test:e2e
@@ -244,11 +236,11 @@ npm run test:e2e:watch
 
 **Note**:
 
--   By default, the E2E tests use an in-memory MongoDB database. However, you can change this to use a traditional
-    MongoDB instance by setting the MONGO_PERSISTENCE_MODE environment variable. In this case make sure to also
-    configure the MongoDB connection variables.
--   You can override any default testing environment variables by adding a `.env.testing` file in the project root,
-    following the structure of `.env.example`.
+- By default, the E2E tests use an in-memory MongoDB database. However, you can change this to use a traditional MongoDB
+  instance by setting the MONGO_PERSISTENCE_MODE environment variable. In this case make sure to also configure the
+  MongoDB connection variables.
+- You can override any default testing environment variables by adding a `.env.testing` file in the project root,
+  following the structure of `.env.example`.
 
 ## Build
 

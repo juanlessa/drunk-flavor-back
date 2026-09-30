@@ -5,10 +5,17 @@ services:
         ports:
             - '3333:3333'
         environment:
+            - API_ENV=${API_ENV:-development}
             - MONGO_HOST=mongodb
-            - MONGO_DATABASE=
+            - MONGO_DATABASE=${MONGO_DATABASE}
+            - MONGO_PARAMS=authMechanism=DEFAULT&authSource=admin
+            - SMTP_HOST=mailpit
+            - SMTP_PORT=1025
+            - SMTP_USERNAME=
+            - SMTP_PASSWORD=
         depends_on:
             - mongodb
+            - mailpit
         networks:
             - node-network
 
@@ -21,8 +28,19 @@ services:
         environment:
             - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME}
             - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+            - MONGO_INITDB_DATABASE=${MONGO_DATABASE}
         volumes:
             - dbdata6:/data/db
+        networks:
+            - node-network
+
+    mailpit:
+        image: axllent/mailpit:v1.31.3
+        restart: unless-stopped
+        container_name: mailpit
+        ports:
+            - '1025:1025'
+            - '8025:8025'
         networks:
             - node-network
 

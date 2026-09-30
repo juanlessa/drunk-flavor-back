@@ -8,14 +8,9 @@ export default defineConfig({
 	root: fileURLToPath(new URL('./', import.meta.url)),
 	test: {
 		include: ['src/**/*.e2e-spec.ts'],
-		environment: 'mongo',
+		environment: './src/infrastructure/mongo/vitest-environment-mongo/index.ts',
 		testTimeout: 30000,
 		fileParallelism: false,
 		pool: 'forks',
-		poolOptions: {
-			forks: {
-				singleFork: true,
-			},
-		},
 	},
 });
