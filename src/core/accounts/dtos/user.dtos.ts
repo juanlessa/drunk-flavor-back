@@ -19,4 +19,9 @@ export type UpdateUser = { id: string } & Partial<{
 	status: UserStatus;
 }>;
 
+export type UpdateUserRole = {
+	user_id: string;
+	role: Role;
+};
+
 export type UserWithoutPassword = Omit<User, 'password'>;
