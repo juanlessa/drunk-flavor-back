@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Model, Schema } from 'mongoose';
 import { Ingredient, IngredientTranslation } from '@/core/drinks/entities/ingredient.entity';
 import { CategorySchema } from '@/core/drinks/infra/mongo/entities/category.model';
 import { getTranslationsSchema } from '../helpers/translations.helpers';
@@ -26,7 +26,7 @@ export const IngredientSchema = new Schema<Ingredient>(
 	{
 		toJSON: {
 			transform: (_, ret) => {
-				delete ret.__v;
+				Reflect.deleteProperty(ret, '__v');
 			},
 		},
 		timestamps: {
@@ -37,4 +37,5 @@ export const IngredientSchema = new Schema<Ingredient>(
 );
 
 export const IngredientModel =
-	mongoose.models['ingredients'] || mongoose.model<Ingredient>('ingredients', IngredientSchema);
+	(mongoose.models['ingredients'] as Model<Ingredient> | undefined) ??
+	mongoose.model<Ingredient>('ingredients', IngredientSchema);

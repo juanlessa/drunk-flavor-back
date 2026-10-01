@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Model, Schema } from 'mongoose';
 import { User, UserStatusEnum } from '@/core/accounts/entities/user.entity';
 import { RolesEnum } from '@/shared/accessControl/roles';
 
@@ -14,7 +14,7 @@ export const UserSchema = new Schema<User>(
 	{
 		toJSON: {
 			transform: (_, ret) => {
-				delete ret.__v;
+				Reflect.deleteProperty(ret, '__v');
 			},
 		},
 		timestamps: {
@@ -24,4 +24,5 @@ export const UserSchema = new Schema<User>(
 	},
 );
 
-export const UserModel = mongoose.models['users'] || mongoose.model<User>('users', UserSchema);
+export const UserModel =
+	(mongoose.models['users'] as Model<User> | undefined) ?? mongoose.model<User>('users', UserSchema);

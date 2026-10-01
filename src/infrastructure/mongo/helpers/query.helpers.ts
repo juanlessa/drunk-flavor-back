@@ -1,4 +1,4 @@
-import { Document, Model } from 'mongoose';
+import { Model, QueryFilter } from 'mongoose';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 import { QueryParams, SortOrder } from '@/shared/types/query.types';
 
@@ -9,7 +9,7 @@ import { QueryParams, SortOrder } from '@/shared/types/query.types';
  * @param model - The Mongoose model to query.
  * @returns A Mongoose query.
  */
-export const buildQuery = <T>(queryParams: QueryParams, model: Model<Document<T>>) => {
+export const buildQuery = <T>(queryParams: QueryParams, model: Model<T>) => {
 	const { limit = DEFAULT_QUERY_PARAMS.limit, page = DEFAULT_QUERY_PARAMS.page, search, sort } = queryParams;
 	const skip = (page - 1) * limit;
 
@@ -22,7 +22,10 @@ export const buildQuery = <T>(queryParams: QueryParams, model: Model<Document<T>
 		}
 	}
 
-	let query = model.find(searchConditions).limit(limit).skip(skip);
+	let query = model
+		.find(searchConditions as QueryFilter<T>)
+		.limit(limit)
+		.skip(skip);
 
 	if (sort) {
 		const sortOptions: Record<string, SortOrder> = {};

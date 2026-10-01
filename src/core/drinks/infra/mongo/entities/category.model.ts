@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Model, Schema } from 'mongoose';
 import { Category, CategoryTranslation } from '@/core/drinks/entities/category.entity';
 import { getTranslationsSchema } from '../helpers/translations.helpers';
 
@@ -21,7 +21,7 @@ export const CategorySchema = new Schema<Category>(
 	{
 		toJSON: {
 			transform: (_, ret) => {
-				delete ret.__v;
+				Reflect.deleteProperty(ret, '__v');
 			},
 		},
 		timestamps: {
@@ -31,4 +31,6 @@ export const CategorySchema = new Schema<Category>(
 	},
 );
 
-export const CategoryModel = mongoose.models['categories'] || mongoose.model<Category>('categories', CategorySchema);
+export const CategoryModel =
+	(mongoose.models['categories'] as Model<Category> | undefined) ??
+	mongoose.model<Category>('categories', CategorySchema);

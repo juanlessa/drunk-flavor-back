@@ -8,27 +8,29 @@ services:
             - API_ENV=${API_ENV:-development}
             - MONGO_HOST=mongodb
             - MONGO_DATABASE=${MONGO_DATABASE}
-            - MONGO_PARAMS=authMechanism=DEFAULT&authSource=admin
+            - MONGO_PARAMS=authMechanism=DEFAULT&authSource=admin&replicaSet=rs0
             - SMTP_HOST=mailpit
             - SMTP_PORT=1025
             - SMTP_USERNAME=
             - SMTP_PASSWORD=
         depends_on:
-            - mongodb
-            - mailpit
+            mongodb:
+                condition: service_healthy
+            mailpit:
+                condition: service_started
         networks:
             - node-network
 
     mongodb:
-        image: mongo:7-jammy
+        image: mongodb/mongodb-atlas-local:7.0
         restart: always
         container_name: mongodb
         ports:
             - '27017:27017'
         environment:
-            - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME}
-            - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
-            - MONGO_INITDB_DATABASE=${MONGO_DATABASE}
+            - MONGODB_INITDB_ROOT_USERNAME=${MONGO_USERNAME}
+            - MONGODB_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+            - MONGODB_INITDB_DATABASE=${MONGO_DATABASE}
         volumes:
             - dbdata6:/data/db
         networks:

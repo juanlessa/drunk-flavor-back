@@ -14,6 +14,8 @@ export class MongoRepository {
 	}
 
 	async start(connectionString?: string) {
+		mongoose.set('transactionAsyncLocalStorage', true);
+
 		if (!connectionString) {
 			connectionString = buildConnectionStringFromEnv();
 		}

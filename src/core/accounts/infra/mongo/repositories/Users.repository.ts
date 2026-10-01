@@ -4,14 +4,16 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
+import { QueryParams } from '@/shared/types/query.types';
 
 export class UsersRepository implements IUsersRepository {
 	async create(data: CreateUser): Promise<User> {
-		return UserModel.create(data);
+		const user = new UserModel(data);
+		return user.save();
 	}
 
 	async update({ id, ...data }: UpdateUser): Promise<User> {
-		const user = await UserModel.findByIdAndUpdate(id, data, { new: true }).exec();
+		const user = await UserModel.findByIdAndUpdate(id, data, { returnDocument: 'after' }).exec();
 		if (!user) {
 			throw new NotFoundError('apiResponses.users.notFound', {
 				path: 'Users.repository.update',
@@ -40,7 +42,7 @@ export class UsersRepository implements IUsersRepository {
 		return UserModel.findOne<User>({ email }).exec();
 	}
 
-	async findAll(): Promise<UserWithoutPassword[]> {
+	async findAll(_query: QueryParams): Promise<UserWithoutPassword[]> {
 		return UserModel.find<UserWithoutPassword>().select('-password').exec();
 	}
 }

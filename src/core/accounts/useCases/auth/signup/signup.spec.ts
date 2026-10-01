@@ -8,12 +8,9 @@ import { BcryptHashProvider } from '@/shared/providers/cryptography/implementati
 import { SignupService } from './Signup.service';
 import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
-import { IMailerProvider } from '@/shared/providers/mailer/IMailer.provider';
-import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
 import { UserTokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/UserTokens.repository';
+import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
-import { MockMailerProvider } from '@/shared/providers/mailer/implementations/MockMailer.provider';
-import { MjmlProvider } from '@/shared/providers/template/implementations/Mjml.provider';
 import { User, UserStatusEnum } from '@/core/accounts/entities/user.entity';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.provider';
@@ -26,8 +23,6 @@ let userTokensRepository: IUserTokensRepository;
 let dateProvider: IDateProvider;
 let hashProvider: IHashProvider;
 let cryptoProvider: ICryptoProvider;
-let mailerProvider: IMailerProvider;
-let templateProvider: ITemplateProvider;
 let service: SignupService;
 
 const { name, surname, email, password } = createUserFactory();
@@ -42,16 +37,13 @@ describe('Signup', () => {
 		dateProvider = new DayjsProvider();
 		hashProvider = new BcryptHashProvider();
 		cryptoProvider = new NodeCryptoProvider();
-		mailerProvider = new MockMailerProvider();
-		templateProvider = new MjmlProvider();
 		service = new SignupService(
 			usersRepository,
 			userTokensRepository,
+			new FakeTransactionManager(),
 			dateProvider,
 			hashProvider,
 			cryptoProvider,
-			mailerProvider,
-			templateProvider,
 		);
 	});
 
@@ -80,7 +72,6 @@ describe('Signup', () => {
 
 		expect(verifyUserToken).not.toBeNull();
 		expect(verifyUserToken.token).toBeTruthy();
-		expect(mailerProvider.send).toHaveBeenCalledTimes(1);
 	});
 
 	it('Should not be able to signup an existent and active user', async () => {
@@ -97,7 +88,7 @@ describe('Signup', () => {
 	});
 
 	it('Should be able to signup a non-active existing user if the email verification token does not exist', async () => {
-		await usersRepository.create({
+		const createdUser = await usersRepository.create({
 			name,
 			surname,
 			email,
@@ -111,6 +102,7 @@ describe('Signup', () => {
 		const verifyUser = (await usersRepository.findByEmail(email)) as User;
 
 		expect(verifyUser).not.toBeNull();
+		expect(verifyUser._id.toString()).toEqual(createdUser._id.toString());
 		expect(verifyUser.email).toEqual(email);
 		expect(verifyUser.name).toEqual(name);
 		expect(verifyUser.surname).toEqual(surname);
@@ -122,7 +114,6 @@ describe('Signup', () => {
 
 		expect(verifyUserToken).not.toBeNull();
 		expect(verifyUserToken.token).toBeTruthy();
-		expect(mailerProvider.send).toHaveBeenCalledTimes(1);
 	});
 
 	it('Should be able to signup a non-active existing user if the email verification token is expired', async () => {
@@ -148,9 +139,10 @@ describe('Signup', () => {
 		const verifyUser = (await usersRepository.findByEmail(email)) as User;
 
 		expect(verifyUser).not.toBeNull();
+		expect(verifyUser._id.toString()).toEqual(createdUser._id.toString());
 		expect(verifyUser.email).toEqual(email);
 		expect(verifyUser.name).toEqual(name);
-		expect(verifyUser?.surname).toEqual(surname);
+		expect(verifyUser.surname).toEqual(surname);
 
 		const verifyUserToken = (await userTokensRepository.findByUserIdAndType({
 			user_id: verifyUser._id.toString(),
@@ -159,6 +151,7 @@ describe('Signup', () => {
 
 		expect(verifyUserToken).not.toBeNull();
 		expect(verifyUserToken.token).toBeTruthy();
-		expect(mailerProvider.send).toHaveBeenCalledTimes(1);
+		expect(verifyUserToken.token).not.toEqual(initialToken);
+		expect(await userTokensRepository.findByToken(initialToken)).toBeNull();
 	});
 });

@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Model, Schema } from 'mongoose';
 import { TokenTypeEnum, UserToken } from '@/core/accounts/entities/userToken.entity';
 import { env } from '@/env';
 
@@ -12,7 +12,7 @@ export const UserTokenSchema = new Schema<UserToken>(
 	{
 		toJSON: {
 			transform: (_, ret) => {
-				delete ret.__v;
+				Reflect.deleteProperty(ret, '__v');
 			},
 		},
 		timestamps: {
@@ -22,5 +22,8 @@ export const UserTokenSchema = new Schema<UserToken>(
 	},
 );
 
+UserTokenSchema.index({ user_id: 1, type: 1 }, { unique: true });
+
 export const UserTokenModel =
-	mongoose.models['users-tokens'] || mongoose.model<UserToken>('users-tokens', UserTokenSchema);
+	(mongoose.models['users-tokens'] as Model<UserToken> | undefined) ??
+	mongoose.model<UserToken>('users-tokens', UserTokenSchema);

@@ -2,18 +2,19 @@ import { NotFoundError } from '@/shared/error/error.lib';
 import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
 import { UserTokenModel } from '../entities/userToken.model';
 import { CreateUserToken, FindByUserIdAndType, UpdateUserToken } from '@/core/accounts/dtos/userToken.dtos';
-import { TokenType, UserToken } from '@/core/accounts/entities/userToken.entity';
+import { UserToken } from '@/core/accounts/entities/userToken.entity';
 import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
 
 export class UserTokensRepository implements IUserTokensRepository {
 	private model = UserTokenModel;
 
 	async create(data: CreateUserToken): Promise<UserToken> {
-		return this.model.create(data);
+		const userToken = new this.model(data);
+		return userToken.save();
 	}
 
 	async update({ id, ...data }: UpdateUserToken): Promise<UserToken> {
-		const record = await this.model.findByIdAndUpdate(id, data, { new: true }).exec();
+		const record = await this.model.findByIdAndUpdate(id, data, { returnDocument: 'after' }).exec();
 		if (!record) {
 			throw new NotFoundError('apiResponses.auth.tokenNotFound', {
 				path: 'UsersTokens.repository.update',
@@ -33,6 +34,7 @@ export class UserTokensRepository implements IUserTokensRepository {
 		}
 		return record;
 	}
+
 	async deleteByUserId(user_id: string): Promise<number> {
 		const result = await this.model.deleteMany({ user_id }).exec();
 		return result.deletedCount;
@@ -54,10 +56,6 @@ export class UserTokensRepository implements IUserTokensRepository {
 	}
 
 	async findByUserId(user_id: string): Promise<UserToken[]> {
-		const records: UserToken[] = await this.model
-			.find<UserToken>({ user_id })
-			.lean<UserToken[]>({ transform: removeLeanVersionKey })
-			.exec();
-		return records;
+		return this.model.find<UserToken>({ user_id }).lean<UserToken[]>({ transform: removeLeanVersionKey }).exec();
 	}
 }
