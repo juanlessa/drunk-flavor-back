@@ -51,7 +51,7 @@ jobs:
             - name: Run tests
               run: |
                   npm run generate-secret-key
-                  npm run test:e2e
+                  npm run test:e2e:run
               env:
                   LOGGER_ENABLED: false
                   MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
