@@ -2,7 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { app } from '@/infrastructure/fastify/app';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
-import { MongoRepository } from '@/infrastructure/mongo/Mongo.repository';
+import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { createAndAuthenticateUser, createUser } from '../helpers/authentication.helpers';
 import { UserTokenModel } from '@/core/accounts/infra/mongo/entities/userToken.model';
@@ -18,8 +18,8 @@ describe('Delete Profile', () => {
 	});
 
 	beforeEach(async () => {
-		await MongoRepository.Instance.emptyCollection(UserModel);
-		await MongoRepository.Instance.emptyCollection(UserTokenModel);
+		await MongoConnection.Instance.emptyCollection(UserModel);
+		await MongoConnection.Instance.emptyCollection(UserTokenModel);
 	});
 
 	it('Should be able to delete the profile', async () => {

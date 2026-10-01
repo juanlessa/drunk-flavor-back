@@ -1,7 +1,7 @@
 import { env } from '@/env';
 import { logger } from '@/shared/logger';
 import { app, start } from '@/infrastructure/fastify/app';
-import { MongoRepository } from '@/infrastructure/mongo/Mongo.repository';
+import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 
 process.on('unhandledRejection', (err) => {
 	logger.error(err);
@@ -10,7 +10,7 @@ process.on('unhandledRejection', (err) => {
 
 const container = async () => {
 	logger.info(`env file successfully loaded for ${env.NODE_ENV}`);
-	await MongoRepository.Instance.start();
+	await MongoConnection.Instance.start();
 	await start();
 	process.send?.('ready');
 };
@@ -21,7 +21,7 @@ const closeServer = (signal: string) => (): void => {
 	logger.info(`close application on ${signal}`);
 
 	try {
-		void Promise.allSettled([MongoRepository.Instance.stop(), app.close()]);
+		void Promise.allSettled([MongoConnection.Instance.stop(), app.close()]);
 	} catch (error) {
 		logger.error(error);
 		process.exit(1);

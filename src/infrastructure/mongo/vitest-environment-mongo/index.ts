@@ -1,6 +1,6 @@
 import type { Environment } from 'vitest/runtime';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
-import { MongoRepository } from '@/infrastructure/mongo/Mongo.repository';
+import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { env } from '@/env';
 
 let mongod: MongoMemoryReplSet | undefined = undefined;
@@ -16,15 +16,15 @@ export default <Environment>{
 			connectionString = mongod.getUri();
 		}
 
-		await MongoRepository.Instance.start(connectionString);
+		await MongoConnection.Instance.start(connectionString);
 
 		return {
 			async teardown() {
 				if (env.MONGO_PERSISTENCE_MODE === 'inDisk') {
-					await MongoRepository.Instance.dropAllCollections();
+					await MongoConnection.Instance.dropAllCollections();
 				}
 
-				await MongoRepository.Instance.stop();
+				await MongoConnection.Instance.stop();
 
 				if (env.MONGO_PERSISTENCE_MODE === 'inMemory' && mongod) {
 					await mongod.stop();
