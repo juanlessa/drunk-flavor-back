@@ -11,7 +11,7 @@ export const getNameCompareQuery = (names: DeepPartial<Translations<TranslationN
 	return query;
 };
 
-export const getTranslationsSchema = (schema: Schema) => {
+export const getTranslationsSchema = (schema: Schema): Schema => {
 	const languages = Object.keys(LanguagesEnum) as (keyof Translations<TranslationSchema>)[];
 
 	const translationsSchema: Translations<TranslationSchema> = languages.reduce(
