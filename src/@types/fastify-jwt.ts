@@ -15,8 +15,6 @@ declare module '@fastify/jwt' {
 
 declare module 'fastify' {
 	interface FastifyRequest {
-		jwtVerify<T extends VerifyPayloadType = DecodedToken>(options?: FastifyJwtVerifyOptions): Promise<T>;
-
 		sessionJwtVerify<T extends VerifyPayloadType = DecodedToken>(options?: FastifyJwtVerifyOptions): Promise<T>;
 	}
 	interface FastifyReply {

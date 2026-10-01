@@ -22,7 +22,7 @@ export type Controller<
 export type Middleware = <Request extends FastifyRequest = FastifyRequest, Reply extends FastifyReply = FastifyReply>(
 	request: Request,
 	reply: Reply,
-) => unknown;
+) => Promise<unknown>;
 
 export type ErrorHandler = FastifyInstance['errorHandler'];
 
