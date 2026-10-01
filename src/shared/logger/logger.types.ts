@@ -1,4 +1,4 @@
-import { LogLevel } from '@/env/env.types';
+import { LogLevel } from '@/env/log';
 
 type LogFunction = {
 	<T extends object>(obj: T, msg?: string, ...args: unknown[]): void;

@@ -1,4 +1,4 @@
-import { env } from '@/env';
+import { parseLogEnv } from '@/env/log';
 import { BaseLogger } from './logger.types';
 
 export class LoggerRepository {
@@ -6,7 +6,7 @@ export class LoggerRepository {
 
 	private constructor(
 		private loggerInstance: BaseLogger = console,
-		public readonly level = env.LOG_LEVEL,
+		public readonly level = parseLogEnv().LOG_LEVEL,
 	) {}
 
 	static get Instance() {
