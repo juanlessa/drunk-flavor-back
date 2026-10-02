@@ -64,7 +64,7 @@
 	"devDependencies": {
 		"@types/bcrypt": "6.0.0",
 		"@types/mjml": "5.0.0",
-		"@types/node": "24.19.0",
+		"@types/node": "24.19.1",
 		"@types/nodemailer": "8.0.2",
 		"@types/semver": "7.8.0",
 		"@types/supertest": "7.2.1",
