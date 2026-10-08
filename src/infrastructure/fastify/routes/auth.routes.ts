@@ -9,6 +9,10 @@ import { signinSchema } from '@/core/accounts/useCases/auth/signin/signin.schema
 import { signinController } from '@/core/accounts/useCases/auth/signin/signin.controller';
 import { forgotPasswordSchema } from '@/core/accounts/useCases/auth/forgotPassword/forgotPassword.schema';
 import { forgotPasswordController } from '@/core/accounts/useCases/auth/forgotPassword/forgotPassword.controller';
+import { resendEmailVerificationSchema } from '@/core/accounts/useCases/auth/resendEmailVerification/resendEmailVerification.schema';
+import { resendEmailVerificationController } from '@/core/accounts/useCases/auth/resendEmailVerification/resendEmailVerification.controller';
+import { confirmEmailSchema } from '@/core/accounts/useCases/auth/confirmEmail/confirmEmail.schema';
+import { confirmEmailController } from '@/core/accounts/useCases/auth/confirmEmail/confirmEmail.controller';
 
 const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
@@ -60,6 +64,32 @@ const routes: Routes = (server) => {
 			},
 		},
 		forgotPasswordController,
+	);
+
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/email-verification/confirm',
+		{
+			schema: {
+				tags: ['Auth'],
+				summary: 'Confirm Email Verification',
+				description: 'Confirms the user email using the email verification token and activates the account',
+				body: confirmEmailSchema,
+			},
+		},
+		confirmEmailController,
+	);
+
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/email-verification/resend',
+		{
+			schema: {
+				tags: ['Auth'],
+				summary: 'Resend Email Verification',
+				description: 'Resends the email verification token to a user whose email is not verified yet',
+				body: resendEmailVerificationSchema,
+			},
+		},
+		resendEmailVerificationController,
 	);
 
 	server.withTypeProvider<ZodTypeProvider>().post(

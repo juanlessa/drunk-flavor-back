@@ -2,8 +2,6 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { pluginGenerator } from '../helpers/fastify.helpers';
 import { Routes } from '../types/fastify.types';
 import { verifyAndRenewToken } from '../middlewares/verifyAndRenewToken';
-import { confirmEmailSchema } from '@/core/accounts/useCases/profile/confirmEmail/confirmEmail.schema';
-import { confirmEmailController } from '@/core/accounts/useCases/profile/confirmEmail/confirmEmail.controller';
 import { getProfileController } from '@/core/accounts/useCases/profile/getProfile/getProfile.controller';
 import { updateProfileSchema } from '@/core/accounts/useCases/profile/update/updateProfile.schema';
 import { updateProfileController } from '@/core/accounts/useCases/profile/update/updateProfile.controller';
@@ -14,17 +12,6 @@ import { updatePasswordSchema } from '@/core/accounts/useCases/profile/updatePas
 import { updatePasswordController } from '@/core/accounts/useCases/profile/updatePassword/updatePassword.controller';
 
 const routes: Routes = (server) => {
-	server.withTypeProvider<ZodTypeProvider>().post(
-		'/confirm-email',
-		{
-			schema: {
-				tags: ['Profile'],
-				body: confirmEmailSchema,
-			},
-		},
-		confirmEmailController,
-	);
-
 	server.get(
 		'/me',
 		{
