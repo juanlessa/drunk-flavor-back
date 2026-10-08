@@ -2,6 +2,8 @@ import { P, match } from 'ts-pattern';
 import { AppError } from '@/shared/error/error.lib';
 import { handleMongoError, instanceOfMongoError } from '@/infrastructure/mongo/mongo.errors';
 import { handleMongooseError, instanceOfMongooseError } from '@/infrastructure/mongo/mongoose.errors';
+import { handleRedisError, instanceOfRedisError } from '@/infrastructure/redis/redis.errors';
+import { handleBullMQError, instanceOfBullMQError } from '@/infrastructure/bullmq/bullmq.errors';
 import { handleAppError } from '@/shared/error/handleAppError';
 import { unhandledError } from '@/shared/error/unhandledError';
 import { ErrorResponse } from '@/shared/error/error.dtos';
@@ -14,6 +16,8 @@ export const handleCustomError = (error: unknown) =>
 		.when(instanceOfFastifyError, handleFastifyError)
 		.when(instanceOfMongoError, handleMongoError)
 		.when(instanceOfMongooseError, handleMongooseError)
+		.when(instanceOfRedisError, handleRedisError)
+		.when(instanceOfBullMQError, handleBullMQError)
 		.otherwise(unhandledError);
 
 export const errorHandler: ErrorHandler = async (error, request, reply) => {
