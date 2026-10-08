@@ -36,7 +36,7 @@ describe('Confirm Email', () => {
 
 		await userTokensRepository.create({ token, type: TokenTypeEnum['email-verification'], user_id: id });
 
-		const response = await request(app.server).post('/confirm-email').send({ token });
+		const response = await request(app.server).post('/email-verification/confirm').send({ token });
 
 		expect(response.status).toBe(HTTP_STATUS.no_content);
 	});
