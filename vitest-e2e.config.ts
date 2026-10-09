@@ -7,6 +7,9 @@ export default defineConfig({
 	},
 	root: fileURLToPath(new URL('./', import.meta.url)),
 	test: {
+		env: {
+			NODE_ENV: 'e2e',
+		},
 		include: ['src/**/*.e2e-spec.ts'],
 		environment: 'node',
 		globalSetup: ['./src/infrastructure/vitest/e2e/globalSetup.ts'],
