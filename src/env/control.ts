@@ -4,10 +4,11 @@ import { type NodeEnv, parseNodeEnv } from './node';
 export type { NodeEnv };
 
 export const storageTypeOptions = ['local', 's3'] as const;
-export const mongoPersistenceModeOptions = ['inMemory', 'inDisk'] as const;
+
+export const instanceModeOptions = ['managed', 'external'] as const;
 
 export type StorageType = (typeof storageTypeOptions)[number];
-export type MongoPersistenceMode = (typeof mongoPersistenceModeOptions)[number];
+export type InstanceMode = (typeof instanceModeOptions)[number];
 
 const STORAGE_TYPE_DEFAULTS: Record<NodeEnv, StorageType> = {
 	development: 'local',
@@ -16,20 +17,25 @@ const STORAGE_TYPE_DEFAULTS: Record<NodeEnv, StorageType> = {
 	production: 's3',
 };
 
-const MONGO_PERSISTENCE_MODE_DEFAULTS: Record<NodeEnv, MongoPersistenceMode> = {
-	development: 'inDisk',
-	production: 'inDisk',
-	testing: 'inMemory',
-	e2e: 'inMemory',
+const MONGO_MODE_DEFAULTS: Record<NodeEnv, InstanceMode> = {
+	development: 'external',
+	production: 'external',
+	testing: 'managed',
+	e2e: 'managed',
 };
 
-/**
- * Builds the control schema with defaults resolved for the given `NODE_ENV`.
- */
+const REDIS_MODE_DEFAULTS: Record<NodeEnv, InstanceMode> = {
+	development: 'external',
+	production: 'external',
+	testing: 'managed',
+	e2e: 'managed',
+};
+
 export const buildControlSchema = (nodeEnv: NodeEnv) =>
 	z.object({
 		STORAGE_TYPE: z.enum(storageTypeOptions).default(STORAGE_TYPE_DEFAULTS[nodeEnv]),
-		MONGO_PERSISTENCE_MODE: z.enum(mongoPersistenceModeOptions).default(MONGO_PERSISTENCE_MODE_DEFAULTS[nodeEnv]),
+		MONGO_MODE: z.enum(instanceModeOptions).default(MONGO_MODE_DEFAULTS[nodeEnv]),
+		REDIS_MODE: z.enum(instanceModeOptions).default(REDIS_MODE_DEFAULTS[nodeEnv]),
 	});
 
 export type ControlSchema = z.infer<ReturnType<typeof buildControlSchema>>;
