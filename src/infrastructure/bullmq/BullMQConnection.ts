@@ -1,25 +1,14 @@
 import { createNodeRedisClient, type IRedisClient } from 'bullmq';
 import { createClient, type RedisClientType } from 'redis';
 import { logger } from '@/shared/logger';
-
-/**
- * TODO: move these to the modular env (src/env) and read them from there.
- * Declared here for now so the connection is self-contained until the env
- * variables are added. The BULLMQ_REDIS_* prefix keeps the queue instance
- * configurable independently from the cache Redis, since BullMQ requires
- * maxmemory-policy=noeviction while a cache typically uses an eviction policy.
- */
-const BULLMQ_REDIS_HOST = process.env.BULLMQ_REDIS_HOST ?? 'localhost';
-const BULLMQ_REDIS_PORT = Number(process.env.BULLMQ_REDIS_PORT ?? 6379);
-const BULLMQ_REDIS_USERNAME = process.env.BULLMQ_REDIS_USERNAME ?? '';
-const BULLMQ_REDIS_PASSWORD = process.env.BULLMQ_REDIS_PASSWORD ?? '';
-const BULLMQ_REDIS_DATABASE = Number(process.env.BULLMQ_REDIS_DATABASE ?? 0);
-const BULLMQ_REDIS_CONNECT_TIMEOUT_MS = Number(process.env.BULLMQ_REDIS_CONNECT_TIMEOUT_MS ?? 5000);
+import { env } from '@/env';
 
 const buildRedisUrl = (): string => {
 	const credentials =
-		BULLMQ_REDIS_USERNAME || BULLMQ_REDIS_PASSWORD ? `${BULLMQ_REDIS_USERNAME}:${BULLMQ_REDIS_PASSWORD}@` : '';
-	return `redis://${credentials}${BULLMQ_REDIS_HOST}:${BULLMQ_REDIS_PORT}/${BULLMQ_REDIS_DATABASE}`;
+		env.BULLMQ_REDIS_USERNAME || env.BULLMQ_REDIS_PASSWORD
+			? `${env.BULLMQ_REDIS_USERNAME}:${env.BULLMQ_REDIS_PASSWORD}@`
+			: '';
+	return `redis://${credentials}${env.BULLMQ_REDIS_HOST}:${env.BULLMQ_REDIS_PORT}/${env.BULLMQ_REDIS_DATABASE}`;
 };
 
 export class BullMQConnection {
@@ -46,7 +35,7 @@ export class BullMQConnection {
 		const client: RedisClientType = createClient({
 			url: url ?? buildRedisUrl(),
 			socket: {
-				connectTimeout: BULLMQ_REDIS_CONNECT_TIMEOUT_MS,
+				connectTimeout: env.BULLMQ_REDIS_CONNECT_TIMEOUT_MS,
 			},
 		});
 
