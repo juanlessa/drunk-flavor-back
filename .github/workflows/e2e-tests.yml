@@ -60,7 +60,7 @@ jobs:
                   MONGO_HOST: 'localhost'
                   MONGO_PORT: '27017'
                   MONGO_PARAMS: 'authMechanism=DEFAULT&authSource=admin&replicaSet=rs0'
-                  MONGO_PERSISTENCE_MODE: 'inDisk'
+                  MONGO_MODE: 'external'
                   SMTP_DOMAIN: 'drunkflavor.com'
                   SMTP_HOST: 'localhost'
                   SMTP_PORT: '1025'
