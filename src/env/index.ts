@@ -87,7 +87,9 @@ const parseEnv = (source: NodeJS.ProcessEnv = process.env): Env => {
 	const storage = parseStorageEnv(source, STORAGE_TYPE, NODE_ENV);
 	const mongo = parseMongoEnv(source, MONGO_MODE, NODE_ENV);
 	const redis = parseRedisEnv(source, REDIS_MODE, NODE_ENV);
-	const bullmq = parseBullmqEnv(source, REDIS_MODE, NODE_ENV);
+	// BullMQ reuses its own BULLMQ_REDIS_* variables, falling back to the cache
+	// Redis values for any that are not set (useful for a shared instance).
+	const bullmq = parseBullmqEnv(source, REDIS_MODE, NODE_ENV, redis);
 
 	// Backfill the conditional keys that the active branch omits, so the exposed
 	// object stays flat and fully keyed. The discriminant itself comes from the

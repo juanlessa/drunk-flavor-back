@@ -1,5 +1,6 @@
 import { z } from 'zod/v4';
 import { type InstanceMode, type NodeEnv, parseControlEnv } from './control';
+import { type FlatRedisSchema, type RedisSchema, parseRedisEnv } from './redis';
 
 const connectionOptionsShape = {
 	BULLMQ_REDIS_CONNECT_TIMEOUT_MS: z.coerce.number().int().default(5000),
@@ -26,11 +27,41 @@ export type BullmqSchema = z.infer<typeof bullmqSchema>;
 
 export type FlatBullmqSchema = z.infer<typeof externalBullmqSchema>;
 
+const BULLMQ_TO_REDIS_FALLBACK = {
+	BULLMQ_REDIS_HOST: 'REDIS_HOST',
+	BULLMQ_REDIS_PORT: 'REDIS_PORT',
+	BULLMQ_REDIS_USERNAME: 'REDIS_USERNAME',
+	BULLMQ_REDIS_PASSWORD: 'REDIS_PASSWORD',
+	BULLMQ_REDIS_DATABASE: 'REDIS_DATABASE',
+	BULLMQ_REDIS_CONNECT_TIMEOUT_MS: 'REDIS_CONNECT_TIMEOUT_MS',
+} as const satisfies Record<string, keyof FlatRedisSchema>;
+
+const applyRedisFallback = (source: NodeJS.ProcessEnv, redis: RedisSchema): NodeJS.ProcessEnv => {
+	const merged: NodeJS.ProcessEnv = { ...source };
+
+	for (const [bullmqKey, redisKey] of Object.entries(BULLMQ_TO_REDIS_FALLBACK)) {
+		if (merged[bullmqKey] !== undefined) {
+			continue;
+		}
+
+		const redisValue = (redis as Record<string, unknown>)[redisKey];
+		if (redisValue !== undefined) {
+			merged[bullmqKey] = String(redisValue);
+		}
+	}
+
+	return merged;
+};
+
 export const parseBullmqEnv = (
 	source: NodeJS.ProcessEnv = process.env,
 	mode?: InstanceMode,
 	nodeEnv?: NodeEnv,
+	redis?: RedisSchema,
 ): BullmqSchema => {
 	const resolvedMode = mode ?? parseControlEnv(source, nodeEnv).REDIS_MODE;
-	return bullmqSchema.parse({ ...source, REDIS_MODE: resolvedMode });
+	const resolvedRedis = redis ?? parseRedisEnv(source, resolvedMode, nodeEnv);
+	const mergedSource = applyRedisFallback(source, resolvedRedis);
+
+	return bullmqSchema.parse({ ...mergedSource, REDIS_MODE: resolvedMode });
 };
