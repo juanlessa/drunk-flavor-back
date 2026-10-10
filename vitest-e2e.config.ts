@@ -9,6 +9,7 @@ export default defineConfig({
 	test: {
 		env: {
 			NODE_ENV: 'e2e',
+			LOG_LEVEL: 'warn',
 		},
 		include: ['src/**/*.e2e-spec.ts'],
 		environment: 'node',
