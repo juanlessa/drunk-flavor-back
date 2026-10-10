@@ -5,6 +5,7 @@ import { type FlatRedisSchema, type RedisSchema, parseRedisEnv } from './redis';
 
 const connectionOptionsShape = {
 	BULLMQ_REDIS_CONNECT_TIMEOUT_MS: z.coerce.number().int().default(5000),
+	EMAIL_WORKER_CONCURRENCY: z.coerce.number().int().min(1).default(5),
 };
 
 const managedBullmqSchema = z.object({
