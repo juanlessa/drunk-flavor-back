@@ -65,4 +65,31 @@ export class RedisConnection {
 		this._client = undefined;
 		logger.info('Redis connection has been closed.');
 	}
+
+	async flushCache(): Promise<void> {
+		await this.client.flushDb();
+	}
+
+	async deleteKeysByPattern(pattern: string): Promise<number> {
+		let removed = 0;
+		const batch: string[] = [];
+
+		const flushBatch = async (): Promise<void> => {
+			if (batch.length === 0) {
+				return;
+			}
+			removed += await this.client.unlink(batch);
+			batch.length = 0;
+		};
+
+		for await (const key of this.client.scanIterator({ MATCH: pattern })) {
+			batch.push(...(Array.isArray(key) ? key : [key]));
+			if (batch.length >= 500) {
+				await flushBatch();
+			}
+		}
+		await flushBatch();
+
+		return removed;
+	}
 }

@@ -69,4 +69,28 @@ export class BullMQConnection {
 		this._client = undefined;
 		logger.info('BullMQ Redis connection has been closed.');
 	}
+
+	async clearQueue(queueName: string, prefix = 'bull'): Promise<number> {
+		return this.deleteKeysByPattern(`${prefix}:${queueName}:*`);
+	}
+
+	async clearAllQueues(prefix = 'bull'): Promise<number> {
+		return this.deleteKeysByPattern(`${prefix}:*`);
+	}
+
+	private async deleteKeysByPattern(pattern: string): Promise<number> {
+		const client = this.client;
+		let removed = 0;
+		let cursor = '0';
+
+		do {
+			const [nextCursor, keys] = await client.scan(cursor, { MATCH: pattern, COUNT: 500 });
+			cursor = nextCursor;
+			if (keys.length > 0) {
+				removed += await client.del(...keys);
+			}
+		} while (cursor !== '0');
+
+		return removed;
+	}
 }
