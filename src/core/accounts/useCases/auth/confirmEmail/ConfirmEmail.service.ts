@@ -2,6 +2,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { BadRequestError } from '@/shared/error/error.lib';
 import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
+import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { env } from '@/env';
 import { ConfirmEmail } from './confirmEmail.dtos';
 import { UserStatusEnum } from '@/core/accounts/entities/user.entity';
@@ -11,6 +12,7 @@ export class ConfirmEmailService {
 		private usersRepository: IUsersRepository,
 		private userTokensRepository: IUserTokensRepository,
 		private dateProvider: IDateProvider,
+		private cryptoProvider: ICryptoProvider,
 	) {}
 
 	private isTokenExpired(createdAt: Date): boolean {
@@ -19,7 +21,7 @@ export class ConfirmEmailService {
 	}
 
 	async execute({ token }: ConfirmEmail) {
-		const userToken = await this.userTokensRepository.findByToken(token);
+		const userToken = await this.userTokensRepository.findByToken(this.cryptoProvider.hashToken(token));
 
 		if (!userToken) {
 			throw new BadRequestError('apiResponses.auth.tokenNotFound', { path: 'ConfirmEmail.service.1' });

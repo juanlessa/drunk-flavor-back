@@ -62,7 +62,7 @@ export class ForgotPasswordService {
 		});
 
 		await this.userTokensRepository.create({
-			token,
+			token: this.cryptoProvider.hashToken(token),
 			type: TokenTypeEnum['forgot-password'],
 			user_id: user._id.toString(),
 		});

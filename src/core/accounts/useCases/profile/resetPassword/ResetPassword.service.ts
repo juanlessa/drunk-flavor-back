@@ -2,6 +2,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { BadRequestError } from '@/shared/error/error.lib';
 import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
+import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { ResetPassword } from './resetPassword.dtos';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { env } from '@/env';
@@ -12,6 +13,7 @@ export class ResetPasswordService {
 		private userTokensRepository: IUserTokensRepository,
 		private dateProvider: IDateProvider,
 		private hashProvider: IHashProvider,
+		private cryptoProvider: ICryptoProvider,
 	) {}
 
 	private isTokenExpired(createdAt: Date): boolean {
@@ -20,7 +22,7 @@ export class ResetPasswordService {
 	}
 
 	async execute({ token, password }: ResetPassword) {
-		const userToken = await this.userTokensRepository.findByToken(token);
+		const userToken = await this.userTokensRepository.findByToken(this.cryptoProvider.hashToken(token));
 
 		if (!userToken) {
 			throw new BadRequestError('apiResponses.auth.tokenNotFound', { path: 'ResetPassword.service.1' });

@@ -97,7 +97,7 @@ describe('ResendEmailVerification', () => {
 		const createdUser = await createPendingUser();
 		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({
-			token,
+			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypeEnum['email-verification'],
 		});
@@ -109,7 +109,7 @@ describe('ResendEmailVerification', () => {
 		const createdUser = await createPendingUser();
 		const initialToken = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({
-			token: initialToken,
+			token: cryptoProvider.hashToken(initialToken),
 			user_id: createdUser._id.toString(),
 			type: TokenTypeEnum['email-verification'],
 		});
@@ -125,7 +125,7 @@ describe('ResendEmailVerification', () => {
 
 		expect(verifyUserToken).not.toBeNull();
 		expect(verifyUserToken.token).toBeTruthy();
-		expect(verifyUserToken.token).not.toBe(initialToken);
-		expect(await userTokensRepository.findByToken(initialToken)).toBeNull();
+		expect(verifyUserToken.token).not.toBe(cryptoProvider.hashToken(initialToken));
+		expect(await userTokensRepository.findByToken(cryptoProvider.hashToken(initialToken))).toBeNull();
 	});
 });

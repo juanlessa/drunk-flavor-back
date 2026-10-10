@@ -53,7 +53,7 @@ export class SignupService {
 			});
 
 			await this.userTokensRepository.create({
-				token,
+				token: this.cryptoProvider.hashToken(token),
 				type: TokenTypeEnum['email-verification'],
 				user_id: createdUser._id.toString(),
 			});

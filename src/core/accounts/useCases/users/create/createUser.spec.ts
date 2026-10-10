@@ -136,7 +136,7 @@ describe('Create User', () => {
 		});
 		const initialToken = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({
-			token: initialToken,
+			token: cryptoProvider.hashToken(initialToken),
 			user_id: createdUser._id.toString(),
 			type: TokenTypeEnum['email-verification'],
 		});

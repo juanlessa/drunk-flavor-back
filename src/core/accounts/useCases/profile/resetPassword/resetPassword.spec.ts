@@ -36,7 +36,13 @@ describe('Reset Password', () => {
 		hashProvider = new BcryptHashProvider();
 		usersRepository = new UsersRepositoryInMemory();
 		userTokensRepository = new UserTokensRepositoryInMemory();
-		service = new ResetPasswordService(usersRepository, userTokensRepository, dateProvider, hashProvider);
+		service = new ResetPasswordService(
+			usersRepository,
+			userTokensRepository,
+			dateProvider,
+			hashProvider,
+			cryptoProvider,
+		);
 	});
 
 	afterEach(() => {
@@ -55,7 +61,7 @@ describe('Reset Password', () => {
 		});
 		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({
-			token,
+			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypeEnum['forgot-password'],
 		});
@@ -84,7 +90,7 @@ describe('Reset Password', () => {
 		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
 		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({
-			token,
+			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypeEnum['forgot-password'],
 		});
@@ -98,7 +104,7 @@ describe('Reset Password', () => {
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 
-		const findUserToken = await userTokensRepository.findByToken(token);
+		const findUserToken = await userTokensRepository.findByToken(cryptoProvider.hashToken(token));
 
 		expect(findUserToken).toBeNull();
 	});
@@ -107,7 +113,7 @@ describe('Reset Password', () => {
 		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		const nonexistentUserId = new ObjectId().toString();
 		await userTokensRepository.create({
-			token,
+			token: cryptoProvider.hashToken(token),
 			user_id: nonexistentUserId,
 			type: TokenTypeEnum['forgot-password'],
 		});

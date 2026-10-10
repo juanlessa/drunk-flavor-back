@@ -35,7 +35,7 @@ describe('Confirm Email', () => {
 		hashProvider = new BcryptHashProvider();
 		usersRepository = new UsersRepositoryInMemory();
 		userTokensRepository = new UserTokensRepositoryInMemory();
-		service = new ConfirmEmailService(usersRepository, userTokensRepository, dateProvider);
+		service = new ConfirmEmailService(usersRepository, userTokensRepository, dateProvider, cryptoProvider);
 	});
 
 	afterEach(() => {
@@ -54,7 +54,7 @@ describe('Confirm Email', () => {
 		});
 		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({
-			token,
+			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypeEnum['email-verification'],
 		});
@@ -89,7 +89,7 @@ describe('Confirm Email', () => {
 		});
 		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({
-			token,
+			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypeEnum['email-verification'],
 		});
@@ -102,7 +102,7 @@ describe('Confirm Email', () => {
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 
-		const findUserToken = await userTokensRepository.findByToken(token);
+		const findUserToken = await userTokensRepository.findByToken(cryptoProvider.hashToken(token));
 
 		expect(findUserToken).toBeNull();
 	});
@@ -111,7 +111,7 @@ describe('Confirm Email', () => {
 		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		const nonexistentUserId = new ObjectId().toString();
 		await userTokensRepository.create({
-			token,
+			token: cryptoProvider.hashToken(token),
 			user_id: nonexistentUserId,
 			type: TokenTypeEnum['email-verification'],
 		});

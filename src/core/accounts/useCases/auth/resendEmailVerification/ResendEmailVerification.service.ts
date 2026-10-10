@@ -53,7 +53,7 @@ export class ResendEmailVerificationService {
 		const token = await this.cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 
 		await this.userTokensRepository.create({
-			token,
+			token: this.cryptoProvider.hashToken(token),
 			type: TokenTypeEnum['email-verification'],
 			user_id: user._id.toString(),
 		});

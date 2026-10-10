@@ -79,7 +79,7 @@ describe('ForgotPassword', () => {
 		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
 		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({
-			token,
+			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypeEnum['forgot-password'],
 		});
@@ -91,7 +91,7 @@ describe('ForgotPassword', () => {
 		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
 		const initialToken = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({
-			token: initialToken,
+			token: cryptoProvider.hashToken(initialToken),
 			user_id: createdUser._id.toString(),
 			type: TokenTypeEnum['forgot-password'],
 		});
@@ -107,7 +107,7 @@ describe('ForgotPassword', () => {
 
 		expect(verifyUserToken).not.toBeNull();
 		expect(verifyUserToken.token).toBeTruthy();
-		expect(verifyUserToken.token).not.toBe(initialToken);
+		expect(verifyUserToken.token).not.toBe(cryptoProvider.hashToken(initialToken));
 		expect(mailerProvider.send).toHaveBeenCalledTimes(1);
 	});
 });

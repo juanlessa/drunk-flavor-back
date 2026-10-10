@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { ICryptoProvider } from '../ICrypto.provider';
 import { ServerError } from '@/shared/error/error.lib';
 import { logger } from '@/shared/providers/logger';
@@ -19,5 +19,9 @@ export class NodeCryptoProvider implements ICryptoProvider {
 				}
 			});
 		});
+	}
+
+	hashToken(token: string): string {
+		return createHash('sha256').update(token).digest('hex');
 	}
 }
