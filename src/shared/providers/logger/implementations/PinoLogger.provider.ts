@@ -2,6 +2,7 @@ import { pino, type Logger, type LoggerOptions } from 'pino';
 import { parseLogEnv } from '@/env/log';
 import { type ILoggerProvider } from '../ILogger.provider';
 import { LogLevel, type LogFunction } from '../logger.types';
+import { PINO_LOGGER_OPTIONS } from './pinoLogger.constants';
 
 export class PinoLoggerProvider implements ILoggerProvider {
 	private readonly pino: Logger;
@@ -15,8 +16,8 @@ export class PinoLoggerProvider implements ILoggerProvider {
 	/** Delegates to Pino's built-in `silent`, a no-op by design. */
 	readonly silent: LogFunction;
 
-	constructor(logLevel: LogLevel = parseLogEnv().LOG_LEVEL ?? 'debug', options: Omit<LoggerOptions, 'level'> = {}) {
-		this.pino = pino({ level: logLevel, ...options });
+	constructor(options: LoggerOptions = PINO_LOGGER_OPTIONS) {
+		this.pino = pino(options);
 
 		this.trace = this.pino.trace.bind(this.pino);
 		this.debug = this.pino.debug.bind(this.pino);
