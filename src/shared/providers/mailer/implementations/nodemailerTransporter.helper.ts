@@ -1,18 +1,20 @@
-import { env } from '@/env';
+import { parseSmtpEnv } from '@/env/smtp';
 import nodemailer, { Transporter } from 'nodemailer';
+
+const smtp = parseSmtpEnv();
 
 export const nodemailerTransporter = (): Transporter => {
 	const auth =
-		env.SMTP_USERNAME && env.SMTP_PASSWORD
+		smtp.SMTP_USERNAME && smtp.SMTP_PASSWORD
 			? {
-					user: env.SMTP_USERNAME,
-					pass: env.SMTP_PASSWORD,
+					user: smtp.SMTP_USERNAME,
+					pass: smtp.SMTP_PASSWORD,
 				}
 			: undefined;
 
 	return nodemailer.createTransport({
-		host: env.SMTP_HOST,
-		port: env.SMTP_PORT,
+		host: smtp.SMTP_HOST,
+		port: smtp.SMTP_PORT,
 		auth,
 	});
 };

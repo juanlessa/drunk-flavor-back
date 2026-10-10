@@ -1,7 +1,9 @@
-import { env } from '@/env';
+import { parseNodeEnv } from '@/env/node';
 import { logger } from '@/shared/providers/logger';
 import { BullMQConnection } from '@/infrastructure/bullmq/BullMQConnection';
 import { resolveEmailWorker } from '@/infrastructure/bullmq/workers/email/emailWorker.container';
+
+const { NODE_ENV } = parseNodeEnv();
 
 process.on('unhandledRejection', (err) => {
 	logger.fatal(err);
@@ -9,7 +11,7 @@ process.on('unhandledRejection', (err) => {
 });
 
 const container = async () => {
-	logger.info(`env file successfully loaded for ${env.NODE_ENV}`);
+	logger.info(`env file successfully loaded for ${NODE_ENV}`);
 	await BullMQConnection.Instance.start();
 	const worker = resolveEmailWorker();
 	process.send?.('ready');

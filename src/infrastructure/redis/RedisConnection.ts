@@ -1,10 +1,27 @@
 import { createClient, type RedisClientType } from 'redis';
 import { logger } from '@/shared/providers/logger';
-import { env } from '@/env';
+import { parseRedisEnv } from '@/env/redis';
+
+const redis = parseRedisEnv();
 
 const buildRedisUrl = (): string => {
-	const credentials = env.REDIS_USERNAME || env.REDIS_PASSWORD ? `${env.REDIS_USERNAME}:${env.REDIS_PASSWORD}@` : '';
-	return `redis://${credentials}${env.REDIS_HOST}:${env.REDIS_PORT}/${env.REDIS_DATABASE}`;
+	// Connection values live only on the `external` branch. In managed mode the
+	// URL is never used (callers pass an explicit url), so fall back to the same
+	// defaults the aggregated env backfilled to keep behavior identical.
+	const connection =
+		redis.REDIS_MODE === 'external'
+			? {
+					host: redis.REDIS_HOST,
+					port: redis.REDIS_PORT,
+					username: redis.REDIS_USERNAME,
+					password: redis.REDIS_PASSWORD,
+					database: redis.REDIS_DATABASE,
+				}
+			: { host: 'localhost', port: 6379, username: '', password: '', database: 0 };
+
+	const credentials =
+		connection.username || connection.password ? `${connection.username}:${connection.password}@` : '';
+	return `redis://${credentials}${connection.host}:${connection.port}/${connection.database}`;
 };
 
 export class RedisConnection {
@@ -31,7 +48,7 @@ export class RedisConnection {
 		const client: RedisClientType = createClient({
 			url: url ?? buildRedisUrl(),
 			socket: {
-				connectTimeout: env.REDIS_CONNECT_TIMEOUT_MS,
+				connectTimeout: redis.REDIS_CONNECT_TIMEOUT_MS,
 			},
 		});
 

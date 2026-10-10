@@ -1,14 +1,28 @@
 import { createNodeRedisClient, type IRedisClient } from 'bullmq';
 import { createClient, type RedisClientType } from 'redis';
 import { logger } from '@/shared/providers/logger';
-import { env } from '@/env';
+import { parseBullmqEnv } from '@/env/bullmq';
+
+const bullmq = parseBullmqEnv();
 
 const buildRedisUrl = (): string => {
+	// Connection values live only on the `external` branch. In managed mode the
+	// URL is never used (callers pass an explicit url), so fall back to the same
+	// defaults the aggregated env backfilled to keep behavior identical.
+	const connection =
+		bullmq.REDIS_MODE === 'external'
+			? {
+					host: bullmq.BULLMQ_REDIS_HOST,
+					port: bullmq.BULLMQ_REDIS_PORT,
+					username: bullmq.BULLMQ_REDIS_USERNAME,
+					password: bullmq.BULLMQ_REDIS_PASSWORD,
+					database: bullmq.BULLMQ_REDIS_DATABASE,
+				}
+			: { host: 'localhost', port: 6379, username: '', password: '', database: 0 };
+
 	const credentials =
-		env.BULLMQ_REDIS_USERNAME || env.BULLMQ_REDIS_PASSWORD
-			? `${env.BULLMQ_REDIS_USERNAME}:${env.BULLMQ_REDIS_PASSWORD}@`
-			: '';
-	return `redis://${credentials}${env.BULLMQ_REDIS_HOST}:${env.BULLMQ_REDIS_PORT}/${env.BULLMQ_REDIS_DATABASE}`;
+		connection.username || connection.password ? `${connection.username}:${connection.password}@` : '';
+	return `redis://${credentials}${connection.host}:${connection.port}/${connection.database}`;
 };
 
 export class BullMQConnection {
@@ -35,7 +49,7 @@ export class BullMQConnection {
 		const client: RedisClientType = createClient({
 			url: url ?? buildRedisUrl(),
 			socket: {
-				connectTimeout: env.BULLMQ_REDIS_CONNECT_TIMEOUT_MS,
+				connectTimeout: bullmq.BULLMQ_REDIS_CONNECT_TIMEOUT_MS,
 			},
 		});
 

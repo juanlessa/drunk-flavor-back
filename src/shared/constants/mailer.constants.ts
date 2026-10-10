@@ -1,6 +1,8 @@
-import { env } from '@/env';
+import { parseSmtpEnv } from '@/env/smtp';
+
+const smtp = parseSmtpEnv();
 
 export const MAIL_SENDERS = {
-	noReply: `no-reply@${env.SMTP_DOMAIN}`,
-	support: `support@${env.SMTP_DOMAIN}`,
+	noReply: `no-reply@${smtp.SMTP_DOMAIN}`,
+	support: `support@${smtp.SMTP_DOMAIN}`,
 } as const;
