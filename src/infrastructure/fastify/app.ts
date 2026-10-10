@@ -15,7 +15,6 @@ import { REFRESH_TOKEN_OPTIONS, TOKEN_OPTIONS } from './constants/jwt.constants'
 import { SESSION_OPTIONS } from './constants/session.constants';
 import { FASTIFY_COOKIE_OPTIONS } from './constants/cookie.constants';
 import { router } from './routes';
-import { FASTIFY_LOGGER_OPTIONS } from './constants/logger.constants';
 import { LoggerInstance } from '@/shared/providers/logger/Logger.instance';
 import { env } from '@/env';
 import { DOCS_URL, SWAGGER_OPTIONS, SWAGGER_UI_OPTIONS } from './constants/swagger.constants';
@@ -23,9 +22,10 @@ import { MULTIPART_OPTIONS } from './constants/multipart.constants';
 import { STATIC_FILES_OPTIONS, STATIC_FILES_URL } from './constants/static.constants';
 import { setLogger, logger } from '@/shared/providers/logger';
 import { I18N_OPTIONS } from './constants/i18n.constants';
+import { PINO_LOGGER_OPTIONS } from '@/shared/providers/logger/implementations/pinoLogger.constants';
 
 export const app = fastify({
-	logger: FASTIFY_LOGGER_OPTIONS,
+	logger: PINO_LOGGER_OPTIONS,
 });
 
 app.register(helmet);
@@ -67,8 +67,8 @@ export const start = async () => {
 	try {
 		await app.ready();
 
-		logger.info('plugins\n' + app.printPlugins());
-		logger.info(
+		logger.debug('plugins\n' + app.printPlugins());
+		logger.debug(
 			'routes\n' +
 				app.printRoutes({
 					commonPrefix: false,
