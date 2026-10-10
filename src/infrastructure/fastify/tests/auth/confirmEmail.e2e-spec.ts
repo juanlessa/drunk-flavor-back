@@ -34,7 +34,11 @@ describe('Confirm Email', () => {
 
 		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 
-		await userTokensRepository.create({ token, type: TokenTypeEnum['email-verification'], user_id: id });
+		await userTokensRepository.create({
+			token: cryptoProvider.hashToken(token),
+			type: TokenTypeEnum['email-verification'],
+			user_id: id,
+		});
 
 		const response = await request(app.server).post('/email-verification/confirm').send({ token });
 

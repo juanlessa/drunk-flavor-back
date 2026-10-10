@@ -20,7 +20,6 @@ const container = async () => {
 		logger.info(`close worker on ${signal}`);
 
 		try {
-			// Close the worker before stopping the connection so in-flight jobs drain first.
 			await worker.close();
 			await BullMQConnection.Instance.stop();
 		} catch (error) {

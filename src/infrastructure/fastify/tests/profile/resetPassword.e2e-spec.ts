@@ -34,7 +34,11 @@ describe('Reset Password', () => {
 
 		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 
-		await userTokensRepository.create({ token, type: TokenTypeEnum['forgot-password'], user_id: id });
+		await userTokensRepository.create({
+			token: cryptoProvider.hashToken(token),
+			type: TokenTypeEnum['forgot-password'],
+			user_id: id,
+		});
 
 		const newPassword = 'New-password-87654321';
 
