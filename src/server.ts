@@ -4,7 +4,7 @@ import { app, start } from '@/infrastructure/fastify/app';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 
 process.on('unhandledRejection', (err) => {
-	logger.error(err);
+	logger.fatal?.(err) ?? logger.error(err);
 	process.exit(1);
 });
 

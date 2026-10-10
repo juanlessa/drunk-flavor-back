@@ -11,8 +11,7 @@ export const instanceOfBullMQError = (error: unknown): error is BullMQError =>
 	BULLMQ_ERROR_CONSTRUCTORS.some((constructor) => error instanceof constructor);
 
 export const handleBullMQError = (error: BullMQError): ErrorResponse => {
-	logger.error(`bullmq.handleBullMQError(${error.name}): ${error.message}`);
-	logger.error(error);
+	logger.error({ err: error }, `bullmq.handleBullMQError(${error.name}): ${error.message}`);
 
 	return {
 		statusCode: HTTP_STATUS.internal_server_error,

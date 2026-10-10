@@ -9,18 +9,19 @@ export const instanceOfFastifyError = (error: unknown): error is FastifyError =>
 };
 
 export const handleFastifyError = (error: FastifyError): ErrorResponse => {
-	logger.error(`fastify.handleFastifyError(${error.name}): ${error.message}.`);
-	logger.error(error);
-
 	if (error.validation && error.validation.length > 0) {
-		logger.info(`fastify.handleFastifyError(${error.name}): failed validation of ${error.validationContext}.\n`);
-		error.validation.forEach((value: unknown) => logger.info(JSON.stringify(value)));
+		logger.warn(
+			{ name: error.name, validationContext: error.validationContext, issues: error.validation },
+			'fastify validation failed',
+		);
 
 		return {
 			statusCode: HTTP_STATUS.bad_request,
 			localeKey: error.validation[0].message as LocaleKey,
 		};
 	}
+
+	logger.error({ err: error }, `fastify.handleFastifyError(${error.name}): ${error.message}.`);
 
 	return {
 		statusCode: error.statusCode || HTTP_STATUS.internal_server_error,

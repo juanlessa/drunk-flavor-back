@@ -16,11 +16,12 @@ export class AppError extends Error {
 	}
 
 	public log(): void {
-		logger.error(`%s: %s. \n`, this.path || this.name, this.message);
-		if (this.cause) {
-			logger.error(this.cause);
+		if (this.status < HTTP_STATUS.internal_server_error) {
+			logger.warn({ path: this.path ?? this.name, type: this.type, status: this.status }, this.message);
+			return;
 		}
-		logger.error(this);
+
+		logger.error({ err: this }, `${this.path ?? this.name}: ${this.message}`);
 	}
 }
 

@@ -6,8 +6,7 @@ import { MongoError } from 'mongodb';
 export const instanceOfMongoError = (error: unknown): error is MongoError => error instanceof MongoError;
 
 export const handleMongoError = (error: MongoError): ErrorResponse => {
-	logger.error(`mongo.handleMongoError(${error.name}): ${error.code} - ${error.message}`);
-	logger.error(error);
+	logger.error({ err: error }, `mongo.handleMongoError(${error.name}): ${error.code} - ${error.message}`);
 
 	return {
 		statusCode: HTTP_STATUS.internal_server_error,

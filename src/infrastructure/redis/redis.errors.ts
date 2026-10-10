@@ -33,8 +33,7 @@ export const instanceOfRedisError = (error: unknown): error is RedisError =>
 	REDIS_ERROR_CONSTRUCTORS.some((constructor) => error instanceof constructor);
 
 export const handleRedisError = (error: RedisError): ErrorResponse => {
-	logger.error(`redis.handleRedisError(${error.name}): ${error.message}`);
-	logger.error(error);
+	logger.error({ err: error }, `redis.handleRedisError(${error.name}): ${error.message}`);
 
 	return {
 		statusCode: HTTP_STATUS.internal_server_error,
