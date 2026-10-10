@@ -2,7 +2,7 @@ import { FastifyJWT } from '@fastify/jwt';
 import { DecodedToken } from '../types/jwt.types';
 import { FastifyRequest } from 'fastify';
 import { AUTH_SESSION } from '../constants/session.constants';
-import { logger } from '@/shared/logger';
+import { logger } from '@/shared/providers/logger';
 import { NotFoundError } from '@/shared/error/error.lib';
 
 export const mapDecodedTokenToUser = (user: string | object | Buffer): FastifyJWT['user'] => {

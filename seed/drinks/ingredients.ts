@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.model';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
-import { logger } from '@/shared/logger';
+import { logger } from '@/shared/providers/logger';
 import { categoriesMap } from './categories';
 
 const ingredients = [

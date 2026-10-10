@@ -1,11 +1,18 @@
 import mongoose, { Model } from 'mongoose';
-import { logger } from '@/shared/logger';
+import { logger } from '@/shared/providers/logger';
 import { buildConnectionOptionsFromEnv, buildConnectionStringFromEnv } from './helpers/mongoose.helpers';
 
 export class MongoConnection {
 	private static _instance: MongoConnection;
 
 	private connectionListenersRegistered = false;
+
+	/**
+	 * Set while `stop()` is intentionally closing the connection, so the
+	 * `disconnected` listener does not log an unexpected-loss warning for a
+	 * deliberate shutdown (e.g. test teardown).
+	 */
+	private isClosing = false;
 
 	static get Instance() {
 		return this._instance || (this._instance = new this());
@@ -27,7 +34,12 @@ export class MongoConnection {
 		}
 
 		mongoose.connection.on('error', (error) => logger.error(error, 'Mongo connection error.'));
-		mongoose.connection.on('disconnected', () => logger.warn('Mongo connection has been lost.'));
+		mongoose.connection.on('disconnected', () => {
+			if (this.isClosing) {
+				return;
+			}
+			logger.warn('Mongo connection has been lost.');
+		});
 		mongoose.connection.on('reconnected', () => logger.info('Mongo connection has been reestablished.'));
 
 		this.connectionListenersRegistered = true;
@@ -63,7 +75,12 @@ export class MongoConnection {
 			return;
 		}
 
-		await mongoose.connection.close();
+		this.isClosing = true;
+		try {
+			await mongoose.connection.close();
+		} finally {
+			this.isClosing = false;
+		}
 		logger.info('Mongo connection has been closed.');
 	}
 

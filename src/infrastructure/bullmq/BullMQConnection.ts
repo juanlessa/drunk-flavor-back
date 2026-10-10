@@ -1,6 +1,6 @@
 import { createNodeRedisClient, type IRedisClient } from 'bullmq';
 import { createClient, type RedisClientType } from 'redis';
-import { logger } from '@/shared/logger';
+import { logger } from '@/shared/providers/logger';
 import { env } from '@/env';
 
 const buildRedisUrl = (): string => {

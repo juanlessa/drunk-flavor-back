@@ -5,7 +5,7 @@ import { pipeline } from 'node:stream';
 import { STATIC_FILES_URL, STATIC_FOLDER_PATH } from '@/infrastructure/fastify/constants/static.constants';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import { logger } from '@/shared/logger';
+import { logger } from '@/shared/providers/logger';
 
 export class LocalStorageProvider implements IStorageProvider {
 	getFileURL(fileName: string): string {

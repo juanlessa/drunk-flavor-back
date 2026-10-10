@@ -1,5 +1,5 @@
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
-import { logger } from '@/shared/logger';
+import { logger } from '@/shared/providers/logger';
 import { insertCategories } from './categories';
 import { insertIngredients } from './ingredients';
 import { insertDrinks } from './drinks';

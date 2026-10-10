@@ -1,6 +1,6 @@
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { AppErrorOptions } from './error.dtos';
-import { logger } from '@/shared/logger';
+import { logger } from '@/shared/providers/logger';
 import { LocaleKey } from '../types/locale.types';
 
 export class AppError extends Error {

@@ -1,4 +1,4 @@
-import { logger } from '@/shared/logger';
+import { logger } from '@/shared/providers/logger';
 import {
 	DEFAULT_LOCAL_MAILDEV_WEB_PORT,
 	DEFAULT_LOCAL_SMTP_HOST,

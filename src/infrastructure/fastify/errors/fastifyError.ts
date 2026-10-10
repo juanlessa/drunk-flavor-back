@@ -1,6 +1,6 @@
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { ErrorResponse } from '@/shared/error/error.dtos';
-import { logger } from '@/shared/logger';
+import { logger } from '@/shared/providers/logger';
 import { LocaleKey } from '@/shared/types/locale.types';
 import { FastifyError } from 'fastify';
 

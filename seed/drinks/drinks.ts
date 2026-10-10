@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { DrinkModel } from '@/core/drinks/infra/mongo/entities/drink.model';
 import { Drink } from '@/core/drinks/entities/drink.entity';
-import { logger } from '@/shared/logger';
+import { logger } from '@/shared/providers/logger';
 import { ingredientsMap } from './ingredients';
 
 const drinks = [

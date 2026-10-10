@@ -16,12 +16,12 @@ import { SESSION_OPTIONS } from './constants/session.constants';
 import { FASTIFY_COOKIE_OPTIONS } from './constants/cookie.constants';
 import { router } from './routes';
 import { FASTIFY_LOGGER_OPTIONS } from './constants/logger.constants';
-import { LoggerRepository } from '@/shared/logger/logger.repository';
+import { LoggerInstance } from '@/shared/providers/logger/Logger.instance';
 import { env } from '@/env';
 import { DOCS_URL, SWAGGER_OPTIONS, SWAGGER_UI_OPTIONS } from './constants/swagger.constants';
 import { MULTIPART_OPTIONS } from './constants/multipart.constants';
 import { STATIC_FILES_OPTIONS, STATIC_FILES_URL } from './constants/static.constants';
-import { setLogger, logger } from '@/shared/logger';
+import { setLogger, logger } from '@/shared/providers/logger';
 import { I18N_OPTIONS } from './constants/i18n.constants';
 
 export const app = fastify({
@@ -51,7 +51,7 @@ router.map((route) => app.register(route));
 app.setErrorHandler(errorHandler);
 
 export const start = async () => {
-	LoggerRepository.setLogger(app.log);
+	LoggerInstance.setLogger(app.log);
 	setLogger(app.log);
 
 	const origin = 'localhost';

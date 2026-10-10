@@ -1,5 +1,5 @@
 import { env } from '@/env';
-import { logger } from '@/shared/logger';
+import { logger } from '@/shared/providers/logger';
 import { app, start } from '@/infrastructure/fastify/app';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 

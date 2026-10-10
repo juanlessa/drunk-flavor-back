@@ -9,7 +9,7 @@ import {
 } from '@/core/accounts/schemas/user.schemas';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { RolesEnum } from '@/shared/accessControl/roles';
-import { logger } from '@/shared/logger';
+import { logger } from '@/shared/providers/logger';
 import { resolveHashProvider } from '@/shared/providers/cryptography';
 
 process.on('unhandledRejection', (err) => {

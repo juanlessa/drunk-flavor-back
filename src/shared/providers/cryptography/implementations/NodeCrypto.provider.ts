@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { ICryptoProvider } from '../ICrypto.provider';
 import { ServerError } from '@/shared/error/error.lib';
-import { logger } from '@/shared/logger';
+import { logger } from '@/shared/providers/logger';
 
 export class NodeCryptoProvider implements ICryptoProvider {
 	async generateToken(length: number): Promise<string> {

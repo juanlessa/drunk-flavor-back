@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { config as loadDotenv } from 'dotenv';
 import nodemailer from 'nodemailer';
 import { parseSmtpEnv } from '@/env/smtp';
-import { logger } from '@/shared/logger';
+import { logger } from '@/shared/providers/logger';
 import { DEFAULT_LOCAL_SMTP_HOST, startLocalMailDevServer, type LocalMailDevServer } from './local-maildev-server';
 
 const PROJECT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');

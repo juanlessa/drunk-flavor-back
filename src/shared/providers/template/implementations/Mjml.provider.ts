@@ -5,7 +5,7 @@ import { ServerError } from '@/shared/error/error.lib';
 import { emailVerificationTemplate } from './views/emailVerification.template';
 import { MJMLJsonObject } from './mjml.types';
 import { forgotPasswordTemplate } from './views/forgotPassword.template';
-import { logger } from '@/shared/logger';
+import { logger } from '@/shared/providers/logger';
 
 export class MjmlProvider implements ITemplateProvider {
 	private async parseToHtml(id: string, template: MJMLJsonObject): Promise<string> {
