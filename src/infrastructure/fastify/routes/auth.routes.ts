@@ -7,8 +7,10 @@ import { signupSchema } from '@/core/accounts/useCases/auth/signup/signup.schema
 import { signupController } from '@/core/accounts/useCases/auth/signup/signup.controller';
 import { signinSchema } from '@/core/accounts/useCases/auth/signin/signin.schema';
 import { signinController } from '@/core/accounts/useCases/auth/signin/signin.controller';
-import { forgotPasswordSchema } from '@/core/accounts/useCases/auth/forgotPassword/forgotPassword.schema';
-import { forgotPasswordController } from '@/core/accounts/useCases/auth/forgotPassword/forgotPassword.controller';
+import { requestPasswordResetSchema } from '@/core/accounts/useCases/auth/requestPasswordReset/requestPasswordReset.schema';
+import { requestPasswordResetController } from '@/core/accounts/useCases/auth/requestPasswordReset/requestPasswordReset.controller';
+import { confirmPasswordSchema } from '@/core/accounts/useCases/auth/confirmPassword/confirmPassword.schema';
+import { confirmPasswordController } from '@/core/accounts/useCases/auth/confirmPassword/confirmPassword.controller';
 import { resendEmailVerificationSchema } from '@/core/accounts/useCases/auth/resendEmailVerification/resendEmailVerification.schema';
 import { resendEmailVerificationController } from '@/core/accounts/useCases/auth/resendEmailVerification/resendEmailVerification.controller';
 import { confirmEmailSchema } from '@/core/accounts/useCases/auth/confirmEmail/confirmEmail.schema';
@@ -54,16 +56,29 @@ const routes: Routes = (server) => {
 	);
 
 	server.withTypeProvider<ZodTypeProvider>().post(
-		'/forgot-password',
+		'/password-reset/request',
 		{
 			schema: {
 				tags: ['Auth'],
-				summary: 'Forgot Password',
+				summary: 'Request Password Reset',
 				description: 'Sends a password reset link to the user email',
-				body: forgotPasswordSchema,
+				body: requestPasswordResetSchema,
 			},
 		},
-		forgotPasswordController,
+		requestPasswordResetController,
+	);
+
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/password-reset/confirm',
+		{
+			schema: {
+				tags: ['Auth'],
+				summary: 'Confirm Password Reset',
+				description: 'Sets a new password using the password reset token',
+				body: confirmPasswordSchema,
+			},
+		},
+		confirmPasswordController,
 	);
 
 	server.withTypeProvider<ZodTypeProvider>().post(

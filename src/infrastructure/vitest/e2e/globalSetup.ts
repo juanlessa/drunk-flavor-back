@@ -1,7 +1,9 @@
 import type { TestProject } from 'vitest/node';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import { RedisMemoryServer } from 'redis-memory-server';
-import { env } from '@/env';
+import { parseControlEnv } from '@/env/control';
+
+const control = parseControlEnv();
 
 declare module 'vitest' {
 	interface ProvidedContext {
@@ -19,12 +21,12 @@ export async function setup(project: TestProject): Promise<void> {
 	let redisCacheConnectionString: string | undefined;
 	let bullmqConnectionString: string | undefined;
 
-	if (env.MONGO_MODE === 'managed') {
+	if (control.MONGO_MODE === 'managed') {
 		mongod = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
 		mongoConnectionString = mongod.getUri();
 	}
 
-	if (env.REDIS_MODE === 'managed') {
+	if (control.REDIS_MODE === 'managed') {
 		// A single managed Redis instance is shared by the cache and the queue,
 		// isolated by logical database: db 0 for the cache, db 1 for BullMQ. The
 		// separate-instance recommendation exists to avoid the cache evicting

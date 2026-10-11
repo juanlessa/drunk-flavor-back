@@ -39,11 +39,42 @@ jobs:
               uses: supercharge/mongodb-github-action@1.12.1
               with:
                   mongodb-version: '7.0'
-                  mongodb-username: ${{ secrets.MONGO_USERNAME }}
-                  mongodb-password: ${{ secrets.MONGO_PASSWORD }}
-                  mongodb-db: ${{ secrets.MONGO_DATABASE }}
                   mongodb-replica-set: rs0
-                  mongodb-key: ${{ secrets.MONGO_REPLICA_SET_KEY }}
+
+            - name: Create and verify MongoDB test user
+              env:
+                  MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
+                  MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+                  MONGO_DATABASE: ${{ secrets.MONGO_DATABASE }}
+              run: |
+                  set -euo pipefail
+
+                  [ -n "${MONGO_USERNAME:-}" ] || { echo '::error::MONGO_USERNAME secret is empty'; exit 1; }
+                  [ -n "${MONGO_PASSWORD:-}" ] || { echo '::error::MONGO_PASSWORD secret is empty'; exit 1; }
+                  [ -n "${MONGO_DATABASE:-}" ] || { echo '::error::MONGO_DATABASE secret is empty'; exit 1; }
+
+                  echo 'MongoDB configuration: mode=external host=localhost port=27017 database=set username=set password=set authSource=admin replicaSet=rs0'
+
+                  docker exec --env MONGO_USERNAME --env MONGO_PASSWORD mongodb mongosh --quiet --eval '
+                    const admin = db.getSiblingDB("admin");
+                    admin.createUser({
+                      user: process.env.MONGO_USERNAME,
+                      pwd: process.env.MONGO_PASSWORD,
+                      roles: [{ role: "root", db: "admin" }],
+                    });
+                  ' >/dev/null
+
+                  docker exec --env MONGO_USERNAME --env MONGO_PASSWORD --env MONGO_DATABASE mongodb mongosh --quiet --eval '
+                    const username = encodeURIComponent(process.env.MONGO_USERNAME);
+                    const password = encodeURIComponent(process.env.MONGO_PASSWORD);
+                    const database = encodeURIComponent(process.env.MONGO_DATABASE);
+                    const uri = `mongodb://${username}:${password}@localhost:27017/${database}?authSource=admin&replicaSet=rs0`;
+                    const connection = new Mongo(uri);
+                    const ping = connection.getDB(process.env.MONGO_DATABASE).runCommand({ ping: 1 });
+                    if (ping.ok !== 1) throw new Error("MongoDB authenticated ping failed");
+                  ' >/dev/null
+
+                  echo 'MongoDB authenticated ping succeeded'
 
             - name: Start Redis
               uses: supercharge/redis-github-action@1.8.1
