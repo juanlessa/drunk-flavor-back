@@ -6,8 +6,6 @@ import { getProfileController } from '@/core/accounts/useCases/profile/getProfil
 import { updateProfileSchema } from '@/core/accounts/useCases/profile/update/updateProfile.schema';
 import { updateProfileController } from '@/core/accounts/useCases/profile/update/updateProfile.controller';
 import { deleteProfileController } from '@/core/accounts/useCases/profile/deleteProfile/deleteProfile.controller';
-import { resetPasswordSchema } from '@/core/accounts/useCases/profile/resetPassword/resetPassword.schema';
-import { resetPasswordController } from '@/core/accounts/useCases/profile/resetPassword/resetPassword.controller';
 import { updatePasswordSchema } from '@/core/accounts/useCases/profile/updatePassword/updatePassword.schema';
 import { updatePasswordController } from '@/core/accounts/useCases/profile/updatePassword/updatePassword.controller';
 
@@ -42,17 +40,6 @@ const routes: Routes = (server) => {
 			preValidation: [verifyAndRenewToken],
 		},
 		deleteProfileController,
-	);
-
-	server.withTypeProvider<ZodTypeProvider>().post(
-		'/reset-password',
-		{
-			schema: {
-				tags: ['Profile'],
-				body: resetPasswordSchema,
-			},
-		},
-		resetPasswordController,
 	);
 
 	server.withTypeProvider<ZodTypeProvider>().patch(

@@ -6,6 +6,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { BadRequestError } from '@/shared/error/error.lib';
 import { Signup } from './signup.dtos';
 import { env } from '@/env';
+import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { RolesEnum } from '@/shared/accessControl/roles';
@@ -20,6 +21,7 @@ export class SignupService {
 		private usersRepository: IUsersRepository,
 		private userTokensRepository: IUserTokensRepository,
 		private transactionManager: ITransactionManager,
+		private dateProvider: IDateProvider,
 		private hashProvider: IHashProvider,
 		private cryptoProvider: ICryptoProvider,
 		private templateProvider: ITemplateProvider,
@@ -53,9 +55,10 @@ export class SignupService {
 			});
 
 			await this.userTokensRepository.create({
-				token,
+				token: this.cryptoProvider.hashToken(token),
 				type: TokenTypeEnum['email-verification'],
 				user_id: createdUser._id.toString(),
+				expires_at: this.dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 			});
 
 			return createdUser;

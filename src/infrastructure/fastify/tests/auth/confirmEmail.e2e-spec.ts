@@ -8,6 +8,7 @@ import { createUser } from '../helpers/authentication.helpers';
 import { UserTokenModel } from '@/core/accounts/infra/mongo/entities/userToken.model';
 import { resolveUserTokensRepository } from '@/core/accounts/infra/mongo/container';
 import { resolveCryptoProvider } from '@/shared/providers/cryptography';
+import { resolveDateProvider } from '@/shared/providers/date';
 import { env } from '@/env';
 import { TokenTypeEnum } from '@/core/accounts/entities/userToken.entity';
 import { RolesEnum } from '@/shared/accessControl/roles';
@@ -31,10 +32,16 @@ describe('Confirm Email', () => {
 
 		const cryptoProvider = resolveCryptoProvider();
 		const userTokensRepository = resolveUserTokensRepository();
+		const dateProvider = resolveDateProvider();
 
 		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 
-		await userTokensRepository.create({ token, type: TokenTypeEnum['email-verification'], user_id: id });
+		await userTokensRepository.create({
+			token: cryptoProvider.hashToken(token),
+			type: TokenTypeEnum['email-verification'],
+			user_id: id,
+			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
+		});
 
 		const response = await request(app.server).post('/email-verification/confirm').send({ token });
 
