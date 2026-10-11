@@ -1,7 +1,7 @@
 import { IStorageProvider } from '../IStorage.provider';
 import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { env } from '@/env';
-import { logger } from '@/shared/logger';
+import { logger } from '@/shared/providers/logger';
 import { UploadFileOptions } from '../storage.dtos';
 
 export class S3StorageProvider implements IStorageProvider {

@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { app } from '@/infrastructure/fastify/app';
-import { MongoRepository } from '@/infrastructure/mongo/Mongo.repository';
+import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
@@ -21,9 +21,9 @@ describe('Update Ingredient', () => {
 	});
 
 	beforeEach(async () => {
-		await MongoRepository.Instance.emptyCollection(CategoryModel);
-		await MongoRepository.Instance.emptyCollection(IngredientModel);
-		await MongoRepository.Instance.emptyCollection(UserModel);
+		await MongoConnection.Instance.emptyCollection(CategoryModel);
+		await MongoConnection.Instance.emptyCollection(IngredientModel);
+		await MongoConnection.Instance.emptyCollection(UserModel);
 	});
 
 	it('Should be able to update an ingredient', async () => {
