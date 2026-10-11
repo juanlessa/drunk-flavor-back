@@ -1,11 +1,15 @@
 import type { Document } from 'mongoose';
 import { parseMongoEnv } from '@/env/mongo';
-import { mongoConnectionStringSchema, mongooseConnectionOptionsSchema } from '../schemas/mongoose.schemas';
 
 export const buildConnectionStringFromEnv = () => {
 	const mongoEnv = parseMongoEnv();
+
+	if (mongoEnv.MONGO_MODE !== 'external') {
+		throw new Error('Cannot build a MongoDB connection string unless MONGO_MODE is "external".');
+	}
+
 	const { MONGO_PROTOCOL, MONGO_USERNAME, MONGO_PASSWORD, MONGO_HOST, MONGO_PORT, MONGO_DATABASE, MONGO_PARAMS } =
-		mongoConnectionStringSchema.parse(mongoEnv);
+		mongoEnv;
 
 	const protocol = MONGO_PROTOCOL;
 	const credentials = `${encodeURIComponent(MONGO_USERNAME)}:${encodeURIComponent(MONGO_PASSWORD)}`;
@@ -17,8 +21,7 @@ export const buildConnectionStringFromEnv = () => {
 };
 
 export const buildConnectionOptionsFromEnv = () => {
-	const { MONGO_MAX_POOL_SIZE, MONGO_SERVER_SELECTION_TIMEOUT_MS, MONGO_CONNECT_TIMEOUT_MS } =
-		mongooseConnectionOptionsSchema.parse(parseMongoEnv());
+	const { MONGO_MAX_POOL_SIZE, MONGO_SERVER_SELECTION_TIMEOUT_MS, MONGO_CONNECT_TIMEOUT_MS } = parseMongoEnv();
 
 	return {
 		maxPoolSize: MONGO_MAX_POOL_SIZE,
