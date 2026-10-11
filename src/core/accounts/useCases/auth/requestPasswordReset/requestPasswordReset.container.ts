@@ -2,7 +2,7 @@ import { resolveUsersRepository, resolveUserTokensRepository } from '@/core/acco
 import { resolveMailerProvider } from '@/shared/providers/mailer';
 import { resolveTemplateProvider } from '@/shared/providers/template';
 import { resolveCryptoProvider } from '@/shared/providers/cryptography';
-import { ForgotPasswordService } from './ForgotPassword.service';
+import { RequestPasswordResetService } from './RequestPasswordReset.service';
 import { resolveDateProvider } from '@/shared/providers/date';
 
 const dateProvider = resolveDateProvider();
@@ -12,7 +12,7 @@ const templateProvider = resolveTemplateProvider();
 const usersRepository = resolveUsersRepository();
 const userTokensRepository = resolveUserTokensRepository();
 
-const forgotPasswordService = new ForgotPasswordService(
+const requestPasswordResetService = new RequestPasswordResetService(
 	usersRepository,
 	userTokensRepository,
 	dateProvider,
@@ -20,4 +20,4 @@ const forgotPasswordService = new ForgotPasswordService(
 	mailerProvider,
 	templateProvider,
 );
-export const resolveForgotPasswordService = () => forgotPasswordService;
+export const resolveRequestPasswordResetService = () => requestPasswordResetService;

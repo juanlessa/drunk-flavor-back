@@ -7,7 +7,7 @@ import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
-import { ResetPasswordService } from './ResetPassword.service';
+import { ConfirmPasswordService } from './ConfirmPassword.service';
 import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
 import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.provider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
@@ -22,12 +22,12 @@ let hashProvider: IHashProvider;
 let dateProvider: IDateProvider;
 let usersRepository: IUsersRepository;
 let userTokensRepository: IUserTokensRepository;
-let service: ResetPasswordService;
+let service: ConfirmPasswordService;
 
 const { name, surname, email, password, role, status } = createUserFactory();
 const updatedPassword = 'Test-password-1234';
 
-describe('Reset Password', () => {
+describe('Confirm Password', () => {
 	beforeEach(async () => {
 		vi.useFakeTimers();
 
@@ -36,7 +36,7 @@ describe('Reset Password', () => {
 		hashProvider = new BcryptHashProvider();
 		usersRepository = new UsersRepositoryInMemory();
 		userTokensRepository = new UserTokensRepositoryInMemory();
-		service = new ResetPasswordService(
+		service = new ConfirmPasswordService(
 			usersRepository,
 			userTokensRepository,
 			dateProvider,
@@ -49,7 +49,7 @@ describe('Reset Password', () => {
 		vi.useRealTimers();
 	});
 
-	it('Should be able reset the password', async () => {
+	it('Should be able to confirm the password', async () => {
 		const hashedPassword = await hashProvider.hash(password);
 		const createdUser = await usersRepository.create({
 			name,
@@ -78,7 +78,7 @@ describe('Reset Password', () => {
 		expect(verifyUser.password).not.toEqual(hashedPassword);
 	});
 
-	it('should not be able to reset the password using a nonexisting token', async () => {
+	it('should not be able to confirm the password using a nonexisting token', async () => {
 		await expect(
 			service.execute({
 				token: 'non-existing-token',
@@ -87,7 +87,7 @@ describe('Reset Password', () => {
 		).rejects.toBeInstanceOf(BadRequestError);
 	});
 
-	it('should not be able to reset the password using a expired token', async () => {
+	it('should not be able to confirm the password using a expired token', async () => {
 		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
 		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({
@@ -111,7 +111,7 @@ describe('Reset Password', () => {
 		expect(findUserToken).toBeNull();
 	});
 
-	it('Should not be able to reset the password of a nonexistent user', async () => {
+	it('Should not be able to confirm the password of a nonexistent user', async () => {
 		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		const nonexistentUserId = new ObjectId().toString();
 		await userTokensRepository.create({

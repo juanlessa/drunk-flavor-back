@@ -7,11 +7,11 @@ import { BadRequestError } from '@/shared/error/error.lib';
 import { MAIL_SENDERS } from '@/shared/constants/mailer.constants';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { FRONTEND_BASE_URL, FRONTEND_PAGE_PATHS } from '@/shared/constants/frontend.constants';
-import { ForgotPassword } from './forgotPassword.dtos';
+import { RequestPasswordReset } from './requestPasswordReset.dtos';
 import { env } from '@/env';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 
-export class ForgotPasswordService {
+export class RequestPasswordResetService {
 	constructor(
 		private usersRepository: IUsersRepository,
 		private userTokensRepository: IUserTokensRepository,
@@ -21,10 +21,10 @@ export class ForgotPasswordService {
 		private templateProvider: ITemplateProvider,
 	) {}
 
-	async execute({ email }: ForgotPassword) {
+	async execute({ email }: RequestPasswordReset) {
 		const user = await this.usersRepository.findByEmail(email);
 		if (!user) {
-			throw new BadRequestError('apiResponses.users.notExist', { path: 'ForgotPassword.service.1' });
+			throw new BadRequestError('apiResponses.users.notExist', { path: 'RequestPasswordReset.service.1' });
 		}
 
 		const tokenAlreadyExists = await this.userTokensRepository.findByUserIdAndType({
@@ -34,7 +34,7 @@ export class ForgotPasswordService {
 
 		if (tokenAlreadyExists && !this.dateProvider.isExpiredDate(tokenAlreadyExists.expires_at)) {
 			throw new BadRequestError('apiResponses.auth.actionAlreadyRequested', {
-				path: 'ForgotPassword.service.2',
+				path: 'RequestPasswordReset.service.2',
 			});
 		}
 

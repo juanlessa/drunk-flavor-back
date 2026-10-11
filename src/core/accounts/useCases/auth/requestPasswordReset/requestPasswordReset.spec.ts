@@ -4,7 +4,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
 import { UserTokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/UserTokens.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
-import { ForgotPasswordService } from './ForgotPassword.service';
+import { RequestPasswordResetService } from './RequestPasswordReset.service';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
@@ -23,11 +23,11 @@ let dateProvider: IDateProvider;
 let cryptoProvider: ICryptoProvider;
 let mailerProvider: IMailerProvider;
 let templateProvider: ITemplateProvider;
-let service: ForgotPasswordService;
+let service: RequestPasswordResetService;
 
 const { name, surname, email, password, role, status } = createUserFactory();
 
-describe('ForgotPassword', () => {
+describe('RequestPasswordReset', () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 		vi.useFakeTimers();
@@ -38,7 +38,7 @@ describe('ForgotPassword', () => {
 		cryptoProvider = new NodeCryptoProvider();
 		mailerProvider = new MockMailerProvider();
 		templateProvider = new MjmlProvider();
-		service = new ForgotPasswordService(
+		service = new RequestPasswordResetService(
 			usersRepository,
 			userTokensRepository,
 			dateProvider,
@@ -56,7 +56,7 @@ describe('ForgotPassword', () => {
 		vi.clearAllMocks();
 	});
 
-	it('Should be able to request a forgot password', async () => {
+	it('Should be able to request a password reset', async () => {
 		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
 
 		await service.execute({ email });
@@ -71,11 +71,11 @@ describe('ForgotPassword', () => {
 		expect(mailerProvider.send).toHaveBeenCalledTimes(1);
 	});
 
-	it('Should not be able to request forgot password for a nonexistent user', async () => {
+	it('Should not be able to request a password reset for a nonexistent user', async () => {
 		await expect(service.execute({ email: 'invalid-email@test.com' })).rejects.toBeInstanceOf(BadRequestError);
 	});
 
-	it('Should not be able to request forgot password when it has been recently requested', async () => {
+	it('Should not be able to request a password reset when it has been recently requested', async () => {
 		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
 		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({
@@ -88,7 +88,7 @@ describe('ForgotPassword', () => {
 		await expect(service.execute({ email })).rejects.toBeInstanceOf(BadRequestError);
 	});
 
-	it('Should be able to request a forgot password after the token expiration time', async () => {
+	it('Should be able to request a password reset after the token expiration time', async () => {
 		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
 		const initialToken = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({

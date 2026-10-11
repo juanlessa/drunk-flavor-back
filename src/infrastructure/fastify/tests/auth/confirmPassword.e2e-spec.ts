@@ -13,7 +13,7 @@ import { env } from '@/env';
 import { TokenTypeEnum } from '@/core/accounts/entities/userToken.entity';
 import { RolesEnum } from '@/shared/accessControl/roles';
 
-describe('Reset Password', () => {
+describe('Confirm Password', () => {
 	beforeAll(async () => {
 		await app.ready();
 	});
@@ -27,7 +27,7 @@ describe('Reset Password', () => {
 		await MongoConnection.Instance.emptyCollection(UserTokenModel);
 	});
 
-	it('Should be able to reset the password', async () => {
+	it('Should be able to confirm the password', async () => {
 		const { id } = await createUser(app, { role: RolesEnum.member });
 
 		const cryptoProvider = resolveCryptoProvider();
@@ -46,7 +46,7 @@ describe('Reset Password', () => {
 		const newPassword = 'New-password-87654321';
 
 		const response = await request(app.server)
-			.post('/reset-password')
+			.post('/password-reset/confirm')
 			.send({ token, password: newPassword, confirmPassword: newPassword });
 
 		expect(response.status).toBe(HTTP_STATUS.no_content);

@@ -3,7 +3,7 @@ import { userPasswordValidation } from '@/core/accounts/schemas/user.schemas';
 import { tokenValidation } from '@/core/accounts/schemas/userToken.schemas';
 import { LocaleKey } from '@/shared/types/locale.types';
 
-export const resetPasswordSchema = z
+export const confirmPasswordSchema = z
 	.object({
 		token: tokenValidation,
 		password: userPasswordValidation,

@@ -1,5 +1,5 @@
 import { resolveUsersRepository, resolveUserTokensRepository } from '@/core/accounts/infra/mongo/container';
-import { ResetPasswordService } from './ResetPassword.service';
+import { ConfirmPasswordService } from './ConfirmPassword.service';
 import { resolveDateProvider } from '@/shared/providers/date';
 import { resolveCryptoProvider, resolveHashProvider } from '@/shared/providers/cryptography';
 
@@ -9,11 +9,11 @@ const cryptoProvider = resolveCryptoProvider();
 const usersRepository = resolveUsersRepository();
 const userTokensRepository = resolveUserTokensRepository();
 
-const resetPasswordService = new ResetPasswordService(
+const confirmPasswordService = new ConfirmPasswordService(
 	usersRepository,
 	userTokensRepository,
 	dateProvider,
 	hashProvider,
 	cryptoProvider,
 );
-export const resolveResetPasswordService = () => resetPasswordService;
+export const resolveConfirmPasswordService = () => confirmPasswordService;

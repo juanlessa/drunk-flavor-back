@@ -8,7 +8,7 @@ import { createUser } from '../helpers/authentication.helpers';
 import { UserTokenModel } from '@/core/accounts/infra/mongo/entities/userToken.model';
 import { RolesEnum } from '@/shared/accessControl/roles';
 
-describe('Forgot Password', () => {
+describe('Request Password Reset', () => {
 	beforeAll(async () => {
 		await app.ready();
 	});
@@ -22,10 +22,10 @@ describe('Forgot Password', () => {
 		await MongoConnection.Instance.emptyCollection(UserTokenModel);
 	});
 
-	it('Should be able to request forgot password', async () => {
+	it('Should be able to request a password reset', async () => {
 		const { email } = await createUser(app, { role: RolesEnum.member });
 
-		const response = await request(app.server).post('/forgot-password').send({ email });
+		const response = await request(app.server).post('/password-reset/request').send({ email });
 
 		expect(response.status).toBe(HTTP_STATUS.no_content);
 	});
