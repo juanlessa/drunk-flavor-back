@@ -84,7 +84,7 @@
 		"lint-staged": "17.6.0",
 		"maildev": "3.0.0",
 		"mongodb-memory-server": "11.3.0",
-		"prettier": "3.9.9",
+		"prettier": "3.9.10",
 		"pretty-quick": "4.2.2",
 		"redis-memory-server": "0.17.1",
 		"supertest": "7.3.1",
