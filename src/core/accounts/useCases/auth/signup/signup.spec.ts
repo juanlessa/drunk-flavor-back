@@ -11,6 +11,8 @@ import { UserTokensRepositoryInMemory } from '@/core/accounts/repositories/inMem
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
+import { IDateProvider } from '@/shared/providers/date/IDateProvider';
+import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.provider';
 import { User, UserStatusEnum } from '@/core/accounts/entities/user.entity';
 import { TokenTypeEnum, UserToken } from '@/core/accounts/entities/userToken.entity';
 import { RolesEnum } from '@/shared/accessControl/roles';
@@ -21,6 +23,7 @@ import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.const
 
 let usersRepository: IUsersRepository;
 let userTokensRepository: IUserTokensRepository;
+let dateProvider: IDateProvider;
 let hashProvider: IHashProvider;
 let cryptoProvider: ICryptoProvider;
 let templateProvider: ITemplateProvider;
@@ -35,6 +38,7 @@ describe('Signup', () => {
 
 		usersRepository = new UsersRepositoryInMemory();
 		userTokensRepository = new UserTokensRepositoryInMemory();
+		dateProvider = new DayjsProvider();
 		hashProvider = new BcryptHashProvider();
 		cryptoProvider = new NodeCryptoProvider();
 		templateProvider = new MjmlProvider();
@@ -43,6 +47,7 @@ describe('Signup', () => {
 			usersRepository,
 			userTokensRepository,
 			new FakeTransactionManager(),
+			dateProvider,
 			hashProvider,
 			cryptoProvider,
 			templateProvider,

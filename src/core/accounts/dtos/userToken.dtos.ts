@@ -4,12 +4,14 @@ export type CreateUserToken = {
 	token: string;
 	user_id: string;
 	type: TokenType;
+	expires_at: Date;
 };
 
 export type UpdateUserToken = { id: string } & Partial<{
 	token: string;
 	user_id: string;
 	type: TokenType;
+	expires_at: Date;
 }>;
 
 export type FindByUserIdAndType = {

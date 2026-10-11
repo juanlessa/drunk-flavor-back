@@ -47,11 +47,13 @@ describe('Delete Profile', () => {
 			user_id: createdUser._id.toString(),
 			token: await cryptoProvider.generateToken(env.USER_TOKEN_SIZE),
 			type: TokenTypeEnum['forgot-password'],
+			expires_at: new Date(Date.now() + 60_000),
 		});
 		await userTokensRepository.create({
 			user_id: createdUser._id.toString(),
 			token: await cryptoProvider.generateToken(env.USER_TOKEN_SIZE),
 			type: TokenTypeEnum['email-verification'],
+			expires_at: new Date(Date.now() + 60_000),
 		});
 
 		await service.execute({ id: createdUser._id.toString() });
