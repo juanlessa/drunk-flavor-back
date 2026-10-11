@@ -8,12 +8,12 @@ export const buildConnectionStringFromEnv = () => {
 		mongoConnectionStringSchema.parse(mongoEnv);
 
 	const protocol = MONGO_PROTOCOL;
-	const credentials = `${MONGO_USERNAME}:${MONGO_PASSWORD}`;
+	const credentials = `${encodeURIComponent(MONGO_USERNAME)}:${encodeURIComponent(MONGO_PASSWORD)}`;
 	const address = `${MONGO_HOST}:${MONGO_PORT}`;
-	const database = MONGO_DATABASE;
-	const params = MONGO_PARAMS;
+	const database = encodeURIComponent(MONGO_DATABASE);
+	const params = MONGO_PARAMS ? `?${MONGO_PARAMS}` : '';
 
-	return `${protocol}://${credentials}@${address}/${database}?${params}`;
+	return `${protocol}://${credentials}@${address}/${database}${params}`;
 };
 
 export const buildConnectionOptionsFromEnv = () => {
