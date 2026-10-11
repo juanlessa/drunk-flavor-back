@@ -82,6 +82,7 @@ describe('ForgotPassword', () => {
 			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypeEnum['forgot-password'],
+			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		await expect(service.execute({ email })).rejects.toBeInstanceOf(BadRequestError);
@@ -94,6 +95,7 @@ describe('ForgotPassword', () => {
 			token: cryptoProvider.hashToken(initialToken),
 			user_id: createdUser._id.toString(),
 			type: TokenTypeEnum['forgot-password'],
+			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		vi.advanceTimersByTime(env.USER_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);

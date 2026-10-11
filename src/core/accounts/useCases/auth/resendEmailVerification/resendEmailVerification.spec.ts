@@ -100,6 +100,7 @@ describe('ResendEmailVerification', () => {
 			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypeEnum['email-verification'],
+			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		await expect(service.execute({ email })).rejects.toBeInstanceOf(BadRequestError);
@@ -112,6 +113,7 @@ describe('ResendEmailVerification', () => {
 			token: cryptoProvider.hashToken(initialToken),
 			user_id: createdUser._id.toString(),
 			type: TokenTypeEnum['email-verification'],
+			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		vi.advanceTimersByTime(env.USER_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);

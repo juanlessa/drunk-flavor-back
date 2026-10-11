@@ -5,7 +5,6 @@ import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { ResetPassword } from './resetPassword.dtos';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
-import { env } from '@/env';
 
 export class ResetPasswordService {
 	constructor(
@@ -16,11 +15,6 @@ export class ResetPasswordService {
 		private cryptoProvider: ICryptoProvider,
 	) {}
 
-	private isTokenExpired(createdAt: Date): boolean {
-		const expirationDate = this.dateProvider.addSeconds(env.USER_TOKEN_EXPIRES_IN_SECONDS, createdAt);
-		return this.dateProvider.isExpiredDate(expirationDate);
-	}
-
 	async execute({ token, password }: ResetPassword) {
 		const userToken = await this.userTokensRepository.findByToken(this.cryptoProvider.hashToken(token));
 
@@ -28,7 +22,7 @@ export class ResetPasswordService {
 			throw new BadRequestError('apiResponses.auth.tokenNotFound', { path: 'ResetPassword.service.1' });
 		}
 
-		if (userToken && this.isTokenExpired(userToken.created_at)) {
+		if (userToken && this.dateProvider.isExpiredDate(userToken.expires_at)) {
 			await this.userTokensRepository.delete(userToken._id.toString());
 			throw new BadRequestError('apiResponses.auth.expiredToken', { path: 'ResetPassword.service.2' });
 		}

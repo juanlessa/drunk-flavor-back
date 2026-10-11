@@ -21,11 +21,6 @@ export class ForgotPasswordService {
 		private templateProvider: ITemplateProvider,
 	) {}
 
-	private isTokenExpired(createdAt: Date): boolean {
-		const expirationDate = this.dateProvider.addSeconds(env.USER_TOKEN_EXPIRES_IN_SECONDS, createdAt);
-		return this.dateProvider.isExpiredDate(expirationDate);
-	}
-
 	async execute({ email }: ForgotPassword) {
 		const user = await this.usersRepository.findByEmail(email);
 		if (!user) {
@@ -37,13 +32,13 @@ export class ForgotPasswordService {
 			type: TokenTypeEnum['forgot-password'],
 		});
 
-		if (tokenAlreadyExists && !this.isTokenExpired(tokenAlreadyExists.created_at)) {
+		if (tokenAlreadyExists && !this.dateProvider.isExpiredDate(tokenAlreadyExists.expires_at)) {
 			throw new BadRequestError('apiResponses.auth.actionAlreadyRequested', {
 				path: 'ForgotPassword.service.2',
 			});
 		}
 
-		if (tokenAlreadyExists && this.isTokenExpired(tokenAlreadyExists.created_at)) {
+		if (tokenAlreadyExists && this.dateProvider.isExpiredDate(tokenAlreadyExists.expires_at)) {
 			await this.userTokensRepository.delete(tokenAlreadyExists._id.toString());
 		}
 
@@ -65,6 +60,7 @@ export class ForgotPasswordService {
 			token: this.cryptoProvider.hashToken(token),
 			type: TokenTypeEnum['forgot-password'],
 			user_id: user._id.toString(),
+			expires_at: this.dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 	}
 }

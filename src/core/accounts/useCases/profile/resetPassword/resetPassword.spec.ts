@@ -64,6 +64,7 @@ describe('Reset Password', () => {
 			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypeEnum['forgot-password'],
+			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		await service.execute({
@@ -93,6 +94,7 @@ describe('Reset Password', () => {
 			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypeEnum['forgot-password'],
+			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		vi.advanceTimersByTime(env.USER_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);
@@ -116,6 +118,7 @@ describe('Reset Password', () => {
 			token: cryptoProvider.hashToken(token),
 			user_id: nonexistentUserId,
 			type: TokenTypeEnum['forgot-password'],
+			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		await expect(

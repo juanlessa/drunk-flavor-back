@@ -39,12 +39,8 @@ export class CreateUserService {
 			token: this.cryptoProvider.hashToken(token),
 			type: TokenTypeEnum['email-verification'],
 			user_id: newUser._id.toString(),
+			expires_at: this.dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
-	}
-
-	private isTokenExpired(createdAt: Date): boolean {
-		const expirationDate = this.dateProvider.addSeconds(env.USER_TOKEN_EXPIRES_IN_SECONDS, createdAt);
-		return this.dateProvider.isExpiredDate(expirationDate);
 	}
 
 	private async handleExistingUser(user: User) {
@@ -58,7 +54,7 @@ export class CreateUserService {
 			type: TokenTypeEnum['email-verification'],
 		});
 
-		if (!userToken || this.isTokenExpired(userToken.created_at)) {
+		if (!userToken || this.dateProvider.isExpiredDate(userToken.expires_at)) {
 			await this.usersRepository.delete(user._id.toString());
 		} else {
 			throw new BadRequestError('apiResponses.auth.emailVerificationPending', {
