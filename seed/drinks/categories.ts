@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { Category } from '@/core/drinks/entities/category.entity';
 import { CategoryModel } from '@/core/drinks/infra/mongo/entities/category.model';
-import { logger } from '@/shared/logger';
+import { logger } from '@/shared/providers/logger';
 
 const categories = [
 	{

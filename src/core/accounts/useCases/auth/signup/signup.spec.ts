@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
@@ -7,22 +7,27 @@ import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
 import { SignupService } from './Signup.service';
 import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
-import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { UserTokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/UserTokens.repository';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
-import { User, UserStatusEnum } from '@/core/accounts/entities/user.entity';
+import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.provider';
+import { User, UserStatusEnum } from '@/core/accounts/entities/user.entity';
 import { TokenTypeEnum, UserToken } from '@/core/accounts/entities/userToken.entity';
-import { env } from '@/env';
 import { RolesEnum } from '@/shared/accessControl/roles';
+import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
+import { MjmlProvider } from '@/shared/providers/template/implementations/Mjml.provider';
+import { MockEmailQueueProvider } from '@/shared/providers/queue/email/implementations/MockEmailQueue.provider';
+import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
 
 let usersRepository: IUsersRepository;
 let userTokensRepository: IUserTokensRepository;
 let dateProvider: IDateProvider;
 let hashProvider: IHashProvider;
 let cryptoProvider: ICryptoProvider;
+let templateProvider: ITemplateProvider;
+let emailQueueProvider: MockEmailQueueProvider;
 let service: SignupService;
 
 const { name, surname, email, password } = createUserFactory();
@@ -30,13 +35,14 @@ const { name, surname, email, password } = createUserFactory();
 describe('Signup', () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
-		vi.useFakeTimers();
 
 		usersRepository = new UsersRepositoryInMemory();
 		userTokensRepository = new UserTokensRepositoryInMemory();
 		dateProvider = new DayjsProvider();
 		hashProvider = new BcryptHashProvider();
 		cryptoProvider = new NodeCryptoProvider();
+		templateProvider = new MjmlProvider();
+		emailQueueProvider = new MockEmailQueueProvider();
 		service = new SignupService(
 			usersRepository,
 			userTokensRepository,
@@ -44,11 +50,9 @@ describe('Signup', () => {
 			dateProvider,
 			hashProvider,
 			cryptoProvider,
+			templateProvider,
+			emailQueueProvider,
 		);
-	});
-
-	afterEach(() => {
-		vi.useRealTimers();
 	});
 
 	afterAll(async () => {
@@ -64,6 +68,7 @@ describe('Signup', () => {
 		expect(verifyUser.email).toEqual(email);
 		expect(verifyUser.name).toEqual(name);
 		expect(verifyUser.surname).toEqual(surname);
+		expect(verifyUser.status).toEqual(UserStatusEnum['pending']);
 
 		const verifyUserToken = (await userTokensRepository.findByUserIdAndType({
 			user_id: verifyUser._id.toString(),
@@ -72,6 +77,16 @@ describe('Signup', () => {
 
 		expect(verifyUserToken).not.toBeNull();
 		expect(verifyUserToken.token).toBeTruthy();
+	});
+
+	it('Should queue the verification email after signup', async () => {
+		await service.execute({ name, surname, email, password });
+
+		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
+		expect(emailQueueProvider.addMock).toHaveBeenCalledWith(
+			EMAIL_JOB_NAMES.verification,
+			expect.objectContaining({ to: email }),
+		);
 	});
 
 	it('Should not be able to signup an existent and active user', async () => {
@@ -85,10 +100,11 @@ describe('Signup', () => {
 		});
 
 		await expect(service.execute({ name, surname, email, password })).rejects.toBeInstanceOf(BadRequestError);
+		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 
-	it('Should be able to signup a non-active existing user if the email verification token does not exist', async () => {
-		const createdUser = await usersRepository.create({
+	it('Should not be able to signup an existent and pending user', async () => {
+		await usersRepository.create({
 			name,
 			surname,
 			email,
@@ -97,61 +113,7 @@ describe('Signup', () => {
 			password: await hashProvider.hash(password),
 		});
 
-		await service.execute({ name, surname, email, password });
-
-		const verifyUser = (await usersRepository.findByEmail(email)) as User;
-
-		expect(verifyUser).not.toBeNull();
-		expect(verifyUser._id.toString()).toEqual(createdUser._id.toString());
-		expect(verifyUser.email).toEqual(email);
-		expect(verifyUser.name).toEqual(name);
-		expect(verifyUser.surname).toEqual(surname);
-
-		const verifyUserToken = (await userTokensRepository.findByUserIdAndType({
-			user_id: verifyUser._id.toString(),
-			type: TokenTypeEnum['email-verification'],
-		})) as UserToken;
-
-		expect(verifyUserToken).not.toBeNull();
-		expect(verifyUserToken.token).toBeTruthy();
-	});
-
-	it('Should be able to signup a non-active existing user if the email verification token is expired', async () => {
-		const createdUser = await usersRepository.create({
-			name,
-			surname,
-			email,
-			role: RolesEnum['member'],
-			status: UserStatusEnum['pending'],
-			password: await hashProvider.hash(password),
-		});
-		const initialToken = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
-		await userTokensRepository.create({
-			token: initialToken,
-			user_id: createdUser._id.toString(),
-			type: TokenTypeEnum['email-verification'],
-		});
-
-		vi.advanceTimersByTime(env.USER_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);
-
-		await service.execute({ name, surname, email, password });
-
-		const verifyUser = (await usersRepository.findByEmail(email)) as User;
-
-		expect(verifyUser).not.toBeNull();
-		expect(verifyUser._id.toString()).toEqual(createdUser._id.toString());
-		expect(verifyUser.email).toEqual(email);
-		expect(verifyUser.name).toEqual(name);
-		expect(verifyUser.surname).toEqual(surname);
-
-		const verifyUserToken = (await userTokensRepository.findByUserIdAndType({
-			user_id: verifyUser._id.toString(),
-			type: TokenTypeEnum['email-verification'],
-		})) as UserToken;
-
-		expect(verifyUserToken).not.toBeNull();
-		expect(verifyUserToken.token).toBeTruthy();
-		expect(verifyUserToken.token).not.toEqual(initialToken);
-		expect(await userTokensRepository.findByToken(initialToken)).toBeNull();
+		await expect(service.execute({ name, surname, email, password })).rejects.toBeInstanceOf(BadRequestError);
+		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 });

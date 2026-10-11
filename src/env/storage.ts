@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { z } from 'zod/v4';
 import { type NodeEnv, type StorageType, parseControlEnv } from './control';
 
