@@ -2,9 +2,8 @@ import type { Document } from 'mongoose';
 import { parseMongoEnv } from '@/env/mongo';
 import { mongoConnectionStringSchema, mongooseConnectionOptionsSchema } from '../schemas/mongoose.schemas';
 
-const mongoEnv = parseMongoEnv();
-
 export const buildConnectionStringFromEnv = () => {
+	const mongoEnv = parseMongoEnv();
 	const { MONGO_PROTOCOL, MONGO_USERNAME, MONGO_PASSWORD, MONGO_HOST, MONGO_PORT, MONGO_DATABASE, MONGO_PARAMS } =
 		mongoConnectionStringSchema.parse(mongoEnv);
 
@@ -19,7 +18,7 @@ export const buildConnectionStringFromEnv = () => {
 
 export const buildConnectionOptionsFromEnv = () => {
 	const { MONGO_MAX_POOL_SIZE, MONGO_SERVER_SELECTION_TIMEOUT_MS, MONGO_CONNECT_TIMEOUT_MS } =
-		mongooseConnectionOptionsSchema.parse(mongoEnv);
+		mongooseConnectionOptionsSchema.parse(parseMongoEnv());
 
 	return {
 		maxPoolSize: MONGO_MAX_POOL_SIZE,

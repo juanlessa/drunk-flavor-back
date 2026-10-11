@@ -2,12 +2,9 @@ import { createClient, type RedisClientType } from 'redis';
 import { logger } from '@/shared/providers/logger';
 import { parseRedisEnv } from '@/env/redis';
 
-const redis = parseRedisEnv();
-
 const buildRedisUrl = (): string => {
-	// Connection values live only on the `external` branch. In managed mode the
-	// URL is never used (callers pass an explicit url), so fall back to the same
-	// defaults the aggregated env backfilled to keep behavior identical.
+	const redis = parseRedisEnv();
+
 	const connection =
 		redis.REDIS_MODE === 'external'
 			? {
@@ -48,7 +45,7 @@ export class RedisConnection {
 		const client: RedisClientType = createClient({
 			url: url ?? buildRedisUrl(),
 			socket: {
-				connectTimeout: redis.REDIS_CONNECT_TIMEOUT_MS,
+				connectTimeout: parseRedisEnv().REDIS_CONNECT_TIMEOUT_MS,
 			},
 		});
 
