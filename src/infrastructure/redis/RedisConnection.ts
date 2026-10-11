@@ -1,10 +1,24 @@
 import { createClient, type RedisClientType } from 'redis';
-import { logger } from '@/shared/logger';
-import { env } from '@/env';
+import { logger } from '@/shared/providers/logger';
+import { parseRedisEnv } from '@/env/redis';
 
 const buildRedisUrl = (): string => {
-	const credentials = env.REDIS_USERNAME || env.REDIS_PASSWORD ? `${env.REDIS_USERNAME}:${env.REDIS_PASSWORD}@` : '';
-	return `redis://${credentials}${env.REDIS_HOST}:${env.REDIS_PORT}/${env.REDIS_DATABASE}`;
+	const redis = parseRedisEnv();
+
+	const connection =
+		redis.REDIS_MODE === 'external'
+			? {
+					host: redis.REDIS_HOST,
+					port: redis.REDIS_PORT,
+					username: redis.REDIS_USERNAME,
+					password: redis.REDIS_PASSWORD,
+					database: redis.REDIS_DATABASE,
+				}
+			: { host: 'localhost', port: 6379, username: '', password: '', database: 0 };
+
+	const credentials =
+		connection.username || connection.password ? `${connection.username}:${connection.password}@` : '';
+	return `redis://${credentials}${connection.host}:${connection.port}/${connection.database}`;
 };
 
 export class RedisConnection {
@@ -31,7 +45,7 @@ export class RedisConnection {
 		const client: RedisClientType = createClient({
 			url: url ?? buildRedisUrl(),
 			socket: {
-				connectTimeout: env.REDIS_CONNECT_TIMEOUT_MS,
+				connectTimeout: parseRedisEnv().REDIS_CONNECT_TIMEOUT_MS,
 			},
 		});
 
@@ -64,5 +78,32 @@ export class RedisConnection {
 		await this._client.close();
 		this._client = undefined;
 		logger.info('Redis connection has been closed.');
+	}
+
+	async flushCache(): Promise<void> {
+		await this.client.flushDb();
+	}
+
+	async deleteKeysByPattern(pattern: string): Promise<number> {
+		let removed = 0;
+		const batch: string[] = [];
+
+		const flushBatch = async (): Promise<void> => {
+			if (batch.length === 0) {
+				return;
+			}
+			removed += await this.client.unlink(batch);
+			batch.length = 0;
+		};
+
+		for await (const key of this.client.scanIterator({ MATCH: pattern })) {
+			batch.push(...(Array.isArray(key) ? key : [key]));
+			if (batch.length >= 500) {
+				await flushBatch();
+			}
+		}
+		await flushBatch();
+
+		return removed;
 	}
 }

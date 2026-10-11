@@ -7,6 +7,11 @@ import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provide
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { env } from '@/env';
 import { ResendEmailVerification } from './resendEmailVerification.dtos';
+import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
+import { IEmailQueueProvider } from '@/shared/providers/queue/email/IEmailQueue.provider';
+import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
+import { MAIL_SENDERS } from '@/shared/constants/mailer.constants';
+import { FRONTEND_BASE_URL, FRONTEND_PAGE_PATHS } from '@/shared/constants/frontend.constants';
 
 export class ResendEmailVerificationService {
 	constructor(
@@ -14,6 +19,8 @@ export class ResendEmailVerificationService {
 		private userTokensRepository: IUserTokensRepository,
 		private dateProvider: IDateProvider,
 		private cryptoProvider: ICryptoProvider,
+		private templateProvider: ITemplateProvider,
+		private emailQueueProvider: IEmailQueueProvider,
 	) {}
 
 	async execute({ email }: ResendEmailVerification): Promise<void> {
@@ -35,12 +42,7 @@ export class ResendEmailVerificationService {
 			type: TokenTypeEnum['email-verification'],
 		});
 
-		if (
-			existingToken &&
-			!this.dateProvider.isExpiredDate(
-				this.dateProvider.addSeconds(env.USER_TOKEN_EXPIRES_IN_SECONDS, existingToken.created_at),
-			)
-		) {
+		if (existingToken && !this.dateProvider.isExpiredDate(existingToken.expires_at)) {
 			throw new BadRequestError('apiResponses.auth.actionAlreadyRequested', {
 				path: 'ResendEmailVerification.service.resendNotAllowed',
 			});
@@ -53,11 +55,22 @@ export class ResendEmailVerificationService {
 		const token = await this.cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 
 		await this.userTokensRepository.create({
-			token,
+			token: this.cryptoProvider.hashToken(token),
 			type: TokenTypeEnum['email-verification'],
 			user_id: user._id.toString(),
+			expires_at: this.dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
-		// The verification email will be queued through BullMQ.
+		const html = await this.templateProvider.emailVerification({
+			userName: user.name,
+			verificationLink: `${FRONTEND_BASE_URL}${FRONTEND_PAGE_PATHS.verifyEmail}/${token}`,
+		});
+
+		await this.emailQueueProvider.add(EMAIL_JOB_NAMES.verification, {
+			to: user.email,
+			from: MAIL_SENDERS.noReply,
+			subject: 'verify email',
+			html,
+		});
 	}
 }

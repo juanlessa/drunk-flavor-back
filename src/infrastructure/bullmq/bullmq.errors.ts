@@ -1,6 +1,6 @@
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { ErrorResponse } from '@/shared/error/error.dtos';
-import { logger } from '@/shared/logger';
+import { logger } from '@/shared/providers/logger';
 import { ConnectionClosedError, RateLimitError, UnrecoverableError } from 'bullmq';
 
 const BULLMQ_ERROR_CONSTRUCTORS = [ConnectionClosedError, RateLimitError, UnrecoverableError] as const;
@@ -11,8 +11,7 @@ export const instanceOfBullMQError = (error: unknown): error is BullMQError =>
 	BULLMQ_ERROR_CONSTRUCTORS.some((constructor) => error instanceof constructor);
 
 export const handleBullMQError = (error: BullMQError): ErrorResponse => {
-	logger.error(`bullmq.handleBullMQError(${error.name}): ${error.message}`);
-	logger.error(error);
+	logger.error({ err: error }, `bullmq.handleBullMQError(${error.name}): ${error.message}`);
 
 	return {
 		statusCode: HTTP_STATUS.internal_server_error,

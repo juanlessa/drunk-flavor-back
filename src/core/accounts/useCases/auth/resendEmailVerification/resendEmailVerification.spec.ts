@@ -15,12 +15,18 @@ import { UserStatusEnum } from '@/core/accounts/entities/user.entity';
 import { RolesEnum } from '@/shared/accessControl/roles';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { env } from '@/env';
+import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
+import { MjmlProvider } from '@/shared/providers/template/implementations/Mjml.provider';
+import { MockEmailQueueProvider } from '@/shared/providers/queue/email/implementations/MockEmailQueue.provider';
+import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
 
 let usersRepository: IUsersRepository;
 let userTokensRepository: IUserTokensRepository;
 let dateProvider: IDateProvider;
 let cryptoProvider: ICryptoProvider;
 let hashProvider: BcryptHashProvider;
+let templateProvider: ITemplateProvider;
+let emailQueueProvider: MockEmailQueueProvider;
 let service: ResendEmailVerificationService;
 
 const { name, surname, email, password } = createUserFactory();
@@ -46,11 +52,15 @@ describe('ResendEmailVerification', () => {
 		dateProvider = new DayjsProvider();
 		cryptoProvider = new NodeCryptoProvider();
 		hashProvider = new BcryptHashProvider();
+		templateProvider = new MjmlProvider();
+		emailQueueProvider = new MockEmailQueueProvider();
 		service = new ResendEmailVerificationService(
 			usersRepository,
 			userTokensRepository,
 			dateProvider,
 			cryptoProvider,
+			templateProvider,
+			emailQueueProvider,
 		);
 	});
 
@@ -76,8 +86,21 @@ describe('ResendEmailVerification', () => {
 		expect(verifyUserToken.token).toBeTruthy();
 	});
 
+	it('Should queue the verification email when resend succeeds', async () => {
+		await createPendingUser();
+
+		await service.execute({ email });
+
+		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
+		expect(emailQueueProvider.addMock).toHaveBeenCalledWith(
+			EMAIL_JOB_NAMES.verification,
+			expect.objectContaining({ to: email }),
+		);
+	});
+
 	it('Should not be able to resend the email verification for a nonexistent user', async () => {
 		await expect(service.execute({ email: 'invalid-email@test.com' })).rejects.toBeInstanceOf(BadRequestError);
+		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 
 	it('Should not be able to resend the email verification for an already active user', async () => {
@@ -91,27 +114,31 @@ describe('ResendEmailVerification', () => {
 		});
 
 		await expect(service.execute({ email })).rejects.toBeInstanceOf(BadRequestError);
+		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 
 	it('Should not be able to resend the email verification when a valid token already exists', async () => {
 		const createdUser = await createPendingUser();
 		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({
-			token,
+			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypeEnum['email-verification'],
+			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		await expect(service.execute({ email })).rejects.toBeInstanceOf(BadRequestError);
+		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 
 	it('Should be able to resend the email verification after the previous token has expired', async () => {
 		const createdUser = await createPendingUser();
 		const initialToken = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({
-			token: initialToken,
+			token: cryptoProvider.hashToken(initialToken),
 			user_id: createdUser._id.toString(),
 			type: TokenTypeEnum['email-verification'],
+			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		vi.advanceTimersByTime(env.USER_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);
@@ -125,7 +152,13 @@ describe('ResendEmailVerification', () => {
 
 		expect(verifyUserToken).not.toBeNull();
 		expect(verifyUserToken.token).toBeTruthy();
-		expect(verifyUserToken.token).not.toBe(initialToken);
-		expect(await userTokensRepository.findByToken(initialToken)).toBeNull();
+		expect(verifyUserToken.token).not.toBe(cryptoProvider.hashToken(initialToken));
+		expect(await userTokensRepository.findByToken(cryptoProvider.hashToken(initialToken))).toBeNull();
+
+		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
+		expect(emailQueueProvider.addMock).toHaveBeenCalledWith(
+			EMAIL_JOB_NAMES.verification,
+			expect.objectContaining({ to: email }),
+		);
 	});
 });

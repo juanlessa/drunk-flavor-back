@@ -2,7 +2,9 @@ import { afterAll, beforeAll, inject } from 'vitest';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { RedisConnection } from '@/infrastructure/redis/RedisConnection';
 import { BullMQConnection } from '@/infrastructure/bullmq/BullMQConnection';
-import { env } from '@/env';
+import { parseControlEnv } from '@/env/control';
+
+const control = parseControlEnv();
 
 beforeAll(async () => {
 	const mongoConnectionString = inject('mongoConnectionString');
@@ -15,7 +17,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-	if (env.MONGO_MODE === 'external') {
+	if (control.MONGO_MODE === 'external') {
 		await MongoConnection.Instance.dropAllCollections();
 	}
 

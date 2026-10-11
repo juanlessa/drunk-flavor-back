@@ -35,7 +35,7 @@ describe('Confirm Email', () => {
 		hashProvider = new BcryptHashProvider();
 		usersRepository = new UsersRepositoryInMemory();
 		userTokensRepository = new UserTokensRepositoryInMemory();
-		service = new ConfirmEmailService(usersRepository, userTokensRepository, dateProvider);
+		service = new ConfirmEmailService(usersRepository, userTokensRepository, dateProvider, cryptoProvider);
 	});
 
 	afterEach(() => {
@@ -54,9 +54,10 @@ describe('Confirm Email', () => {
 		});
 		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({
-			token,
+			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypeEnum['email-verification'],
+			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		await service.execute({
@@ -89,9 +90,10 @@ describe('Confirm Email', () => {
 		});
 		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({
-			token,
+			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypeEnum['email-verification'],
+			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		vi.advanceTimersByTime(env.USER_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);
@@ -102,7 +104,7 @@ describe('Confirm Email', () => {
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 
-		const findUserToken = await userTokensRepository.findByToken(token);
+		const findUserToken = await userTokensRepository.findByToken(cryptoProvider.hashToken(token));
 
 		expect(findUserToken).toBeNull();
 	});
@@ -111,9 +113,10 @@ describe('Confirm Email', () => {
 		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		const nonexistentUserId = new ObjectId().toString();
 		await userTokensRepository.create({
-			token,
+			token: cryptoProvider.hashToken(token),
 			user_id: nonexistentUserId,
 			type: TokenTypeEnum['email-verification'],
+			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		await expect(
