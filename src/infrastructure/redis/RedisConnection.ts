@@ -17,7 +17,9 @@ const buildRedisUrl = (): string => {
 			: { host: 'localhost', port: 6379, username: '', password: '', database: 0 };
 
 	const credentials =
-		connection.username || connection.password ? `${connection.username}:${connection.password}@` : '';
+		connection.username || connection.password
+			? `${encodeURIComponent(connection.username)}:${encodeURIComponent(connection.password)}@`
+			: '';
 	return `redis://${credentials}${connection.host}:${connection.port}/${connection.database}`;
 };
 
