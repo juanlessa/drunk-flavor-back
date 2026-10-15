@@ -72,6 +72,16 @@ export class RedisConnection {
 		logger.info('Redis connection has been stablish.');
 	}
 
+	async isHealthy(): Promise<boolean> {
+		try {
+			await this.client.ping();
+			return true;
+		} catch (error) {
+			logger.error(error, 'Redis health check failed.');
+			return false;
+		}
+	}
+
 	async stop(): Promise<void> {
 		if (!this._client) {
 			return;

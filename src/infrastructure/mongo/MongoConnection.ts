@@ -53,6 +53,16 @@ export class MongoConnection {
 		logger.info('Mongo connection has been stablish.');
 	}
 
+	async isHealthy(): Promise<boolean> {
+		try {
+			await this.client.db().admin().ping();
+			return true;
+		} catch (error) {
+			logger.error(error, 'Mongo health check failed.');
+			return false;
+		}
+	}
+
 	async stop() {
 		// readyState 0 = disconnected; nothing to close.
 		if (mongoose.connection.readyState === 0) {

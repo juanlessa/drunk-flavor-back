@@ -11,4 +11,5 @@ export const HTTP_STATUS = {
 	not_acceptable: 406,
 	conflict: 409,
 	internal_server_error: 500,
+	service_unavailable: 503,
 };

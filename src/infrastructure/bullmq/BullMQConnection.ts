@@ -73,6 +73,16 @@ export class BullMQConnection {
 		logger.info('BullMQ Redis connection has been stablish.');
 	}
 
+	async isHealthy(): Promise<boolean> {
+		try {
+			await this.client.info();
+			return true;
+		} catch (error) {
+			logger.error(error, 'BullMQ health check failed.');
+			return false;
+		}
+	}
+
 	async stop(): Promise<void> {
 		if (!this._client) {
 			return;
