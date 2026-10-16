@@ -82,7 +82,7 @@ Now your node.js setup is ready.
 ### dotenv
 
 To execute the Node.js API, you need to add a file named `.env` at the root project folder, containing the environment
-variables. You can use the [`.env.example`](https://github.com/juanlessa/drunk-flavor-back/blob/master/.env.example)
+variables. You can use the [`.env.example`](https://github.com/juanlessa/drunk-flavor-back/blob/main/.env.example)
 file and add the corresponding values for your environment, or simply copy the sample below:
 
 ```dotenv
