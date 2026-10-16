@@ -1,4 +1,4 @@
-import { healthRoutes } from './health.routes';
+import { healthRoutes } from '../healthcheck/health.routes';
 import { authRoutes } from './auth.routes';
 import { categoriesRoutes } from './categories.routes';
 import { ingredientsRoutes } from './ingredients.routes';

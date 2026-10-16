@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { app } from '@/infrastructure/fastify/app';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
-import { type ReadinessReport } from '@/infrastructure/fastify/routes/health.schema';
+import { type ReadinessReport } from '@/infrastructure/fastify/healthcheck/health.schema';
 
 describe('Health Check', () => {
 	beforeAll(async () => {
