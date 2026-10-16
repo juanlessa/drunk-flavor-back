@@ -35,7 +35,7 @@ services:
             - node-network
 
     mongodb:
-        image: mongodb/mongodb-atlas-local:7.0
+        image: mongodb/mongodb-atlas-local:8.3
         restart: always
         container_name: mongodb
         ports:
@@ -71,7 +71,7 @@ services:
             - node-network
 
     mailpit:
-        image: axllent/mailpit:v1.31.3
+        image: axllent/mailpit:v1.31.5
         restart: unless-stopped
         container_name: mailpit
         ports:
