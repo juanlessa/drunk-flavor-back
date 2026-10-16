@@ -14,7 +14,7 @@ export class DrinksRepository implements IDrinksRepository {
 	}
 
 	async update({ id, ...data }: UpdateDrink): Promise<Drink> {
-		const drink = await DrinkModel.findByIdAndUpdate<Drink>(id, data, { new: true }).exec();
+		const drink = await DrinkModel.findByIdAndUpdate<Drink>(id, data, { returnDocument: 'after' }).exec();
 		if (!drink) {
 			throw new NotFoundError('apiResponses.drinks.notFound', {
 				path: 'drinks.repository',
@@ -46,7 +46,7 @@ export class DrinksRepository implements IDrinksRepository {
 	}
 
 	async findAll(query: QueryParams): Promise<Drink[]> {
-		const mongooseQuery = buildQuery(query, DrinkModel);
-		return mongooseQuery.lean({ transform: removeLeanVersionKey }).exec();
+		const mongooseQuery = buildQuery<Drink>(query, DrinkModel);
+		return mongooseQuery.lean<Drink[]>({ transform: removeLeanVersionKey }).exec();
 	}
 }

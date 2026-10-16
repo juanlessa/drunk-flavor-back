@@ -1,4 +1,4 @@
-import { DayjsProvider } from './implementations/Dayjs.provider';
+import { NativeDateProvider } from './implementations/NativeDate.provider';
 
-const dateProvider = new DayjsProvider();
+const dateProvider = new NativeDateProvider();
 export const resolveDateProvider = () => dateProvider;

@@ -1,97 +1,79 @@
 import { User, UserStatusEnum } from '@/core/accounts/entities/user.entity';
 import { TokenTypeEnum } from '@/core/accounts/entities/userToken.entity';
-import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
+import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
+import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { Signup } from './signup.dtos';
 import { env } from '@/env';
-import { FRONTEND_BASE_URL, FRONTEND_PAGE_PATHS } from '@/shared/constants/frontend.constants';
-import { MAIL_SENDERS } from '@/shared/constants/mailer.constants';
+import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
-import { IMailerProvider } from '@/shared/providers/mailer/IMailer.provider';
-import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
-import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { RolesEnum } from '@/shared/accessControl/roles';
+import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
+import { IEmailQueueProvider } from '@/shared/providers/queue/email/IEmailQueue.provider';
+import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
+import { MAIL_SENDERS } from '@/shared/constants/mailer.constants';
+import { FRONTEND_BASE_URL, FRONTEND_PAGE_PATHS } from '@/shared/constants/frontend.constants';
 
 export class SignupService {
 	constructor(
 		private usersRepository: IUsersRepository,
 		private userTokensRepository: IUserTokensRepository,
+		private transactionManager: ITransactionManager,
 		private dateProvider: IDateProvider,
 		private hashProvider: IHashProvider,
 		private cryptoProvider: ICryptoProvider,
-		private mailerProvider: IMailerProvider,
 		private templateProvider: ITemplateProvider,
+		private emailQueueProvider: IEmailQueueProvider,
 	) {}
 
-	async execute({ name, surname, email, password }: Signup) {
+	async execute({ name, surname, email, password }: Signup): Promise<void> {
 		const existingUser = await this.usersRepository.findByEmail(email);
-
-		if (existingUser) {
-			await this.handleExistingUser(existingUser);
-		}
-
-		const newUser = await this.createUser({ name, surname, email, password });
-
-		const token = await this.cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
-		await this.sendVerificationEmail(newUser, token);
-
-		await this.userTokensRepository.create({
-			token,
-			type: TokenTypeEnum['email-verification'],
-			user_id: newUser._id.toString(),
-		});
-	}
-
-	private isTokenExpired(createdAt: Date): boolean {
-		const expirationDate = this.dateProvider.addSeconds(env.USER_TOKEN_EXPIRES_IN_SECONDS, createdAt);
-		return this.dateProvider.isExpiredDate(expirationDate);
-	}
-
-	private async handleExistingUser(user: User) {
-		if (user.status === UserStatusEnum['active']) {
+		if (existingUser && existingUser.status === UserStatusEnum['active']) {
 			throw new BadRequestError('apiResponses.users.alreadyExist', {
-				path: 'Signup.service.handleExistingUser.1',
+				path: 'Signup.service.ensureEmailIsAvailable.active',
 			});
 		}
-		const userToken = await this.userTokensRepository.findByUserIdAndType({
-			user_id: user._id.toString(),
-			type: TokenTypeEnum['email-verification'],
-		});
-
-		if (!userToken || this.isTokenExpired(userToken.created_at)) {
-			await this.usersRepository.delete(user._id.toString());
-		} else {
+		if (existingUser && existingUser.status === UserStatusEnum['pending']) {
 			throw new BadRequestError('apiResponses.auth.emailVerificationPending', {
-				path: 'Signup.service.handleExistingUser.2',
+				path: 'Signup.service.ensureEmailIsAvailable.pending',
 			});
 		}
-	}
 
-	private async createUser({ name, surname, email, password }: Signup) {
 		const passwordHash = await this.hashProvider.hash(password);
-		return await this.usersRepository.create({
-			name,
-			password: passwordHash,
-			surname,
-			email,
-			role: RolesEnum['member'],
-			status: UserStatusEnum['pending'],
-		});
-	}
+		const token = await this.cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 
-	private async sendVerificationEmail(user: User, token: string) {
-		const template = this.templateProvider.emailVerification({
+		const user = await this.transactionManager.withTransaction(async () => {
+			const createdUser = await this.usersRepository.create({
+				name: name,
+				surname: surname,
+				email: email,
+				password: passwordHash,
+				role: RolesEnum['member'],
+				status: UserStatusEnum['pending'],
+			});
+
+			await this.userTokensRepository.create({
+				token: this.cryptoProvider.hashToken(token),
+				type: TokenTypeEnum['email-verification'],
+				user_id: createdUser._id.toString(),
+				expires_at: this.dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
+			});
+
+			return createdUser;
+		});
+
+		const html = await this.templateProvider.emailVerification({
 			userName: user.name,
 			verificationLink: `${FRONTEND_BASE_URL}${FRONTEND_PAGE_PATHS.verifyEmail}/${token}`,
 		});
 
-		await this.mailerProvider.send({
+		await this.emailQueueProvider.add(EMAIL_JOB_NAMES.verification, {
 			to: user.email,
 			from: MAIL_SENDERS.noReply,
 			subject: 'verify email',
-			html: template,
+			html,
 		});
 	}
 }

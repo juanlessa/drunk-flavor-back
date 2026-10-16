@@ -2,7 +2,7 @@ import { categoryTranslationSchema } from '@/core/drinks/schemas/category.schema
 import { generateTranslationsFieldSchema } from '@/core/drinks/schemas/helpers/translations.helpers';
 import { sortOrderSchema, searchTermSchema } from '@/shared/schemas/query.schemas';
 import { stringifiedJSONSchema } from '@/shared/schemas/stringified.schemas';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 const searchSchema = z.object({
 	...generateTranslationsFieldSchema(categoryTranslationSchema, ['name'], searchTermSchema).shape,

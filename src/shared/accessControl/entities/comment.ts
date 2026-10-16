@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 export const commentPermissionSchema = z.object({
 	__typename: z.literal('Comment').default('Comment'),

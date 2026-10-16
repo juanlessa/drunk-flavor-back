@@ -1,0 +1,42 @@
+{
+	"project_type": "Fastify 5 REST API (Node.js, ESM, TypeScript), clean/hexagonal layering with per-use-case folders and a hand-rolled DI container (resolve* functions)",
+	"language": "TypeScript (ESM, \"type\": \"module\")",
+	"build_system": "tsup (esbuild) for build; tsx for dev/run. No codegen or snapshot files relevant to this task.",
+	"test_framework": "Vitest. Unit specs are *.spec.ts (vitest.config.ts). E2E specs are *.e2e-spec.ts under src/infrastructure/fastify/tests (vitest-e2e.config.ts), run via scripts/run-e2e.ts which provisions MongoDB + MailDev.",
+	"build_command": "npm run build (tsup) — not required for verification; use typecheck instead.",
+	"test_command": "npm run test  (NODE_ENV=testing vitest run -c vitest.config.ts)",
+	"verification_instructions": "Primary gates (no external services needed): 1) npm run typecheck (tsc --noEmit) -> no errors. 2) npm run test -> all unit specs pass; or targeted: npm run test -- src/core/accounts/useCases/auth/requestPasswordReset src/core/accounts/useCases/auth/confirmPassword. 3) npm run lint (eslint .) -> no errors, catches unused imports left in profile.routes.ts. E2E (npm run test:e2e -- <files>) needs MongoDB + SMTP and is optional/secondary. Finally run the grep assertions in FEAT-001.verification.",
+	"snapshot_or_generated_files": null,
+	"environment_constraints": "ESLint flags unused imports as errors, so removing the reset-password route from profile.routes.ts REQUIRES deleting the resetPasswordSchema/resetPasswordController imports too. E2E tests require MongoDB (managed by default) and a MailDev SMTP server; if unavailable, rely on typecheck + unit + lint. Repo is on branch 'develop' with pre-existing unrelated uncommitted changes (.agents artifacts, README.md, TODO.md, .env.example) — stage only files this task touches.",
+	"contribution_requirements": "No AGENTS.md/CONTRIBUTING.md in repo. README documents commands. Repo file-naming convention: service file PascalCase.service.ts; controller/container/schema/dtos/spec camelCase.<role>.ts; folder camelCase. Imports use the @/ path alias (maps to src/). Commit locally only; never push.",
+	"key_patterns": "Each use case folder contains: <name>.schema.ts (zod), <name>.dtos.ts (types incl. <Name>ReqBody = z.infer<typeof schema>), <Name>.service.ts (class <Name>Service with execute(), BadRequestError path tags like '<Name>.service.N'), <name>.controller.ts (const <name>Controller + resolve<Name>Service()), <name>.container.ts (builds the service singleton, exports resolve<Name>Service), <name>.spec.ts (Vitest unit test with in-memory repos). Routes are registered in src/infrastructure/fastify/routes/*.routes.ts using server.withTypeProvider<ZodTypeProvider>().post(path, { schema: { tags, summary, description, body } }, controller).",
+	"relevant_files": [
+		"src/core/accounts/useCases/auth/forgotPassword/ForgotPassword.service.ts",
+		"src/core/accounts/useCases/auth/forgotPassword/forgotPassword.controller.ts",
+		"src/core/accounts/useCases/auth/forgotPassword/forgotPassword.container.ts",
+		"src/core/accounts/useCases/auth/forgotPassword/forgotPassword.schema.ts",
+		"src/core/accounts/useCases/auth/forgotPassword/forgotPassword.dtos.ts",
+		"src/core/accounts/useCases/auth/forgotPassword/forgotPassword.spec.ts",
+		"src/core/accounts/useCases/profile/resetPassword/ResetPassword.service.ts",
+		"src/core/accounts/useCases/profile/resetPassword/resetPassword.controller.ts",
+		"src/core/accounts/useCases/profile/resetPassword/resetPassword.container.ts",
+		"src/core/accounts/useCases/profile/resetPassword/resetPassword.schema.ts",
+		"src/core/accounts/useCases/profile/resetPassword/resetPassword.dtos.ts",
+		"src/core/accounts/useCases/profile/resetPassword/resetPassword.spec.ts",
+		"src/infrastructure/fastify/routes/auth.routes.ts",
+		"src/infrastructure/fastify/routes/profile.routes.ts",
+		"src/infrastructure/fastify/tests/profile/resetPassword.e2e-spec.ts",
+		"src/infrastructure/fastify/tests/auth/forgotPassword.e2e-spec.ts",
+		"src/core/accounts/useCases/auth/confirmEmail/",
+		"src/core/accounts/useCases/auth/signup/"
+	],
+	"directory_structure": "src/core/accounts/useCases/{auth,profile,users}/<useCase>/ hold application-layer use cases. src/infrastructure/fastify/routes/ holds route plugins. src/infrastructure/fastify/tests/{auth,profile,...}/ hold e2e specs. src/shared/providers/{date,template,mailer,cryptography,queue} hold shared providers. src/core/accounts/entities/ holds entities incl. userToken.entity.ts (TokenTypeEnum). src/shared/constants/ holds frontend.constants.ts.",
+	"do_not_rename_preserved": {
+		"token_type_enum": "TokenTypeEnum['forgot-password'] in src/core/accounts/entities/userToken.entity.ts — persisted value; all services keep using it (incl. unrelated deleteProfile.spec.ts and users/delete/deleteUser.spec.ts).",
+		"queue_job_name": "EMAIL_JOB_NAMES.forgotPassword: 'forgot-password' in src/shared/providers/queue/email/emailQueue.constants.ts and its use in emailQueue.types.ts — BullMQ job name.",
+		"email_template": "src/shared/providers/template/implementations/views/forgotPassword.template.ts (+ its .spec.ts), forgotPasswordTemplate, ForgotPasswordProps (template.dtos.ts), ITemplateProvider.forgotPassword(...) and its Mjml.provider.ts impl — keep all named forgotPassword/ForgotPassword. RequestPasswordResetService still calls this.templateProvider.forgotPassword(...).",
+		"frontend_path": "FRONTEND_PAGE_PATHS.resetPassword: '/reset-password' in src/shared/constants/frontend.constants.ts — a FRONTEND url, not a backend route; the request-reset service keeps building the link with it.",
+		"schema_field": "The 'confirmPassword' body field (and the password === confirmPassword refinement) inside the reset/confirm schema is a request-contract field name, NOT a use-case identifier. Keep it literally named confirmPassword even though the use case is now ConfirmPassword."
+	},
+	"notes": "dateProvider.isExpiredDate(...) already exists and is used by both services; no private isExpired methods remain and no DateProvider change is needed. No barrel/index files re-export these use cases; a full-repo grep confirmed references live only in the files listed above plus the two route files."
+}

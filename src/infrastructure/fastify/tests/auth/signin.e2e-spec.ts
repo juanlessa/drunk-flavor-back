@@ -1,0 +1,29 @@
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import request from 'supertest';
+import { app } from '@/infrastructure/fastify/app';
+import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
+import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
+import { createUser } from '../helpers/authentication.helpers';
+import { RolesEnum } from '@/shared/accessControl/roles';
+
+describe('Signin', () => {
+	beforeAll(async () => {
+		await app.ready();
+	});
+
+	afterAll(async () => {
+		await app.close();
+	});
+
+	beforeEach(async () => {
+		await MongoConnection.Instance.emptyCollection(UserModel);
+	});
+
+	it('should be able to signin', async () => {
+		const { email, password } = await createUser(app, { role: RolesEnum.partner });
+
+		const response = await request(app.server).post('/signin').send({ email, password });
+
+		expect(response.status).toBe(200);
+	});
+});

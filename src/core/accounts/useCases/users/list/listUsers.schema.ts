@@ -1,6 +1,6 @@
 import { sortOrderSchema, searchTermSchema } from '@/shared/schemas/query.schemas';
 import { stringifiedJSONSchema } from '@/shared/schemas/stringified.schemas';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 const searchSchema = z.object({
 	email: searchTermSchema,

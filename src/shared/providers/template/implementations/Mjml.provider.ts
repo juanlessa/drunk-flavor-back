@@ -5,11 +5,11 @@ import { ServerError } from '@/shared/error/error.lib';
 import { emailVerificationTemplate } from './views/emailVerification.template';
 import { MJMLJsonObject } from './mjml.types';
 import { forgotPasswordTemplate } from './views/forgotPassword.template';
-import { logger } from '@/shared/logger';
+import { logger } from '@/shared/providers/logger';
 
 export class MjmlProvider implements ITemplateProvider {
-	private parseToHtml(id: string, template: MJMLJsonObject): string {
-		const parseResult = mjml2html(template);
+	private async parseToHtml(id: string, template: MJMLJsonObject): Promise<string> {
+		const parseResult = await mjml2html(template);
 		if (parseResult.errors.length !== 0) {
 			logger.error(`Failed to parse the template ${id}`);
 			throw new ServerError('apiResponses.template.parseFailed', { path: 'MjmlProvider.parseToHtml' });
@@ -17,14 +17,14 @@ export class MjmlProvider implements ITemplateProvider {
 		return parseResult.html;
 	}
 
-	emailVerification(data: EmailVerificationProps): string {
+	async emailVerification(data: EmailVerificationProps): Promise<string> {
 		const [id, template] = emailVerificationTemplate(data);
-		const html = this.parseToHtml(id, template);
+		const html = await this.parseToHtml(id, template);
 		return html;
 	}
-	forgotPassword(data: ForgotPasswordProps): string {
+	async forgotPassword(data: ForgotPasswordProps): Promise<string> {
 		const [id, template] = forgotPasswordTemplate(data);
-		const html = this.parseToHtml(id, template);
+		const html = await this.parseToHtml(id, template);
 		return html;
 	}
 }

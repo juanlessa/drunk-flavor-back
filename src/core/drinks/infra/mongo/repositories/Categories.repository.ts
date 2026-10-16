@@ -13,7 +13,7 @@ export class CategoriesRepository implements ICategoriesRepository {
 		return CategoryModel.create(data);
 	}
 	async update({ id, ...data }: UpdateCategory): Promise<Category> {
-		const category = await CategoryModel.findByIdAndUpdate<Category>(id, data, { new: true }).exec();
+		const category = await CategoryModel.findByIdAndUpdate<Category>(id, data, { returnDocument: 'after' }).exec();
 		if (!category) {
 			throw new NotFoundError('apiResponses.categories.notFound', {
 				path: 'Categories.repository',
@@ -45,7 +45,7 @@ export class CategoriesRepository implements ICategoriesRepository {
 	}
 
 	async findAll(query: QueryParams): Promise<Category[]> {
-		const mongooseQuery = buildQuery<Category[]>(query, CategoryModel);
-		return mongooseQuery.lean({ transform: removeLeanVersionKey }).exec();
+		const mongooseQuery = buildQuery<Category>(query, CategoryModel);
+		return mongooseQuery.lean<Category[]>({ transform: removeLeanVersionKey }).exec();
 	}
 }

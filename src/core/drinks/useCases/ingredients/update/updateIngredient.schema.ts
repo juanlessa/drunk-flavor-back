@@ -5,7 +5,7 @@ import {
 	ingredientIsAlcoholicValidation,
 	ingredientTranslationSchema,
 } from '@/core/drinks/schemas/ingredient.schemas';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 export const updateIngredientSchema = z.object({
 	id: ingredientIdValidation,

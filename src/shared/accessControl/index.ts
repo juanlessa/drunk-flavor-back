@@ -3,7 +3,7 @@ import { UserPermissionModel } from './entities/user';
 import { permissions } from './permissions';
 import { AppAbility } from './types';
 import { ServerError } from '../error/error.lib';
-import { logger } from '../logger';
+import { logger } from '@/shared/providers/logger';
 
 export const createAppAbility = createMongoAbility as CreateAbility<AppAbility>;
 

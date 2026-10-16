@@ -1,6 +1,6 @@
 import { getObjectIdSchema } from '@/infrastructure/mongo/schemas/helpers/objectId.helpers';
 import { LocaleKey } from '@/shared/types/locale.types';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 // Fields validation
 export const drinkIdValidation = getObjectIdSchema({
@@ -9,24 +9,24 @@ export const drinkIdValidation = getObjectIdSchema({
 });
 
 export const drinkNameValidation = z
-	.string({ required_error: 'apiResponses.drinks.requiredName' satisfies LocaleKey })
+	.string({ error: 'apiResponses.drinks.requiredName' satisfies LocaleKey })
 	.trim()
 	.toLowerCase()
-	.min(1, { message: 'apiResponses.drinks.invalidNameFormat' satisfies LocaleKey })
+	.min(1, { error: 'apiResponses.drinks.invalidNameFormat' satisfies LocaleKey })
 	.transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`);
 
 export const drinkMethodValidation = z
-	.string({ required_error: 'apiResponses.drinks.requiredMethod' satisfies LocaleKey })
+	.string({ error: 'apiResponses.drinks.requiredMethod' satisfies LocaleKey })
 	.trim()
-	.min(1, { message: 'apiResponses.drinks.invalidMethodFormat' satisfies LocaleKey });
+	.min(1, { error: 'apiResponses.drinks.invalidMethodFormat' satisfies LocaleKey });
 
 export const drinkCoverValidation = z
-	.string({ required_error: 'apiResponses.drinks.requiredCover' satisfies LocaleKey })
-	.min(1, { message: 'apiResponses.drinks.invalidCoverFormat' satisfies LocaleKey });
+	.string({ error: 'apiResponses.drinks.requiredCover' satisfies LocaleKey })
+	.min(1, { error: 'apiResponses.drinks.invalidCoverFormat' satisfies LocaleKey });
 
 export const drinkThumbnailValidation = z
-	.string({ required_error: 'apiResponses.drinks.requiredThumbnail' satisfies LocaleKey })
-	.min(1, { message: 'apiResponses.drinks.invalidThumbnailFormat' satisfies LocaleKey });
+	.string({ error: 'apiResponses.drinks.requiredThumbnail' satisfies LocaleKey })
+	.min(1, { error: 'apiResponses.drinks.invalidThumbnailFormat' satisfies LocaleKey });
 
 export const drinkIngredientsValidation = z
 	.array(
@@ -36,11 +36,11 @@ export const drinkIngredientsValidation = z
 				invalid: 'apiResponses.drinks.invalidIngredientIdFormat',
 			}),
 			quantity: z
-				.number({ required_error: 'apiResponses.drinks.requiredQuantity' satisfies LocaleKey })
-				.gt(0, { message: 'apiResponses.drinks.invalidQuantityFormat' satisfies LocaleKey }),
+				.number({ error: 'apiResponses.drinks.requiredQuantity' satisfies LocaleKey })
+				.gt(0, { error: 'apiResponses.drinks.invalidQuantityFormat' satisfies LocaleKey }),
 		}),
 	)
-	.min(1, { message: 'apiResponses.drinks.requiredIngredients' satisfies LocaleKey });
+	.min(1, { error: 'apiResponses.drinks.requiredIngredients' satisfies LocaleKey });
 
 // schemas
 export const drinkTranslationSchema = z.object({
