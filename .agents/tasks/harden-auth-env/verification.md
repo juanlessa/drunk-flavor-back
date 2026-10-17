@@ -25,3 +25,15 @@ task instruction.
   colliding key names.
 - `USER_TOKEN_SIZE` even-ness is enforced in every environment (the crypto provider derives the
   token from `randomBytes(size / 2)`); the `[32, 128]` bounds are production-only.
+
+## Review iteration 2 — comment-density trim
+
+Both reviewers flagged a single non-behavioral finding: `src/env/auth.ts` carried much denser
+commentary than the structural reference `src/env/client.ts`. The comments were trimmed to match
+the terse style of `client.ts`, keeping only the two non-obvious rationales (global
+`USER_TOKEN_SIZE` even-ness for `randomBytes`, and production secret distinctness). No behavior,
+schema, default, or public API changed. Re-verified:
+
+- `npm run typecheck` — PASS, exit code 0.
+- `npx eslint src/env/auth.ts src/env/auth.spec.ts` — PASS, exit code 0.
+- `npm test` — PASS, 40 files / 188 tests green (including the 25 auth-spec tests).
