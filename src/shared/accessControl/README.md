@@ -59,13 +59,19 @@ authenticated role may manage its own profile; Anonymous cannot.
 
 #### Drinks
 
-|              | Admin | Partner | Member | Anonymous |
-| ------------ | :---: | :-----: | :----: | :-------: |
-| Create drink |  ✅   |   ✅    |   ❌   |    ❌     |
-| Delete drink |  ✅   |   ✅    |   ❌   |    ❌     |
-| Get drink    |  ✅   |   ✅    |   ✅   |    ✅     |
-| List drinks  |  ✅   |   ✅    |   ✅   |    ✅     |
-| Update drink |  ✅   |   ✅    |   ❌   |    ❌     |
+The three update endpoints (`PATCH /drinks`, `PATCH /drinks/:id/cover`,
+`PATCH /drinks/:id/thumbnail`) are each gated by `verifyPermissions('update', 'Drink')`, so
+they share the same Admin/Partner-allowed, Member/Anonymous-denied policy.
+
+|                                           | Admin | Partner | Member | Anonymous |
+| ----------------------------------------- | :---: | :-----: | :----: | :-------: |
+| Create drink (`POST /drinks`)             |  ✅   |   ✅    |   ❌   |    ❌     |
+| Delete drink (`DELETE /drinks`)           |  ✅   |   ✅    |   ❌   |    ❌     |
+| Get drink (`GET /drinks/:id`)             |  ✅   |   ✅    |   ✅   |    ✅     |
+| List drinks (`GET /drinks`)               |  ✅   |   ✅    |   ✅   |    ✅     |
+| Update drink (`PATCH /drinks`)            |  ✅   |   ✅    |   ❌   |    ❌     |
+| Update drink cover (`PATCH /drinks/:id/cover`) |  ✅   |   ✅    |   ❌   |    ❌     |
+| Update drink thumbnail (`PATCH /drinks/:id/thumbnail`) |  ✅   |   ✅    |   ❌   |    ❌     |
 
 #### Comments
 
