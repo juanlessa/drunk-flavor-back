@@ -6,7 +6,7 @@ import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provide
 import { BadRequestError } from '@/shared/error/error.lib';
 import { MAIL_SENDERS } from '@/shared/constants/mailer.constants';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
-import { FRONTEND_BASE_URL, FRONTEND_PAGE_PATHS } from '@/shared/constants/frontend.constants';
+import { CLIENT_PAGE_PATHS } from '@/shared/constants/client.constants';
 import { RequestPasswordReset } from './requestPasswordReset.dtos';
 import { env } from '@/env';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
@@ -46,7 +46,7 @@ export class RequestPasswordResetService {
 
 		const template = await this.templateProvider.forgotPassword({
 			userName: user.name,
-			resetLink: `${FRONTEND_BASE_URL}${FRONTEND_PAGE_PATHS.resetPassword}/${token}`,
+			resetLink: `${env.CLIENT_BASE_URL}${CLIENT_PAGE_PATHS.resetPassword}/${token}`,
 		});
 
 		await this.mailerProvider.send({

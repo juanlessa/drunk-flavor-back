@@ -14,7 +14,7 @@ import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provide
 import { IEmailQueueProvider } from '@/shared/providers/queue/email/IEmailQueue.provider';
 import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
 import { MAIL_SENDERS } from '@/shared/constants/mailer.constants';
-import { FRONTEND_BASE_URL, FRONTEND_PAGE_PATHS } from '@/shared/constants/frontend.constants';
+import { CLIENT_PAGE_PATHS } from '@/shared/constants/client.constants';
 
 export class SignupService {
 	constructor(
@@ -66,7 +66,7 @@ export class SignupService {
 
 		const html = await this.templateProvider.emailVerification({
 			userName: user.name,
-			verificationLink: `${FRONTEND_BASE_URL}${FRONTEND_PAGE_PATHS.verifyEmail}/${token}`,
+			verificationLink: `${env.CLIENT_BASE_URL}${CLIENT_PAGE_PATHS.verifyEmail}/${token}`,
 		});
 
 		await this.emailQueueProvider.add(EMAIL_JOB_NAMES.verification, {

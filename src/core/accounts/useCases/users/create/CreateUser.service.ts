@@ -10,7 +10,7 @@ import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provide
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
 import { MAIL_SENDERS } from '@/shared/constants/mailer.constants';
-import { FRONTEND_BASE_URL, FRONTEND_PAGE_PATHS } from '@/shared/constants/frontend.constants';
+import { CLIENT_PAGE_PATHS } from '@/shared/constants/client.constants';
 import { env } from '@/env';
 
 export class CreateUserService {
@@ -78,7 +78,7 @@ export class CreateUserService {
 	private async sendVerificationEmail(user: User, token: string) {
 		const template = await this.templateProvider.emailVerification({
 			userName: user.name,
-			verificationLink: `${FRONTEND_BASE_URL}${FRONTEND_PAGE_PATHS.verifyEmail}/${token}`,
+			verificationLink: `${env.CLIENT_BASE_URL}${CLIENT_PAGE_PATHS.verifyEmail}/${token}`,
 		});
 
 		await this.mailerProvider.send({
