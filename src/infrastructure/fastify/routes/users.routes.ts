@@ -12,6 +12,7 @@ import { updateUserRoleSchema } from '@/core/accounts/useCases/users/updateRole/
 import { updateUserRoleController } from '@/core/accounts/useCases/users/updateRole/updateUserRole.controller';
 import { deleteUserSchema } from '@/core/accounts/useCases/users/delete/deleteUser.schema';
 import { deleteUserController } from '@/core/accounts/useCases/users/delete/deleteUser.controller';
+import { verifyPermissions } from '../middlewares/verifyPermissions';
 
 const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
@@ -21,7 +22,7 @@ const routes: Routes = (server) => {
 				tags: ['Users'],
 				body: createUserSchema,
 			},
-			preValidation: [verifyAndRenewToken],
+			preValidation: [verifyAndRenewToken, verifyPermissions('create', 'User')],
 		},
 		createUserController,
 	);
@@ -33,7 +34,7 @@ const routes: Routes = (server) => {
 				tags: ['Users'],
 				params: getUserSchema,
 			},
-			preValidation: [verifyAndRenewToken],
+			preValidation: [verifyAndRenewToken, verifyPermissions('get', 'User')],
 		},
 		getUserController,
 	);
@@ -45,7 +46,7 @@ const routes: Routes = (server) => {
 				tags: ['Users'],
 				querystring: listUsersQuerySchema,
 			},
-			preValidation: [verifyAndRenewToken],
+			preValidation: [verifyAndRenewToken, verifyPermissions('list', 'User')],
 		},
 		listUsersController,
 	);
@@ -57,7 +58,7 @@ const routes: Routes = (server) => {
 				tags: ['Users'],
 				body: updateUserRoleSchema,
 			},
-			preValidation: [verifyAndRenewToken],
+			preValidation: [verifyAndRenewToken, verifyPermissions('update', 'User')],
 		},
 		updateUserRoleController,
 	);
@@ -69,7 +70,7 @@ const routes: Routes = (server) => {
 				tags: ['Users'],
 				body: deleteUserSchema,
 			},
-			preValidation: [verifyAndRenewToken],
+			preValidation: [verifyAndRenewToken, verifyPermissions('delete', 'User')],
 		},
 		deleteUserController,
 	);

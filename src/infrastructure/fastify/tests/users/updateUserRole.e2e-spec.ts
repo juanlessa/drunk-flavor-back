@@ -32,4 +32,46 @@ describe('Update User Role', () => {
 
 		expect(response.status).toBe(HTTP_STATUS.no_content);
 	});
+
+	it('Should not be able to update a user role when unauthenticated', async () => {
+		const userToUpdate = await createUser(app, { email: 'member@example.com', role: RolesEnum.member });
+
+		const response = await request(app.server).patch('/users/role').send({
+			user_id: userToUpdate.id,
+			role: RolesEnum.partner,
+		});
+
+		expect(response.status).toBe(HTTP_STATUS.unauthorized);
+	});
+
+	it('Should not be able to update a user role as a partner', async () => {
+		const { cookies } = await createAndAuthenticateUser(app, {
+			email: 'partner@example.com',
+			role: RolesEnum.partner,
+		});
+
+		const userToUpdate = await createUser(app, { email: 'member@example.com', role: RolesEnum.member });
+
+		const response = await request(app.server).patch('/users/role').set('Cookie', cookies).send({
+			user_id: userToUpdate.id,
+			role: RolesEnum.partner,
+		});
+
+		expect(response.status).toBe(HTTP_STATUS.forbidden);
+	});
+
+	// DF-SEC-001 regression: a member must not be able to promote itself to admin.
+	it('Should not allow a member to promote itself to admin (DF-SEC-001)', async () => {
+		const { cookies, user } = await createAndAuthenticateUser(app, {
+			email: 'member@example.com',
+			role: RolesEnum.member,
+		});
+
+		const response = await request(app.server).patch('/users/role').set('Cookie', cookies).send({
+			user_id: user.id,
+			role: RolesEnum.admin,
+		});
+
+		expect(response.status).toBe(HTTP_STATUS.forbidden);
+	});
 });

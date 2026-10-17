@@ -45,4 +45,31 @@ describe('Update Ingredient', () => {
 
 		expect(response.status).toBe(HTTP_STATUS.no_content);
 	});
+
+	it('Should not be able to update an ingredient when unauthenticated', async () => {
+		const { id, category_id } = await createIngredient();
+		const { translations, is_alcoholic } = createIngredientFactory();
+
+		const response = await request(app.server)
+			.patch('/ingredients')
+			.send({ id, translations, is_alcoholic, category_id });
+
+		expect(response.status).toBe(HTTP_STATUS.unauthorized);
+	});
+
+	it('Should not be able to update an ingredient as a member', async () => {
+		const { cookies } = await createAndAuthenticateUser(app, {
+			email: 'member@example.com',
+			role: RolesEnum.member,
+		});
+		const { id, category_id } = await createIngredient();
+		const { translations, is_alcoholic } = createIngredientFactory();
+
+		const response = await request(app.server)
+			.patch('/ingredients')
+			.set('Cookie', cookies)
+			.send({ id, translations, is_alcoholic, category_id });
+
+		expect(response.status).toBe(HTTP_STATUS.forbidden);
+	});
 });

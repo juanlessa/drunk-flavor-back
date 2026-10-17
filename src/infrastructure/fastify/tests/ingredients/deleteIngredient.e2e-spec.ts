@@ -33,4 +33,24 @@ describe('Delete Ingredient', () => {
 
 		expect(response.status).toBe(HTTP_STATUS.no_content);
 	});
+
+	it('Should not be able to delete an ingredient when unauthenticated', async () => {
+		const { id } = await createIngredient();
+
+		const response = await request(app.server).delete('/ingredients').send({ id });
+
+		expect(response.status).toBe(HTTP_STATUS.unauthorized);
+	});
+
+	it('Should not be able to delete an ingredient as a member', async () => {
+		const { cookies } = await createAndAuthenticateUser(app, {
+			email: 'member@example.com',
+			role: RolesEnum.member,
+		});
+		const { id } = await createIngredient();
+
+		const response = await request(app.server).delete('/ingredients').set('Cookie', cookies).send({ id });
+
+		expect(response.status).toBe(HTTP_STATUS.forbidden);
+	});
 });

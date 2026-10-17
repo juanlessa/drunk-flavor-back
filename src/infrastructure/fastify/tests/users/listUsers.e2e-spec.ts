@@ -30,4 +30,32 @@ describe('List Users', () => {
 
 		expect(response.status).toBe(HTTP_STATUS.ok);
 	});
+
+	it('Should not be able to list the users when unauthenticated', async () => {
+		const response = await request(app.server).get('/users').send();
+
+		expect(response.status).toBe(HTTP_STATUS.unauthorized);
+	});
+
+	it('Should not be able to list the users as a member', async () => {
+		const { cookies } = await createAndAuthenticateUser(app, {
+			email: 'member@example.com',
+			role: RolesEnum.member,
+		});
+
+		const response = await request(app.server).get('/users').set('Cookie', cookies).send();
+
+		expect(response.status).toBe(HTTP_STATUS.forbidden);
+	});
+
+	it('Should not be able to list the users as a partner', async () => {
+		const { cookies } = await createAndAuthenticateUser(app, {
+			email: 'partner@example.com',
+			role: RolesEnum.partner,
+		});
+
+		const response = await request(app.server).get('/users').set('Cookie', cookies).send();
+
+		expect(response.status).toBe(HTTP_STATUS.forbidden);
+	});
 });

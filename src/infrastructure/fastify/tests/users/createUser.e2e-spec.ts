@@ -38,4 +38,70 @@ describe('Create User', () => {
 
 		expect(response.status).toBe(HTTP_STATUS.created);
 	});
+
+	it('Should not be able to create a user when unauthenticated', async () => {
+		const { name, surname, email, password, role } = createUserFactory({
+			email: 'partner@example.com',
+			role: RolesEnum.partner,
+		});
+
+		const response = await request(app.server).post('/users').send({ name, surname, email, password, role });
+
+		expect(response.status).toBe(HTTP_STATUS.unauthorized);
+	});
+
+	it('Should not be able to create a user as a member', async () => {
+		const { cookies } = await createAndAuthenticateUser(app, {
+			email: 'member@example.com',
+			role: RolesEnum.member,
+		});
+
+		const { name, surname, email, password, role } = createUserFactory({
+			email: 'partner@example.com',
+			role: RolesEnum.partner,
+		});
+
+		const response = await request(app.server)
+			.post('/users')
+			.set('Cookie', cookies)
+			.send({ name, surname, email, password, role });
+
+		expect(response.status).toBe(HTTP_STATUS.forbidden);
+	});
+
+	it('Should not be able to create a user as a partner', async () => {
+		const { cookies } = await createAndAuthenticateUser(app, {
+			email: 'partner@example.com',
+			role: RolesEnum.partner,
+		});
+
+		const { name, surname, email, password, role } = createUserFactory({
+			email: 'new-partner@example.com',
+			role: RolesEnum.partner,
+		});
+
+		const response = await request(app.server)
+			.post('/users')
+			.set('Cookie', cookies)
+			.send({ name, surname, email, password, role });
+
+		expect(response.status).toBe(HTTP_STATUS.forbidden);
+	});
+
+	// DF-SEC-001 regression: a member must not be able to create an admin user.
+	it('Should not allow a member to create an admin user (DF-SEC-001)', async () => {
+		const { cookies } = await createAndAuthenticateUser(app, {
+			email: 'member@example.com',
+			role: RolesEnum.member,
+		});
+
+		const { name, surname, email, password } = createUserFactory({ email: 'escalated@example.com' });
+
+		const response = await request(app.server)
+			.post('/users')
+			.set('Cookie', cookies)
+			.send({ name, surname, email, password, role: RolesEnum.admin });
+
+		expect(response.status).toBe(HTTP_STATUS.forbidden);
+	});
 });
