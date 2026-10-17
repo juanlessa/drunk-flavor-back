@@ -2,131 +2,133 @@ import 'dotenv/config';
 import { z } from 'zod/v4';
 import { type NodeEnv, parseNodeEnv } from './node';
 
-const TEST_ENVIRONMENTS: readonly NodeEnv[] = ['e2e', 'testing'];
-const TEST_AND_DEV_ENVIRONMENTS: readonly NodeEnv[] = ['e2e', 'testing', 'development'];
+const cookieSecretEnvMap = {
+	development: z.string().min(1, { message: 'secret must be at least 1 character in development environment' }),
+	testing: z
+		.string()
+		.min(1, { message: 'secret must be at least 1 character in testing environment if specified' })
+		.default('bad-cookie-secret-testing'),
+	e2e: z
+		.string()
+		.min(1, { message: 'secret must be at least 1 character in e2e environment if specified' })
+		.default('bad-cookie-secret-e2e'),
+	production: z.string().min(32, { message: 'secret must be at least 32 characters in production' }),
+} satisfies Record<NodeEnv, z.ZodType<string>>;
 
-const SECRET_MIN_LENGTH = 32;
-const WEAK_SECRET_PLACEHOLDERS = ['bad-cookie-secret', 'bad-access-token-secret', 'bad-refresh-token-secret'];
+const accessTokenSecretEnvMap = {
+	production: z.string().min(32, { message: 'secret must be at least 32 characters in production' }),
+	development: z.string().min(1, { message: 'secret must be at least 1 character in development environment' }),
+	testing: z
+		.string()
+		.min(1, { message: 'secret must be at least 1 character in testing environment if specified' })
+		.default('bad-access-token-secret-testing'),
+	e2e: z
+		.string()
+		.min(1, { message: 'secret must be at least 1 character in e2e environment if specified' })
+		.default('bad-access-token-secret-e2e'),
+} satisfies Record<NodeEnv, z.ZodType<string>>;
 
-const ACCESS_TOKEN_MAX_SECONDS = 3600;
-const REFRESH_TOKEN_MAX_SECONDS = 2592000;
-const USER_TOKEN_MAX_SECONDS = 86400;
+const refreshTokenSecretEnvMap = {
+	production: z.string().min(32, { message: 'secret must be at least 32 characters in production' }),
+	development: z.string().min(1, { message: 'secret must be at least 1 character in development environment' }),
+	testing: z
+		.string()
+		.min(1, { message: 'secret must be at least 1 character in testing environment if specified' })
+		.default('bad-refresh-token-secret-testing'),
+	e2e: z
+		.string()
+		.min(1, { message: 'secret must be at least 1 character in e2e environment if specified' })
+		.default('bad-refresh-token-secret-e2e'),
+} satisfies Record<NodeEnv, z.ZodType<string>>;
 
-const USER_TOKEN_SIZE_MIN = 32;
-const USER_TOKEN_SIZE_MAX = 128;
+const accessTokenExpiresInSecondsEnvMap = {
+	production: z.coerce
+		.number()
+		.int()
+		.positive()
+		.max(3600, { message: 'ACCESS_TOKEN_EXPIRES_IN_SECONDS must be at most 3600 (1 hour) in production' }),
+	development: z.coerce.number().int().positive(),
+	testing: z.coerce.number().int().positive().default(2),
+	e2e: z.coerce.number().int().positive().default(2),
+} satisfies Record<NodeEnv, z.ZodType<number>>;
 
-const PASSWORD_HASH_ROUNDS_MIN = 12;
-const PASSWORD_HASH_ROUNDS_MAX = 15;
+const refreshTokenExpiresInSecondsEnvMap = {
+	production: z.coerce
+		.number()
+		.int()
+		.positive()
+		.max(2592000, { message: 'REFRESH_TOKEN_EXPIRES_IN_SECONDS must be at most 2592000 (30 days) in production' }),
+	development: z.coerce.number().int().positive(),
+	testing: z.coerce.number().int().positive().default(5),
+	e2e: z.coerce.number().int().positive().default(5),
+} satisfies Record<NodeEnv, z.ZodType<number>>;
 
-const isProduction = (nodeEnv: NodeEnv): boolean => nodeEnv === 'production';
+const userTokenExpiresInSecondsEnvMap = {
+	production: z.coerce
+		.number()
+		.int()
+		.positive()
+		.max(86400, { message: 'USER_TOKEN_EXPIRES_IN_SECONDS must be at most 86400 (24 hours) in production' }),
+	development: z.coerce.number().int().positive(),
+	testing: z.coerce.number().int().positive().default(5),
+	e2e: z.coerce.number().int().positive().default(5),
+} satisfies Record<NodeEnv, z.ZodType<number>>;
 
-const buildSecretSchema = (nodeEnv: NodeEnv, defaultValue: string) => {
-	if (isProduction(nodeEnv)) {
-		return z
-			.string()
-			.min(SECRET_MIN_LENGTH, {
-				message: `secret must be at least ${SECRET_MIN_LENGTH} characters in production`,
-			})
-			.refine((value) => !WEAK_SECRET_PLACEHOLDERS.includes(value), {
-				message: 'secret must not be a known weak placeholder in production',
-			});
-	}
-	if (TEST_ENVIRONMENTS.includes(nodeEnv)) {
-		return z.string().default(defaultValue);
-	}
-	return z.string().min(1);
-};
+// USER_TOKEN_SIZE is the hex-character count of the generated token. It must be EVEN in every
+// environment because the crypto provider derives it from randomBytes(size / 2); an odd value
+// breaks generation. Production additionally enforces a [32, 128] entropy window (>= 128 bits).
+const isEven = (value: number): boolean => value % 2 === 0;
 
-const buildBoundedIntSchema = (
-	nodeEnv: NodeEnv,
-	options: { defaultValue?: number; environments?: readonly NodeEnv[]; min?: number; max?: number },
-) => {
-	let schema = z.coerce.number().int().positive();
-	if (isProduction(nodeEnv)) {
-		if (options.min !== undefined) {
-			schema = schema.min(options.min);
-		}
-		if (options.max !== undefined) {
-			schema = schema.max(options.max);
-		}
-	}
-	if (options.defaultValue !== undefined && options.environments?.includes(nodeEnv)) {
-		return schema.default(options.defaultValue);
-	}
-	return schema;
-};
+const userTokenSizeEnvMap = {
+	production: z.coerce
+		.number()
+		.int()
+		.positive()
+		.min(32, { message: 'USER_TOKEN_SIZE must be at least 32 hex characters (128 bits) in production' })
+		.max(128, { message: 'USER_TOKEN_SIZE must be at most 128 hex characters in production' })
+		.refine(isEven, { message: 'USER_TOKEN_SIZE must be an even number of hex characters' }),
+	development: z.coerce
+		.number()
+		.int()
+		.positive()
+		.refine(isEven, { message: 'USER_TOKEN_SIZE must be an even number of hex characters' })
+		.default(16),
+	testing: z.coerce
+		.number()
+		.int()
+		.positive()
+		.refine(isEven, { message: 'USER_TOKEN_SIZE must be an even number of hex characters' })
+		.default(16),
+	e2e: z.coerce
+		.number()
+		.int()
+		.positive()
+		.refine(isEven, { message: 'USER_TOKEN_SIZE must be an even number of hex characters' })
+		.default(16),
+} satisfies Record<NodeEnv, z.ZodType<number>>;
 
-const buildPasswordHashRoundsSchema = (nodeEnv: NodeEnv) => {
-	const schema = z.coerce.number().int().positive();
-	if (isProduction(nodeEnv)) {
-		return schema.min(PASSWORD_HASH_ROUNDS_MIN).max(PASSWORD_HASH_ROUNDS_MAX);
-	}
-	if (TEST_ENVIRONMENTS.includes(nodeEnv)) {
-		return schema.default(3);
-	}
-	if (nodeEnv === 'development') {
-		return schema.default(8);
-	}
-	return schema;
-};
+const passwordHashRoundsEnvMap = {
+	production: z.coerce
+		.number()
+		.int()
+		.min(12, { message: 'PASSWORD_HASH_ROUNDS must be at least 12 in production' })
+		.max(15, { message: 'PASSWORD_HASH_ROUNDS must be at most 15 in production' }),
+	development: z.coerce.number().int().positive().default(8),
+	testing: z.coerce.number().int().positive().default(3),
+	e2e: z.coerce.number().int().positive().default(3),
+} satisfies Record<NodeEnv, z.ZodType<number>>;
 
-export const buildAuthSchema = (nodeEnv: NodeEnv) => {
-	const schema = z.object({
-		COOKIE_SECRET: buildSecretSchema(nodeEnv, 'bad-cookie-secret'),
-		ACCESS_TOKEN_SECRET: buildSecretSchema(nodeEnv, 'bad-access-token-secret'),
-		REFRESH_TOKEN_SECRET: buildSecretSchema(nodeEnv, 'bad-refresh-token-secret'),
-		ACCESS_TOKEN_EXPIRES_IN_SECONDS: buildBoundedIntSchema(nodeEnv, {
-			defaultValue: 2,
-			environments: TEST_ENVIRONMENTS,
-			max: ACCESS_TOKEN_MAX_SECONDS,
-		}),
-		REFRESH_TOKEN_EXPIRES_IN_SECONDS: buildBoundedIntSchema(nodeEnv, {
-			defaultValue: 5,
-			environments: TEST_ENVIRONMENTS,
-			max: REFRESH_TOKEN_MAX_SECONDS,
-		}),
-		USER_TOKEN_EXPIRES_IN_SECONDS: buildBoundedIntSchema(nodeEnv, {
-			defaultValue: 5,
-			environments: TEST_ENVIRONMENTS,
-			max: USER_TOKEN_MAX_SECONDS,
-		}),
-		// Even-ness is global: the crypto provider derives the token from `randomBytes(size / 2)`,
-		// so an odd size would desync generation and validation.
-		USER_TOKEN_SIZE: buildBoundedIntSchema(nodeEnv, {
-			defaultValue: 16,
-			environments: TEST_AND_DEV_ENVIRONMENTS,
-			min: USER_TOKEN_SIZE_MIN,
-			max: USER_TOKEN_SIZE_MAX,
-		}).refine((size) => size % 2 === 0, { message: 'USER_TOKEN_SIZE must be an even number of hex characters' }),
-		PASSWORD_HASH_ROUNDS: buildPasswordHashRoundsSchema(nodeEnv),
+export const buildAuthSchema = (nodeEnv: NodeEnv) =>
+	z.object({
+		COOKIE_SECRET: cookieSecretEnvMap[nodeEnv],
+		ACCESS_TOKEN_SECRET: accessTokenSecretEnvMap[nodeEnv],
+		REFRESH_TOKEN_SECRET: refreshTokenSecretEnvMap[nodeEnv],
+		ACCESS_TOKEN_EXPIRES_IN_SECONDS: accessTokenExpiresInSecondsEnvMap[nodeEnv],
+		REFRESH_TOKEN_EXPIRES_IN_SECONDS: refreshTokenExpiresInSecondsEnvMap[nodeEnv],
+		USER_TOKEN_EXPIRES_IN_SECONDS: userTokenExpiresInSecondsEnvMap[nodeEnv],
+		USER_TOKEN_SIZE: userTokenSizeEnvMap[nodeEnv],
+		PASSWORD_HASH_ROUNDS: passwordHashRoundsEnvMap[nodeEnv],
 	});
-
-	if (!isProduction(nodeEnv)) {
-		return schema;
-	}
-
-	// The three signing secrets must be pairwise distinct so a single leak cannot compromise
-	// cookie signing and both JWT families at once. Error messages name only the colliding keys.
-	return schema.superRefine((value, ctx) => {
-		const secretEntries = [
-			['COOKIE_SECRET', value.COOKIE_SECRET],
-			['ACCESS_TOKEN_SECRET', value.ACCESS_TOKEN_SECRET],
-			['REFRESH_TOKEN_SECRET', value.REFRESH_TOKEN_SECRET],
-		] as const;
-
-		for (let i = 0; i < secretEntries.length; i += 1) {
-			for (let j = i + 1; j < secretEntries.length; j += 1) {
-				if (secretEntries[i][1] === secretEntries[j][1]) {
-					ctx.addIssue({
-						code: 'custom',
-						path: [secretEntries[j][0]],
-						message: `${secretEntries[i][0]} and ${secretEntries[j][0]} must be distinct in production`,
-					});
-				}
-			}
-		}
-	});
-};
 
 export type AuthSchema = z.infer<ReturnType<typeof buildAuthSchema>>;
 
