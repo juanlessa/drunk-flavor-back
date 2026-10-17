@@ -2,12 +2,7 @@ import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { UpdateDrinkCoverDTO } from './updateDrinkCover.dtos';
-import {
-	generateHashedName,
-	hasFileExtension,
-	isSupportedFileType,
-	setFileExtension,
-} from '@/shared/helpers/file.helpers';
+import { generateStoredFileName, isSupportedFileType } from '@/shared/helpers/file.helpers';
 
 export class UpdateDrinkCoverService {
 	constructor(
@@ -15,7 +10,7 @@ export class UpdateDrinkCoverService {
 		private storageProvider: IStorageProvider,
 	) {}
 
-	async execute({ drinkId, fileStream, name, mimetype }: UpdateDrinkCoverDTO): Promise<void> {
+	async execute({ drinkId, fileStream, mimetype }: UpdateDrinkCoverDTO): Promise<void> {
 		if (!isSupportedFileType('image', mimetype)) {
 			throw new BadRequestError('apiResponses.drinks.invalidFileType', {
 				path: 'UpdateDrinkCover.service.1',
@@ -32,10 +27,7 @@ export class UpdateDrinkCoverService {
 			await this.storageProvider.deleteFile(drink.cover.name);
 		}
 
-		if (!hasFileExtension(name, mimetype)) {
-			name = setFileExtension(name, mimetype);
-		}
-		name = generateHashedName(name);
+		const name = generateStoredFileName(drinkId, 'cover', mimetype);
 		const url = '';
 
 		await this.storageProvider.uploadFile({ fileStream, name, mimetype });

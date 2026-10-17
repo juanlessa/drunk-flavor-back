@@ -80,10 +80,15 @@ describe('Update Drink', () => {
 		});
 
 		const findUpdatedDrink = (await drinksRepository.findById(createdDrink._id.toString())) as Drink;
+		const drinkId = createdDrink._id.toString();
+		const [, subtype] = fileMimetype.split('/');
 
 		expect(findUpdatedDrink.cover).toBeDefined();
 		expect(findUpdatedDrink.cover?.mimetype).toEqual(fileMimetype);
-		expect(findUpdatedDrink.cover?.name).toContain(fileName);
+		// The stored name is fully server-generated: <hash>-<ownerId>-<role>.<ext>. It must not
+		// contain the client-supplied file name (path-traversal protection).
+		expect(findUpdatedDrink.cover?.name).not.toContain(fileName);
+		expect(findUpdatedDrink.cover?.name).toMatch(new RegExp(`^[0-9a-f]{32}-${drinkId}-cover\\.${subtype}$`));
 		expect(storageProvider.uploadFile).toHaveBeenCalledTimes(1);
 	});
 
@@ -125,7 +130,7 @@ describe('Update Drink', () => {
 		expect(storageProvider.deleteFile).toHaveBeenCalledTimes(1);
 	});
 
-	it('should be able to add the file extension during the drink cover update', async () => {
+	it('should set the file extension from the mime type regardless of the uploaded name', async () => {
 		await service.execute({
 			drinkId: createdDrink._id.toString(),
 			name: 'imageFileNameWithoutExtension',
@@ -139,5 +144,6 @@ describe('Update Drink', () => {
 		expect(drinkCover).toBeDefined();
 		expect(drinkCover).toHaveProperty('name');
 		expect(hasFileExtension(drinkCover.name, fileMimetype)).toBe(true);
+		expect(drinkCover.name).not.toContain('imageFileNameWithoutExtension');
 	});
 });
