@@ -52,29 +52,24 @@ void app.register(fastifySwaggerUI, SWAGGER_UI_OPTIONS);
 router.map((route) => app.register(route));
 app.setErrorHandler(errorHandler);
 
-export const start = async () => {
+export const startApp = async () => {
 	LoggerInstance.setLogger(app.log);
 	setLogger(app.log);
 
-	try {
-		await app.ready();
+	await app.ready();
 
-		logger.debug('plugins\n' + app.printPlugins());
-		logger.debug(
-			'routes\n' +
-				app.printRoutes({
-					commonPrefix: false,
-					includeHooks: false,
-					includeMeta: ['metaProperty'],
-				}),
-		);
+	logger.debug('plugins\n' + app.printPlugins());
+	logger.debug(
+		'routes\n' +
+			app.printRoutes({
+				commonPrefix: false,
+				includeHooks: false,
+				includeMeta: ['metaProperty'],
+			}),
+	);
 
-		logger.info(`Documentation running at ${DOCS_URL} \n`);
-		logger.info(`Static files served at ${STATIC_FILES_URL} \n`);
+	logger.info(`Documentation running at ${DOCS_URL} \n`);
+	logger.info(`Static files served at ${STATIC_FILES_URL} \n`);
 
-		await app.listen({ host: env.API_HOST, port: env.API_PORT });
-	} catch (err) {
-		app.log.fatal(err);
-		process.exit(1);
-	}
+	await app.listen({ host: env.API_HOST, port: env.API_PORT });
 };
