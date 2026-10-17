@@ -4,6 +4,7 @@ import { app, start } from '@/infrastructure/fastify/app';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { RedisConnection } from '@/infrastructure/redis/RedisConnection';
 import { BullMQConnection } from '@/infrastructure/bullmq/BullMQConnection';
+import { createGracefulShutdown } from '@/gracefulShutdown';
 
 process.on('unhandledRejection', (err) => {
 	logger.fatal(err);
@@ -23,22 +24,14 @@ const container = async () => {
 
 void container();
 
-const closeServer = (signal: string) => (): void => {
-	logger.info(`close application on ${signal}`);
-
-	try {
-		void Promise.allSettled([
-			MongoConnection.Instance.stop(),
-			RedisConnection.Instance.stop(),
-			BullMQConnection.Instance.stop(),
-			app.close(),
-		]);
-	} catch (error) {
-		logger.error(error);
-		process.exit(1);
-	}
-	process.exit(0);
-};
+const closeServer = createGracefulShutdown({
+	closeServer: () => app.close(),
+	closeConnections: [
+		{ name: 'Mongo', stop: () => MongoConnection.Instance.stop() },
+		{ name: 'Redis', stop: () => RedisConnection.Instance.stop() },
+		{ name: 'BullMQ', stop: () => BullMQConnection.Instance.stop() },
+	],
+});
 
 for (const signal of ['SIGINT', 'SIGTERM']) {
 	process.on(signal, closeServer(signal));
