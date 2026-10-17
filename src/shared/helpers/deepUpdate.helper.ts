@@ -49,21 +49,26 @@ export const deepUpdate = <T extends object>(newRecord: DeepPartial<T>, currentR
 		return newRecord as T;
 	}
 
-	return Object.entries(currentRecord).reduce((acc, [key, value]) => {
-		const newKey = key as keyof T;
-		const newValue = newRecord[newKey];
+	return (Object.entries(currentRecord) as [string, unknown][]).reduce<Record<string, unknown>>(
+		(acc, [key, value]) => {
+			const newValue: unknown = (newRecord as Record<string, unknown>)[key];
 
-		if (newValue === undefined) {
-			return { ...acc, [newKey]: value };
-		}
+			if (newValue === undefined) {
+				return { ...acc, [key]: value };
+			}
 
-		if (instanceOfMongoObjectId(newValue) || newValue instanceof Date) {
-			return { ...acc, [newKey]: newValue };
-		}
-		if (typeof newValue === 'object' && newValue !== null && !Array.isArray(newValue)) {
-			return { ...acc, [newKey]: deepUpdate<typeof value>(newValue, value) };
-		} else {
-			return { ...acc, [newKey]: newValue };
-		}
-	}, {} as T);
+			if (instanceOfMongoObjectId(newValue) || newValue instanceof Date) {
+				return { ...acc, [key]: newValue };
+			}
+			if (typeof newValue === 'object' && newValue !== null && !Array.isArray(newValue)) {
+				return {
+					...acc,
+					[key]: deepUpdate(newValue as DeepPartial<object>, value as object),
+				};
+			} else {
+				return { ...acc, [key]: newValue };
+			}
+		},
+		{},
+	) as T;
 };
