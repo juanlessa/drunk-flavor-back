@@ -22,7 +22,7 @@ describe('Delete User', () => {
 		await MongoConnection.Instance.emptyCollection(UserTokenModel);
 	});
 
-	it('Should be able to delete a user', async () => {
+	it('Should be able to admin delete a user', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
 
 		const userToDelete = await createUser(app, { email: 'partner@example.com', role: RolesEnum.partner });

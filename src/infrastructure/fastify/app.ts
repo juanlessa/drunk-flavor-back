@@ -23,6 +23,7 @@ import { STATIC_FILES_OPTIONS, STATIC_FILES_URL } from './constants/static.const
 import { setLogger, logger } from '@/shared/providers/logger';
 import { I18N_OPTIONS } from './constants/i18n.constants';
 import { PINO_LOGGER_OPTIONS } from '@/shared/providers/logger/implementations/pinoLogger.constants';
+import { CORS_OPTIONS } from './constants/cors.constants';
 
 export const app = fastify({
 	logger: PINO_LOGGER_OPTIONS,
@@ -30,6 +31,7 @@ export const app = fastify({
 
 app.register(helmet);
 app.register(i18n, I18N_OPTIONS);
+app.register(cors, CORS_OPTIONS);
 app.register(fastifyCookie, FASTIFY_COOKIE_OPTIONS);
 app.register(fastifyJwt, TOKEN_OPTIONS);
 app.register(fastifyJwt, REFRESH_TOKEN_OPTIONS);
@@ -53,16 +55,6 @@ app.setErrorHandler(errorHandler);
 export const start = async () => {
 	LoggerInstance.setLogger(app.log);
 	setLogger(app.log);
-
-	const origin = 'localhost';
-	const originRgx = new RegExp(`${origin}`);
-	const originUrl = `https://${origin}`;
-	await app.register(cors, {
-		credentials: true,
-		methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'],
-		cacheControl: 600,
-		origin: [originUrl, originRgx],
-	});
 
 	try {
 		await app.ready();

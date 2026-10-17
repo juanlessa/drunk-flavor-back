@@ -20,7 +20,7 @@ describe('Get User', () => {
 		await MongoConnection.Instance.emptyCollection(UserModel);
 	});
 
-	it('Should be able to get the User', async () => {
+	it('Should be able to admin get the User', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
 
 		const { id } = await createUser(app, { email: 'partner@example.com', role: RolesEnum.partner });

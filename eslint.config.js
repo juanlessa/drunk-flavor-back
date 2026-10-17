@@ -26,7 +26,6 @@ const typescriptConfig = tsEslint.config({
 		'@typescript-eslint/camelcase': 0,
 		'@typescript-eslint/no-var-requires': 0,
 	},
-	ignores: ['build/*', 'node_modules/*'],
 });
 
 const vitestConfig = {
@@ -47,4 +46,9 @@ const vitestConfig = {
 	},
 };
 
-export default [...typescriptConfig, vitestConfig, eslintConfigPrettier];
+export default [
+	{ ignores: ['dist/**', 'coverage/**', 'build/**', 'node_modules/**'] },
+	...typescriptConfig,
+	vitestConfig,
+	eslintConfigPrettier,
+];

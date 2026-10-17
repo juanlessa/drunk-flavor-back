@@ -20,7 +20,7 @@ describe('Update User Role', () => {
 		await MongoConnection.Instance.emptyCollection(UserModel);
 	});
 
-	it('Should be able to update the role of a user', async () => {
+	it('Should be able to admin update the role of a user', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
 
 		const userToUpdate = await createUser(app, { email: 'partner@example.com', role: RolesEnum.member });

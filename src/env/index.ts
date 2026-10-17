@@ -4,6 +4,7 @@ import { parseControlEnv } from './control';
 import { parseApiEnv } from './api';
 import { parseLogEnv } from './log';
 import { parseAuthEnv } from './auth';
+import { parseCorsEnv } from './cors';
 import { parseSmtpEnv } from './smtp';
 import { type FlatStorageSchema, parseStorageEnv } from './storage';
 import { type FlatMongoSchema, parseMongoEnv } from './mongo';
@@ -68,6 +69,7 @@ export type Env = ReturnType<typeof parseNodeEnv> &
 	ReturnType<typeof parseApiEnv> &
 	ReturnType<typeof parseLogEnv> &
 	ReturnType<typeof parseAuthEnv> &
+	ReturnType<typeof parseCorsEnv> &
 	ReturnType<typeof parseSmtpEnv> &
 	Omit<FlatStorageSchema, 'STORAGE_TYPE'> &
 	Omit<FlatMongoSchema, 'MONGO_MODE'> &
@@ -86,6 +88,7 @@ const parseEnv = (source: NodeJS.ProcessEnv = process.env): Env => {
 	const api = parseApiEnv(source, NODE_ENV);
 	const log = parseLogEnv(source, NODE_ENV);
 	const auth = parseAuthEnv(source, NODE_ENV);
+	const cors = parseCorsEnv(source, NODE_ENV);
 	const smtp = parseSmtpEnv(source, NODE_ENV);
 	const storage = parseStorageEnv(source, STORAGE_TYPE, NODE_ENV);
 	const mongo = parseMongoEnv(source, MONGO_MODE, NODE_ENV);
@@ -157,6 +160,7 @@ const parseEnv = (source: NodeJS.ProcessEnv = process.env): Env => {
 		...api,
 		...log,
 		...auth,
+		...cors,
 		...smtp,
 		...storageKeys,
 		// Connection options are present in both Mongo branches.

@@ -47,6 +47,11 @@ brew install mongodb-community
 If you are using a different operating system, please refer to the installation guide on the
 [MongoDB website](https://www.mongodb.com) for instructions.
 
+**Transactions require a replica set.** The application uses multi-document transactions, which MongoDB only accepts on
+a replica set. A single-node replica set is enough. The Docker Compose stack uses the official
+[`mongodb/mongodb-atlas-local`](https://hub.docker.com/r/mongodb/mongodb-atlas-local) image, which runs as a single-node
+replica set out of the box, so no extra setup is needed.
+
 ### node.js
 
 To run our API locally, you will need to have Node.js 20 or higher installed on your machine. To install Node.js on
@@ -82,8 +87,8 @@ Now your node.js setup is ready.
 ### dotenv
 
 To execute the Node.js API, you need to add a file named `.env` at the root project folder, containing the environment
-variables. You can use the [`.env.example`](https://github.com/juanlessa/drunk-flavor-back/blob/main/.env.example)
-file and add the corresponding values for your environment, or simply copy the sample below:
+variables. You can use the [`.env.example`](https://github.com/juanlessa/drunk-flavor-back/blob/main/.env.example) file
+and add the corresponding values for your environment, or simply copy the sample below:
 
 ```dotenv
 # MongoDB
@@ -118,10 +123,10 @@ USER_TOKEN_SIZE=16
 PASSWORD_HASH_ROUNDS=8
 
 # SMTP
-# use some tool like ethereal (https://ethereal.email/) to easy get a mail trap credentials
-SMTP_DOMAIN=''
-SMTP_HOST=''
-SMTP_PORT=587
+# Start the local SMTP server with `npm run smtp` when running without Docker.
+SMTP_DOMAIN='drunkflavor.com'
+SMTP_HOST='localhost'
+SMTP_PORT=1025
 SMTP_USERNAME=''
 SMTP_PASSWORD=''
 ```
@@ -162,6 +167,25 @@ You can also run in watch mode to automatically rerun on file changes:
 ```shell
 npm run dev:watch
 ```
+
+When running the application without Docker, start MailDev in a separate terminal:
+
+```shell
+npm run smtp
+```
+
+MailDev listens for SMTP on `127.0.0.1:1025` without authentication. Its inbox and REST API are available at
+[http://localhost:1080](http://localhost:1080). Configure the application with `SMTP_HOST=localhost`, `SMTP_PORT=1025`,
+and empty SMTP credentials.
+
+You can override the listening address and ports with `LOCAL_SMTP_HOST`, `LOCAL_SMTP_PORT`, and
+`LOCAL_MAILDEV_WEB_PORT`:
+
+```shell
+LOCAL_SMTP_PORT=2525 LOCAL_MAILDEV_WEB_PORT=1081 npm run smtp
+```
+
+If you override the SMTP port, update `SMTP_PORT` in the application environment to match.
 
 **Note:** make sure that when running the commands above, your MongoDB instance is available.
 
@@ -234,11 +258,22 @@ You can also run the E2E tests in watch mode:
 npm run test:e2e:watch
 ```
 
+`test:e2e` verifies the configured SMTP server before starting Vitest. If no SMTP server is available, it starts an
+isolated MailDev instance automatically, exposes its REST API through `MAILDEV_API_URL`, and closes it after the test
+process exits. The underlying Vitest command is kept in `test:e2e:run` so its flags and configuration can be changed in
+`package.json` without editing the orchestrator.
+
+Additional Vitest arguments are forwarded through the orchestrator:
+
+```shell
+npm run test:e2e -- src/infrastructure/fastify/tests/categories/getCategory.e2e-spec.ts
+```
+
 **Note**:
 
-- By default, the E2E tests use an in-memory MongoDB database. However, you can change this to use a traditional MongoDB
-  instance by setting the MONGO_PERSISTENCE_MODE environment variable. In this case make sure to also configure the
-  MongoDB connection variables.
+- By default, the E2E tests use a managed (Node-provisioned) MongoDB instance. However, you can change this to connect
+  to an external MongoDB instance by setting the MONGO_MODE environment variable to `external`. In this case make sure
+  to also configure the MongoDB connection variables.
 - You can override any default testing environment variables by adding a `.env.testing` file in the project root,
   following the structure of `.env.example`.
 
