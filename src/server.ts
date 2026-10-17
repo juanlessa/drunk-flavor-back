@@ -4,7 +4,7 @@ import { app, start } from '@/infrastructure/fastify/app';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { RedisConnection } from '@/infrastructure/redis/RedisConnection';
 import { BullMQConnection } from '@/infrastructure/bullmq/BullMQConnection';
-import { createGracefulShutdown } from '@/gracefulShutdown';
+import { createGracefulShutdown } from '@/infrastructure/server/gracefulShutdown';
 
 process.on('unhandledRejection', (err) => {
 	logger.fatal(err);
