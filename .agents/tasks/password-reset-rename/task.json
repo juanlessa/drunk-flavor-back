@@ -1,7 +1,0 @@
-{
-	"task_id": "task-password-reset-rename",
-	"task_description": "Rename and relocate the password-reset route pair in drunk-flavor-back (option A: nested resource + action, both under the auth domain). Rename useCases/auth/forgotPassword -> useCases/auth/requestPasswordReset with route POST /password-reset/request, and move+rename useCases/profile/resetPassword -> useCases/auth/confirmPassword with route POST /password-reset/confirm. Rename only the backend use-case layer and the two HTTP route paths; preserve persisted enums, queue job names, the email template, frontend path constants, and the confirmPassword body field. All code, comments, and test descriptions in English.",
-	"status": "completed",
-	"feature_order": ["FEAT-001"],
-	"blocked_reason": null
-}
