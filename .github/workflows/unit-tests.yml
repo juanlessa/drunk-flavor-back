@@ -7,6 +7,14 @@ on:
             - 'main'
             - 'develop'
     pull_request:
+        branches:
+            - 'releases/**'
+            - 'main'
+            - 'develop'
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
     run-tests:
