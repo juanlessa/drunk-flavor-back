@@ -12,6 +12,7 @@ import { updateIngredientSchema } from '@/core/drinks/useCases/ingredients/updat
 import { updateIngredientController } from '@/core/drinks/useCases/ingredients/update/updateIngredient.controller';
 import { deleteIngredientSchema } from '@/core/drinks/useCases/ingredients/delete/deleteIngredient.schema';
 import { deleteIngredientController } from '@/core/drinks/useCases/ingredients/delete/deleteIngredient.controller';
+import { verifyPermissions } from '../middlewares/verifyPermissions';
 
 const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
@@ -21,7 +22,7 @@ const routes: Routes = (server) => {
 				tags: ['Ingredients'],
 				body: createIngredientSchema,
 			},
-			preValidation: [verifyAndRenewToken],
+			preValidation: [verifyAndRenewToken, verifyPermissions('create', 'Ingredient')],
 		},
 		createIngredientController,
 	);
@@ -55,7 +56,7 @@ const routes: Routes = (server) => {
 				tags: ['Ingredients'],
 				body: updateIngredientSchema,
 			},
-			preValidation: [verifyAndRenewToken],
+			preValidation: [verifyAndRenewToken, verifyPermissions('update', 'Ingredient')],
 		},
 		updateIngredientController,
 	);
@@ -67,7 +68,7 @@ const routes: Routes = (server) => {
 				tags: ['Ingredients'],
 				body: deleteIngredientSchema,
 			},
-			preValidation: [verifyAndRenewToken],
+			preValidation: [verifyAndRenewToken, verifyPermissions('delete', 'Ingredient')],
 		},
 		deleteIngredientController,
 	);

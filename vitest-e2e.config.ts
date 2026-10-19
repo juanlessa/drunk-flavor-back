@@ -1,20 +1,22 @@
 import { defineConfig } from 'vitest/config';
 import { fileURLToPath } from 'node:url';
-import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
-	plugins: [tsconfigPaths()],
+	resolve: {
+		tsconfigPaths: true,
+	},
 	root: fileURLToPath(new URL('./', import.meta.url)),
 	test: {
+		env: {
+			NODE_ENV: 'e2e',
+			LOG_LEVEL: 'warn',
+		},
 		include: ['src/**/*.e2e-spec.ts'],
-		environment: 'mongo',
+		environment: 'node',
+		globalSetup: ['./src/infrastructure/vitest/e2e/globalSetup.ts'],
+		setupFiles: ['./src/infrastructure/vitest/e2e/setup.ts'],
 		testTimeout: 30000,
 		fileParallelism: false,
 		pool: 'forks',
-		poolOptions: {
-			forks: {
-				singleFork: true,
-			},
-		},
 	},
 });

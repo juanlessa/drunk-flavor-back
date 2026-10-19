@@ -7,3 +7,10 @@ dist
 build
 tmp
 coverage
+
+.env
+.env.*
+secret-key
+secret_key
+.agents
+.worktrees

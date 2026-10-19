@@ -1,6 +1,11 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
+import { MAX_QUERY_LIMIT } from '@/shared/constants/query.constants';
 
-export const searchTermSchema = z.string().optional();
+export const searchTermSchema = z.string().max(64).optional();
+
+export const limitSchema = z.coerce.number().int().min(1).max(MAX_QUERY_LIMIT).optional();
+
+export const pageSchema = z.coerce.number().int().min(1).optional();
 
 export const sortOrderSchema = z
 	.union([

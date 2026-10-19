@@ -13,7 +13,9 @@ export class IngredientsRepository implements IIngredientsRepository {
 		return IngredientModel.create(data);
 	}
 	async update({ id, ...data }: UpdateIngredient): Promise<Ingredient> {
-		const ingredient = await IngredientModel.findByIdAndUpdate<Ingredient>(id, data, { new: true }).exec();
+		const ingredient = await IngredientModel.findByIdAndUpdate<Ingredient>(id, data, {
+			returnDocument: 'after',
+		}).exec();
 		if (!ingredient) {
 			throw new NotFoundError('apiResponses.ingredients.notFound', {
 				path: 'Ingredients.repository',
@@ -51,7 +53,7 @@ export class IngredientsRepository implements IIngredientsRepository {
 	}
 
 	async findAll(query: QueryParams): Promise<Ingredient[]> {
-		const mongooseQuery = buildQuery(query, IngredientModel);
-		return mongooseQuery.lean({ transform: removeLeanVersionKey }).exec();
+		const mongooseQuery = buildQuery<Ingredient>(query, IngredientModel);
+		return mongooseQuery.lean<Ingredient[]>({ transform: removeLeanVersionKey }).exec();
 	}
 }

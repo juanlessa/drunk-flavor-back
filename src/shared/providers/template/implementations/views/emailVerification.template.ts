@@ -1,4 +1,3 @@
-import mjml2html from 'mjml';
 import { MJMLJsonObject } from '../mjml.types';
 import { EmailVerificationProps } from '../../template.dtos';
 

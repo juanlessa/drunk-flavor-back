@@ -2,12 +2,7 @@ import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { BadRequestError } from '@/shared/error/error.lib';
 
-import {
-	generateHashedName,
-	hasFileExtension,
-	isSupportedFileType,
-	setFileExtension,
-} from '@/shared/helpers/file.helpers';
+import { generateStoredFileName, isSupportedFileType } from '@/shared/helpers/file.helpers';
 import { UpdateDrinkThumbnailDTO } from './updateDrinkThumbnail.dtos';
 
 export class UpdateDrinkThumbnailService {
@@ -16,7 +11,7 @@ export class UpdateDrinkThumbnailService {
 		private storageProvider: IStorageProvider,
 	) {}
 
-	async execute({ drinkId, fileStream, name, mimetype }: UpdateDrinkThumbnailDTO): Promise<void> {
+	async execute({ drinkId, fileStream, mimetype }: UpdateDrinkThumbnailDTO): Promise<void> {
 		if (!isSupportedFileType('image', mimetype)) {
 			throw new BadRequestError('apiResponses.drinks.invalidFileType', {
 				path: 'UpdateDrinkThumbnail.service.1',
@@ -33,10 +28,7 @@ export class UpdateDrinkThumbnailService {
 			await this.storageProvider.deleteFile(drink.thumbnail.name);
 		}
 
-		if (!hasFileExtension(name, mimetype)) {
-			name = setFileExtension(name, mimetype);
-		}
-		name = generateHashedName(name);
+		const name = generateStoredFileName(drinkId, 'thumbnail', mimetype);
 		const url = '';
 
 		await this.storageProvider.uploadFile({ fileStream, name, mimetype });

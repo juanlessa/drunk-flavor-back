@@ -1,18 +1,18 @@
 export interface MJMLJsonWithChildren {
 	tagName: string;
-	attributes: object;
+	attributes: Record<string, unknown>;
 	children: MJMLJsonObject[];
 }
 
 export interface MJMLJsonWithContent {
 	tagName: string;
-	attributes: object;
+	attributes: Record<string, unknown>;
 	content: string;
 }
 
 export interface MJMLJsonSelfClosingTag {
 	tagName: string;
-	attributes: object;
+	attributes: Record<string, unknown>;
 }
 
 export interface MJMLParseError {

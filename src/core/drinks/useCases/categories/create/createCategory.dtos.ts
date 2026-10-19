@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import { createCategorySchema } from './createCategory.schema';
 import { Translations } from '@/core/drinks/types/translations';
 import { CategoryTranslation } from '@/core/drinks/entities/category.entity';

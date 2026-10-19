@@ -5,13 +5,13 @@ import mjml2html from 'mjml';
 import { storeHtmlTemplate } from '../storeHtmlTemplate.helper';
 
 describe('Email Verification Template', () => {
-	it('should be able to generate the template', () => {
+	it('should be able to generate the template', async () => {
 		const input: EmailVerificationProps = {
 			userName: 'John',
 			verificationLink: 'http://example.test/email-verification/',
 		};
 		const [id, template] = emailVerificationTemplate(input);
-		const parseResult = mjml2html(template);
+		const parseResult = await mjml2html(template);
 
 		expect(parseResult.errors).toHaveLength(0);
 

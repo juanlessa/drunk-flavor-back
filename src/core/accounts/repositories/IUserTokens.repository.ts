@@ -1,6 +1,5 @@
-import { TokenType, UserToken } from '@/core/accounts/entities/userToken.entity';
+import { UserToken } from '@/core/accounts/entities/userToken.entity';
 import { CreateUserToken, FindByUserIdAndType, UpdateUserToken } from '../dtos/userToken.dtos';
-import { QueryParams } from '@/shared/types/query.types';
 
 export interface IUserTokensRepository {
 	create(data: CreateUserToken): Promise<UserToken>;

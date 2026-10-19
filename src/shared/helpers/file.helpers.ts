@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import path from 'node:path';
 import {
 	FILE_EXTENSION_SEPARATOR,
 	FILE_PATH_SEPARATOR,
@@ -6,9 +7,39 @@ import {
 	SUPPORTED_MIME_TYPES,
 } from '../constants/file.constants';
 
-export const generateHashedName = (name: string) => {
+/**
+ * Builds a fully server-controlled stored file name: `<hash>-<ownerId>-<role>.<ext>`.
+ *
+ * None of the segments come from the client-supplied upload name, which prevents path
+ * traversal: the random hash provides entropy, the owner id and role give traceability
+ * (which entity the image belongs to and its purpose), and the extension is derived from
+ * the already-validated mime type rather than from the uploaded file name.
+ */
+export const generateStoredFileName = (ownerId: string, role: string, mimetype: string): string => {
 	const hash = crypto.randomBytes(16).toString('hex');
-	return `${hash}-${name}`;
+	const [, subtype] = splitMimeType(mimetype);
+	const name = `${hash}-${ownerId}-${role}.${subtype}`;
+	assertSafeFileName(name);
+	return name;
+};
+
+/**
+ * Guards against any file name that could escape its storage directory. A safe name has no
+ * path separators, no parent-directory segments and no NUL byte, so it addresses exactly one
+ * file inside the intended folder. Throws otherwise.
+ */
+export const assertSafeFileName = (name: string): void => {
+	const isUnsafe =
+		name.length === 0 ||
+		name !== path.basename(name) ||
+		name.includes('..') ||
+		name.includes('/') ||
+		name.includes('\\') ||
+		name.includes('\0');
+
+	if (isUnsafe) {
+		throw new Error(`Unsafe file name rejected: ${JSON.stringify(name)}`);
+	}
 };
 
 export const splitMimeType = (mimetype: string): [string, string] => {

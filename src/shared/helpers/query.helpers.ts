@@ -1,4 +1,25 @@
 import { SortOrder } from '@/shared/types/query.types';
+import { escapeRegExp } from '@/shared/helpers/regex.helpers';
+
+const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
+
+type Comparable = string | number;
+
+/**
+ * Compares two values using the abstract relational comparison semantics.
+ *
+ * The runtime values are forwarded unchanged to the native `<`/`>` operators, preserving JavaScript's
+ * coercion behavior; the `Comparable` assertions only widen the static type so the operators type-check.
+ *
+ * @returns A negative number if `a < b`, a positive number if `a > b`, otherwise `0`.
+ */
+const compareValues = (a: unknown, b: unknown): number => {
+	const left = a as Comparable;
+	const right = b as Comparable;
+	if (left < right) return -1;
+	if (left > right) return 1;
+	return 0;
+};
 
 /**
  * Filters an array of items based on the provided search criteria.
@@ -12,11 +33,11 @@ export const filterItemsBySearchCriteria = <T>(items: T[], search: Record<string
 		return Object.entries(search).every(([field, term]) => {
 			if (term === undefined) return true;
 			const fields = field.split('.');
-			let value: any = item;
+			let value: unknown = item;
 			for (const f of fields) {
-				value = value[f];
+				value = isRecord(value) ? value[f] : undefined;
 			}
-			return new RegExp(term, 'i').test(value);
+			return new RegExp(escapeRegExp(term), 'i').test(String(value));
 		});
 	});
 };
@@ -32,14 +53,15 @@ export const sortItemsByFields = <T>(items: T[], sort: Record<string, SortOrder 
 	return items.sort((a, b) => {
 		for (const [field, order] of Object.entries(sort)) {
 			const fields = field.split('.');
-			let aValue: any = a;
-			let bValue: any = b;
+			let aValue: unknown = a;
+			let bValue: unknown = b;
 			for (const f of fields) {
-				aValue = aValue[f];
-				bValue = bValue[f];
+				aValue = isRecord(aValue) ? aValue[f] : undefined;
+				bValue = isRecord(bValue) ? bValue[f] : undefined;
 			}
-			if (aValue < bValue) return order === 'asc' || order === 1 ? -1 : 1;
-			if (aValue > bValue) return order === 'asc' || order === 1 ? 1 : -1;
+			const comparison = compareValues(aValue, bValue);
+			if (comparison < 0) return order === 'asc' || order === 1 ? -1 : 1;
+			if (comparison > 0) return order === 'asc' || order === 1 ? 1 : -1;
 		}
 		return 0;
 	});

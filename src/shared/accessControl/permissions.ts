@@ -8,6 +8,9 @@ type PermissionsByRole = (user: UserPermissionModel, builder: AbilityBuilder<App
 export const permissions: Record<Role, PermissionsByRole> = {
 	admin(_, { can }) {
 		can('manage', 'all');
+		// User management is admin-only. `manage all` already covers it, but this explicit
+		// grant documents the intent and keeps `User` admin-only if `manage all` is ever narrowed.
+		can('manage', 'User');
 	},
 	partner(_, { can }) {
 		can('manage', 'Category');

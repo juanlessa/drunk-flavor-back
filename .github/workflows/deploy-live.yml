@@ -1,0 +1,85 @@
+name: Deploy backend live
+
+on:
+    workflow_dispatch:
+    push:
+        branches:
+            - main
+
+permissions:
+    contents: read
+
+concurrency:
+    group: live-backend-deployment
+    cancel-in-progress: false
+
+jobs:
+    deploy:
+        runs-on: ubuntu-24.04-arm
+        environment: live
+        timeout-minutes: 20
+
+        steps:
+            - name: Check out the exact revision
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+              with:
+                  persist-credentials: false
+
+            - name: Confirm the runner is arm64
+              run: |
+                  set -Eeuo pipefail
+                  test "$(uname -m)" = "aarch64"
+
+            - name: Set up Node.js from the repository version
+              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+              with:
+                  node-version-file: .nvmrc
+                  cache: npm
+
+            - name: Install, verify, and build
+              run: |
+                  set -Eeuo pipefail
+                  npm ci
+                  npm run lint
+                  npm run typecheck
+                  npm test
+                  npm run build
+                  npm run worker:build
+                  npm prune --omit=dev
+                  printf 'aarch64\n' > BUILD_ARCH
+
+            - name: Create complete arm64 backend runtime artifact
+              run: |
+                  set -Eeuo pipefail
+                  test "$(uname -m)" = "aarch64"
+                  test -f dist/server.js
+                  test -f dist/worker.js
+                  test -d node_modules
+                  tar --create --gzip --file drunk-flavor-backend-release.tar.gz \
+                    dist node_modules package.json package-lock.json BUILD_ARCH
+                  sha256sum drunk-flavor-backend-release.tar.gz > drunk-flavor-backend-release.tar.gz.sha256
+
+            - name: Deploy backend with verified SSH host key
+              env:
+                  DEPLOY_KEY: ${{ secrets.LIVE_DEPLOY_SSH_KEY }}
+                  SSH_KNOWN_HOSTS: ${{ secrets.LIVE_SSH_KNOWN_HOSTS }}
+                  LIVE_HOST: ${{ vars.LIVE_HOST }}
+                  LIVE_SSH_PORT: ${{ vars.LIVE_SSH_PORT }}
+                  LIVE_DEPLOY_USER: ${{ vars.LIVE_DEPLOY_USER }}
+              run: |
+                  set -Eeuo pipefail
+                  install -d -m 0700 ~/.ssh
+                  install -m 0600 /dev/null ~/.ssh/deploy_key
+                  printf '%s\n' "${DEPLOY_KEY}" > ~/.ssh/deploy_key
+                  install -m 0600 /dev/null ~/.ssh/known_hosts
+                  printf '%s\n' "${SSH_KNOWN_HOSTS}" > ~/.ssh/known_hosts
+                  checksum="$(cut -d ' ' -f 1 drunk-flavor-backend-release.tar.gz.sha256)"
+                  test "${LIVE_DEPLOY_USER}" = "backend-deployer"
+                  ssh -i ~/.ssh/deploy_key \
+                    -o BatchMode=yes \
+                    -o IdentitiesOnly=yes \
+                    -o StrictHostKeyChecking=yes \
+                    -o UserKnownHostsFile=~/.ssh/known_hosts \
+                    -p "${LIVE_SSH_PORT}" \
+                    "${LIVE_DEPLOY_USER}@${LIVE_HOST}" \
+                    "deploy-backend ${GITHUB_SHA} ${checksum}" < drunk-flavor-backend-release.tar.gz

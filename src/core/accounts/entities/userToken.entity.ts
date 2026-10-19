@@ -11,4 +11,5 @@ export type UserToken = DatabaseCommonInfo & {
 	user_id: string;
 	token: string;
 	type: TokenType;
+	expires_at: Date;
 };

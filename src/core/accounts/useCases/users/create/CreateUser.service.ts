@@ -10,7 +10,7 @@ import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provide
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
 import { MAIL_SENDERS } from '@/shared/constants/mailer.constants';
-import { FRONTEND_BASE_URL, FRONTEND_PAGE_PATHS } from '@/shared/constants/frontend.constants';
+import { CLIENT_PAGE_PATHS } from '@/shared/constants/client.constants';
 import { env } from '@/env';
 
 export class CreateUserService {
@@ -36,15 +36,11 @@ export class CreateUserService {
 		await this.sendVerificationEmail(newUser, token);
 
 		await this.userTokensRepository.create({
-			token,
+			token: this.cryptoProvider.hashToken(token),
 			type: TokenTypeEnum['email-verification'],
 			user_id: newUser._id.toString(),
+			expires_at: this.dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
-	}
-
-	private isTokenExpired(createdAt: Date): boolean {
-		const expirationDate = this.dateProvider.addSeconds(env.USER_TOKEN_EXPIRES_IN_SECONDS, createdAt);
-		return this.dateProvider.isExpiredDate(expirationDate);
 	}
 
 	private async handleExistingUser(user: User) {
@@ -58,7 +54,7 @@ export class CreateUserService {
 			type: TokenTypeEnum['email-verification'],
 		});
 
-		if (!userToken || this.isTokenExpired(userToken.created_at)) {
+		if (!userToken || this.dateProvider.isExpiredDate(userToken.expires_at)) {
 			await this.usersRepository.delete(user._id.toString());
 		} else {
 			throw new BadRequestError('apiResponses.auth.emailVerificationPending', {
@@ -80,9 +76,9 @@ export class CreateUserService {
 	}
 
 	private async sendVerificationEmail(user: User, token: string) {
-		const template = this.templateProvider.emailVerification({
+		const template = await this.templateProvider.emailVerification({
 			userName: user.name,
-			verificationLink: `${FRONTEND_BASE_URL}${FRONTEND_PAGE_PATHS.verifyEmail}/${token}`,
+			verificationLink: `${env.CLIENT_BASE_URL}${CLIENT_PAGE_PATHS.verifyEmail}/${token}`,
 		});
 
 		await this.mailerProvider.send({
