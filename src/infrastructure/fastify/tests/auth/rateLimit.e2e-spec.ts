@@ -8,7 +8,7 @@ import { RedisConnection } from '@/infrastructure/redis/RedisConnection';
 import { resolveRateLimitStore } from '@/infrastructure/fastify/rateLimitStore';
 import { createUser } from '../helpers/authentication.helpers';
 import { RolesEnum } from '@/shared/accessControl/roles';
-import { RATE_LIMIT_KEY_PREFIX } from '../../constants/rateLimit.constants';
+import { RATE_LIMIT_KEY_PREFIX } from '@/infrastructure/redis/RedisRateLimit.store';
 
 interface ErrorBody {
 	ok: boolean;

@@ -1,8 +1,7 @@
 import type { FastifyPluginOptions } from 'fastify';
 import { RateLimitStore } from '../rateLimitStore/index';
+import { RATE_LIMIT_KEY_PREFIX } from '@/infrastructure/redis/RedisRateLimit.store';
 import { errorResponseBuilder } from '../helpers/rateLimit.helpers';
-
-export const RATE_LIMIT_KEY_PREFIX = 'rl:';
 
 export const RATE_LIMIT_OPTIONS: FastifyPluginOptions = {
 	global: false,
