@@ -4,7 +4,8 @@ import type {
 	RateLimitCallback,
 	RateLimitRouteOptions,
 } from '../fastify/rateLimitStore/IRateLimit.store';
-import { RATE_LIMIT_KEY_PREFIX } from '../fastify/constants/rateLimit.constants';
+
+export const RATE_LIMIT_KEY_PREFIX = 'rl:';
 
 export class RedisRateLimitStore implements IRateLimitStore {
 	private readonly continueExceeding: boolean;
