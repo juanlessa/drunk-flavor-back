@@ -17,6 +17,7 @@ const STRONG_PROD_ENV = {
 	USER_TOKEN_EXPIRES_IN_SECONDS: '3600',
 	USER_TOKEN_SIZE: '64',
 	PASSWORD_HASH_ROUNDS: '12',
+	DUMMY_PASSWORD: 'd'.repeat(12) + '-dummy',
 } satisfies Record<string, string>;
 
 // A structurally valid configuration for environments that require values but
@@ -30,6 +31,7 @@ const WEAK_VALID_ENV = {
 	USER_TOKEN_EXPIRES_IN_SECONDS: '1',
 	USER_TOKEN_SIZE: '16',
 	PASSWORD_HASH_ROUNDS: '4',
+	DUMMY_PASSWORD: 'x',
 } satisfies Record<string, string>;
 
 // Per-environment defaults applied when keys are absent. Secrets differ between
@@ -44,6 +46,7 @@ const EXPECTED_DEFAULTS = {
 		USER_TOKEN_EXPIRES_IN_SECONDS: 5,
 		USER_TOKEN_SIZE: 16,
 		PASSWORD_HASH_ROUNDS: 3,
+		DUMMY_PASSWORD: 'timing-equalization-placeholder',
 	},
 	e2e: {
 		COOKIE_SECRET: 'bad-cookie-secret-e2e',
@@ -54,6 +57,7 @@ const EXPECTED_DEFAULTS = {
 		USER_TOKEN_EXPIRES_IN_SECONDS: 5,
 		USER_TOKEN_SIZE: 16,
 		PASSWORD_HASH_ROUNDS: 3,
+		DUMMY_PASSWORD: 'timing-equalization-placeholder',
 	},
 } satisfies Record<(typeof DEFAULTING_ENVS)[number], Record<string, string | number>>;
 
@@ -124,6 +128,25 @@ describe('parseAuthEnv', () => {
 			expect(result.USER_TOKEN_EXPIRES_IN_SECONDS).toBe(3600);
 			expect(result.USER_TOKEN_SIZE).toBe(64);
 			expect(result.PASSWORD_HASH_ROUNDS).toBe(12);
+			expect(result.DUMMY_PASSWORD).toBe(STRONG_PROD_ENV.DUMMY_PASSWORD);
+		});
+	});
+
+	describe('DUMMY_PASSWORD', () => {
+		it('requires at least 12 characters in production', () => {
+			expect(() => parseAuthEnv(withEnv(STRONG_PROD_ENV, { DUMMY_PASSWORD: 'short' }), 'production')).toThrow();
+		});
+
+		it('accepts a 12+ character value in production', () => {
+			expect(() =>
+				parseAuthEnv(withEnv(STRONG_PROD_ENV, { DUMMY_PASSWORD: 'a'.repeat(12) }), 'production'),
+			).not.toThrow();
+		});
+
+		it.each(NON_PROD_ENVS)('defaults to the placeholder when absent in "%s"', (nodeEnv) => {
+			const { DUMMY_PASSWORD: _omitted, ...withoutDummy } = baselineFor(nodeEnv);
+			const result = parseAuthEnv(asSource(withoutDummy), nodeEnv);
+			expect(result.DUMMY_PASSWORD).toBe('timing-equalization-placeholder');
 		});
 	});
 

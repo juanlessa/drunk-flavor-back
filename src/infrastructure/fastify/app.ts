@@ -7,6 +7,7 @@ import session from '@fastify/secure-session';
 import fastifyMultipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
 import i18n from 'fastify-i18n';
+import rateLimit from '@fastify/rate-limit';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUI from '@fastify/swagger-ui';
 import { jsonSchemaTransform, serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
@@ -24,13 +25,26 @@ import { setLogger, logger } from '@/shared/providers/logger';
 import { I18N_OPTIONS } from './constants/i18n.constants';
 import { PINO_LOGGER_OPTIONS } from '@/shared/providers/logger/implementations/pinoLogger.constants';
 import { CORS_OPTIONS } from './constants/cors.constants';
+import {
+	SERVER_BODY_LIMIT,
+	SERVER_CONNECTION_TIMEOUT_MS,
+	SERVER_KEEP_ALIVE_TIMEOUT_MS,
+	SERVER_REQUEST_TIMEOUT_MS,
+} from './constants/server.constants';
+import { RATE_LIMIT_OPTIONS } from './constants/rateLimit.constants';
 
 export const app = fastify({
 	logger: PINO_LOGGER_OPTIONS,
+	bodyLimit: SERVER_BODY_LIMIT,
+	requestTimeout: SERVER_REQUEST_TIMEOUT_MS,
+	connectionTimeout: SERVER_CONNECTION_TIMEOUT_MS,
+	keepAliveTimeout: SERVER_KEEP_ALIVE_TIMEOUT_MS,
+	trustProxy: env.RATE_LIMIT_TRUSTED_PROXY,
 });
 
 app.register(helmet);
 app.register(i18n, I18N_OPTIONS);
+app.register(rateLimit, RATE_LIMIT_OPTIONS);
 app.register(cors, CORS_OPTIONS);
 app.register(fastifyCookie, FASTIFY_COOKIE_OPTIONS);
 app.register(fastifyJwt, TOKEN_OPTIONS);

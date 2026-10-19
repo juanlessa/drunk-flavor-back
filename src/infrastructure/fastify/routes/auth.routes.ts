@@ -15,24 +15,30 @@ import { resendEmailVerificationSchema } from '@/core/accounts/useCases/auth/res
 import { resendEmailVerificationController } from '@/core/accounts/useCases/auth/resendEmailVerification/resendEmailVerification.controller';
 import { confirmEmailSchema } from '@/core/accounts/useCases/auth/confirmEmail/confirmEmail.schema';
 import { confirmEmailController } from '@/core/accounts/useCases/auth/confirmEmail/confirmEmail.controller';
+import { AppError } from '@/shared/error/error.lib';
+import { enforceRateLimit } from '../middlewares/enforceRateLimit';
+import { recordRateLimitFailure } from '../middlewares/recordRateLimitFailure';
+
+const INVALID_CREDENTIALS_KEY = 'apiResponses.auth.invalidCredentials';
+const countInvalidCredentials = (error: unknown): boolean =>
+	error instanceof AppError && error.message === INVALID_CREDENTIALS_KEY;
+
+const ONE_MINUTE = 60_000;
+const ONE_HOUR = 3_600_000;
+const BAN_THRESHOLD = 10;
 
 const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
-		'/signup',
-		{
-			schema: {
-				tags: ['Auth'],
-				summary: 'Sign Up',
-				description: 'Registers a new user by creating an member account',
-				body: signupSchema,
-			},
-		},
-		signupController,
-	);
-
-	server.withTypeProvider<ZodTypeProvider>().post(
 		'/signin',
 		{
+			config: {
+				rateLimitPolicy: {
+					limiter: server.createRateLimit({ max: 5, timeWindow: ONE_MINUTE }),
+					shouldCountFailure: countInvalidCredentials,
+				},
+			},
+			preHandler: [enforceRateLimit],
+			onError: [recordRateLimitFailure],
 			schema: {
 				tags: ['Auth'],
 				summary: 'Sign In',
@@ -41,6 +47,20 @@ const routes: Routes = (server) => {
 			},
 		},
 		signinController,
+	);
+
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/signup',
+		{
+			config: { rateLimit: { max: 5, timeWindow: ONE_HOUR, ban: BAN_THRESHOLD } },
+			schema: {
+				tags: ['Auth'],
+				summary: 'Sign Up',
+				description: 'Registers a new user by creating an member account',
+				body: signupSchema,
+			},
+		},
+		signupController,
 	);
 
 	server.withTypeProvider<ZodTypeProvider>().post(
@@ -58,6 +78,7 @@ const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
 		'/password-reset/request',
 		{
+			config: { rateLimit: { max: 5, timeWindow: ONE_HOUR, ban: BAN_THRESHOLD } },
 			schema: {
 				tags: ['Auth'],
 				summary: 'Request Password Reset',
@@ -71,6 +92,7 @@ const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
 		'/password-reset/confirm',
 		{
+			config: { rateLimit: { max: 10, timeWindow: ONE_MINUTE, ban: BAN_THRESHOLD } },
 			schema: {
 				tags: ['Auth'],
 				summary: 'Confirm Password Reset',
@@ -84,6 +106,7 @@ const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
 		'/email-verification/confirm',
 		{
+			config: { rateLimit: { max: 10, timeWindow: ONE_MINUTE, ban: BAN_THRESHOLD } },
 			schema: {
 				tags: ['Auth'],
 				summary: 'Confirm Email Verification',
@@ -97,6 +120,7 @@ const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
 		'/email-verification/resend',
 		{
+			config: { rateLimit: { max: 5, timeWindow: ONE_HOUR, ban: BAN_THRESHOLD } },
 			schema: {
 				tags: ['Auth'],
 				summary: 'Resend Email Verification',
@@ -110,6 +134,7 @@ const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
 		'/refresh-token',
 		{
+			config: { rateLimit: { max: 30, timeWindow: ONE_MINUTE, ban: BAN_THRESHOLD } },
 			schema: {
 				tags: ['Auth'],
 				summary: 'Refresh Token',

@@ -10,6 +10,7 @@ export const HTTP_STATUS = {
 	method_not_allowed: 405,
 	not_acceptable: 406,
 	conflict: 409,
+	too_many_requests: 429,
 	internal_server_error: 500,
 	service_unavailable: 503,
 };

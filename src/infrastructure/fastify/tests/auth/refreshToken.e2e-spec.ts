@@ -18,7 +18,7 @@ describe('Refresh Token', () => {
 	});
 
 	beforeEach(async () => {
-		vi.useFakeTimers();
+		vi.useFakeTimers({ toFake: ['Date'] });
 
 		await MongoConnection.Instance.emptyCollection(UserModel);
 	});

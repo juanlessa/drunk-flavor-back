@@ -1,4 +1,5 @@
 import { SortOrder } from '@/shared/types/query.types';
+import { escapeRegExp } from '@/shared/helpers/regex.helpers';
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 
@@ -36,7 +37,7 @@ export const filterItemsBySearchCriteria = <T>(items: T[], search: Record<string
 			for (const f of fields) {
 				value = isRecord(value) ? value[f] : undefined;
 			}
-			return new RegExp(term, 'i').test(String(value));
+			return new RegExp(escapeRegExp(term), 'i').test(String(value));
 		});
 	});
 };

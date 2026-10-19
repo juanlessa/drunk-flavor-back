@@ -1,0 +1,7 @@
+export const SERVER_BODY_LIMIT = 4 * 1024 * 1024;
+
+export const SERVER_REQUEST_TIMEOUT_MS = 60_000;
+
+export const SERVER_CONNECTION_TIMEOUT_MS = 60_000;
+
+export const SERVER_KEEP_ALIVE_TIMEOUT_MS = 30_000;

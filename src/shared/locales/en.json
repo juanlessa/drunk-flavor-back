@@ -21,6 +21,7 @@
 	"apiResponses.auth.invalidTokenFormat": "Invalid token format",
 	"apiResponses.auth.inactiveAccount": "Your account is not active. Please verify your email for pending actions to complete the activation process",
 	"apiResponses.auth.invalidResource": "invalid resource",
+	"apiResponses.auth.tooManyRequests": "Too many requests. Please try again later.",
 
 	"apiResponses.users.notExist": "User does not exist",
 	"apiResponses.users.alreadyExist": "User already exists",

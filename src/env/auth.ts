@@ -118,6 +118,20 @@ const passwordHashRoundsEnvMap = {
 	e2e: z.coerce.number().int().positive().default(3),
 } satisfies Record<NodeEnv, z.ZodType<number>>;
 
+const DUMMY_PASSWORD_DEFAULT = 'timing-equalization-placeholder';
+
+// Plaintext hashed by the hash provider into the dummy hash compared against
+// during sign-in when the account does not exist (timing-attack defense). The
+// provider hashes it with the configured cost, so the dummy comparison always
+// matches the real one. Required with real entropy in production; a fixed
+// placeholder is fine elsewhere.
+const dummyPasswordEnvMap = {
+	production: z.string().min(12, { message: 'DUMMY_PASSWORD must be at least 12 characters in production' }),
+	development: z.string().min(1).default(DUMMY_PASSWORD_DEFAULT),
+	testing: z.string().min(1).default(DUMMY_PASSWORD_DEFAULT),
+	e2e: z.string().min(1).default(DUMMY_PASSWORD_DEFAULT),
+} satisfies Record<NodeEnv, z.ZodType<string>>;
+
 export const buildAuthSchema = (nodeEnv: NodeEnv) =>
 	z.object({
 		COOKIE_SECRET: cookieSecretEnvMap[nodeEnv],
@@ -128,6 +142,7 @@ export const buildAuthSchema = (nodeEnv: NodeEnv) =>
 		USER_TOKEN_EXPIRES_IN_SECONDS: userTokenExpiresInSecondsEnvMap[nodeEnv],
 		USER_TOKEN_SIZE: userTokenSizeEnvMap[nodeEnv],
 		PASSWORD_HASH_ROUNDS: passwordHashRoundsEnvMap[nodeEnv],
+		DUMMY_PASSWORD: dummyPasswordEnvMap[nodeEnv],
 	});
 
 export type AuthSchema = z.infer<ReturnType<typeof buildAuthSchema>>;

@@ -1,6 +1,7 @@
 import { Model, QueryFilter } from 'mongoose';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 import { QueryParams, SortOrder } from '@/shared/types/query.types';
+import { escapeRegExp } from '@/shared/helpers/regex.helpers';
 
 /**
  * Constructs a Mongoose query based on provided parameters.
@@ -17,7 +18,7 @@ export const buildQuery = <T>(queryParams: QueryParams, model: Model<T>) => {
 	if (search) {
 		for (const [field, term] of Object.entries(search)) {
 			if (term !== undefined) {
-				searchConditions[field] = new RegExp(term, 'i');
+				searchConditions[field] = new RegExp(escapeRegExp(term), 'i');
 			}
 		}
 	}

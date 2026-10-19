@@ -75,6 +75,16 @@ export class NotFoundError extends AppError {
 	}
 }
 
+export class TooManyRequestsError extends AppError {
+	constructor(message: LocaleKey, options: AppErrorOptions) {
+		super(message, {
+			...options,
+			status: HTTP_STATUS.too_many_requests,
+			type: 'Too Many Requests.',
+		});
+	}
+}
+
 export class ServerError extends AppError {
 	constructor(message: LocaleKey, options: AppErrorOptions) {
 		super(message, {

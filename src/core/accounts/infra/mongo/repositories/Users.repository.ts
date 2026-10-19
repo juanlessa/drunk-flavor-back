@@ -4,6 +4,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
+import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
 import { QueryParams } from '@/shared/types/query.types';
 
 export class UsersRepository implements IUsersRepository {
@@ -42,7 +43,10 @@ export class UsersRepository implements IUsersRepository {
 		return UserModel.findOne<User>({ email }).exec();
 	}
 
-	async findAll(_query: QueryParams): Promise<UserWithoutPassword[]> {
-		return UserModel.find<UserWithoutPassword>().select('-password').exec();
+	async findAll(query: QueryParams): Promise<UserWithoutPassword[]> {
+		return buildQuery(query, UserModel)
+			.select('-password')
+			.lean<UserWithoutPassword[]>({ transform: removeLeanVersionKey })
+			.exec();
 	}
 }

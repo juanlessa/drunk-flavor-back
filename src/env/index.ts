@@ -7,6 +7,7 @@ import { parseAuthEnv } from './auth';
 import { parseCorsEnv } from './cors';
 import { parseSmtpEnv } from './smtp';
 import { parseClientEnv } from './client';
+import { parseRateLimitEnv } from './rateLimit';
 import { type FlatStorageSchema, parseStorageEnv } from './storage';
 import { type FlatMongoSchema, parseMongoEnv } from './mongo';
 import { type FlatRedisSchema, parseRedisEnv } from './redis';
@@ -73,6 +74,7 @@ export type Env = ReturnType<typeof parseNodeEnv> &
 	ReturnType<typeof parseCorsEnv> &
 	ReturnType<typeof parseSmtpEnv> &
 	ReturnType<typeof parseClientEnv> &
+	ReturnType<typeof parseRateLimitEnv> &
 	Omit<FlatStorageSchema, 'STORAGE_TYPE'> &
 	Omit<FlatMongoSchema, 'MONGO_MODE'> &
 	Omit<FlatRedisSchema, 'REDIS_MODE'> &
@@ -93,6 +95,7 @@ const parseEnv = (source: NodeJS.ProcessEnv = process.env): Env => {
 	const cors = parseCorsEnv(source, NODE_ENV);
 	const smtp = parseSmtpEnv(source, NODE_ENV);
 	const client = parseClientEnv(source, NODE_ENV);
+	const rateLimit = parseRateLimitEnv(source, NODE_ENV);
 	const storage = parseStorageEnv(source, STORAGE_TYPE, NODE_ENV);
 	const mongo = parseMongoEnv(source, MONGO_MODE, NODE_ENV);
 	const redis = parseRedisEnv(source, REDIS_MODE, NODE_ENV);
@@ -166,6 +169,7 @@ const parseEnv = (source: NodeJS.ProcessEnv = process.env): Env => {
 		...cors,
 		...smtp,
 		...client,
+		...rateLimit,
 		...storageKeys,
 		// Connection options are present in both Mongo branches.
 		MONGO_MAX_POOL_SIZE: mongo.MONGO_MAX_POOL_SIZE,

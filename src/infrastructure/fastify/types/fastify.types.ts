@@ -1,7 +1,9 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
 export type Request = FastifyRequest;
 export type Reply = FastifyReply;
+export type Error = FastifyError;
+export type Server = FastifyInstance;
 
 type RequestSchema = {
 	Body: unknown;
@@ -24,6 +26,9 @@ export type Middleware = <Request extends FastifyRequest = FastifyRequest, Reply
 	reply: Reply,
 ) => Promise<unknown>;
 
-export type ErrorHandler = FastifyInstance['errorHandler'];
+export type ErrorHandler = <TError = unknown>(error: TError, request: Request, reply: Reply) => void;
 
-export type Routes = <Server extends FastifyInstance = FastifyInstance>(server: Server) => unknown;
+export type Routes = <S extends Server = Server>(server: S) => unknown;
+
+export type PreHandler = (request: Request, reply: Reply) => Promise<void>;
+export type OnError = (request: Request, reply: Reply, error: FastifyError) => Promise<void>;
