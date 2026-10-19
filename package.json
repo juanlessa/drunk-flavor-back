@@ -59,7 +59,7 @@
 		"fastify-type-provider-zod": "7.0.0",
 		"mjml": "5.4.1",
 		"mongodb": "7.7.0",
-		"mongoose": "9.10.3",
+		"mongoose": "9.11.2",
 		"nodemailer": "10.1.7",
 		"pino": "10.4.0",
 		"pino-http": "11.0.0",
