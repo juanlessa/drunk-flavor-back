@@ -42,7 +42,7 @@ describe('Create Drink', () => {
 	});
 
 	it('should be able to create a new Drink', async () => {
-		await service.execute({
+		const id = await service.execute({
 			translations,
 			ingredients: [{ ingredient_id: createdIngredient._id.toString(), quantity: 60 }],
 		});
@@ -52,6 +52,7 @@ describe('Create Drink', () => {
 		expect(created).toHaveProperty('_id');
 		expect(created.translations).toEqual(translations);
 		expect(created.ingredients.length).toEqual(1);
+		expect(id).toEqual(created._id.toString());
 	});
 
 	it('should not be able to create a drink with an existing name', async () => {
