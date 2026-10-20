@@ -37,6 +37,8 @@ export class CreateDrinkService {
 			};
 		});
 
-		await this.drinksRepository.create({ translations, ingredients: ingredientsFormatted });
+		const drink = await this.drinksRepository.create({ translations, ingredients: ingredientsFormatted });
+
+		return drink._id.toString();
 	}
 }

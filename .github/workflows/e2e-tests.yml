@@ -1,11 +1,6 @@
 name: e2e testing flow
 
 on:
-    push:
-        branches:
-            - 'releases/**'
-            - 'main'
-            - 'develop'
     pull_request:
 
 concurrency:
@@ -14,6 +9,7 @@ concurrency:
 
 jobs:
     run-tests:
+        name: e2e tests
         runs-on: ubuntu-latest
 
         services:
@@ -85,7 +81,7 @@ jobs:
             - name: Install dependencies
               run: npm ci
 
-            - name: Run tests
+            - name: E2E tests
               run: |
                   npm run generate-secret-key
                   npm run test:e2e:run

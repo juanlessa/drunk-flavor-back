@@ -6,6 +6,7 @@
 	"type": "module",
 	"scripts": {
 		"format": "prettier --write 'src/**/*.ts'",
+		"format:check": "prettier --check 'src/**/*.ts'",
 		"format:staged": "pretty-quick --staged",
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",

@@ -8,7 +8,7 @@ export const createDrinkController: Controller<{ Body: CreateDrinkReqBody }> = a
 
 	const service = resolveCreateDrinkService();
 
-	const drinkId = await service.execute({ translations, ingredients });
+	const id = await service.execute({ translations, ingredients });
 
-	return reply.status(HTTP_STATUS.created).send(drinkId);
+	return reply.status(HTTP_STATUS.created).send({ id });
 };

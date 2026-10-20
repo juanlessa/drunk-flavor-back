@@ -40,6 +40,10 @@ describe('Create Drink', () => {
 			.set('Cookie', cookies)
 			.send({ translations, ingredients });
 
+		const body = response.body as { id?: unknown };
+
 		expect(response.status).toBe(HTTP_STATUS.created);
+		expect(body).toHaveProperty('id');
+		expect(typeof body.id).toBe('string');
 	});
 });
