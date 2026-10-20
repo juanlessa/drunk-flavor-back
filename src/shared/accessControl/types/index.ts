@@ -6,12 +6,7 @@ import { DrinkSubject } from '../subjects/drink';
 import { CommentSubject } from '../subjects/coment';
 
 type AppAbilities =
-	| UserSubject
-	| CategorySubject
-	| IngredientSubject
-	| DrinkSubject
-	| CommentSubject
-	| ['manage', 'all'];
+	UserSubject | CategorySubject | IngredientSubject | DrinkSubject | CommentSubject | ['manage', 'all'];
 
 export type AppAbility = MongoAbility<AppAbilities>;
 
