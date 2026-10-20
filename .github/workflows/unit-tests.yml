@@ -1,11 +1,6 @@
 name: unit testing flow
 
 on:
-    push:
-        branches:
-            - 'releases/**'
-            - 'main'
-            - 'develop'
     pull_request:
 
 concurrency:
