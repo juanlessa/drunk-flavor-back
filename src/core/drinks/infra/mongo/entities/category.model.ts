@@ -17,6 +17,7 @@ export const CategorySchema = new Schema<Category>(
 			type: getTranslationsSchema(CategoryTranslationSchema),
 			required: true,
 		},
+		is_alcoholic: { type: Boolean, required: true },
 	},
 	{
 		toJSON: {

@@ -15,10 +15,6 @@ export const ingredientNameValidation = z
 	.min(1, { error: 'apiResponses.ingredients.invalidNameFormat' satisfies LocaleKey })
 	.transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`);
 
-export const ingredientIsAlcoholicValidation = z.boolean({
-	error: 'apiResponses.ingredients.requiredIsAlcoholic' satisfies LocaleKey,
-});
-
 export const ingredientCategoryIdValidation = getObjectIdSchema({
 	required: 'apiResponses.ingredients.requiredCategory',
 	invalid: 'apiResponses.ingredients.invalidCategoryFormat',

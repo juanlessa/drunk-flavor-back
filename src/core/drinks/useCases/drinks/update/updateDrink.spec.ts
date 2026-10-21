@@ -46,11 +46,10 @@ describe('Update Drink', () => {
 		drinksRepository = new DrinksRepositoryInMemory();
 		service = new UpdateDrinkService(drinksRepository, ingredientsRepository);
 
-		const category = await categoriesRepository.create({ translations: categoryTranslations });
+		const category = await categoriesRepository.create({ translations: categoryTranslations, is_alcoholic: false });
 		const unit = await unitsRepository.create(createUnitFactory());
 		ingredient = await ingredientsRepository.create({
 			translations: translationsIngredient,
-			is_alcoholic: false,
 			category: category,
 			unit,
 		});

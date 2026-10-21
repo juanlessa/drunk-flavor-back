@@ -12,7 +12,6 @@ export const createIngredientFactory = (
 			name: ingredient?.translations?.pt?.name || 'Xarope',
 		},
 	},
-	is_alcoholic: ingredient?.is_alcoholic || false,
 	category_id: ingredient?.category_id || '',
 	unit_id: ingredient?.unit_id || '',
 });

@@ -22,7 +22,7 @@ let service: DeleteIngredientService;
 const { translations: categoryTranslations } = createCategoryFactory();
 let createdCategory: Category;
 let createdUnit: Unit;
-const { translations, is_alcoholic } = createIngredientFactory();
+const { translations } = createIngredientFactory();
 
 describe('Delete Ingredient', () => {
 	beforeEach(async () => {
@@ -31,7 +31,10 @@ describe('Delete Ingredient', () => {
 		unitsRepository = new UnitsRepositoryInMemory();
 		service = new DeleteIngredientService(ingredientsRepository);
 
-		createdCategory = await categoriesRepository.create({ translations: categoryTranslations });
+		createdCategory = await categoriesRepository.create({
+			translations: categoryTranslations,
+			is_alcoholic: false,
+		});
 		createdUnit = await unitsRepository.create(createUnitFactory());
 	});
 	it('should be able to delete an ingredient', async () => {
@@ -39,7 +42,6 @@ describe('Delete Ingredient', () => {
 			translations,
 			category: createdCategory,
 			unit: createdUnit,
-			is_alcoholic,
 		});
 
 		await service.execute({ id: createdIngredient._id.toString() });

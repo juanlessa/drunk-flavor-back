@@ -9,7 +9,6 @@ export type IngredientTranslation = {
 
 export type Ingredient = DatabaseCommonInfo & {
 	translations: Translations<IngredientTranslation>;
-	is_alcoholic: boolean;
 	category: Category;
 	unit: Unit;
 };

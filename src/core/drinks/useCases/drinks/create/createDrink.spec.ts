@@ -28,7 +28,7 @@ let service: CreateDrinkService;
 const { translations: categoryTranslations } = createCategoryFactory();
 let createdCategory: Category;
 let createdUnit: Unit;
-const { translations: ingredientTranslations, is_alcoholic: ingredientIsAlcoholic } = createIngredientFactory();
+const { translations: ingredientTranslations } = createIngredientFactory();
 let createdIngredient: Ingredient;
 const { translations } = createDrinkFactory();
 
@@ -40,11 +40,13 @@ describe('Create Drink', () => {
 		drinksRepository = new DrinksRepositoryInMemory();
 		service = new CreateDrinkService(drinksRepository, ingredientsRepository);
 
-		createdCategory = await categoriesRepository.create({ translations: categoryTranslations });
+		createdCategory = await categoriesRepository.create({
+			translations: categoryTranslations,
+			is_alcoholic: false,
+		});
 		createdUnit = await unitsRepository.create(createUnitFactory());
 		createdIngredient = await ingredientsRepository.create({
 			translations: ingredientTranslations,
-			is_alcoholic: ingredientIsAlcoholic,
 			category: createdCategory,
 			unit: createdUnit,
 		});

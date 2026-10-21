@@ -7,7 +7,6 @@ export type CreateIngredientReqBody = z.infer<typeof createIngredientSchema>;
 
 export type CreateIngredientDTO = {
 	translations: Translations<IngredientTranslation>;
-	is_alcoholic: boolean;
 	category_id: string;
 	unit_id: string;
 };

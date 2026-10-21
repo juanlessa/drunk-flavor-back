@@ -23,7 +23,7 @@ let service: CreateIngredientService;
 const { translations: categoryTranslations } = createCategoryFactory();
 let createdCategory: Category;
 let createdUnit: Unit;
-const { translations, is_alcoholic } = createIngredientFactory();
+const { translations } = createIngredientFactory();
 
 describe('Create Ingredient', () => {
 	beforeEach(async () => {
@@ -32,14 +32,16 @@ describe('Create Ingredient', () => {
 		unitsRepository = new UnitsRepositoryInMemory();
 		service = new CreateIngredientService(ingredientsRepository, categoriesRepository, unitsRepository);
 
-		createdCategory = await categoriesRepository.create({ translations: categoryTranslations });
+		createdCategory = await categoriesRepository.create({
+			translations: categoryTranslations,
+			is_alcoholic: false,
+		});
 		createdUnit = await unitsRepository.create(createUnitFactory());
 	});
 
 	it('should be able to create a new ingredient', async () => {
 		await service.execute({
 			translations,
-			is_alcoholic,
 			category_id: createdCategory._id.toString(),
 			unit_id: createdUnit._id.toString(),
 		});
@@ -50,13 +52,11 @@ describe('Create Ingredient', () => {
 		expect(createdIngredient.translations).toEqual(translations);
 		expect(createdIngredient.category).toEqual(createdCategory);
 		expect(createdIngredient.unit).toEqual(createdUnit);
-		expect(createdIngredient.is_alcoholic).toEqual(is_alcoholic);
 	});
 
 	it('should not be able to create an ingredient with an existing name', async () => {
 		await ingredientsRepository.create({
 			translations,
-			is_alcoholic,
 			category: createdCategory,
 			unit: createdUnit,
 		});
@@ -64,7 +64,6 @@ describe('Create Ingredient', () => {
 		await expect(
 			service.execute({
 				translations,
-				is_alcoholic,
 				category_id: createdCategory._id.toString(),
 				unit_id: createdUnit._id.toString(),
 			}),
@@ -77,7 +76,6 @@ describe('Create Ingredient', () => {
 				translations,
 				category_id: new ObjectId().toString(),
 				unit_id: createdUnit._id.toString(),
-				is_alcoholic,
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});
@@ -88,7 +86,6 @@ describe('Create Ingredient', () => {
 				translations,
 				category_id: createdCategory._id.toString(),
 				unit_id: new ObjectId().toString(),
-				is_alcoholic,
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});

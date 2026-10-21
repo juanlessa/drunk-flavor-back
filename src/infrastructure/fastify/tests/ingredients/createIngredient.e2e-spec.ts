@@ -34,12 +34,12 @@ describe('Create Ingredient', () => {
 		const { id: category_id } = await createCategory();
 		const { id: unit_id } = await createUnit();
 
-		const { translations, is_alcoholic } = createIngredientFactory();
+		const { translations } = createIngredientFactory();
 
 		const response = await request(app.server)
 			.post('/ingredients')
 			.set('Cookie', cookies)
-			.send({ translations, is_alcoholic, category_id, unit_id });
+			.send({ translations, category_id, unit_id });
 
 		expect(response.status).toBe(HTTP_STATUS.created);
 	});
@@ -47,11 +47,9 @@ describe('Create Ingredient', () => {
 	it('Should not be able to create an ingredient when unauthenticated', async () => {
 		const { id: category_id } = await createCategory();
 		const { id: unit_id } = await createUnit();
-		const { translations, is_alcoholic } = createIngredientFactory();
+		const { translations } = createIngredientFactory();
 
-		const response = await request(app.server)
-			.post('/ingredients')
-			.send({ translations, is_alcoholic, category_id, unit_id });
+		const response = await request(app.server).post('/ingredients').send({ translations, category_id, unit_id });
 
 		expect(response.status).toBe(HTTP_STATUS.unauthorized);
 	});
@@ -63,12 +61,12 @@ describe('Create Ingredient', () => {
 		});
 		const { id: category_id } = await createCategory();
 		const { id: unit_id } = await createUnit();
-		const { translations, is_alcoholic } = createIngredientFactory();
+		const { translations } = createIngredientFactory();
 
 		const response = await request(app.server)
 			.post('/ingredients')
 			.set('Cookie', cookies)
-			.send({ translations, is_alcoholic, category_id, unit_id });
+			.send({ translations, category_id, unit_id });
 
 		expect(response.status).toBe(HTTP_STATUS.forbidden);
 	});
@@ -80,12 +78,12 @@ describe('Create Ingredient', () => {
 		});
 		const { id: category_id } = await createCategory();
 		const { id: unit_id } = await createUnit();
-		const { translations, is_alcoholic } = createIngredientFactory();
+		const { translations } = createIngredientFactory();
 
 		const response = await request(app.server)
 			.post('/ingredients')
 			.set('Cookie', cookies)
-			.send({ translations, is_alcoholic, category_id, unit_id });
+			.send({ translations, category_id, unit_id });
 
 		expect(response.status).not.toBe(HTTP_STATUS.forbidden);
 	});

@@ -48,25 +48,21 @@ describe('List Ingredients', () => {
 		const unit = await unitsRepository.create(createUnitFactory());
 		await ingredientsRepository.create({
 			translations: translationsIngredient1,
-			is_alcoholic: false,
 			category: category1,
 			unit,
 		});
 		await ingredientsRepository.create({
 			translations: translationsIngredient2,
-			is_alcoholic: false,
 			category: category1,
 			unit,
 		});
 		await ingredientsRepository.create({
 			translations: translationsIngredient3,
-			is_alcoholic: false,
 			category: category2,
 			unit,
 		});
 		await ingredientsRepository.create({
 			translations: translationsIngredient4,
-			is_alcoholic: false,
 			category: category2,
 			unit,
 		});

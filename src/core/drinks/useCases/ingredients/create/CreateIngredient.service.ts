@@ -12,7 +12,7 @@ export class CreateIngredientService {
 		private unitsRepository: IUnitsRepository,
 	) {}
 
-	async execute({ translations, is_alcoholic, category_id, unit_id }: CreateIngredientDTO) {
+	async execute({ translations, category_id, unit_id }: CreateIngredientDTO) {
 		const translationsName = mapToTranslationsName(translations);
 		const ingredientALreadyExists = await this.ingredientsRepository.findByName(translationsName);
 		if (ingredientALreadyExists) {
@@ -37,7 +37,6 @@ export class CreateIngredientService {
 
 		await this.ingredientsRepository.create({
 			translations,
-			is_alcoholic,
 			category: categoryExists,
 			unit: unitExists,
 		});

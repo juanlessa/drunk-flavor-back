@@ -61,13 +61,11 @@ describe('List Drinks', () => {
 		const unit = await unitsRepository.create(createUnitFactory());
 		const ingredient1 = await ingredientsRepository.create({
 			translations: translationsIngredient1,
-			is_alcoholic: false,
 			category: category1,
 			unit,
 		});
 		const ingredient2 = await ingredientsRepository.create({
 			translations: translationsIngredient2,
-			is_alcoholic: false,
 			category: category1,
 			unit,
 		});

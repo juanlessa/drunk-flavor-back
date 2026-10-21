@@ -28,14 +28,15 @@ describe('Update Category', () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 		const { id } = await createCategory();
 
-		const { translations } = createCategoryFactory({
+		const { translations, is_alcoholic } = createCategoryFactory({
 			translations: { en: { name: 'Juice' }, pt: { name: 'Suco' } },
+			is_alcoholic: true,
 		});
 
 		const response = await request(app.server)
 			.patch('/categories')
 			.set('Cookie', cookies)
-			.send({ id, translations });
+			.send({ id, translations, is_alcoholic });
 
 		expect(response.status).toBe(HTTP_STATUS.no_content);
 	});

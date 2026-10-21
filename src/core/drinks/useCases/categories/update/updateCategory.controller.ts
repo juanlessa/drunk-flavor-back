@@ -4,11 +4,11 @@ import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { UpdateCategoryReqBody } from './updateCategory.dtos';
 
 export const updateCategoryController: Controller<{ Body: UpdateCategoryReqBody }> = async (request, reply) => {
-	const { id, translations } = request.body;
+	const { id, translations, is_alcoholic } = request.body;
 
 	const service = resolveUpdateCategoryService();
 
-	await service.execute({ id, translations });
+	await service.execute({ id, translations, is_alcoholic });
 
 	return reply.status(HTTP_STATUS.no_content).send();
 };

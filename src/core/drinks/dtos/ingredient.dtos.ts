@@ -8,14 +8,12 @@ export type CreateIngredient = {
 	translations: Translations<IngredientTranslation>;
 	category: Category;
 	unit: Unit;
-	is_alcoholic: boolean;
 };
 
 export type UpdateIngredient = { id: string } & DeepPartial<{
 	translations: Translations<IngredientTranslation>;
 	category: Category;
 	unit: Unit;
-	is_alcoholic: boolean;
 }>;
 
 export type DeleteIngredient = {

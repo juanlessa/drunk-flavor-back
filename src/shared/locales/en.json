@@ -51,6 +51,7 @@
 	"apiResponses.categories.invalidIdFormat": "Invalid ID format",
 	"apiResponses.categories.requiredName": "Name is required",
 	"apiResponses.categories.invalidNameFormat": "Name must have a minimum of 1 character",
+	"apiResponses.categories.requiredIsAlcoholic": "Is alcoholic field is required",
 
 	"apiResponses.units.notExist": "Unit does not exist",
 	"apiResponses.units.alreadyExist": "Unit already exists",
@@ -77,7 +78,6 @@
 	"apiResponses.ingredients.invalidCategoryFormat": "Invalid category format",
 	"apiResponses.ingredients.requiredUnit": "Unit is required",
 	"apiResponses.ingredients.invalidUnitFormat": "Invalid unit format",
-	"apiResponses.ingredients.requiredIsAlcoholic": "Is alcoholic field is required",
 
 	"apiResponses.drinks.notExist": "Drink does not exist",
 	"apiResponses.drinks.alreadyExist": "Drink already exists",

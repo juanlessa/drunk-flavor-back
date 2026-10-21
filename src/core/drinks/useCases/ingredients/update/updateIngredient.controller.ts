@@ -4,11 +4,11 @@ import { resolveUpdateIngredientService } from './updateIngredient.container';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 
 export const updateIngredientController: Controller<{ Body: UpdateIngredientReqBody }> = async (request, reply) => {
-	const { id, translations, is_alcoholic, category_id, unit_id } = request.body;
+	const { id, translations, category_id, unit_id } = request.body;
 
 	const service = resolveUpdateIngredientService();
 
-	await service.execute({ id, translations, is_alcoholic, category_id, unit_id });
+	await service.execute({ id, translations, category_id, unit_id });
 
 	return reply.status(HTTP_STATUS.no_content).send();
 };

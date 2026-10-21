@@ -12,7 +12,7 @@ export class UpdateIngredientService {
 		private unitsRepository: IUnitsRepository,
 	) {}
 
-	async execute({ id, translations, is_alcoholic, category_id, unit_id }: UpdateIngredientReqBody) {
+	async execute({ id, translations, category_id, unit_id }: UpdateIngredientReqBody) {
 		const ingredientExists = await this.ingredientsRepository.findById(id);
 		if (!ingredientExists) {
 			throw new BadRequestError('apiResponses.ingredients.notExist', { path: 'UpdateIngredient.service.1' });
@@ -44,7 +44,6 @@ export class UpdateIngredientService {
 		await this.ingredientsRepository.update({
 			id,
 			translations,
-			is_alcoholic,
 			category: categoryExists,
 			unit: unitExists,
 		});

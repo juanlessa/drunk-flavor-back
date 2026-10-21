@@ -21,7 +21,6 @@ export const IngredientSchema = new Schema<Ingredient>(
 		},
 		category: { type: CategorySchema, excludeIndexes: true, required: true },
 		unit: { type: UnitSchema, excludeIndexes: true, required: true },
-		is_alcoholic: { type: Boolean, required: true },
 	},
 	{
 		toJSON: {

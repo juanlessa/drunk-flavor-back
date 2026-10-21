@@ -10,12 +10,11 @@ export const createIngredient = async (ingredientOptions?: DeepPartial<CreateIng
 
 	const { category, id: category_id } = await createCategory();
 	const { unit, id: unit_id } = await createUnit();
-	const { translations, is_alcoholic } = createIngredientFactory({ category_id, unit_id, ...ingredientOptions });
+	const { translations } = createIngredientFactory({ category_id, unit_id, ...ingredientOptions });
 
-	const ingredient = await ingredientsRepository.create({ translations, is_alcoholic, category, unit });
+	const ingredient = await ingredientsRepository.create({ translations, category, unit });
 	return {
 		translations,
-		is_alcoholic,
 		category_id,
 		category,
 		unit_id,

@@ -60,11 +60,10 @@ describe('Update Drink', () => {
 		storageProvider = new MockStorageProvider();
 		service = new UpdateDrinkThumbnailService(drinksRepository, storageProvider);
 
-		const category = await categoriesRepository.create({ translations: categoryTranslations });
+		const category = await categoriesRepository.create({ translations: categoryTranslations, is_alcoholic: false });
 		const unit = await unitsRepository.create(createUnitFactory());
 		ingredient = await ingredientsRepository.create({
 			translations: translationsIngredient,
-			is_alcoholic: false,
 			category: category,
 			unit,
 		});

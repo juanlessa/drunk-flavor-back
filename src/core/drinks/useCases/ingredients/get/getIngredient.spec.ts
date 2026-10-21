@@ -22,7 +22,7 @@ let service: GetIngredientService;
 const { translations: categoryTranslations } = createCategoryFactory();
 let createdCategory: Category;
 let createdUnit: Unit;
-const { translations, is_alcoholic } = createIngredientFactory();
+const { translations } = createIngredientFactory();
 
 describe('Get Ingredient', () => {
 	beforeEach(async () => {
@@ -31,7 +31,10 @@ describe('Get Ingredient', () => {
 		unitsRepository = new UnitsRepositoryInMemory();
 		service = new GetIngredientService(ingredientsRepository);
 
-		createdCategory = await categoriesRepository.create({ translations: categoryTranslations });
+		createdCategory = await categoriesRepository.create({
+			translations: categoryTranslations,
+			is_alcoholic: false,
+		});
 		createdUnit = await unitsRepository.create(createUnitFactory());
 	});
 	it('should be able to find an ingredient', async () => {
@@ -39,7 +42,6 @@ describe('Get Ingredient', () => {
 			translations,
 			category: createdCategory,
 			unit: createdUnit,
-			is_alcoholic,
 		});
 
 		const ingredientFound = await service.execute({ id: createdIngredient._id.toString() });
@@ -48,7 +50,6 @@ describe('Get Ingredient', () => {
 		expect(ingredientFound.translations).toEqual(createdIngredient.translations);
 		expect(ingredientFound.category).toEqual(createdCategory);
 		expect(ingredientFound.unit).toEqual(createdUnit);
-		expect(ingredientFound.is_alcoholic).toEqual(is_alcoholic);
 	});
 
 	it('should not be able to find a nonexistent ingredient', async () => {
