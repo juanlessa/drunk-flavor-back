@@ -4,16 +4,16 @@ import { ListUsersService } from './ListUsers.service';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { Roles } from '@/shared/accessControl/roles';
 
 let usersRepository: IUsersRepository;
 let service: ListUsersService;
 
-const adminUser = createUserFactory({ email: 'admin1@example.com', role: RolesEnum.admin });
-const createUser1 = createUserFactory({ email: 'partner1@example.com', role: RolesEnum.partner });
-const createUser2 = createUserFactory({ email: 'partner2@example.com', role: RolesEnum.partner });
-const createUser3 = createUserFactory({ email: 'member1@example.com', role: RolesEnum.member });
-const createUser4 = createUserFactory({ email: 'member1@example.com', role: RolesEnum.member });
+const adminUser = createUserFactory({ email: 'admin1@example.com', role: Roles.admin });
+const createUser1 = createUserFactory({ email: 'partner1@example.com', role: Roles.partner });
+const createUser2 = createUserFactory({ email: 'partner2@example.com', role: Roles.partner });
+const createUser3 = createUserFactory({ email: 'member1@example.com', role: Roles.member });
+const createUser4 = createUserFactory({ email: 'member1@example.com', role: Roles.member });
 
 describe('List Users', () => {
 	beforeEach(async () => {

@@ -1,11 +1,11 @@
 import { DatabaseCommonInfo } from '@/infrastructure/mongo/types';
 
-export enum TokenTypeEnum {
-	'email-verification' = 'email-verification',
-	'forgot-password' = 'forgot-password',
-}
+export const TokenTypes = {
+	'email-verification': 'email-verification',
+	'forgot-password': 'forgot-password',
+} as const;
 
-export type TokenType = keyof typeof TokenTypeEnum;
+export type TokenType = (typeof TokenTypes)[keyof typeof TokenTypes];
 
 export type UserToken = DatabaseCommonInfo & {
 	user_id: string;

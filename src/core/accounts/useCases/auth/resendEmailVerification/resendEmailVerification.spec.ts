@@ -10,9 +10,9 @@ import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provide
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
 import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.provider';
 import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
-import { TokenTypeEnum, UserToken } from '@/core/accounts/entities/userToken.entity';
-import { UserStatusEnum } from '@/core/accounts/entities/user.entity';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { TokenTypes, UserToken } from '@/core/accounts/entities/userToken.entity';
+import { UserStatuses } from '@/core/accounts/entities/user.entity';
+import { Roles } from '@/shared/accessControl/roles';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { env } from '@/env';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
@@ -36,8 +36,8 @@ const createPendingUser = async () => {
 		name,
 		surname,
 		email,
-		role: RolesEnum['member'],
-		status: UserStatusEnum['pending'],
+		role: Roles['member'],
+		status: UserStatuses['pending'],
 		password: await hashProvider.hash(password),
 	});
 };
@@ -79,7 +79,7 @@ describe('ResendEmailVerification', () => {
 
 		const verifyUserToken = (await userTokensRepository.findByUserIdAndType({
 			user_id: createdUser._id.toString(),
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 		})) as UserToken;
 
 		expect(verifyUserToken).not.toBeNull();
@@ -108,8 +108,8 @@ describe('ResendEmailVerification', () => {
 			name,
 			surname,
 			email,
-			role: RolesEnum['member'],
-			status: UserStatusEnum['active'],
+			role: Roles['member'],
+			status: UserStatuses['active'],
 			password: await hashProvider.hash(password),
 		});
 
@@ -123,7 +123,7 @@ describe('ResendEmailVerification', () => {
 		await userTokensRepository.create({
 			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
@@ -137,7 +137,7 @@ describe('ResendEmailVerification', () => {
 		await userTokensRepository.create({
 			token: cryptoProvider.hashToken(initialToken),
 			user_id: createdUser._id.toString(),
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
@@ -147,7 +147,7 @@ describe('ResendEmailVerification', () => {
 
 		const verifyUserToken = (await userTokensRepository.findByUserIdAndType({
 			user_id: createdUser._id.toString(),
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 		})) as UserToken;
 
 		expect(verifyUserToken).not.toBeNull();

@@ -1,5 +1,5 @@
 import { z } from 'zod/v4';
-import { UserStatusEnum } from '@/core/accounts/entities/user.entity';
+import { UserStatuses } from '@/core/accounts/entities/user.entity';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import {
 	userEmailValidation,
@@ -8,7 +8,7 @@ import {
 	userSurnameValidation,
 } from '@/core/accounts/schemas/user.schemas';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { Roles } from '@/shared/accessControl/roles';
 import { logger } from '@/shared/providers/logger';
 import { resolveHashProvider } from '@/shared/providers/cryptography';
 
@@ -59,8 +59,8 @@ const seedDatabase = async () => {
 		surname: ADMIN_SURNAME,
 		email: ADMIN_EMAIL,
 		password: await hashProvider.hash(ADMIN_PASSWORD),
-		role: RolesEnum['admin'],
-		status: UserStatusEnum['active'],
+		role: Roles['admin'],
+		status: UserStatuses['active'],
 	};
 
 	try {

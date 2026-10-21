@@ -5,7 +5,7 @@ import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { createAndAuthenticateUser, createUser } from '../helpers/authentication.helpers';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { Roles } from '@/shared/accessControl/roles';
 
 describe('List Users', () => {
 	beforeAll(async () => {
@@ -21,10 +21,10 @@ describe('List Users', () => {
 	});
 
 	it('Should be able to admin list users', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 
-		await createUser(app, { email: 'partner1@example.com', role: RolesEnum.partner });
-		await createUser(app, { email: 'member1@example.com', role: RolesEnum.member });
+		await createUser(app, { email: 'partner1@example.com', role: Roles.partner });
+		await createUser(app, { email: 'member1@example.com', role: Roles.member });
 
 		const response = await request(app.server).get('/users').set('Cookie', cookies).send();
 
@@ -32,11 +32,11 @@ describe('List Users', () => {
 	});
 
 	it('Should respect the limit and never expose the password when paginating', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 
-		await createUser(app, { email: 'partner1@example.com', role: RolesEnum.partner });
-		await createUser(app, { email: 'partner2@example.com', role: RolesEnum.partner });
-		await createUser(app, { email: 'member1@example.com', role: RolesEnum.member });
+		await createUser(app, { email: 'partner1@example.com', role: Roles.partner });
+		await createUser(app, { email: 'partner2@example.com', role: Roles.partner });
+		await createUser(app, { email: 'member1@example.com', role: Roles.member });
 
 		const response = await request(app.server).get('/users?limit=1&page=1').set('Cookie', cookies).send();
 		const users = response.body as Array<Record<string, unknown>>;
@@ -58,7 +58,7 @@ describe('List Users', () => {
 	it('Should not be able to list the users as a member', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, {
 			email: 'member@example.com',
-			role: RolesEnum.member,
+			role: Roles.member,
 		});
 
 		const response = await request(app.server).get('/users').set('Cookie', cookies).send();
@@ -69,7 +69,7 @@ describe('List Users', () => {
 	it('Should not be able to list the users as a partner', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, {
 			email: 'partner@example.com',
-			role: RolesEnum.partner,
+			role: Roles.partner,
 		});
 
 		const response = await request(app.server).get('/users').set('Cookie', cookies).send();

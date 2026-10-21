@@ -7,7 +7,7 @@ import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { RedisConnection } from '@/infrastructure/redis/RedisConnection';
 import { resolveRateLimitStore } from '@/infrastructure/fastify/rateLimitStore';
 import { createUser } from '../helpers/authentication.helpers';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { Roles } from '@/shared/accessControl/roles';
 import { RATE_LIMIT_KEY_PREFIX } from '@/infrastructure/redis/RedisRateLimit.store';
 
 interface ErrorBody {
@@ -42,7 +42,7 @@ describe('Auth rate limiting', () => {
 
 	describe('signin (hook model: failed-only, no ban)', () => {
 		it('does not consume the limit on successful logins', async () => {
-			const user = await createUser(app, { role: RolesEnum.member });
+			const user = await createUser(app, { role: Roles.member });
 
 			for (let attempt = 0; attempt < SIGNIN_MAX + 3; attempt += 1) {
 				const response = await request(app.server).post('/signin').send({
@@ -54,7 +54,7 @@ describe('Auth rate limiting', () => {
 		});
 
 		it('counts only failed attempts and returns 429 with the API body once exceeded', async () => {
-			const user = await createUser(app, { role: RolesEnum.member });
+			const user = await createUser(app, { role: Roles.member });
 
 			for (let attempt = 0; attempt < SIGNIN_MAX + 1; attempt += 1) {
 				const response = await request(app.server).post('/signin').send({
@@ -77,7 +77,7 @@ describe('Auth rate limiting', () => {
 		});
 
 		it('stays at 429 and never escalates to a ban', async () => {
-			const user = await createUser(app, { role: RolesEnum.member });
+			const user = await createUser(app, { role: Roles.member });
 
 			const statuses: number[] = [];
 			for (let attempt = 0; attempt < SIGNIN_MAX + BAN + 3; attempt += 1) {
@@ -124,7 +124,7 @@ describe('Auth rate limiting', () => {
 	});
 
 	it('namespaces its keys under the configured prefix', async () => {
-		const user = await createUser(app, { role: RolesEnum.member });
+		const user = await createUser(app, { role: Roles.member });
 		await request(app.server).post('/signin').send({ email: user.email, password: WRONG_PASSWORD });
 
 		const removed = await RedisConnection.Instance.deleteKeysByPattern(`${RATE_LIMIT_KEY_PREFIX}*`);

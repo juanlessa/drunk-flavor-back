@@ -10,8 +10,8 @@ import { resolveUserTokensRepository } from '@/core/accounts/infra/mongo/contain
 import { resolveCryptoProvider } from '@/shared/providers/cryptography';
 import { resolveDateProvider } from '@/shared/providers/date';
 import { env } from '@/env';
-import { TokenTypeEnum } from '@/core/accounts/entities/userToken.entity';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { TokenTypes } from '@/core/accounts/entities/userToken.entity';
+import { Roles } from '@/shared/accessControl/roles';
 
 describe('Confirm Email', () => {
 	beforeAll(async () => {
@@ -28,7 +28,7 @@ describe('Confirm Email', () => {
 	});
 
 	it('Should be able to confirm the email', async () => {
-		const { id } = await createUser(app, { role: RolesEnum.member });
+		const { id } = await createUser(app, { role: Roles.member });
 
 		const cryptoProvider = resolveCryptoProvider();
 		const userTokensRepository = resolveUserTokensRepository();
@@ -38,7 +38,7 @@ describe('Confirm Email', () => {
 
 		await userTokensRepository.create({
 			token: cryptoProvider.hashToken(token),
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 			user_id: id,
 			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});

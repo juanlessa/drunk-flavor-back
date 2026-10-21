@@ -4,7 +4,7 @@ import { app } from '@/infrastructure/fastify/app';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { createUser } from '../helpers/authentication.helpers';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { Roles } from '@/shared/accessControl/roles';
 
 describe('Signin', () => {
 	beforeAll(async () => {
@@ -20,7 +20,7 @@ describe('Signin', () => {
 	});
 
 	it('should be able to signin', async () => {
-		const { email, password } = await createUser(app, { role: RolesEnum.partner });
+		const { email, password } = await createUser(app, { role: Roles.partner });
 
 		const response = await request(app.server).post('/signin').send({ email, password });
 

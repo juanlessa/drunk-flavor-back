@@ -1,14 +1,14 @@
 import { DatabaseCommonInfo } from '@/infrastructure/mongo/types';
 import { Translations } from '@/core/drinks/types/translations';
 
-export enum UnitKindEnum {
-	volume = 'volume',
-	mass = 'mass',
-	count = 'count',
-	informal = 'informal',
-}
+export const UnitKinds = {
+	volume: 'volume',
+	mass: 'mass',
+	count: 'count',
+	informal: 'informal',
+} as const;
 
-export type UnitKind = `${UnitKindEnum}`;
+export type UnitKind = (typeof UnitKinds)[keyof typeof UnitKinds];
 
 export type UnitTranslation = {
 	name: string;

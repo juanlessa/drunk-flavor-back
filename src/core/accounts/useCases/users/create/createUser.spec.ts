@@ -6,7 +6,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
-import { User, UserStatusEnum } from '@/core/accounts/entities/user.entity';
+import { User, UserStatuses } from '@/core/accounts/entities/user.entity';
 import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
@@ -17,7 +17,7 @@ import { MockMailerProvider } from '@/shared/providers/mailer/implementations/Mo
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
 import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.provider';
 import { UserTokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/UserTokens.repository';
-import { TokenTypeEnum, UserToken } from '@/core/accounts/entities/userToken.entity';
+import { TokenTypes, UserToken } from '@/core/accounts/entities/userToken.entity';
 import { env } from '@/env';
 
 let usersRepository: IUsersRepository;
@@ -75,7 +75,7 @@ describe('Create User', () => {
 
 		const verifyUserToken = (await userTokensRepository.findByUserIdAndType({
 			user_id: verifyUser._id.toString(),
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 		})) as UserToken;
 
 		expect(verifyUserToken).not.toBeNull();
@@ -89,7 +89,7 @@ describe('Create User', () => {
 			surname,
 			email,
 			role,
-			status: UserStatusEnum['active'],
+			status: UserStatuses['active'],
 			password: await hashProvider.hash(password),
 		});
 
@@ -102,7 +102,7 @@ describe('Create User', () => {
 			surname,
 			email,
 			role,
-			status: UserStatusEnum['pending'],
+			status: UserStatuses['pending'],
 			password: await hashProvider.hash(password),
 		});
 
@@ -117,7 +117,7 @@ describe('Create User', () => {
 
 		const verifyUserToken = (await userTokensRepository.findByUserIdAndType({
 			user_id: verifyUser._id.toString(),
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 		})) as UserToken;
 
 		expect(verifyUserToken).not.toBeNull();
@@ -131,14 +131,14 @@ describe('Create User', () => {
 			surname,
 			email,
 			role,
-			status: UserStatusEnum['pending'],
+			status: UserStatuses['pending'],
 			password: await hashProvider.hash(password),
 		});
 		const initialToken = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({
 			token: cryptoProvider.hashToken(initialToken),
 			user_id: createdUser._id.toString(),
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
@@ -155,7 +155,7 @@ describe('Create User', () => {
 
 		const verifyUserToken = (await userTokensRepository.findByUserIdAndType({
 			user_id: verifyUser._id.toString(),
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 		})) as UserToken;
 
 		expect(verifyUserToken).not.toBeNull();

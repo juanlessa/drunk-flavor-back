@@ -2,7 +2,7 @@ import { UnitModel } from '@/core/drinks/infra/mongo/entities/unit.model';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { app } from '@/infrastructure/fastify/app';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { Roles } from '@/shared/accessControl/roles';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { ObjectId } from 'mongodb';
 import request from 'supertest';
@@ -19,7 +19,7 @@ describe('Delete Unit', () => {
 	});
 	it('removes the unit from MongoDB', async () => {
 		const { id } = await createUnit();
-		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 		const response = await request(app.server).delete('/units').set('Cookie', cookies).send({ id });
 		expect(response.status).toBe(HTTP_STATUS.no_content);
 		expect(await UnitModel.findById(id).lean().exec()).toBeNull();
@@ -29,7 +29,7 @@ describe('Delete Unit', () => {
 		['malformed', 'invalid-id'],
 		['nonexistent', new ObjectId().toString()],
 	] as const)('rejects a %s unit ID', async (_, id) => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 		const response = await request(app.server)
 			.delete('/units')
 			.set('Cookie', cookies)
@@ -37,9 +37,9 @@ describe('Delete Unit', () => {
 		expect(response.status).toBe(HTTP_STATUS.bad_request);
 	});
 	it.each([
-		['admin', RolesEnum.admin, HTTP_STATUS.no_content],
-		['partner', RolesEnum.partner, HTTP_STATUS.no_content],
-		['member', RolesEnum.member, HTTP_STATUS.forbidden],
+		['admin', Roles.admin, HTTP_STATUS.no_content],
+		['partner', Roles.partner, HTTP_STATUS.no_content],
+		['member', Roles.member, HTTP_STATUS.forbidden],
 	] as const)('enforces delete access for %s', async (_, role, status) => {
 		const { id } = await createUnit();
 		const { cookies } = await createAndAuthenticateUser(app, { email: `${role}@delete.example.com`, role });

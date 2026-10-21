@@ -2,8 +2,8 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { BadRequestError } from '@/shared/error/error.lib';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { CreateUserDTO } from './createUser.dtos';
-import { User, UserStatusEnum } from '@/core/accounts/entities/user.entity';
-import { TokenTypeEnum } from '@/core/accounts/entities/userToken.entity';
+import { User, UserStatuses } from '@/core/accounts/entities/user.entity';
+import { TokenTypes } from '@/core/accounts/entities/userToken.entity';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
 import { IMailerProvider } from '@/shared/providers/mailer/IMailer.provider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
@@ -37,21 +37,21 @@ export class CreateUserService {
 
 		await this.userTokensRepository.create({
 			token: this.cryptoProvider.hashToken(token),
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 			user_id: newUser._id.toString(),
 			expires_at: this.dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 	}
 
 	private async handleExistingUser(user: User) {
-		if (user.status === UserStatusEnum['active']) {
+		if (user.status === UserStatuses['active']) {
 			throw new BadRequestError('apiResponses.users.alreadyExist', {
 				path: 'CreateUser.service.handleExistingUser.1',
 			});
 		}
 		const userToken = await this.userTokensRepository.findByUserIdAndType({
 			user_id: user._id.toString(),
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 		});
 
 		if (!userToken || this.dateProvider.isExpiredDate(userToken.expires_at)) {
@@ -71,7 +71,7 @@ export class CreateUserService {
 			surname,
 			email,
 			role,
-			status: UserStatusEnum['pending'],
+			status: UserStatuses['pending'],
 		});
 	}
 

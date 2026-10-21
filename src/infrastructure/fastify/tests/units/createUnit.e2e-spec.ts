@@ -3,7 +3,7 @@ import { UnitModel } from '@/core/drinks/infra/mongo/entities/unit.model';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { app } from '@/infrastructure/fastify/app';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { Roles } from '@/shared/accessControl/roles';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
@@ -18,7 +18,7 @@ describe('Create Unit', () => {
 	});
 
 	it('creates and persists a normalized unit in the units collection', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 		const data = createUnitFactory({
 			translations: {
 				en: { name: '  MILLILITER ', name_plural: ' MILLILITERS ' },
@@ -37,7 +37,7 @@ describe('Create Unit', () => {
 	});
 
 	it('persists optional fields as omitted', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 		expect((await request(app.server).post('/units').set('Cookie', cookies).send(createUnitFactory())).status).toBe(
 			HTTP_STATUS.created,
 		);
@@ -50,7 +50,7 @@ describe('Create Unit', () => {
 		['English', { en: { name: 'milliliter' }, pt: { name: 'unidade portuguesa exclusiva' } }],
 		['Portuguese', { en: { name: 'unique english unit' }, pt: { name: 'mililitro' } }],
 	] as const)('rejects a duplicate name in %s only', async (_, translations) => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 		await request(app.server).post('/units').set('Cookie', cookies).send(createUnitFactory());
 		const response = await request(app.server)
 			.post('/units')
@@ -60,7 +60,7 @@ describe('Create Unit', () => {
 	});
 
 	it('rejects invalid kinds and missing required fields', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 		const data = createUnitFactory();
 		const invalidKind = await request(app.server)
 			.post('/units')
@@ -76,8 +76,8 @@ describe('Create Unit', () => {
 
 	it.each([
 		['anonymous', undefined, HTTP_STATUS.unauthorized],
-		['member', RolesEnum.member, HTTP_STATUS.forbidden],
-		['partner', RolesEnum.partner, HTTP_STATUS.created],
+		['member', Roles.member, HTTP_STATUS.forbidden],
+		['partner', Roles.partner, HTTP_STATUS.created],
 	] as const)('enforces create access for %s', async (_, role, status) => {
 		const cookies = role
 			? (await createAndAuthenticateUser(app, { email: `${role}@example.com`, role })).cookies

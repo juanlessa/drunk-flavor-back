@@ -5,7 +5,7 @@ import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { createAndAuthenticateUser, createUser } from '../helpers/authentication.helpers';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { Roles } from '@/shared/accessControl/roles';
 
 describe('Get User', () => {
 	beforeAll(async () => {
@@ -21,9 +21,9 @@ describe('Get User', () => {
 	});
 
 	it('Should be able to admin get the User', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 
-		const { id } = await createUser(app, { email: 'partner@example.com', role: RolesEnum.partner });
+		const { id } = await createUser(app, { email: 'partner@example.com', role: Roles.partner });
 
 		const response = await request(app.server).get(`/users/${id}`).set('Cookie', cookies).send();
 
@@ -31,7 +31,7 @@ describe('Get User', () => {
 	});
 
 	it('Should not be able to get a user when unauthenticated', async () => {
-		const { id } = await createUser(app, { email: 'partner@example.com', role: RolesEnum.partner });
+		const { id } = await createUser(app, { email: 'partner@example.com', role: Roles.partner });
 
 		const response = await request(app.server).get(`/users/${id}`).send();
 
@@ -41,10 +41,10 @@ describe('Get User', () => {
 	it('Should not be able to get a user as a member', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, {
 			email: 'member@example.com',
-			role: RolesEnum.member,
+			role: Roles.member,
 		});
 
-		const { id } = await createUser(app, { email: 'partner@example.com', role: RolesEnum.partner });
+		const { id } = await createUser(app, { email: 'partner@example.com', role: Roles.partner });
 
 		const response = await request(app.server).get(`/users/${id}`).set('Cookie', cookies).send();
 
@@ -54,10 +54,10 @@ describe('Get User', () => {
 	it('Should not be able to get a user as a partner', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, {
 			email: 'partner@example.com',
-			role: RolesEnum.partner,
+			role: Roles.partner,
 		});
 
-		const { id } = await createUser(app, { email: 'member@example.com', role: RolesEnum.member });
+		const { id } = await createUser(app, { email: 'member@example.com', role: Roles.member });
 
 		const response = await request(app.server).get(`/users/${id}`).set('Cookie', cookies).send();
 

@@ -1,4 +1,4 @@
-import { User, UserStatusEnum } from '@/core/accounts/entities/user.entity';
+import { User, UserStatuses } from '@/core/accounts/entities/user.entity';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BadRequestError } from '@/shared/error/error.lib';
@@ -13,7 +13,7 @@ import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.pro
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
 import { env } from '@/env';
-import { TokenTypeEnum } from '@/core/accounts/entities/userToken.entity';
+import { TokenTypes } from '@/core/accounts/entities/userToken.entity';
 import { UserTokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/UserTokens.repository';
 import { ObjectId } from 'mongodb';
 
@@ -49,14 +49,14 @@ describe('Confirm Email', () => {
 			surname,
 			email,
 			role,
-			status: UserStatusEnum['pending'],
+			status: UserStatuses['pending'],
 			password: hashedPassword,
 		});
 		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({
 			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
@@ -67,7 +67,7 @@ describe('Confirm Email', () => {
 		const verifyUser = (await usersRepository.findById(createdUser._id.toString())) as User;
 
 		expect(verifyUser).toBeDefined();
-		expect(verifyUser.status).toEqual(UserStatusEnum['active']);
+		expect(verifyUser.status).toEqual(UserStatuses['active']);
 	});
 
 	it('should not be able to confirm the email using a nonexisting token', async () => {
@@ -85,14 +85,14 @@ describe('Confirm Email', () => {
 			surname,
 			email,
 			role,
-			status: UserStatusEnum['pending'],
+			status: UserStatuses['pending'],
 			password: hashedPassword,
 		});
 		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({
 			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
@@ -115,7 +115,7 @@ describe('Confirm Email', () => {
 		await userTokensRepository.create({
 			token: cryptoProvider.hashToken(token),
 			user_id: nonexistentUserId,
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 

@@ -1,5 +1,5 @@
-import { UserStatusEnum } from '@/core/accounts/entities/user.entity';
-import { TokenTypeEnum } from '@/core/accounts/entities/userToken.entity';
+import { UserStatuses } from '@/core/accounts/entities/user.entity';
+import { TokenTypes } from '@/core/accounts/entities/userToken.entity';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
 import { BadRequestError } from '@/shared/error/error.lib';
@@ -31,7 +31,7 @@ export class ResendEmailVerificationService {
 			});
 		}
 
-		if (user.status === UserStatusEnum['active']) {
+		if (user.status === UserStatuses['active']) {
 			throw new BadRequestError('apiResponses.auth.emailAlreadyVerified', {
 				path: 'ResendEmailVerification.service.alreadyVerified',
 			});
@@ -39,7 +39,7 @@ export class ResendEmailVerificationService {
 
 		const existingToken = await this.userTokensRepository.findByUserIdAndType({
 			user_id: user._id.toString(),
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 		});
 
 		if (existingToken && !this.dateProvider.isExpiredDate(existingToken.expires_at)) {
@@ -56,7 +56,7 @@ export class ResendEmailVerificationService {
 
 		await this.userTokensRepository.create({
 			token: this.cryptoProvider.hashToken(token),
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 			user_id: user._id.toString(),
 			expires_at: this.dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});

@@ -3,7 +3,7 @@ import { UnitModel } from '@/core/drinks/infra/mongo/entities/unit.model';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { app } from '@/infrastructure/fastify/app';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { Roles } from '@/shared/accessControl/roles';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { ObjectId } from 'mongodb';
 import request from 'supertest';
@@ -19,7 +19,7 @@ describe('Update Unit', () => {
 		await MongoConnection.Instance.emptyCollection(UserModel);
 	});
 	it('updates a unit with normalized complete data', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 		const { id } = await createUnit();
 		const data = createUnitFactory({
 			translations: {
@@ -52,7 +52,7 @@ describe('Update Unit', () => {
 		['malformed', 'invalid-id'],
 		['nonexistent', new ObjectId().toString()],
 	] as const)('rejects a %s unit ID', async (_, id) => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 		const response = await request(app.server)
 			.patch('/units')
 			.set('Cookie', cookies)
@@ -61,8 +61,8 @@ describe('Update Unit', () => {
 	});
 	it.each([
 		['anonymous', undefined, HTTP_STATUS.unauthorized],
-		['member', RolesEnum.member, HTTP_STATUS.forbidden],
-		['partner', RolesEnum.partner, HTTP_STATUS.no_content],
+		['member', Roles.member, HTTP_STATUS.forbidden],
+		['partner', Roles.partner, HTTP_STATUS.no_content],
 	] as const)('enforces update access for %s', async (_, role, status) => {
 		const { id } = await createUnit();
 		const cookies = role

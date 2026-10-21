@@ -8,7 +8,7 @@ import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { CategoryModel } from '@/core/drinks/infra/mongo/entities/category.model';
 import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.model';
 import { createIngredient } from '../helpers/ingredient.helpers';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { Roles } from '@/shared/accessControl/roles';
 
 describe('Delete Ingredient', () => {
 	beforeAll(async () => {
@@ -26,7 +26,7 @@ describe('Delete Ingredient', () => {
 	});
 
 	it('Should be able to delete an ingredient', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 		const { id } = await createIngredient();
 
 		const response = await request(app.server).delete('/ingredients').set('Cookie', cookies).send({ id });
@@ -45,7 +45,7 @@ describe('Delete Ingredient', () => {
 	it('Should not be able to delete an ingredient as a member', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, {
 			email: 'member@example.com',
-			role: RolesEnum.member,
+			role: Roles.member,
 		});
 		const { id } = await createIngredient();
 

@@ -9,7 +9,7 @@ import { CategoryModel } from '@/core/drinks/infra/mongo/entities/category.model
 import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.model';
 import { createCategory } from '../helpers/category.helpers';
 import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { Roles } from '@/shared/accessControl/roles';
 
 describe('Create Ingredient', () => {
 	beforeAll(async () => {
@@ -27,7 +27,7 @@ describe('Create Ingredient', () => {
 	});
 
 	it('Should be able to create an ingredient', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 		const { id: category_id } = await createCategory();
 
 		const { translations, is_alcoholic } = createIngredientFactory();
@@ -54,7 +54,7 @@ describe('Create Ingredient', () => {
 	it('Should not be able to create an ingredient as a member', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, {
 			email: 'member@example.com',
-			role: RolesEnum.member,
+			role: Roles.member,
 		});
 		const { id: category_id } = await createCategory();
 		const { translations, is_alcoholic } = createIngredientFactory();
@@ -70,7 +70,7 @@ describe('Create Ingredient', () => {
 	it('Should not block a partner from creating an ingredient by authorization', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, {
 			email: 'partner@example.com',
-			role: RolesEnum.partner,
+			role: Roles.partner,
 		});
 		const { id: category_id } = await createCategory();
 		const { translations, is_alcoholic } = createIngredientFactory();

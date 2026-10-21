@@ -9,7 +9,7 @@ import { CategoryModel } from '@/core/drinks/infra/mongo/entities/category.model
 import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.model';
 import { createIngredient } from '../helpers/ingredient.helpers';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { Roles } from '@/shared/accessControl/roles';
 
 describe('Update Ingredient', () => {
 	beforeAll(async () => {
@@ -27,7 +27,7 @@ describe('Update Ingredient', () => {
 	});
 
 	it('Should be able to update an ingredient', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 		const { id, category_id } = await createIngredient();
 
 		const { translations, is_alcoholic } = createIngredientFactory({
@@ -60,7 +60,7 @@ describe('Update Ingredient', () => {
 	it('Should not be able to update an ingredient as a member', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, {
 			email: 'member@example.com',
-			role: RolesEnum.member,
+			role: Roles.member,
 		});
 		const { id, category_id } = await createIngredient();
 		const { translations, is_alcoholic } = createIngredientFactory();

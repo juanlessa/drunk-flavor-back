@@ -1,11 +1,11 @@
 import mongoose, { Model, Schema } from 'mongoose';
-import { TokenTypeEnum, UserToken } from '@/core/accounts/entities/userToken.entity';
+import { TokenTypes, UserToken } from '@/core/accounts/entities/userToken.entity';
 
 export const UserTokenSchema = new Schema<UserToken>(
 	{
 		token: { type: String, required: true, unique: true },
 		user_id: { type: String, required: true },
-		type: { type: String, required: true, enum: TokenTypeEnum },
+		type: { type: String, required: true, enum: Object.values(TokenTypes) },
 		expires_at: { type: Date, required: true },
 	},
 	{

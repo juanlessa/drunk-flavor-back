@@ -7,7 +7,7 @@ import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { CategoryModel } from '@/core/drinks/infra/mongo/entities/category.model';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { Roles } from '@/shared/accessControl/roles';
 
 describe('Create Category', () => {
 	beforeAll(async () => {
@@ -24,7 +24,7 @@ describe('Create Category', () => {
 	});
 
 	it('Should be able to create a category', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 
 		const { translations } = createCategoryFactory();
 

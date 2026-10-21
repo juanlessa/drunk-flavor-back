@@ -1,13 +1,13 @@
 import { DatabaseCommonInfo } from '@/infrastructure/mongo/types';
 import { Role } from '@/shared/accessControl/roles';
 
-export enum UserStatusEnum {
-	idle = 'idle',
-	pending = 'pending',
-	active = 'active',
-}
+export const UserStatuses = {
+	idle: 'idle',
+	pending: 'pending',
+	active: 'active',
+} as const;
 
-export type UserStatus = keyof typeof UserStatusEnum;
+export type UserStatus = (typeof UserStatuses)[keyof typeof UserStatuses];
 
 export type User = DatabaseCommonInfo & {
 	name: string;

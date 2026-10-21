@@ -4,7 +4,7 @@ import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { ConfirmEmail } from './confirmEmail.dtos';
-import { UserStatusEnum } from '@/core/accounts/entities/user.entity';
+import { UserStatuses } from '@/core/accounts/entities/user.entity';
 
 export class ConfirmEmailService {
 	constructor(
@@ -31,7 +31,7 @@ export class ConfirmEmailService {
 			throw new BadRequestError('apiResponses.users.notExist', { path: 'ConfirmEmail.service.3' });
 		}
 
-		await this.usersRepository.update({ id: user._id.toString(), status: UserStatusEnum['active'] });
+		await this.usersRepository.update({ id: user._id.toString(), status: UserStatuses['active'] });
 		await this.userTokensRepository.delete(userToken._id.toString());
 	}
 }

@@ -13,9 +13,9 @@ import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementati
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.provider';
-import { User, UserStatusEnum } from '@/core/accounts/entities/user.entity';
-import { TokenTypeEnum, UserToken } from '@/core/accounts/entities/userToken.entity';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { User, UserStatuses } from '@/core/accounts/entities/user.entity';
+import { TokenTypes, UserToken } from '@/core/accounts/entities/userToken.entity';
+import { Roles } from '@/shared/accessControl/roles';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
 import { MjmlProvider } from '@/shared/providers/template/implementations/Mjml.provider';
 import { MockEmailQueueProvider } from '@/shared/providers/queue/email/implementations/MockEmailQueue.provider';
@@ -68,11 +68,11 @@ describe('Signup', () => {
 		expect(verifyUser.email).toEqual(email);
 		expect(verifyUser.name).toEqual(name);
 		expect(verifyUser.surname).toEqual(surname);
-		expect(verifyUser.status).toEqual(UserStatusEnum['pending']);
+		expect(verifyUser.status).toEqual(UserStatuses['pending']);
 
 		const verifyUserToken = (await userTokensRepository.findByUserIdAndType({
 			user_id: verifyUser._id.toString(),
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 		})) as UserToken;
 
 		expect(verifyUserToken).not.toBeNull();
@@ -94,8 +94,8 @@ describe('Signup', () => {
 			name,
 			surname,
 			email,
-			role: RolesEnum['member'],
-			status: UserStatusEnum['active'],
+			role: Roles['member'],
+			status: UserStatuses['active'],
 			password: await hashProvider.hash(password),
 		});
 
@@ -108,8 +108,8 @@ describe('Signup', () => {
 			name,
 			surname,
 			email,
-			role: RolesEnum['member'],
-			status: UserStatusEnum['pending'],
+			role: Roles['member'],
+			status: UserStatuses['pending'],
 			password: await hashProvider.hash(password),
 		});
 
