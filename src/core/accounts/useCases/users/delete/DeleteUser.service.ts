@@ -16,6 +16,7 @@ export class DeleteUserService {
 		}
 
 		await this.usersRepository.delete(id);
+		// TODO: Enqueue engagement cleanup for comments and ratings by user id.
 		await this.userTokensRepository.deleteByUserId(id);
 	}
 }

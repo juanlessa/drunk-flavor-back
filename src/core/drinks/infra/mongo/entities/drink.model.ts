@@ -44,6 +44,17 @@ export const DrinkSchema = new Schema<Drink>(
 		cover: { type: FileMetadataSchema, default: undefined },
 		thumbnail: { type: FileMetadataSchema, default: undefined },
 		ingredients: { type: [DrinkIngredientSchema], required: true },
+		avg_rating: { type: Number, required: true, default: 0, min: 0, max: 5 },
+		ratings_count: {
+			type: Number,
+			required: true,
+			default: 0,
+			min: 0,
+			validate: {
+				validator: Number.isInteger,
+				message: 'Ratings count must be an integer',
+			},
+		},
 	},
 	{
 		toJSON: {

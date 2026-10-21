@@ -17,6 +17,8 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 			...data,
 			cover: undefined,
 			thumbnail: undefined,
+			avg_rating: 0,
+			ratings_count: 0,
 			_id: new ObjectId(),
 			created_at: new Date(),
 			updated_at: new Date(),

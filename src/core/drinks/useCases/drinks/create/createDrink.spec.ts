@@ -66,6 +66,18 @@ describe('Create Drink', () => {
 		expect(id).toEqual(created._id.toString());
 	});
 
+	it('should initialize the Drink aggregate fields to zero', async () => {
+		await service.execute({
+			translations,
+			ingredients: [{ ingredient_id: createdIngredient._id.toString(), quantity: 60 }],
+		});
+
+		const created = (await drinksRepository.findByName(translations)) as Drink;
+
+		expect(created.avg_rating).toBe(0);
+		expect(created.ratings_count).toBe(0);
+	});
+
 	it('should not be able to create a drink with an existing name', async () => {
 		await drinksRepository.create({
 			translations,
