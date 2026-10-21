@@ -15,18 +15,6 @@ export const ingredientNameValidation = z
 	.min(1, { error: 'apiResponses.ingredients.invalidNameFormat' satisfies LocaleKey })
 	.transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`);
 
-export const ingredientUnitValidation = z
-	.string({ error: 'apiResponses.ingredients.requiredUnit' satisfies LocaleKey })
-	.trim()
-	.toLowerCase()
-	.min(1, { error: 'apiResponses.ingredients.invalidUnitFormat' satisfies LocaleKey });
-
-export const ingredientUnitPluralValidation = z
-	.string({ error: 'apiResponses.ingredients.requiredUnitPlural' satisfies LocaleKey })
-	.trim()
-	.toLowerCase()
-	.min(1, { error: 'apiResponses.ingredients.invalidUnitPluralFormat' satisfies LocaleKey });
-
 export const ingredientIsAlcoholicValidation = z.boolean({
 	error: 'apiResponses.ingredients.requiredIsAlcoholic' satisfies LocaleKey,
 });
@@ -36,9 +24,12 @@ export const ingredientCategoryIdValidation = getObjectIdSchema({
 	invalid: 'apiResponses.ingredients.invalidCategoryFormat',
 });
 
+export const ingredientUnitIdValidation = getObjectIdSchema({
+	required: 'apiResponses.ingredients.requiredUnit',
+	invalid: 'apiResponses.ingredients.invalidUnitFormat',
+});
+
 // schemas
 export const ingredientTranslationSchema = z.object({
 	name: ingredientNameValidation,
-	unit: ingredientUnitValidation,
-	unit_plural: ingredientUnitPluralValidation,
 });

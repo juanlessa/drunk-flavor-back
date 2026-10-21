@@ -1,15 +1,19 @@
 import { Category } from '@/core/drinks/entities/category.entity';
+import { Unit } from '@/core/drinks/entities/unit.entity';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Ingredients.repository';
+import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Units.repository';
 import { ObjectId } from 'mongodb';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DeleteDrinkService } from './DeleteDrink.service';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
+import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
 import { createDrinkFactory } from '@/core/drinks/factories/drink.factories';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
+import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { DrinksRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Drinks.repository';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
@@ -19,12 +23,14 @@ import { Drink } from '@/core/drinks/entities/drink.entity';
 
 let categoriesRepository: ICategoriesRepository;
 let ingredientsRepository: IIngredientsRepository;
+let unitsRepository: IUnitsRepository;
 let drinksRepository: IDrinksRepository;
 let storageProvider: IStorageProvider;
 let service: DeleteDrinkService;
 
 const { translations: categoryTranslations } = createCategoryFactory();
 let createdCategory: Category;
+let createdUnit: Unit;
 const { translations: ingredientTranslations, is_alcoholic: ingredientIsAlcoholic } = createIngredientFactory();
 let createdIngredient: Ingredient;
 const { translations } = createDrinkFactory();
@@ -37,15 +43,18 @@ describe('Delete Drink', () => {
 
 		categoriesRepository = new CategoriesRepositoryInMemory();
 		ingredientsRepository = new IngredientsRepositoryInMemory();
+		unitsRepository = new UnitsRepositoryInMemory();
 		drinksRepository = new DrinksRepositoryInMemory();
 		storageProvider = new MockStorageProvider();
 		service = new DeleteDrinkService(drinksRepository, storageProvider);
 
 		createdCategory = await categoriesRepository.create({ translations: categoryTranslations });
+		createdUnit = await unitsRepository.create(createUnitFactory());
 		createdIngredient = await ingredientsRepository.create({
 			translations: ingredientTranslations,
 			is_alcoholic: ingredientIsAlcoholic,
 			category: createdCategory,
+			unit: createdUnit,
 		});
 		createdDrink = await drinksRepository.create({
 			translations,

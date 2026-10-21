@@ -3,6 +3,7 @@ import {
 	ingredientCategoryIdValidation,
 	ingredientIsAlcoholicValidation,
 	ingredientTranslationSchema,
+	ingredientUnitIdValidation,
 } from '@/core/drinks/schemas/ingredient.schemas';
 import { z } from 'zod/v4';
 
@@ -10,4 +11,5 @@ export const createIngredientSchema = z.object({
 	translations: generateTranslationsSchema(ingredientTranslationSchema),
 	is_alcoholic: ingredientIsAlcoholicValidation,
 	category_id: ingredientCategoryIdValidation,
+	unit_id: ingredientUnitIdValidation,
 });

@@ -1,13 +1,12 @@
 import mongoose, { Model, Schema } from 'mongoose';
 import { Ingredient, IngredientTranslation } from '@/core/drinks/entities/ingredient.entity';
 import { CategorySchema } from '@/core/drinks/infra/mongo/entities/category.model';
+import { UnitSchema } from '@/core/drinks/infra/mongo/entities/unit.model';
 import { getTranslationsSchema } from '../helpers/translations.helpers';
 
 export const IngredientTranslationSchema = new Schema<IngredientTranslation>(
 	{
 		name: { type: String, required: true, unique: true },
-		unit: { type: String, required: true },
-		unit_plural: { type: String, required: true },
 	},
 	{
 		_id: false,
@@ -21,6 +20,7 @@ export const IngredientSchema = new Schema<Ingredient>(
 			required: true,
 		},
 		category: { type: CategorySchema, excludeIndexes: true, required: true },
+		unit: { type: UnitSchema, excludeIndexes: true, required: true },
 		is_alcoholic: { type: Boolean, required: true },
 	},
 	{

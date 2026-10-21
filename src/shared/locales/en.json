@@ -76,9 +76,7 @@
 	"apiResponses.ingredients.requiredCategory": "Category is required",
 	"apiResponses.ingredients.invalidCategoryFormat": "Invalid category format",
 	"apiResponses.ingredients.requiredUnit": "Unit is required",
-	"apiResponses.ingredients.invalidUnitFormat": "Unit must have a minimum of 1 character",
-	"apiResponses.ingredients.requiredUnitPlural": "Unit plural is required",
-	"apiResponses.ingredients.invalidUnitPluralFormat": "Unit plural must have a minimum of 1 character",
+	"apiResponses.ingredients.invalidUnitFormat": "Invalid unit format",
 	"apiResponses.ingredients.requiredIsAlcoholic": "Is alcoholic field is required",
 
 	"apiResponses.drinks.notExist": "Drink does not exist",

@@ -7,6 +7,7 @@ import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { CategoryModel } from '@/core/drinks/infra/mongo/entities/category.model';
 import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.model';
+import { UnitModel } from '@/core/drinks/infra/mongo/entities/unit.model';
 import { DrinkModel } from '@/core/drinks/infra/mongo/entities/drink.model';
 import { createIngredient } from '../helpers/ingredient.helpers';
 import { createDrinkFactory } from '@/core/drinks/factories/drink.factories';
@@ -24,6 +25,7 @@ describe('Create Drink', () => {
 	beforeEach(async () => {
 		await MongoConnection.Instance.emptyCollection(CategoryModel);
 		await MongoConnection.Instance.emptyCollection(IngredientModel);
+		await MongoConnection.Instance.emptyCollection(UnitModel);
 		await MongoConnection.Instance.emptyCollection(DrinkModel);
 		await MongoConnection.Instance.emptyCollection(UserModel);
 	});

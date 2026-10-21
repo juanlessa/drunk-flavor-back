@@ -3,16 +3,18 @@ import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.m
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { logger } from '@/shared/providers/logger';
 import { categoriesMap } from './categories';
+import { unitsMap } from './units';
 
 const ingredients = [
 	// Absinthe
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'absinthe', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'absinto', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'absinthe' },
+			pt: { name: 'absinto' },
 		},
 		category: categoriesMap.get('Absinthe')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -21,10 +23,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'amaretto', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'amaretto', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'amaretto' },
+			pt: { name: 'amaretto' },
 		},
 		category: categoriesMap.get('Liqueur')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -32,10 +35,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'blue curacao', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'blue curaçao', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'blue curacao' },
+			pt: { name: 'blue curaçao' },
 		},
 		category: categoriesMap.get('Liqueur')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -43,10 +47,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'coconut liqueur', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'batida de coco', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'coconut liqueur' },
+			pt: { name: 'batida de coco' },
 		},
 		category: categoriesMap.get('Liqueur')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -54,10 +59,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'coffee liqueur', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'licor de café', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'coffee liqueur' },
+			pt: { name: 'licor de café' },
 		},
 		category: categoriesMap.get('Liqueur')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -65,10 +71,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'limoncello', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'limoncello', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'limoncello' },
+			pt: { name: 'limoncello' },
 		},
 		category: categoriesMap.get('Liqueur')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -76,10 +83,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'peach liqueur', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'licor de pêssego', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'peach liqueur' },
+			pt: { name: 'licor de pêssego' },
 		},
 		category: categoriesMap.get('Liqueur')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -87,10 +95,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'triple sec', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'triple sec', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'triple sec' },
+			pt: { name: 'triple sec' },
 		},
 		category: categoriesMap.get('Liqueur')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -99,10 +108,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'añejo tequila', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'tequila añejo', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'añejo tequila' },
+			pt: { name: 'tequila añejo' },
 		},
 		category: categoriesMap.get('Tequila')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -110,10 +120,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'blanco tequila', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'tequila blanco', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'blanco tequila' },
+			pt: { name: 'tequila blanco' },
 		},
 		category: categoriesMap.get('Tequila')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -121,10 +132,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'reposado tequila', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'tequila reposado', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'reposado tequila' },
+			pt: { name: 'tequila reposado' },
 		},
 		category: categoriesMap.get('Tequila')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -133,10 +145,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'bianco vermouth', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'vermute bianco', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'bianco vermouth' },
+			pt: { name: 'vermute bianco' },
 		},
 		category: categoriesMap.get('Vermouth')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -144,10 +157,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'dry vermouth', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'vermute seco', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'dry vermouth' },
+			pt: { name: 'vermute seco' },
 		},
 		category: categoriesMap.get('Vermouth')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -155,10 +169,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'rosso vermouth', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'vermute rosso', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'rosso vermouth' },
+			pt: { name: 'vermute rosso' },
 		},
 		category: categoriesMap.get('Vermouth')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -166,10 +181,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'sweet vermouth', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'vermute doce', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'sweet vermouth' },
+			pt: { name: 'vermute doce' },
 		},
 		category: categoriesMap.get('Vermouth')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -178,10 +194,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'Bourbon whisky', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'whisky bourbon', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'Bourbon whisky' },
+			pt: { name: 'whisky bourbon' },
 		},
 		category: categoriesMap.get('Whisky')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -189,10 +206,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'Irish whisky', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'whisky irlandês', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'Irish whisky' },
+			pt: { name: 'whisky irlandês' },
 		},
 		category: categoriesMap.get('Whisky')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -200,10 +218,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'Japanese whisky', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'whisky japonês', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'Japanese whisky' },
+			pt: { name: 'whisky japonês' },
 		},
 		category: categoriesMap.get('Whisky')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -211,10 +230,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'Tennessee whiskey', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'whisky Tennessee', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'Tennessee whiskey' },
+			pt: { name: 'whisky Tennessee' },
 		},
 		category: categoriesMap.get('Whisky')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -222,10 +242,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'whisky', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'whisky', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'whisky' },
+			pt: { name: 'whisky' },
 		},
 		category: categoriesMap.get('Whisky')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -234,10 +255,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'lime juice', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'suco de limão', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'lime juice' },
+			pt: { name: 'suco de limão' },
 		},
 		category: categoriesMap.get('Juice')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: false,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -245,10 +267,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'orange juice', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'suco de laranja', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'orange juice' },
+			pt: { name: 'suco de laranja' },
 		},
 		category: categoriesMap.get('Juice')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: false,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -256,10 +279,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'pineapple juice', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'suco de abacaxi', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'pineapple juice' },
+			pt: { name: 'suco de abacaxi' },
 		},
 		category: categoriesMap.get('Juice')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: false,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -268,10 +292,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'mezcal', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'mezcal', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'mezcal' },
+			pt: { name: 'mezcal' },
 		},
 		category: categoriesMap.get('Mezcal')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -280,10 +305,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'red wine', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'vinho tinto', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'red wine' },
+			pt: { name: 'vinho tinto' },
 		},
 		category: categoriesMap.get('Wine')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -291,10 +317,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'rosé wine', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'vinho rosé', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'rosé wine' },
+			pt: { name: 'vinho rosé' },
 		},
 		category: categoriesMap.get('Wine')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -302,10 +329,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'white wine', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'vinho branco', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'white wine' },
+			pt: { name: 'vinho branco' },
 		},
 		category: categoriesMap.get('Wine')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -314,10 +342,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'rum', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'rum', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'rum' },
+			pt: { name: 'rum' },
 		},
 		category: categoriesMap.get('Rum')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -325,10 +354,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'silver rum', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'rum prata', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'silver rum' },
+			pt: { name: 'rum prata' },
 		},
 		category: categoriesMap.get('Rum')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -337,10 +367,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'vodka', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'vodka', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'vodka' },
+			pt: { name: 'vodka' },
 		},
 		category: categoriesMap.get('Vodka')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: true,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -349,10 +380,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'agave syrup', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'xarope de agave', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'agave syrup' },
+			pt: { name: 'xarope de agave' },
 		},
 		category: categoriesMap.get('Syrup')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: false,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -360,10 +392,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'grenadine', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'grenadine', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'grenadine' },
+			pt: { name: 'grenadine' },
 		},
 		category: categoriesMap.get('Syrup')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: false,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -372,10 +405,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'honey syrup', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'xarope de mel', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'honey syrup' },
+			pt: { name: 'xarope de mel' },
 		},
 		category: categoriesMap.get('Syrup')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: false,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -383,10 +417,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'rich simple syrup', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'xarope enriquecido', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'rich simple syrup' },
+			pt: { name: 'xarope enriquecido' },
 		},
 		category: categoriesMap.get('Syrup')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: false,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -394,10 +429,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'simple syrup', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'xarope simples', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'simple syrup' },
+			pt: { name: 'xarope simples' },
 		},
 		category: categoriesMap.get('Syrup')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: false,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -406,10 +442,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'mint', unit: 'leaf', unit_plural: 'leaves' },
-			pt: { name: 'hortelã', unit: 'folha', unit_plural: 'folhas' },
+			en: { name: 'mint' },
+			pt: { name: 'hortelã' },
 		},
 		category: categoriesMap.get('Herb')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: false,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -418,10 +455,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'coconut water', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'água de coco', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'coconut water' },
+			pt: { name: 'água de coco' },
 		},
 		category: categoriesMap.get('Water')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: false,
 		created_at: new Date(),
 		updated_at: new Date(),
@@ -429,10 +467,11 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'sparkling water', unit: 'ml', unit_plural: 'ml' },
-			pt: { name: 'água com gás', unit: 'ml', unit_plural: 'ml' },
+			en: { name: 'sparkling water' },
+			pt: { name: 'água com gás' },
 		},
 		category: categoriesMap.get('Water')!,
+		unit: unitsMap.get('milliliter')!,
 		is_alcoholic: false,
 		created_at: new Date(),
 		updated_at: new Date(),

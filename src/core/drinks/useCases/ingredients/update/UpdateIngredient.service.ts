@@ -1,6 +1,7 @@
 import { mapToTranslationsName } from '@/core/drinks/mappers/translations.mappers';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
+import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { UpdateIngredientReqBody } from './updateIngredient.dtos';
 
@@ -8,9 +9,10 @@ export class UpdateIngredientService {
 	constructor(
 		private ingredientsRepository: IIngredientsRepository,
 		private categoriesRepository: ICategoriesRepository,
+		private unitsRepository: IUnitsRepository,
 	) {}
 
-	async execute({ id, translations, is_alcoholic, category_id }: UpdateIngredientReqBody) {
+	async execute({ id, translations, is_alcoholic, category_id, unit_id }: UpdateIngredientReqBody) {
 		const ingredientExists = await this.ingredientsRepository.findById(id);
 		if (!ingredientExists) {
 			throw new BadRequestError('apiResponses.ingredients.notExist', { path: 'UpdateIngredient.service.1' });
@@ -32,6 +34,19 @@ export class UpdateIngredientService {
 			});
 		}
 
-		await this.ingredientsRepository.update({ id, translations, is_alcoholic, category: categoryExists });
+		const unitExists = await this.unitsRepository.findById(unit_id);
+		if (!unitExists) {
+			throw new BadRequestError('apiResponses.ingredients.invalidUnitFormat', {
+				path: 'UpdateIngredient.service.4',
+			});
+		}
+
+		await this.ingredientsRepository.update({
+			id,
+			translations,
+			is_alcoholic,
+			category: categoryExists,
+			unit: unitExists,
+		});
 	}
 }

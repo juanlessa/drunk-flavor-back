@@ -5,6 +5,7 @@ import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { CategoryModel } from '@/core/drinks/infra/mongo/entities/category.model';
 import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.model';
+import { UnitModel } from '@/core/drinks/infra/mongo/entities/unit.model';
 import { DrinkModel } from '@/core/drinks/infra/mongo/entities/drink.model';
 import { createDrink } from '../helpers/drink.helpers';
 
@@ -20,6 +21,7 @@ describe('List Drink', () => {
 	beforeEach(async () => {
 		await MongoConnection.Instance.emptyCollection(CategoryModel);
 		await MongoConnection.Instance.emptyCollection(IngredientModel);
+		await MongoConnection.Instance.emptyCollection(UnitModel);
 		await MongoConnection.Instance.emptyCollection(DrinkModel);
 	});
 

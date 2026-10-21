@@ -8,6 +8,7 @@ import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { CategoryModel } from '@/core/drinks/infra/mongo/entities/category.model';
 import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.model';
+import { UnitModel } from '@/core/drinks/infra/mongo/entities/unit.model';
 import { createIngredient } from '../helpers/ingredient.helpers';
 import { Roles } from '@/shared/accessControl/roles';
 
@@ -23,17 +24,18 @@ describe('Update Ingredient', () => {
 	beforeEach(async () => {
 		await MongoConnection.Instance.emptyCollection(CategoryModel);
 		await MongoConnection.Instance.emptyCollection(IngredientModel);
+		await MongoConnection.Instance.emptyCollection(UnitModel);
 		await MongoConnection.Instance.emptyCollection(UserModel);
 	});
 
 	it('Should be able to update an ingredient', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
-		const { id, category_id } = await createIngredient();
+		const { id, category_id, unit_id } = await createIngredient();
 
 		const { translations, is_alcoholic } = createIngredientFactory({
 			translations: {
-				en: { name: 'Lime juice', unit: 'ml', unit_plural: 'ml' },
-				pt: { name: 'Suco de limão', unit: 'ml', unit_plural: 'ml' },
+				en: { name: 'Lime juice' },
+				pt: { name: 'Suco de limão' },
 			},
 			is_alcoholic: true,
 		});
@@ -41,18 +43,18 @@ describe('Update Ingredient', () => {
 		const response = await request(app.server)
 			.patch('/ingredients')
 			.set('Cookie', cookies)
-			.send({ id, translations, is_alcoholic, category_id });
+			.send({ id, translations, is_alcoholic, category_id, unit_id });
 
 		expect(response.status).toBe(HTTP_STATUS.no_content);
 	});
 
 	it('Should not be able to update an ingredient when unauthenticated', async () => {
-		const { id, category_id } = await createIngredient();
+		const { id, category_id, unit_id } = await createIngredient();
 		const { translations, is_alcoholic } = createIngredientFactory();
 
 		const response = await request(app.server)
 			.patch('/ingredients')
-			.send({ id, translations, is_alcoholic, category_id });
+			.send({ id, translations, is_alcoholic, category_id, unit_id });
 
 		expect(response.status).toBe(HTTP_STATUS.unauthorized);
 	});
@@ -62,13 +64,13 @@ describe('Update Ingredient', () => {
 			email: 'member@example.com',
 			role: Roles.member,
 		});
-		const { id, category_id } = await createIngredient();
+		const { id, category_id, unit_id } = await createIngredient();
 		const { translations, is_alcoholic } = createIngredientFactory();
 
 		const response = await request(app.server)
 			.patch('/ingredients')
 			.set('Cookie', cookies)
-			.send({ id, translations, is_alcoholic, category_id });
+			.send({ id, translations, is_alcoholic, category_id, unit_id });
 
 		expect(response.status).toBe(HTTP_STATUS.forbidden);
 	});

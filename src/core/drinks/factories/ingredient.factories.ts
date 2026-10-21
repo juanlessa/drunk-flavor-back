@@ -7,15 +7,12 @@ export const createIngredientFactory = (
 	translations: {
 		en: {
 			name: ingredient?.translations?.en?.name || 'Syrup',
-			unit: 'ml',
-			unit_plural: 'ml',
 		},
 		pt: {
 			name: ingredient?.translations?.pt?.name || 'Xarope',
-			unit: 'ml',
-			unit_plural: 'ml',
 		},
 	},
 	is_alcoholic: ingredient?.is_alcoholic || false,
 	category_id: ingredient?.category_id || '',
+	unit_id: ingredient?.unit_id || '',
 });
