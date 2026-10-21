@@ -51,6 +51,16 @@ cannot.
 | List categories |  ✅   |   ✅    |   ✅   |    ✅     |
 | Update category |  ✅   |   ✅    |   ❌   |    ❌     |
 
+#### Units
+
+|             | Admin | Partner | Member | Anonymous |
+| ----------- | :---: | :-----: | :----: | :-------: |
+| Create unit |  ✅   |   ✅    |   ❌   |    ❌     |
+| Delete unit |  ✅   |   ✅    |   ❌   |    ❌     |
+| Get unit    |  ✅   |   ✅    |   ✅   |    ✅     |
+| List units  |  ✅   |   ✅    |   ✅   |    ✅     |
+| Update unit |  ✅   |   ✅    |   ❌   |    ❌     |
+
 #### Ingredients
 
 |                   | Admin | Partner | Member | Anonymous |

@@ -14,11 +14,13 @@ export const permissions: Record<Role, PermissionsByRole> = {
 	},
 	partner(_, { can }) {
 		can('manage', 'Category');
+		can('manage', 'Unit');
 		can('manage', 'Ingredient');
 		can('manage', 'Drink');
 	},
 	member(user, { can }) {
 		can(['list', 'get'], 'Category');
+		can(['list', 'get'], 'Unit');
 		can(['list', 'get'], 'Ingredient');
 		can(['list', 'get'], 'Drink');
 		can(['create', 'list', 'get'], 'Comment');

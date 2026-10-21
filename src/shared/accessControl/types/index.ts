@@ -4,9 +4,10 @@ import { CategorySubject } from '../subjects/category';
 import { IngredientSubject } from '../subjects/ingredient';
 import { DrinkSubject } from '../subjects/drink';
 import { CommentSubject } from '../subjects/coment';
+import { UnitSubject } from '../subjects/unit';
 
 type AppAbilities =
-	UserSubject | CategorySubject | IngredientSubject | DrinkSubject | CommentSubject | ['manage', 'all'];
+	UserSubject | CategorySubject | IngredientSubject | DrinkSubject | CommentSubject | UnitSubject | ['manage', 'all'];
 
 export type AppAbility = MongoAbility<AppAbilities>;
 
