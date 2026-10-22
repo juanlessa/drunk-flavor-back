@@ -26,6 +26,8 @@
 		"test": "NODE_ENV=testing vitest run -c vitest.config.ts",
 		"test:watch": "NODE_ENV=testing vitest -c vitest.config.ts",
 		"test:coverage": "NODE_ENV=testing vitest run -c vitest.config.ts --coverage",
+		"test:int": "NODE_ENV=testing vitest run -c vitest-integration.config.ts",
+		"test:int:watch": "NODE_ENV=testing vitest -c vitest-integration.config.ts",
 		"test:e2e": "tsx scripts/run-e2e.ts",
 		"test:e2e:run": "NODE_ENV=e2e vitest run -c vitest-e2e.config.ts",
 		"test:e2e:watch": "npm run test:e2e -- --watch",

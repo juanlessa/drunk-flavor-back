@@ -11,7 +11,7 @@ export default defineConfig({
 			NODE_ENV: 'testing',
 		},
 		include: ['src/**/*.spec.ts'],
-		exclude: ['src/**/*.e2e-spec.ts'],
+		exclude: ['src/**/*.e2e-spec.ts', 'src/**/*.int-spec.ts'],
 		environment: 'node',
 		coverage: {
 			include: ['src/core/**/*', 'src/shared/providers/**/*', 'src/shared/helpers/**/*'],
