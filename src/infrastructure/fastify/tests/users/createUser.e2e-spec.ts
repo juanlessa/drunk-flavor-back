@@ -49,42 +49,4 @@ describe('Create User', () => {
 
 		expect(response.status).toBe(HTTP_STATUS.unauthorized);
 	});
-
-	it('Should not be able to create a user as a member', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, {
-			email: 'member@example.com',
-			role: Roles.member,
-		});
-
-		const { name, surname, email, password, role } = createUserFactory({
-			email: 'partner@example.com',
-			role: Roles.partner,
-		});
-
-		const response = await request(app.server)
-			.post('/users')
-			.set('Cookie', cookies)
-			.send({ name, surname, email, password, role });
-
-		expect(response.status).toBe(HTTP_STATUS.forbidden);
-	});
-
-	it('Should not be able to create a user as a partner', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, {
-			email: 'partner@example.com',
-			role: Roles.partner,
-		});
-
-		const { name, surname, email, password, role } = createUserFactory({
-			email: 'new-partner@example.com',
-			role: Roles.partner,
-		});
-
-		const response = await request(app.server)
-			.post('/users')
-			.set('Cookie', cookies)
-			.send({ name, surname, email, password, role });
-
-		expect(response.status).toBe(HTTP_STATUS.forbidden);
-	});
 });

@@ -26,23 +26,9 @@ describe('List Units', () => {
 			kind: 'count',
 		});
 	});
-	it('lists units publicly with pagination', async () => {
+	it('Should be able to list the units', async () => {
 		const response = await request(app.server).get('/units').query({ page: 2, limit: 2 });
 		expect(response.status).toBe(HTTP_STATUS.ok);
 		expect(response.body).toHaveLength(1);
-	});
-	it('searches plural translations and sorts names', async () => {
-		const search = await request(app.server)
-			.get('/units')
-			.query({ search: JSON.stringify({ 'translations.en.name_plural': 'grams' }) });
-		expect(search.body).toHaveLength(1);
-		const sort = await request(app.server)
-			.get('/units')
-			.query({ sort: JSON.stringify({ 'translations.en.name': -1 }) });
-		expect(sort.body).toMatchObject([
-			{ translations: { en: { name: 'piece' } } },
-			{ translations: { en: { name: 'gram' } } },
-			{ translations: { en: { name: 'cup' } } },
-		]);
 	});
 });

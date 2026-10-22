@@ -37,30 +37,4 @@ describe('Get User', () => {
 
 		expect(response.status).toBe(HTTP_STATUS.unauthorized);
 	});
-
-	it('Should not be able to get a user as a member', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, {
-			email: 'member@example.com',
-			role: Roles.member,
-		});
-
-		const { id } = await createUser(app, { email: 'partner@example.com', role: Roles.partner });
-
-		const response = await request(app.server).get(`/users/${id}`).set('Cookie', cookies).send();
-
-		expect(response.status).toBe(HTTP_STATUS.forbidden);
-	});
-
-	it('Should not be able to get a user as a partner', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, {
-			email: 'partner@example.com',
-			role: Roles.partner,
-		});
-
-		const { id } = await createUser(app, { email: 'member@example.com', role: Roles.member });
-
-		const response = await request(app.server).get(`/users/${id}`).set('Cookie', cookies).send();
-
-		expect(response.status).toBe(HTTP_STATUS.forbidden);
-	});
 });

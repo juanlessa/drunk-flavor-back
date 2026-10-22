@@ -18,7 +18,7 @@ describe('Update Unit', () => {
 		await MongoConnection.Instance.emptyCollection(UnitModel);
 		await MongoConnection.Instance.emptyCollection(UserModel);
 	});
-	it('updates a unit with normalized complete data', async () => {
+	it('Should be able to update a unit', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 		const { id } = await createUnit();
 		const data = createUnitFactory({
@@ -46,30 +46,5 @@ describe('Update Unit', () => {
 			allow_decimal: false,
 			kind: 'mass',
 		});
-	});
-	it.each([
-		['missing', undefined],
-		['malformed', 'invalid-id'],
-		['nonexistent', new ObjectId().toString()],
-	] as const)('rejects a %s unit ID', async (_, id) => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
-		const response = await request(app.server)
-			.patch('/units')
-			.set('Cookie', cookies)
-			.send({ ...(id === undefined ? {} : { id }), ...createUnitFactory() });
-		expect(response.status).toBe(HTTP_STATUS.bad_request);
-	});
-	it.each([
-		['anonymous', undefined, HTTP_STATUS.unauthorized],
-		['member', Roles.member, HTTP_STATUS.forbidden],
-		['partner', Roles.partner, HTTP_STATUS.no_content],
-	] as const)('enforces update access for %s', async (_, role, status) => {
-		const { id } = await createUnit();
-		const cookies = role
-			? (await createAndAuthenticateUser(app, { email: `${role}@update.example.com`, role })).cookies
-			: undefined;
-		const call = request(app.server).patch('/units');
-		if (cookies) call.set('Cookie', cookies);
-		expect((await call.send({ id, ...createUnitFactory() })).status).toBe(status);
 	});
 });

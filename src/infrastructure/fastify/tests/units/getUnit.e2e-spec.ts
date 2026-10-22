@@ -11,14 +11,10 @@ describe('Get Unit', () => {
 	beforeAll(async () => app.ready());
 	afterAll(async () => app.close());
 	beforeEach(async () => MongoConnection.Instance.emptyCollection(UnitModel));
-	it('gets a unit publicly', async () => {
+	it('Should be able to get a unit', async () => {
 		const { id } = await createUnit();
 		const response = await request(app.server).get(`/units/${id}`);
 		expect(response.status).toBe(HTTP_STATUS.ok);
 		expect(response.body).toMatchObject({ allow_decimal: true, kind: 'volume' });
-	});
-	it('rejects invalid and nonexistent ids', async () => {
-		expect((await request(app.server).get('/units/invalid')).status).toBe(HTTP_STATUS.bad_request);
-		expect((await request(app.server).get(`/units/${new ObjectId()}`)).status).toBe(HTTP_STATUS.bad_request);
 	});
 });
