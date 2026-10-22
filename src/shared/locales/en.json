@@ -99,5 +99,29 @@
 	"apiResponses.drinks.requiredQuantity": "Quantity is required",
 	"apiResponses.drinks.invalidQuantityFormat": "Quantity must be greater than 0",
 	"apiResponses.drinks.requiredIngredients": "Drink must have at least 1 ingredient",
-	"apiResponses.drinks.someIngredientsNotExist": "Some ingredients don't exist"
+	"apiResponses.drinks.someIngredientsNotExist": "Some ingredients don't exist",
+
+	"apiResponses.ratings.notExist": "Rating does not exist",
+	"apiResponses.ratings.notFound": "Rating not found",
+	"apiResponses.ratings.alreadyExist": "A rating from this user for this drink already exists",
+	"apiResponses.ratings.requiredId": "ID is required",
+	"apiResponses.ratings.invalidIdFormat": "Invalid ID format",
+	"apiResponses.ratings.requiredDrinkId": "Drink ID is required",
+	"apiResponses.ratings.invalidDrinkIdFormat": "Invalid drink ID format",
+	"apiResponses.ratings.requiredValue": "Value is required",
+	"apiResponses.ratings.invalidValue": "Value must be an integer between 1 and 5",
+	"apiResponses.ratings.forbidden": "You are not allowed to perform this action on this rating",
+
+	"apiResponses.comments.notExist": "Comment does not exist",
+	"apiResponses.comments.notFound": "Comment not found",
+	"apiResponses.comments.requiredId": "ID is required",
+	"apiResponses.comments.invalidIdFormat": "Invalid ID format",
+	"apiResponses.comments.requiredDrinkId": "Drink ID is required",
+	"apiResponses.comments.invalidDrinkIdFormat": "Invalid drink ID format",
+	"apiResponses.comments.requiredContent": "Content is required",
+	"apiResponses.comments.invalidContentMin": "Content must have a minimum of 1 character",
+	"apiResponses.comments.invalidContentMax": "Content must have a maximum of 2000 characters",
+	"apiResponses.comments.requiredStatus": "Status is required",
+	"apiResponses.comments.invalidStatus": "Status must be visible, hidden, or flagged",
+	"apiResponses.comments.forbidden": "You are not allowed to perform this action on this comment"
 }
