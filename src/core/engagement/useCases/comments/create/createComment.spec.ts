@@ -1,7 +1,7 @@
 import { CommentStatuses } from '@/core/engagement/entities/comment.entity';
 import { ICommentsRepository } from '@/core/engagement/repositories/IComments.repository';
 import { CommentsRepositoryInMemory } from '@/core/engagement/repositories/inMemory/Comments.repository';
-import { EngagementActor } from '@/core/engagement/types/actor.types';
+import { Actor } from '@/shared/accessControl/actor.types';
 import { Roles } from '@/shared/accessControl/roles';
 import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -11,7 +11,7 @@ let commentsRepository: ICommentsRepository;
 let service: CreateCommentService;
 let drink_id: string;
 
-const actor: EngagementActor = { id: new ObjectId().toString(), role: Roles.member };
+const actor: Actor = { id: new ObjectId().toString(), role: Roles.member };
 
 describe('Create Comment', () => {
 	beforeEach(async () => {

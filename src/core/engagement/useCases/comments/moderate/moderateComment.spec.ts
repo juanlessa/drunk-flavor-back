@@ -1,7 +1,7 @@
 import { CommentStatuses } from '@/core/engagement/entities/comment.entity';
 import { ICommentsRepository } from '@/core/engagement/repositories/IComments.repository';
 import { CommentsRepositoryInMemory } from '@/core/engagement/repositories/inMemory/Comments.repository';
-import { EngagementActor } from '@/core/engagement/types/actor.types';
+import { Actor } from '@/shared/accessControl/actor.types';
 import { Roles } from '@/shared/accessControl/roles';
 import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
 import { ObjectId } from 'mongodb';
@@ -13,8 +13,8 @@ let service: ModerateCommentService;
 
 const ownerId = new ObjectId().toString();
 const drinkId = new ObjectId().toString();
-const admin: EngagementActor = { id: new ObjectId().toString(), role: Roles.admin };
-const member: EngagementActor = { id: new ObjectId().toString(), role: Roles.member };
+const admin: Actor = { id: new ObjectId().toString(), role: Roles.admin };
+const member: Actor = { id: new ObjectId().toString(), role: Roles.member };
 
 describe('Moderate Comment', () => {
 	beforeEach(() => {

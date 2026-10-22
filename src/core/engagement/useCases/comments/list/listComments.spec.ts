@@ -1,6 +1,6 @@
 import { CommentStatuses } from '@/core/engagement/entities/comment.entity';
 import { CommentListQuery } from '@/core/engagement/dtos/comment.dtos';
-import { EngagementActor } from '@/core/engagement/types/actor.types';
+import { Actor } from '@/shared/accessControl/actor.types';
 import { ICommentsRepository } from '@/core/engagement/repositories/IComments.repository';
 import { CommentsRepositoryInMemory } from '@/core/engagement/repositories/inMemory/Comments.repository';
 import { Roles } from '@/shared/accessControl/roles';
@@ -14,7 +14,7 @@ const query: CommentListQuery = { page: 1, limit: 50, sort: { created_at: -1, _i
 
 let commentsRepository: ICommentsRepository;
 const drinkId = new ObjectId().toString();
-const actor: EngagementActor = { id: new ObjectId().toString(), role: Roles.member };
+const actor: Actor = { id: new ObjectId().toString(), role: Roles.member };
 
 describe('List Comments', () => {
 	beforeEach(async () => {

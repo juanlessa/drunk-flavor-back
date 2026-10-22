@@ -1,4 +1,4 @@
-import { EngagementActor } from '@/core/engagement/types/actor.types';
+import { Actor } from '@/shared/accessControl/actor.types';
 import { z } from 'zod/v4';
 import { updateCommentBodySchema, updateCommentParamsSchema } from './updateComment.schema';
 
@@ -8,5 +8,5 @@ export type UpdateCommentReqParam = z.infer<typeof updateCommentParamsSchema>;
 export type UpdateCommentCommand = {
 	id: string;
 	content: string;
-	actor: EngagementActor;
+	actor: Actor;
 };

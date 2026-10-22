@@ -1,4 +1,4 @@
-import { EngagementActor } from '@/core/engagement/types/actor.types';
+import { Actor } from '@/shared/accessControl/actor.types';
 import { IRatingsRepository } from '@/core/engagement/repositories/IRatings.repository';
 import { RatingsRepositoryInMemory } from '@/core/engagement/repositories/inMemory/Ratings.repository';
 import { Roles } from '@/shared/accessControl/roles';
@@ -11,7 +11,7 @@ let ratingsRepository: IRatingsRepository;
 let service: CreateRatingService;
 let drink_id: string;
 
-const actor: EngagementActor = { id: new ObjectId().toString(), role: Roles.member };
+const actor: Actor = { id: new ObjectId().toString(), role: Roles.member };
 
 describe('Create Rating', () => {
 	beforeEach(async () => {

@@ -1,4 +1,4 @@
-import { EngagementActor } from '@/core/engagement/types/actor.types';
+import { Actor } from '@/shared/accessControl/actor.types';
 import { IRatingsRepository } from '@/core/engagement/repositories/IRatings.repository';
 import { RatingsRepositoryInMemory } from '@/core/engagement/repositories/inMemory/Ratings.repository';
 import { resolveUpdateRatingService } from './updateRating.container';
@@ -13,8 +13,8 @@ let service: UpdateRatingService;
 
 const ownerId = new ObjectId().toString();
 const drinkId = new ObjectId().toString();
-const owner: EngagementActor = { id: ownerId, role: Roles.member };
-const foreign: EngagementActor = { id: new ObjectId().toString(), role: Roles.member };
+const owner: Actor = { id: ownerId, role: Roles.member };
+const foreign: Actor = { id: new ObjectId().toString(), role: Roles.member };
 
 describe('Update Rating', () => {
 	beforeEach(() => {

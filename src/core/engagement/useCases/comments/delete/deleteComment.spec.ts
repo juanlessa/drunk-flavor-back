@@ -1,6 +1,6 @@
 import { ICommentsRepository } from '@/core/engagement/repositories/IComments.repository';
 import { CommentsRepositoryInMemory } from '@/core/engagement/repositories/inMemory/Comments.repository';
-import { EngagementActor } from '@/core/engagement/types/actor.types';
+import { Actor } from '@/shared/accessControl/actor.types';
 import { Roles } from '@/shared/accessControl/roles';
 import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
 import { ObjectId } from 'mongodb';
@@ -12,9 +12,9 @@ let service: DeleteCommentService;
 
 const ownerId = new ObjectId().toString();
 const drinkId = new ObjectId().toString();
-const owner: EngagementActor = { id: ownerId, role: Roles.member };
-const admin: EngagementActor = { id: new ObjectId().toString(), role: Roles.admin };
-const foreignMember: EngagementActor = { id: new ObjectId().toString(), role: Roles.member };
+const owner: Actor = { id: ownerId, role: Roles.member };
+const admin: Actor = { id: new ObjectId().toString(), role: Roles.admin };
+const foreignMember: Actor = { id: new ObjectId().toString(), role: Roles.member };
 
 describe('Delete Comment', () => {
 	beforeEach(() => {

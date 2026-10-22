@@ -1,5 +1,5 @@
 import { RatingListQuery } from '@/core/engagement/dtos/rating.dtos';
-import { EngagementActor } from '@/core/engagement/types/actor.types';
+import { Actor } from '@/shared/accessControl/actor.types';
 import { IRatingsRepository } from '@/core/engagement/repositories/IRatings.repository';
 import { RatingsRepositoryInMemory } from '@/core/engagement/repositories/inMemory/Ratings.repository';
 import { Roles } from '@/shared/accessControl/roles';
@@ -13,7 +13,7 @@ const query: RatingListQuery = { page: 1, limit: 50, sort: { created_at: -1, _id
 
 let ratingsRepository: IRatingsRepository;
 const drinkId = new ObjectId().toString();
-const actor: EngagementActor = { id: new ObjectId().toString(), role: Roles.member };
+const actor: Actor = { id: new ObjectId().toString(), role: Roles.member };
 
 describe('List Ratings', () => {
 	beforeEach(async () => {

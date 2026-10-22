@@ -1,4 +1,4 @@
-import { EngagementActor } from '@/core/engagement/types/actor.types';
+import { Actor } from '@/shared/accessControl/actor.types';
 import { z } from 'zod/v4';
 import { updateRatingBodySchema, updateRatingParamsSchema } from './updateRating.schema';
 
@@ -8,5 +8,5 @@ export type UpdateRatingReqParam = z.infer<typeof updateRatingParamsSchema>;
 export type UpdateRatingCommand = {
 	id: string;
 	value: number;
-	actor: EngagementActor;
+	actor: Actor;
 };

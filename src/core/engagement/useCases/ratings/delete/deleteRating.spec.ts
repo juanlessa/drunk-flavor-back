@@ -1,4 +1,4 @@
-import { EngagementActor } from '@/core/engagement/types/actor.types';
+import { Actor } from '@/shared/accessControl/actor.types';
 import { IRatingsRepository } from '@/core/engagement/repositories/IRatings.repository';
 import { RatingsRepositoryInMemory } from '@/core/engagement/repositories/inMemory/Ratings.repository';
 import { resolveDeleteRatingService } from './deleteRating.container';
@@ -13,9 +13,9 @@ let service: DeleteRatingService;
 
 const ownerId = new ObjectId().toString();
 const drinkId = new ObjectId().toString();
-const owner: EngagementActor = { id: ownerId, role: Roles.member };
-const admin: EngagementActor = { id: new ObjectId().toString(), role: Roles.admin };
-const foreignMember: EngagementActor = { id: new ObjectId().toString(), role: Roles.member };
+const owner: Actor = { id: ownerId, role: Roles.member };
+const admin: Actor = { id: new ObjectId().toString(), role: Roles.admin };
+const foreignMember: Actor = { id: new ObjectId().toString(), role: Roles.member };
 
 describe('Delete Rating', () => {
 	beforeEach(() => {
