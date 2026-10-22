@@ -3,11 +3,19 @@ import { UserSubject } from '../subjects/user';
 import { CategorySubject } from '../subjects/category';
 import { IngredientSubject } from '../subjects/ingredient';
 import { DrinkSubject } from '../subjects/drink';
-import { CommentSubject } from '../subjects/coment';
+import { CommentSubject } from '../subjects/comment';
+import { RatingSubject } from '../subjects/rating';
 import { UnitSubject } from '../subjects/unit';
 
 type AppAbilities =
-	UserSubject | CategorySubject | IngredientSubject | DrinkSubject | CommentSubject | UnitSubject | ['manage', 'all'];
+	| UserSubject
+	| CategorySubject
+	| IngredientSubject
+	| DrinkSubject
+	| CommentSubject
+	| RatingSubject
+	| UnitSubject
+	| ['manage', 'all'];
 
 export type AppAbility = MongoAbility<AppAbilities>;
 

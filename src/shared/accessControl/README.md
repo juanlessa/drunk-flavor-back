@@ -88,18 +88,48 @@ The three update endpoints (`PATCH /drinks`, `PATCH /drinks/:id/cover`, `PATCH /
 
 #### Comments
 
-|                | Admin | Partner | Member | Anonymous |
-| -------------- | :---: | :-----: | :----: | :-------: |
-| Create comment |  ✅   |   ✅    |   ✅   |    ❌     |
-| Delete comment |  ✅   |   🟠    |   🟠   |    ❌     |
-| Get comment    |  ✅   |   ✅    |   ✅   |    ✅     |
-| List comments  |  ✅   |   ✅    |   ✅   |    ✅     |
-| Update comment |  🟠   |   🟠    |   🟠   |    ❌     |
+Public reads (`GET /comments`, `GET /comments/:id`, `GET /drinks/:drink_id/comments`) expose only `visible` comments;
+`hidden` and `flagged` records are treated as missing. The authenticated current-user list (`GET /me/comments`) returns
+all statuses that belong to the caller. There is no arbitrary-user listing route.
+
+Ownership for update and delete is evaluated against the stored comment loaded by its ID (concrete-subject check in the
+service), not against a subject name. Create and current-user list are role-only and use static `verifyPermissions`.
+Moderation (`PATCH /comments/:id/status`) is Admin-only.
+
+|                 | Admin | Partner | Member | Anonymous |
+| --------------- | :---: | :-----: | :----: | :-------: |
+| Create comment  |  ✅   |   ✅    |   ✅   |    ❌     |
+| Delete comment  |  ✅   |   🟠    |   🟠   |    ❌     |
+| Get comment     |  ✅   |   ✅    |   ✅   |    ✅     |
+| List comments   |  ✅   |   ✅    |   ✅   |    ✅     |
+| Update comment  |  🟠   |   🟠    |   🟠   |    ❌     |
+| Moderate status |  ✅   |   ❌    |   ❌   |    ❌     |
 
 ##### Conditions
 
 - Only owner may update comment
 - Only owner or admins may delete comment
+- Only admins may moderate comment status
+
+#### Ratings
+
+Rating mirrors the Comment CRUD policy. Public reads (`GET /ratings`, `GET /ratings/:id`,
+`GET /drinks/:drink_id/ratings`) require no authentication. The authenticated current-user list (`GET /me/ratings`)
+always scopes to the caller. Ownership for update and delete is evaluated against the stored rating loaded by its ID
+(concrete-subject check in the service). There is no arbitrary-user listing route.
+
+|               | Admin | Partner | Member | Anonymous |
+| ------------- | :---: | :-----: | :----: | :-------: |
+| Create rating |  ✅   |   ✅    |   ✅   |    ❌     |
+| Delete rating |  ✅   |   🟠    |   🟠   |    ❌     |
+| Get rating    |  ✅   |   ✅    |   ✅   |    ✅     |
+| List ratings  |  ✅   |   ✅    |   ✅   |    ✅     |
+| Update rating |  🟠   |   🟠    |   🟠   |    ❌     |
+
+##### Conditions
+
+- Only owner may update rating
+- Only owner or admins may delete rating
 
 #### Auth (public)
 
