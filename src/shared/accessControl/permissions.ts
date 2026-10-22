@@ -8,11 +8,7 @@ type PermissionsByRole = (user: UserPermissionModel, builder: AbilityBuilder<App
 export const permissions: Record<Role, PermissionsByRole> = {
 	admin(user, { can, cannot }) {
 		can('manage', 'all');
-		// User management is admin-only. `manage all` already covers it, but this explicit
-		// grant documents the intent and keeps `User` admin-only if `manage all` is ever narrowed.
 		can('manage', 'User');
-		// Ordinary updates of engagement resources are owner-only, even for Admin. Delete and
-		// moderate remain unrestricted for Admin through `manage all`.
 		cannot('update', ['Comment', 'Rating'], { user_id: { $ne: user.id } });
 	},
 	partner(user, { can }) {
