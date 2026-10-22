@@ -24,6 +24,7 @@
 	"apiResponses.auth.tooManyRequests": "Too many requests. Please try again later.",
 
 	"apiResponses.users.notExist": "User does not exist",
+	"apiResponses.users.forbidden": "You are not allowed to perform this action on this user",
 	"apiResponses.users.alreadyExist": "User already exists",
 	"apiResponses.users.notFound": "User not found",
 	"apiResponses.users.requiredId": "ID is required",
