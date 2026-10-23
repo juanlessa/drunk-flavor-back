@@ -35,6 +35,13 @@ export const buildQuery = <T>(queryParams: QueryParams, model: Model<T>) => {
 				sortOptions[field] = order;
 			}
 		}
+		// Append `_id` as a deterministic tie-breaker so documents sharing the
+		// primary sort-key value keep a stable order across pages. Only applied
+		// when a sort is supplied, preserving natural order for unsorted reads,
+		// and skipped when the caller already sorts by `_id`.
+		if (!('_id' in sortOptions)) {
+			sortOptions._id = -1;
+		}
 		query = query.sort(sortOptions);
 	}
 

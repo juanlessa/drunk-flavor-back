@@ -1,19 +1,33 @@
 import { CreateCategory, FindCategoryByName, UpdateCategory } from '@/core/drinks/dtos/category.dtos';
 import { Category } from '@/core/drinks/entities/category.entity';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
-import { CategoryModel } from '../entities/category.model';
+import { CATEGORY_UNIQUE_INDEXES, CategoryModel } from '../entities/category.model';
 import { getNameCompareQuery } from '../helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
 import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
+import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
 import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
 
 export class CategoriesRepository implements ICategoriesRepository {
 	async create(data: CreateCategory): Promise<Category> {
-		return CategoryModel.create(data);
+		try {
+			return await CategoryModel.create(data);
+		} catch (error) {
+			throw mapDuplicateKeyError(error, CATEGORY_UNIQUE_INDEXES, 'apiResponses.categories.alreadyExist', {
+				path: 'Categories.repository',
+			});
+		}
 	}
 	async update({ id, ...data }: UpdateCategory): Promise<Category> {
-		const category = await CategoryModel.findByIdAndUpdate<Category>(id, data, { returnDocument: 'after' }).exec();
+		let category: Category | null;
+		try {
+			category = await CategoryModel.findByIdAndUpdate<Category>(id, data, { returnDocument: 'after' }).exec();
+		} catch (error) {
+			throw mapDuplicateKeyError(error, CATEGORY_UNIQUE_INDEXES, 'apiResponses.categories.alreadyExist', {
+				path: 'Categories.repository',
+			});
+		}
 		if (!category) {
 			throw new NotFoundError('apiResponses.categories.notFound', {
 				path: 'Categories.repository',

@@ -2,19 +2,33 @@ import { CreateUnit, FindUnitByName, UpdateUnit } from '@/core/drinks/dtos/unit.
 import { Unit } from '@/core/drinks/entities/unit.entity';
 import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
 import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
+import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
 import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
-import { UnitModel } from '../entities/unit.model';
+import { UNIT_UNIQUE_INDEXES, UnitModel } from '../entities/unit.model';
 import { getNameCompareQuery } from '../helpers/translations.helpers';
 
 export class UnitsRepository implements IUnitsRepository {
 	async create(data: CreateUnit): Promise<Unit> {
-		return UnitModel.create(data);
+		try {
+			return await UnitModel.create(data);
+		} catch (error) {
+			throw mapDuplicateKeyError(error, UNIT_UNIQUE_INDEXES, 'apiResponses.units.alreadyExist', {
+				path: 'Units.repository',
+			});
+		}
 	}
 
 	async update({ id, ...data }: UpdateUnit): Promise<Unit> {
-		const unit = await UnitModel.findByIdAndUpdate<Unit>(id, data, { returnDocument: 'after' }).exec();
+		let unit: Unit | null;
+		try {
+			unit = await UnitModel.findByIdAndUpdate<Unit>(id, data, { returnDocument: 'after' }).exec();
+		} catch (error) {
+			throw mapDuplicateKeyError(error, UNIT_UNIQUE_INDEXES, 'apiResponses.units.alreadyExist', {
+				path: 'Units.repository',
+			});
+		}
 		if (!unit) {
 			throw new NotFoundError('apiResponses.units.notFound', {
 				path: 'Units.repository',
