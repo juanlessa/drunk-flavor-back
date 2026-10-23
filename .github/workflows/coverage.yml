@@ -1,0 +1,56 @@
+name: coverage report flow
+
+on:
+    pull_request:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# Scoped to the minimum needed to post a coverage comment on the pull request.
+permissions:
+    contents: read
+    pull-requests: write
+
+jobs:
+    report-coverage:
+        name: merged coverage report (informational)
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Git checkout
+              uses: actions/checkout@v7
+
+            - name: Use Node.js from .nvmrc
+              uses: actions/setup-node@v7
+              with:
+                  node-version-file: '.nvmrc'
+
+            - name: Install dependencies
+              run: npm ci
+
+            # Produces the MERGED unit + integration coverage in ./coverage/merged,
+            # including coverage-summary.json (json-summary) and coverage-final.json (json).
+            # The integration suite boots mongodb-memory-server and redis-memory-server
+            # in-process, so no external Mongo/Redis services or secrets are required.
+            #
+            # NON-BLOCKING: this workflow is purely informational. No coverage thresholds
+            # are configured, so coverage percentage can never fail the check. continue-on-error
+            # keeps the job from blocking the PR even if the coverage run itself errors;
+            # real test failures are already surfaced by the unit and integration workflows.
+            - name: Merged unit + integration coverage
+              continue-on-error: true
+              run: npm run test:coverage:all
+
+            # Posts/updates a single sticky PR comment with the merged coverage. The
+            # comment is labeled so reviewers know it covers unit + integration only;
+            # e2e is deliberately excluded because it exercises happy paths and would
+            # inflate the numbers without proving logic. Uses only the default GITHUB_TOKEN.
+            - name: Report merged coverage on PR
+              uses: davelosert/vitest-coverage-report-action@v2
+              with:
+                  name: 'Merged coverage (unit + integration, informational — e2e excluded)'
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  vite-config-path: ./vitest-merge.config.ts
+                  json-summary-path: ./coverage/merged/coverage-summary.json
+                  json-final-path: ./coverage/merged/coverage-final.json
