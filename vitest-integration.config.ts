@@ -21,8 +21,7 @@ export default defineConfig({
 		coverage: {
 			reportsDirectory: './coverage/integration',
 			include: [
-				'src/core/drinks/infra/mongo/**/*.ts',
-				'src/core/engagement/infra/mongo/**/*.ts',
+				'src/core/**/infra/mongo/**/*.ts',
 				'src/infrastructure/mongo/helpers/duplicateKey.helpers.ts',
 				'src/infrastructure/mongo/helpers/mongoose.helpers.ts',
 				'src/infrastructure/mongo/helpers/query.helpers.ts',
