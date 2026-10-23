@@ -9,6 +9,7 @@ secret_key
 /templates/
 .DS_Store
 coverage
+.vitest/
 .vscode/*
 !.vscode/launch.json
 !.vscode/settings.json

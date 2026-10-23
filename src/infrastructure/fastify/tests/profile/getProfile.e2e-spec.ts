@@ -5,7 +5,7 @@ import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { Roles } from '@/shared/accessControl/roles';
 
 describe('Get Profile', () => {
 	beforeAll(async () => {
@@ -21,7 +21,7 @@ describe('Get Profile', () => {
 	});
 
 	it('Should be able to get the profile', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.partner });
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.partner });
 
 		const response = await request(app.server).get('/me').set('Cookie', cookies).send();
 

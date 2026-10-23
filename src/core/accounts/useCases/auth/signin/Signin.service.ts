@@ -2,7 +2,7 @@ import { Signin } from './signin.dtos';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { UnauthorizedError } from '@/shared/error/error.lib';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
-import { UserStatusEnum } from '@/core/accounts/entities/user.entity';
+import { UserStatuses } from '@/core/accounts/entities/user.entity';
 
 export class SigninService {
 	constructor(
@@ -23,7 +23,7 @@ export class SigninService {
 			});
 		}
 
-		if (user.status !== UserStatusEnum['active']) {
+		if (user.status !== UserStatuses['active']) {
 			// TODO: trigger an "account inactive / verify your email" notification to
 			// the user's address here. Guidance about the inactive account must be
 			// delivered out-of-band (email), never in the sign-in response, so it

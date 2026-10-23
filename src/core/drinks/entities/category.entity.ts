@@ -7,4 +7,5 @@ export type CategoryTranslation = {
 
 export type Category = DatabaseCommonInfo & {
 	translations: Translations<CategoryTranslation>;
+	is_alcoholic: boolean;
 };

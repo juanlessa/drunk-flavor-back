@@ -1,6 +1,7 @@
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { logger } from '@/shared/providers/logger';
 import { insertCategories } from './categories';
+import { insertUnits } from './units';
 import { insertIngredients } from './ingredients';
 import { insertDrinks } from './drinks';
 
@@ -36,6 +37,7 @@ const gracefulShutdown = (signal: string) => async () => {
 
 const seedDatabase = async () => {
 	await insertCategories();
+	await insertUnits();
 	await insertIngredients();
 	await insertDrinks();
 };

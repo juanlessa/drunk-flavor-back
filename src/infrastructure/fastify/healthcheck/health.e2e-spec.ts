@@ -33,8 +33,6 @@ describe('Health Check', () => {
 		const response = await request(app.server).get('/health/ready').send();
 		const body = response.body as ReadinessReport;
 
-		// The body must expose only up/down status, never error text, stacks,
-		// versions, hostnames or connection strings.
 		expect(Object.keys(body).sort()).toEqual(['dependencies', 'status']);
 	});
 });

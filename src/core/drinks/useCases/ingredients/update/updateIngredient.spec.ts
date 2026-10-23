@@ -3,16 +3,21 @@ import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemo
 import { ObjectId } from 'mongodb';
 import { UpdateIngredientService } from './UpdateIngredient.service';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
+import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Units.repository';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
+import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
+import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
 import { Category } from '@/core/drinks/entities/category.entity';
+import { Unit } from '@/core/drinks/entities/unit.entity';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 
 let categoriesRepository: ICategoriesRepository;
 let ingredientsRepository: IIngredientsRepository;
+let unitsRepository: IUnitsRepository;
 let service: UpdateIngredientService;
 
 const { translations: categoryTranslations } = createCategoryFactory();
@@ -21,13 +26,14 @@ const { translations: updatedCategoryTranslations } = createCategoryFactory({
 });
 let createdCategory: Category;
 let updatedCategory: Category;
-const { translations, is_alcoholic } = createIngredientFactory();
-const { translations: updatedTranslations, is_alcoholic: updatedIsAlcoholic } = createIngredientFactory({
+let createdUnit: Unit;
+let updatedUnit: Unit;
+const { translations } = createIngredientFactory();
+const { translations: updatedTranslations } = createIngredientFactory({
 	translations: {
-		en: { name: 'Lime juice', unit: 'ml', unit_plural: 'ml' },
-		pt: { name: 'Suco de limão', unit: 'ml', unit_plural: 'ml' },
+		en: { name: 'Lime juice' },
+		pt: { name: 'Suco de limão' },
 	},
-	is_alcoholic: true,
 });
 let createdIngredient: Ingredient;
 
@@ -35,14 +41,25 @@ describe('Update Ingredient', () => {
 	beforeEach(async () => {
 		categoriesRepository = new CategoriesRepositoryInMemory();
 		ingredientsRepository = new IngredientsRepositoryInMemory();
-		service = new UpdateIngredientService(ingredientsRepository, categoriesRepository);
+		unitsRepository = new UnitsRepositoryInMemory();
+		service = new UpdateIngredientService(ingredientsRepository, categoriesRepository, unitsRepository);
 
-		createdCategory = await categoriesRepository.create({ translations: categoryTranslations });
-		updatedCategory = await categoriesRepository.create({ translations: updatedCategoryTranslations });
+		createdCategory = await categoriesRepository.create({
+			translations: categoryTranslations,
+			is_alcoholic: false,
+		});
+		updatedCategory = await categoriesRepository.create({
+			translations: updatedCategoryTranslations,
+			is_alcoholic: false,
+		});
+		createdUnit = await unitsRepository.create(createUnitFactory());
+		updatedUnit = await unitsRepository.create(
+			createUnitFactory({ translations: { en: { name: 'centiliter' }, pt: { name: 'centilitro' } } }),
+		);
 		createdIngredient = await ingredientsRepository.create({
 			translations,
-			is_alcoholic,
 			category: createdCategory,
+			unit: createdUnit,
 		});
 	});
 
@@ -51,7 +68,7 @@ describe('Update Ingredient', () => {
 			id: createdIngredient._id.toString(),
 			translations: updatedTranslations,
 			category_id: updatedCategory._id.toString(),
-			is_alcoholic: updatedIsAlcoholic,
+			unit_id: updatedUnit._id.toString(),
 		});
 
 		const findUpdatedIngredient = (await ingredientsRepository.findById(
@@ -60,7 +77,7 @@ describe('Update Ingredient', () => {
 
 		expect(findUpdatedIngredient.translations).toEqual(updatedTranslations);
 		expect(findUpdatedIngredient.category).toEqual(updatedCategory);
-		expect(findUpdatedIngredient.is_alcoholic).toEqual(updatedIsAlcoholic);
+		expect(findUpdatedIngredient.unit).toEqual(updatedUnit);
 	});
 
 	it('should not be able to update a nonexistent ingredient', async () => {
@@ -69,7 +86,7 @@ describe('Update Ingredient', () => {
 				id: new ObjectId().toString(),
 				translations: updatedTranslations,
 				category_id: updatedCategory._id.toString(),
-				is_alcoholic: updatedIsAlcoholic,
+				unit_id: updatedUnit._id.toString(),
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});
@@ -78,7 +95,7 @@ describe('Update Ingredient', () => {
 		await ingredientsRepository.create({
 			translations: updatedTranslations,
 			category: updatedCategory,
-			is_alcoholic: updatedIsAlcoholic,
+			unit: updatedUnit,
 		});
 
 		await expect(
@@ -86,7 +103,7 @@ describe('Update Ingredient', () => {
 				id: createdIngredient._id.toString(),
 				translations: updatedTranslations,
 				category_id: updatedCategory._id.toString(),
-				is_alcoholic: updatedIsAlcoholic,
+				unit_id: updatedUnit._id.toString(),
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});
@@ -96,7 +113,17 @@ describe('Update Ingredient', () => {
 				id: createdIngredient._id.toString(),
 				translations: updatedTranslations,
 				category_id: new ObjectId().toString(),
-				is_alcoholic: updatedIsAlcoholic,
+				unit_id: updatedUnit._id.toString(),
+			}),
+		).rejects.toBeInstanceOf(BadRequestError);
+	});
+	it('should not be able to update an ingredient with a nonexistent unit', async () => {
+		await expect(
+			service.execute({
+				id: createdIngredient._id.toString(),
+				translations: updatedTranslations,
+				category_id: updatedCategory._id.toString(),
+				unit_id: new ObjectId().toString(),
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});

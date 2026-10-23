@@ -8,7 +8,7 @@ import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { CategoryModel } from '@/core/drinks/infra/mongo/entities/category.model';
 import { createCategory } from '../helpers/category.helpers';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { Roles } from '@/shared/accessControl/roles';
 
 describe('Update Category', () => {
 	beforeAll(async () => {
@@ -25,17 +25,18 @@ describe('Update Category', () => {
 	});
 
 	it('Should be able to update a category', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 		const { id } = await createCategory();
 
-		const { translations } = createCategoryFactory({
+		const { translations, is_alcoholic } = createCategoryFactory({
 			translations: { en: { name: 'Juice' }, pt: { name: 'Suco' } },
+			is_alcoholic: true,
 		});
 
 		const response = await request(app.server)
 			.patch('/categories')
 			.set('Cookie', cookies)
-			.send({ id, translations });
+			.send({ id, translations, is_alcoholic });
 
 		expect(response.status).toBe(HTTP_STATUS.no_content);
 	});

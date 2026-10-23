@@ -5,6 +5,9 @@ import { ingredientsRoutes } from './ingredients.routes';
 import { drinksRoutes } from './drinks.routes';
 import { usersRoutes } from './users.routes';
 import { profileRoutes } from './profile.routes';
+import { unitsRoutes } from './units.routes';
+import { ratingsRoutes } from './ratings.routes';
+import { commentsRoutes } from './comments.routes';
 
 export const router = [
 	healthRoutes,
@@ -12,6 +15,9 @@ export const router = [
 	profileRoutes,
 	usersRoutes,
 	categoriesRoutes,
+	unitsRoutes,
 	ingredientsRoutes,
 	drinksRoutes,
+	ratingsRoutes,
+	commentsRoutes,
 ];

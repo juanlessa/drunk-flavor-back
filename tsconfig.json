@@ -24,6 +24,14 @@
 			"@/*": ["./src/*"]
 		}
 	},
-	"include": ["src/**/*", "seed/**/*", "scripts/**/*", "vitest.config.ts", "vitest-e2e.config.ts"],
+	"include": [
+		"src/**/*",
+		"seed/**/*",
+		"scripts/**/*",
+		"vitest.config.ts",
+		"vitest-e2e.config.ts",
+		"vitest-integration.config.ts",
+		"vitest-merge.config.ts"
+	],
 	"exclude": ["node_modules", "build", "dist", "docs", "infra", "coverage"]
 }

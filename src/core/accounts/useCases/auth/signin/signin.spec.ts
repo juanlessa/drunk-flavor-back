@@ -6,7 +6,7 @@ import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
 import { SigninService } from './Signin.service';
-import { UserStatusEnum } from '@/core/accounts/entities/user.entity';
+import { UserStatuses } from '@/core/accounts/entities/user.entity';
 
 let usersRepository: IUsersRepository;
 let hashProvider: IHashProvider;
@@ -51,7 +51,7 @@ describe('Signin', () => {
 			email,
 			role,
 			password: await hashProvider.hash(password),
-			status: UserStatusEnum['pending'],
+			status: UserStatuses['pending'],
 		});
 
 		// Must be indistinguishable from an invalid-credentials failure (no account
@@ -95,7 +95,7 @@ describe('Signin', () => {
 				surname,
 				email,
 				role,
-				status: UserStatusEnum['pending'],
+				status: UserStatuses['pending'],
 				password: await hashProvider.hash(password),
 			});
 
@@ -147,7 +147,7 @@ describe('Signin', () => {
 			email,
 			role,
 			password: await hashProvider.hash(password),
-			status: UserStatusEnum['pending'],
+			status: UserStatuses['pending'],
 		});
 
 		const error = await service.execute({ email, password }).catch((caught: unknown) => caught);

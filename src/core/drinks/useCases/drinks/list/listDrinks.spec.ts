@@ -1,9 +1,12 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Ingredients.repository';
+import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Units.repository';
 import { ListDrinksService } from './ListDrinks.service';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
+import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
+import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
 import { createDrinkFactory } from '@/core/drinks/factories/drink.factories';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
@@ -16,6 +19,7 @@ import { MockStorageProvider } from '@/shared/providers/storage/implementations/
 
 let categoriesRepository: ICategoriesRepository;
 let ingredientsRepository: IIngredientsRepository;
+let unitsRepository: IUnitsRepository;
 let drinksRepository: IDrinksRepository;
 let storageProvider: IStorageProvider;
 let service: ListDrinksService;
@@ -48,20 +52,22 @@ describe('List Drinks', () => {
 
 		categoriesRepository = new CategoriesRepositoryInMemory();
 		ingredientsRepository = new IngredientsRepositoryInMemory();
+		unitsRepository = new UnitsRepositoryInMemory();
 		drinksRepository = new DrinksRepositoryInMemory();
 		storageProvider = new MockStorageProvider();
 		service = new ListDrinksService(drinksRepository, storageProvider);
 
 		const category1 = await categoriesRepository.create(createCategory1);
+		const unit = await unitsRepository.create(createUnitFactory());
 		const ingredient1 = await ingredientsRepository.create({
 			translations: translationsIngredient1,
-			is_alcoholic: false,
 			category: category1,
+			unit,
 		});
 		const ingredient2 = await ingredientsRepository.create({
 			translations: translationsIngredient2,
-			is_alcoholic: false,
 			category: category1,
+			unit,
 		});
 		createdDrink1 = await drinksRepository.create({
 			translations: translationsDrink1,

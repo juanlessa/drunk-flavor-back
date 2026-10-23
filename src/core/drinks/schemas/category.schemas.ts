@@ -15,6 +15,10 @@ export const categoryNameValidation = z
 	.min(1, { error: 'apiResponses.categories.invalidNameFormat' satisfies LocaleKey })
 	.transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`);
 
+export const categoryIsAlcoholicValidation = z.boolean({
+	error: 'apiResponses.categories.requiredIsAlcoholic' satisfies LocaleKey,
+});
+
 // schemas
 export const categoryTranslationSchema = z.object({
 	name: categoryNameValidation,

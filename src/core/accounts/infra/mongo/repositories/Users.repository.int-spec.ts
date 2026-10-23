@@ -1,0 +1,152 @@
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { ObjectId } from 'mongodb';
+import { UsersRepository } from './Users.repository';
+import { UserModel } from '../entities/user.model';
+import { createUserFactory } from '@/core/accounts/factories/user.factories';
+import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
+
+let repository: UsersRepository;
+
+describe('UsersRepository (integration)', () => {
+	beforeAll(async () => {
+		await UserModel.init();
+	});
+
+	beforeEach(() => {
+		repository = new UsersRepository();
+	});
+
+	afterEach(async () => {
+		await UserModel.deleteMany({});
+	});
+
+	it('returns lean documents without __v on findById and findAll', async () => {
+		const created = await repository.create(createUserFactory({ email: 'lean@example.com' }));
+
+		const byId = await repository.findById(created._id.toString());
+		const [listed] = await repository.findAll({});
+
+		expect(byId as Record<string, unknown>).not.toHaveProperty('__v');
+		expect(listed as Record<string, unknown>).not.toHaveProperty('__v');
+	});
+
+	it('strips the password on findAll', async () => {
+		await repository.create(createUserFactory({ email: 'nopass@example.com' }));
+
+		const [listed] = await repository.findAll({});
+		expect(listed).not.toHaveProperty('password');
+	});
+
+	it('findByEmail returns the matching user and null on no match', async () => {
+		await repository.create(createUserFactory({ email: 'find@example.com' }));
+
+		const found = await repository.findByEmail('find@example.com');
+		expect(found?.email).toBe('find@example.com');
+
+		expect(await repository.findByEmail('missing@example.com')).toBeNull();
+	});
+
+	it('findByEmail returns a non-lean document (current contract: keeps __v and password)', async () => {
+		// Finding F1 (report-only): unlike every other read, findByEmail is NOT lean.
+		// It returns a hydrated Mongoose document that still carries __v and the
+		// password. This test locks the current behavior; a future production-alignment
+		// task may flip it.
+		await repository.create(createUserFactory({ email: 'hydrated@example.com' }));
+
+		const found = await repository.findByEmail('hydrated@example.com');
+		expect(found).not.toBeNull();
+		expect(found).toHaveProperty('password');
+		const raw = (found as unknown as { toObject: () => Record<string, unknown> }).toObject();
+		expect(raw).toHaveProperty('__v');
+	});
+
+	it('findByEmail is effectively case-insensitive via the schema lowercase setter (current contract)', async () => {
+		// Finding F6 (report-only): the schema `lowercase: true` setter is applied to the
+		// query filter too, so Mongoose lowercases the lookup value before matching. The
+		// stored email is already lowercased, so BOTH the lowercased and the original
+		// mixed-case lookups match. This diverges from the in-memory repo, which compares
+		// with a strict === (case-sensitive). This test locks the current Mongo behavior.
+		await repository.create(createUserFactory({ email: 'Mixed.Case@Example.COM' }));
+
+		expect(await repository.findByEmail('mixed.case@example.com')).not.toBeNull();
+		expect(await repository.findByEmail('Mixed.Case@Example.COM')).not.toBeNull();
+	});
+
+	it('throws NotFoundError on update/delete of a missing id and returns the updated doc on success', async () => {
+		await expect(repository.update({ id: new ObjectId().toString(), name: 'Jane' })).rejects.toBeInstanceOf(
+			NotFoundError,
+		);
+		await expect(repository.delete(new ObjectId().toString())).rejects.toBeInstanceOf(NotFoundError);
+
+		const created = await repository.create(createUserFactory({ email: 'update@example.com' }));
+		const updated = await repository.update({ id: created._id.toString(), name: 'Jane' });
+		expect(updated.name).toBe('Jane');
+	});
+
+	it('translates a duplicate-email create to a domain BadRequestError', async () => {
+		// Finding F2 (resolved): create wraps the 11000 duplicate-key violation and
+		// translates it to a domain BadRequestError via the shared mapDuplicateKeyError.
+		await repository.create(createUserFactory({ email: 'raceless@example.com' }));
+
+		const duplicate = repository.create(createUserFactory({ email: 'raceless@example.com' }));
+		await expect(duplicate).rejects.toBeInstanceOf(BadRequestError);
+	});
+
+	it('resolves a concurrent duplicate-email create race to one persisted user and one rejection', async () => {
+		const email = 'race@example.com';
+
+		const results = await Promise.allSettled([
+			repository.create(createUserFactory({ email })),
+			repository.create(createUserFactory({ email })),
+		]);
+
+		const fulfilled = results.filter((result) => result.status === 'fulfilled');
+		const rejected = results.filter((result) => result.status === 'rejected');
+		expect(fulfilled).toHaveLength(1);
+		expect(rejected).toHaveLength(1);
+		expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(BadRequestError);
+
+		const persisted = await UserModel.countDocuments({ email });
+		expect(persisted).toBe(1);
+	});
+
+	it('translates an email-rename update collision to a domain BadRequestError', async () => {
+		const existing = await repository.create(createUserFactory({ email: 'taken@example.com' }));
+		const mover = await repository.create(createUserFactory({ email: 'mover@example.com' }));
+
+		await expect(repository.update({ id: mover._id.toString(), email: existing.email })).rejects.toBeInstanceOf(
+			BadRequestError,
+		);
+	});
+
+	it('orders findAll deterministically with the _id tie-breaker under equal sort keys', async () => {
+		const sharedDate = new Date('2024-01-01T00:00:00.000Z');
+		const ids = [new ObjectId(), new ObjectId(), new ObjectId()];
+		await UserModel.collection.insertMany(
+			ids.map((id, index) => ({
+				_id: id,
+				name: 'John',
+				surname: 'Doe',
+				email: `user${index}@example.com`,
+				password: 'Password-12345678',
+				role: 'member',
+				status: 'active',
+				created_at: sharedDate,
+				updated_at: sharedDate,
+			})),
+		);
+
+		const expectedOrder = [...ids].map((id) => id.toString()).sort((a, b) => (a > b ? -1 : 1));
+
+		const firstPage = await repository.findAll({ page: 1, limit: 2, sort: { created_at: -1 } });
+		const secondPage = await repository.findAll({ page: 2, limit: 2, sort: { created_at: -1 } });
+
+		expect(firstPage.map((item) => item._id.toString())).toEqual(expectedOrder.slice(0, 2));
+		expect(secondPage.map((item) => item._id.toString())).toEqual(expectedOrder.slice(2, 3));
+	});
+
+	it('succeeds with no sort supplied', async () => {
+		await repository.create(createUserFactory({ email: 'nosort@example.com' }));
+		await expect(repository.findAll({})).resolves.toHaveLength(1);
+	});
+});

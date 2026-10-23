@@ -8,7 +8,7 @@ import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.
 import { UserTokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/UserTokens.repository';
 import { DeleteProfileService } from './DeleteProfile.service';
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
-import { TokenTypeEnum } from '@/core/accounts/entities/userToken.entity';
+import { TokenTypes } from '@/core/accounts/entities/userToken.entity';
 import { env } from '@/env';
 
 let cryptoProvider: NodeCryptoProvider;
@@ -46,13 +46,13 @@ describe('Delete Profile', () => {
 		await userTokensRepository.create({
 			user_id: createdUser._id.toString(),
 			token: await cryptoProvider.generateToken(env.USER_TOKEN_SIZE),
-			type: TokenTypeEnum['forgot-password'],
+			type: TokenTypes['forgot-password'],
 			expires_at: new Date(Date.now() + 60_000),
 		});
 		await userTokensRepository.create({
 			user_id: createdUser._id.toString(),
 			token: await cryptoProvider.generateToken(env.USER_TOKEN_SIZE),
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 			expires_at: new Date(Date.now() + 60_000),
 		});
 

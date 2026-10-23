@@ -13,7 +13,7 @@ import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.pro
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
 import { env } from '@/env';
-import { TokenTypeEnum } from '@/core/accounts/entities/userToken.entity';
+import { TokenTypes } from '@/core/accounts/entities/userToken.entity';
 import { UserTokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/UserTokens.repository';
 import { ObjectId } from 'mongodb';
 
@@ -63,7 +63,7 @@ describe('Confirm Password', () => {
 		await userTokensRepository.create({
 			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
-			type: TokenTypeEnum['forgot-password'],
+			type: TokenTypes['forgot-password'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
@@ -93,7 +93,7 @@ describe('Confirm Password', () => {
 		await userTokensRepository.create({
 			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
-			type: TokenTypeEnum['forgot-password'],
+			type: TokenTypes['forgot-password'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
@@ -117,7 +117,7 @@ describe('Confirm Password', () => {
 		await userTokensRepository.create({
 			token: cryptoProvider.hashToken(token),
 			user_id: nonexistentUserId,
-			type: TokenTypeEnum['forgot-password'],
+			type: TokenTypes['forgot-password'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 

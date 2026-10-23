@@ -6,7 +6,7 @@ import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
 import { env } from '@/env';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { Roles } from '@/shared/accessControl/roles';
 
 describe('Refresh Token', () => {
 	beforeAll(async () => {
@@ -28,7 +28,7 @@ describe('Refresh Token', () => {
 	});
 
 	it('Should be able to refresh an expired access token', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.partner });
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.partner });
 
 		vi.advanceTimersByTime(env.ACCESS_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);
 

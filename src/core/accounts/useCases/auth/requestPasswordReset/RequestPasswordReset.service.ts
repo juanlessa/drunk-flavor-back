@@ -1,6 +1,6 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
-import { TokenTypeEnum } from '@/core/accounts/entities/userToken.entity';
+import { TokenTypes } from '@/core/accounts/entities/userToken.entity';
 import { IMailerProvider } from '@/shared/providers/mailer/IMailer.provider';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
 import { BadRequestError } from '@/shared/error/error.lib';
@@ -29,7 +29,7 @@ export class RequestPasswordResetService {
 
 		const tokenAlreadyExists = await this.userTokensRepository.findByUserIdAndType({
 			user_id: user._id.toString(),
-			type: TokenTypeEnum['forgot-password'],
+			type: TokenTypes['forgot-password'],
 		});
 
 		if (tokenAlreadyExists && !this.dateProvider.isExpiredDate(tokenAlreadyExists.expires_at)) {
@@ -58,7 +58,7 @@ export class RequestPasswordResetService {
 
 		await this.userTokensRepository.create({
 			token: this.cryptoProvider.hashToken(token),
-			type: TokenTypeEnum['forgot-password'],
+			type: TokenTypes['forgot-password'],
 			user_id: user._id.toString(),
 			expires_at: this.dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});

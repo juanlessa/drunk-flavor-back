@@ -11,10 +11,11 @@ export default defineConfig({
 			NODE_ENV: 'testing',
 		},
 		include: ['src/**/*.spec.ts'],
-		exclude: ['src/**/*.e2e-spec.ts'],
+		exclude: ['src/**/*.e2e-spec.ts', 'src/**/*.int-spec.ts'],
 		environment: 'node',
 		coverage: {
-			include: ['src/core/**/*', 'src/shared/providers/**/*', 'src/shared/helpers/**/*'],
+			reportsDirectory: './coverage/unit',
+			include: ['src/core/**/*.ts', 'src/shared/providers/**/*.ts', 'src/shared/helpers/**/*.ts'],
 			exclude: [
 				'src/core/**/infra/**/*',
 				'src/core/**/schemas/**/*',

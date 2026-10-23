@@ -1,20 +1,33 @@
 import { CreateUser, UpdateUser, UserWithoutPassword } from '@/core/accounts/dtos/user.dtos';
 import { User } from '@/core/accounts/entities/user.entity';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
-import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
+import { USER_UNIQUE_INDEXES, UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { NotFoundError } from '@/shared/error/error.lib';
+import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
 import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
 import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
 import { QueryParams } from '@/shared/types/query.types';
 
 export class UsersRepository implements IUsersRepository {
 	async create(data: CreateUser): Promise<User> {
-		const user = new UserModel(data);
-		return user.save();
+		try {
+			return await UserModel.create(data);
+		} catch (error) {
+			throw mapDuplicateKeyError(error, USER_UNIQUE_INDEXES, 'apiResponses.users.alreadyExist', {
+				path: 'Users.repository',
+			});
+		}
 	}
 
 	async update({ id, ...data }: UpdateUser): Promise<User> {
-		const user = await UserModel.findByIdAndUpdate(id, data, { returnDocument: 'after' }).exec();
+		let user: User | null;
+		try {
+			user = await UserModel.findByIdAndUpdate(id, data, { returnDocument: 'after' }).exec();
+		} catch (error) {
+			throw mapDuplicateKeyError(error, USER_UNIQUE_INDEXES, 'apiResponses.users.alreadyExist', {
+				path: 'Users.repository',
+			});
+		}
 		if (!user) {
 			throw new NotFoundError('apiResponses.users.notFound', {
 				path: 'Users.repository.update',

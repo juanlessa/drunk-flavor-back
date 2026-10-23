@@ -2,14 +2,14 @@ import { generateTranslationsSchema } from '@/core/drinks/schemas/helpers/transl
 import {
 	ingredientCategoryIdValidation,
 	ingredientIdValidation,
-	ingredientIsAlcoholicValidation,
 	ingredientTranslationSchema,
+	ingredientUnitIdValidation,
 } from '@/core/drinks/schemas/ingredient.schemas';
 import { z } from 'zod/v4';
 
 export const updateIngredientSchema = z.object({
 	id: ingredientIdValidation,
 	translations: generateTranslationsSchema(ingredientTranslationSchema),
-	is_alcoholic: ingredientIsAlcoholicValidation,
 	category_id: ingredientCategoryIdValidation,
+	unit_id: ingredientUnitIdValidation,
 });

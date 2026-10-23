@@ -4,12 +4,14 @@ import { DeepPartial } from '@/shared/types/utility.types';
 
 export type CreateCategory = {
 	translations: Translations<CategoryTranslation>;
+	is_alcoholic: boolean;
 };
 
 export type UpdateCategory = {
 	id: string;
 } & DeepPartial<{
 	translations: Translations<CategoryTranslation>;
+	is_alcoholic: boolean;
 }>;
 
 export type DeleteCategory = {

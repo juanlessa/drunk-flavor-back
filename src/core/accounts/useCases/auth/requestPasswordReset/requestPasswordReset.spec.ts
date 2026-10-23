@@ -13,7 +13,7 @@ import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementati
 import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.provider';
 import { MockMailerProvider } from '@/shared/providers/mailer/implementations/MockMailer.provider';
 import { MjmlProvider } from '@/shared/providers/template/implementations/Mjml.provider';
-import { TokenTypeEnum, UserToken } from '@/core/accounts/entities/userToken.entity';
+import { TokenTypes, UserToken } from '@/core/accounts/entities/userToken.entity';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { env } from '@/env';
 
@@ -63,7 +63,7 @@ describe('RequestPasswordReset', () => {
 
 		const verifyUserToken = (await userTokensRepository.findByUserIdAndType({
 			user_id: createdUser._id.toString(),
-			type: TokenTypeEnum['forgot-password'],
+			type: TokenTypes['forgot-password'],
 		})) as UserToken;
 
 		expect(verifyUserToken).not.toBeNull();
@@ -81,7 +81,7 @@ describe('RequestPasswordReset', () => {
 		await userTokensRepository.create({
 			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
-			type: TokenTypeEnum['forgot-password'],
+			type: TokenTypes['forgot-password'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
@@ -94,7 +94,7 @@ describe('RequestPasswordReset', () => {
 		await userTokensRepository.create({
 			token: cryptoProvider.hashToken(initialToken),
 			user_id: createdUser._id.toString(),
-			type: TokenTypeEnum['forgot-password'],
+			type: TokenTypes['forgot-password'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
@@ -104,7 +104,7 @@ describe('RequestPasswordReset', () => {
 
 		const verifyUserToken = (await userTokensRepository.findByUserIdAndType({
 			user_id: createdUser._id.toString(),
-			type: TokenTypeEnum['forgot-password'],
+			type: TokenTypes['forgot-password'],
 		})) as UserToken;
 
 		expect(verifyUserToken).not.toBeNull();

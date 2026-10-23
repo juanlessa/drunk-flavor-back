@@ -1,23 +1,27 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
 import { CreateUserService } from './CreateUser.service';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
+import { Actor } from '@/shared/accessControl/actor.types';
+import { Roles } from '@/shared/accessControl/roles';
+import { ObjectId } from 'mongodb';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
-import { User, UserStatusEnum } from '@/core/accounts/entities/user.entity';
+import { User, UserStatuses } from '@/core/accounts/entities/user.entity';
 import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
-import { IMailerProvider } from '@/shared/providers/mailer/IMailer.provider';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
 import { MjmlProvider } from '@/shared/providers/template/implementations/Mjml.provider';
-import { MockMailerProvider } from '@/shared/providers/mailer/implementations/MockMailer.provider';
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
 import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.provider';
 import { UserTokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/UserTokens.repository';
-import { TokenTypeEnum, UserToken } from '@/core/accounts/entities/userToken.entity';
+import { TokenTypes, UserToken } from '@/core/accounts/entities/userToken.entity';
+import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
+import { MockEmailQueueProvider } from '@/shared/providers/queue/email/implementations/MockEmailQueue.provider';
+import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
 import { env } from '@/env';
 
 let usersRepository: IUsersRepository;
@@ -25,11 +29,15 @@ let userTokensRepository: IUserTokensRepository;
 let dateProvider: IDateProvider;
 let hashProvider: IHashProvider;
 let cryptoProvider: ICryptoProvider;
-let mailerProvider: IMailerProvider;
 let templateProvider: ITemplateProvider;
+let emailQueueProvider: MockEmailQueueProvider;
 let service: CreateUserService;
 
-const { name, surname, email, password, role, status } = createUserFactory();
+const { name, surname, email, password, role } = createUserFactory();
+
+const admin: Actor = { id: new ObjectId().toString(), role: Roles.admin };
+const member: Actor = { id: new ObjectId().toString(), role: Roles.member };
+const partner: Actor = { id: new ObjectId().toString(), role: Roles.partner };
 
 describe('Create User', () => {
 	beforeEach(async () => {
@@ -41,16 +49,17 @@ describe('Create User', () => {
 		dateProvider = new DayjsProvider();
 		hashProvider = new BcryptHashProvider();
 		cryptoProvider = new NodeCryptoProvider();
-		mailerProvider = new MockMailerProvider();
 		templateProvider = new MjmlProvider();
+		emailQueueProvider = new MockEmailQueueProvider();
 		service = new CreateUserService(
 			usersRepository,
 			userTokensRepository,
+			new FakeTransactionManager(),
 			dateProvider,
 			hashProvider,
 			cryptoProvider,
-			mailerProvider,
 			templateProvider,
+			emailQueueProvider,
 		);
 	});
 
@@ -62,8 +71,8 @@ describe('Create User', () => {
 		vi.clearAllMocks();
 	});
 
-	it('should be able to create a user', async () => {
-		await service.execute({ name, surname, email, password, role });
+	it('should be able to create a user when the actor is an admin', async () => {
+		await service.execute({ name, surname, email, password, role, actor: admin });
 
 		const verifyUser = (await usersRepository.findByEmail(email)) as User;
 
@@ -75,12 +84,17 @@ describe('Create User', () => {
 
 		const verifyUserToken = (await userTokensRepository.findByUserIdAndType({
 			user_id: verifyUser._id.toString(),
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 		})) as UserToken;
 
 		expect(verifyUserToken).not.toBeNull();
 		expect(verifyUserToken.token).toBeTruthy();
-		expect(mailerProvider.send).toHaveBeenCalledTimes(1);
+
+		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
+		expect(emailQueueProvider.addMock).toHaveBeenCalledWith(
+			EMAIL_JOB_NAMES.verification,
+			expect.objectContaining({ to: email }),
+		);
 	});
 
 	it('should not be able to create an existing active user', async () => {
@@ -89,11 +103,14 @@ describe('Create User', () => {
 			surname,
 			email,
 			role,
-			status: UserStatusEnum['active'],
+			status: UserStatuses['active'],
 			password: await hashProvider.hash(password),
 		});
 
-		await expect(service.execute({ name, surname, email, password, role })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ name, surname, email, password, role, actor: admin })).rejects.toBeInstanceOf(
+			BadRequestError,
+		);
+		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 
 	it('should be able to create a non-active existing user if the email verification token does not exist', async () => {
@@ -102,11 +119,11 @@ describe('Create User', () => {
 			surname,
 			email,
 			role,
-			status: UserStatusEnum['pending'],
+			status: UserStatuses['pending'],
 			password: await hashProvider.hash(password),
 		});
 
-		await service.execute({ name, surname, email, password, role });
+		await service.execute({ name, surname, email, password, role, actor: admin });
 
 		const verifyUser = (await usersRepository.findByEmail(email)) as User;
 
@@ -117,12 +134,17 @@ describe('Create User', () => {
 
 		const verifyUserToken = (await userTokensRepository.findByUserIdAndType({
 			user_id: verifyUser._id.toString(),
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 		})) as UserToken;
 
 		expect(verifyUserToken).not.toBeNull();
 		expect(verifyUserToken.token).toBeTruthy();
-		expect(mailerProvider.send).toHaveBeenCalledTimes(1);
+
+		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
+		expect(emailQueueProvider.addMock).toHaveBeenCalledWith(
+			EMAIL_JOB_NAMES.verification,
+			expect.objectContaining({ to: email }),
+		);
 	});
 
 	it('should be able to create a non-active existing user if the email verification token is expired', async () => {
@@ -131,20 +153,20 @@ describe('Create User', () => {
 			surname,
 			email,
 			role,
-			status: UserStatusEnum['pending'],
+			status: UserStatuses['pending'],
 			password: await hashProvider.hash(password),
 		});
 		const initialToken = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
 		await userTokensRepository.create({
 			token: cryptoProvider.hashToken(initialToken),
 			user_id: createdUser._id.toString(),
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		vi.advanceTimersByTime(env.USER_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);
 
-		await service.execute({ name, surname, email, password, role });
+		await service.execute({ name, surname, email, password, role, actor: admin });
 
 		const verifyUser = (await usersRepository.findByEmail(email)) as User;
 
@@ -155,11 +177,34 @@ describe('Create User', () => {
 
 		const verifyUserToken = (await userTokensRepository.findByUserIdAndType({
 			user_id: verifyUser._id.toString(),
-			type: TokenTypeEnum['email-verification'],
+			type: TokenTypes['email-verification'],
 		})) as UserToken;
 
 		expect(verifyUserToken).not.toBeNull();
 		expect(verifyUserToken.token).toBeTruthy();
-		expect(mailerProvider.send).toHaveBeenCalledTimes(1);
+
+		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
+		expect(emailQueueProvider.addMock).toHaveBeenCalledWith(
+			EMAIL_JOB_NAMES.verification,
+			expect.objectContaining({ to: email }),
+		);
+	});
+
+	it('should not be able to create a user when the actor is a member', async () => {
+		await expect(service.execute({ name, surname, email, password, role, actor: member })).rejects.toBeInstanceOf(
+			ForbiddenError,
+		);
+
+		expect(await usersRepository.findByEmail(email)).toBeNull();
+		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
+	});
+
+	it('should not be able to create a user when the actor is a partner', async () => {
+		await expect(service.execute({ name, surname, email, password, role, actor: partner })).rejects.toBeInstanceOf(
+			ForbiddenError,
+		);
+
+		expect(await usersRepository.findByEmail(email)).toBeNull();
+		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 });

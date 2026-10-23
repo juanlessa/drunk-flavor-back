@@ -7,4 +7,5 @@ export type CreateCategoryReqBody = z.infer<typeof createCategorySchema>;
 
 export type CreateCategoryDTO = {
 	translations: Translations<CategoryTranslation>;
+	is_alcoholic: boolean;
 };

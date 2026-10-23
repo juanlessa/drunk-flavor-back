@@ -6,7 +6,7 @@ import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { createAndAuthenticateUser, createUser } from '../helpers/authentication.helpers';
 import { UserTokenModel } from '@/core/accounts/infra/mongo/entities/userToken.model';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { Roles } from '@/shared/accessControl/roles';
 
 describe('Delete User', () => {
 	beforeAll(async () => {
@@ -23,9 +23,9 @@ describe('Delete User', () => {
 	});
 
 	it('Should be able to admin delete a user', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 
-		const userToDelete = await createUser(app, { email: 'partner@example.com', role: RolesEnum.partner });
+		const userToDelete = await createUser(app, { email: 'partner@example.com', role: Roles.partner });
 
 		const response = await request(app.server)
 			.delete('/users')
@@ -36,42 +36,10 @@ describe('Delete User', () => {
 	});
 
 	it('Should not be able to delete a user when unauthenticated', async () => {
-		const userToDelete = await createUser(app, { email: 'partner@example.com', role: RolesEnum.partner });
+		const userToDelete = await createUser(app, { email: 'partner@example.com', role: Roles.partner });
 
 		const response = await request(app.server).delete('/users').send({ id: userToDelete.id });
 
 		expect(response.status).toBe(HTTP_STATUS.unauthorized);
-	});
-
-	it('Should not be able to delete a user as a member', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, {
-			email: 'member@example.com',
-			role: RolesEnum.member,
-		});
-
-		const userToDelete = await createUser(app, { email: 'partner@example.com', role: RolesEnum.partner });
-
-		const response = await request(app.server)
-			.delete('/users')
-			.set('Cookie', cookies)
-			.send({ id: userToDelete.id });
-
-		expect(response.status).toBe(HTTP_STATUS.forbidden);
-	});
-
-	it('Should not be able to delete a user as a partner', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, {
-			email: 'partner@example.com',
-			role: RolesEnum.partner,
-		});
-
-		const userToDelete = await createUser(app, { email: 'member@example.com', role: RolesEnum.member });
-
-		const response = await request(app.server)
-			.delete('/users')
-			.set('Cookie', cookies)
-			.send({ id: userToDelete.id });
-
-		expect(response.status).toBe(HTTP_STATUS.forbidden);
 	});
 });

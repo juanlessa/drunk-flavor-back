@@ -1,5 +1,5 @@
-import { User, UserStatusEnum } from '@/core/accounts/entities/user.entity';
-import { TokenTypeEnum } from '@/core/accounts/entities/userToken.entity';
+import { User, UserStatuses } from '@/core/accounts/entities/user.entity';
+import { TokenTypes } from '@/core/accounts/entities/userToken.entity';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
@@ -9,7 +9,7 @@ import { env } from '@/env';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { Roles } from '@/shared/accessControl/roles';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
 import { IEmailQueueProvider } from '@/shared/providers/queue/email/IEmailQueue.provider';
 import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
@@ -30,12 +30,12 @@ export class SignupService {
 
 	async execute({ name, surname, email, password }: Signup): Promise<void> {
 		const existingUser = await this.usersRepository.findByEmail(email);
-		if (existingUser && existingUser.status === UserStatusEnum['active']) {
+		if (existingUser && existingUser.status === UserStatuses['active']) {
 			throw new BadRequestError('apiResponses.users.alreadyExist', {
 				path: 'Signup.service.ensureEmailIsAvailable.active',
 			});
 		}
-		if (existingUser && existingUser.status === UserStatusEnum['pending']) {
+		if (existingUser && existingUser.status === UserStatuses['pending']) {
 			throw new BadRequestError('apiResponses.auth.emailVerificationPending', {
 				path: 'Signup.service.ensureEmailIsAvailable.pending',
 			});
@@ -50,13 +50,13 @@ export class SignupService {
 				surname: surname,
 				email: email,
 				password: passwordHash,
-				role: RolesEnum['member'],
-				status: UserStatusEnum['pending'],
+				role: Roles['member'],
+				status: UserStatuses['pending'],
 			});
 
 			await this.userTokensRepository.create({
 				token: this.cryptoProvider.hashToken(token),
-				type: TokenTypeEnum['email-verification'],
+				type: TokenTypes['email-verification'],
 				user_id: createdUser._id.toString(),
 				expires_at: this.dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 			});
