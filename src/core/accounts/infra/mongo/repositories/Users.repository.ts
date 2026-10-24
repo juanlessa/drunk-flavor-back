@@ -57,9 +57,6 @@ export class UsersRepository implements IUsersRepository {
 	}
 
 	async findAll(query: QueryParams): Promise<UserWithoutPassword[]> {
-		return buildQuery(query, UserModel)
-			.select('-password')
-			.lean<UserWithoutPassword[]>({ transform: removeLeanVersionKey })
-			.exec();
+		return buildQuery(query, UserModel).lean<UserWithoutPassword[]>({ transform: removeLeanVersionKey }).exec();
 	}
 }

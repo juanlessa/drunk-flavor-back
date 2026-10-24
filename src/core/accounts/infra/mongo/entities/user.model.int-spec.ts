@@ -48,17 +48,32 @@ describe('UserModel (integration)', () => {
 		});
 	});
 
-	it('applies role and status defaults when omitted', async () => {
-		// Insert through the model without role/status so the schema defaults apply.
+	it('applies role, status and email_verified defaults when omitted', async () => {
+		// Insert through the model without role/status/email_verified so the schema defaults apply.
 		const created = await UserModel.create({
 			name: 'John',
 			surname: 'Doe',
 			email: 'defaults@example.com',
-			password: 'Password-12345678',
 		});
 
 		expect(created.role).toBe('member');
 		expect(created.status).toBe('idle');
+		expect(created.email_verified).toBe(false);
+		expect(created.avatar_url).toBeUndefined();
+	});
+
+	it('persists email_verified and avatar_url when provided', async () => {
+		const created = await UserModel.create(
+			createUserFactory({
+				email: 'verified@example.com',
+				email_verified: true,
+				avatar_url: 'https://example.com/avatar.png',
+			}),
+		);
+
+		const reloaded = await UserModel.findById(created._id).lean();
+		expect(reloaded?.email_verified).toBe(true);
+		expect(reloaded?.avatar_url).toBe('https://example.com/avatar.png');
 	});
 
 	it('rejects out-of-enum role and status values at the Mongoose boundary', async () => {

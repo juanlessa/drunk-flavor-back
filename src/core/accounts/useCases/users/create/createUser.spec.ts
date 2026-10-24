@@ -19,6 +19,8 @@ import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementati
 import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.provider';
 import { TokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Tokens.repository';
 import { TokenTypes, Token } from '@/core/accounts/entities/token.entity';
+import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
+import { CredentialsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Credentials.repository';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { MockEmailQueueProvider } from '@/shared/providers/queue/email/implementations/MockEmailQueue.provider';
 import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
@@ -26,6 +28,7 @@ import { env } from '@/env';
 
 let usersRepository: IUsersRepository;
 let tokensRepository: ITokensRepository;
+let credentialsRepository: ICredentialsRepository;
 let dateProvider: IDateProvider;
 let hashProvider: IHashProvider;
 let cryptoProvider: ICryptoProvider;
@@ -33,7 +36,8 @@ let templateProvider: ITemplateProvider;
 let emailQueueProvider: MockEmailQueueProvider;
 let service: CreateUserService;
 
-const { name, surname, email, password, role } = createUserFactory();
+const { name, surname, email, role } = createUserFactory();
+const password = 'Password-12345678';
 
 const admin: Actor = { id: new ObjectId().toString(), role: Roles.admin };
 const member: Actor = { id: new ObjectId().toString(), role: Roles.member };
@@ -46,6 +50,7 @@ describe('Create User', () => {
 
 		usersRepository = new UsersRepositoryInMemory();
 		tokensRepository = new TokensRepositoryInMemory();
+		credentialsRepository = new CredentialsRepositoryInMemory();
 		dateProvider = new DayjsProvider();
 		hashProvider = new BcryptHashProvider();
 		cryptoProvider = new NodeCryptoProvider();
@@ -54,6 +59,7 @@ describe('Create User', () => {
 		service = new CreateUserService(
 			usersRepository,
 			tokensRepository,
+			credentialsRepository,
 			new FakeTransactionManager(),
 			dateProvider,
 			hashProvider,
@@ -90,6 +96,10 @@ describe('Create User', () => {
 		expect(verifyToken).not.toBeNull();
 		expect(verifyToken.token).toBeTruthy();
 
+		const verifyCredential = await credentialsRepository.findByUserId(verifyUser._id.toString());
+		expect(verifyCredential).not.toBeNull();
+		expect(await hashProvider.compare(password, verifyCredential!.password_hash)).toBe(true);
+
 		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
 		expect(emailQueueProvider.addMock).toHaveBeenCalledWith(
 			EMAIL_JOB_NAMES.verification,
@@ -104,7 +114,6 @@ describe('Create User', () => {
 			email,
 			role,
 			status: UserStatuses['active'],
-			password: await hashProvider.hash(password),
 		});
 
 		await expect(service.execute({ name, surname, email, password, role, actor: admin })).rejects.toBeInstanceOf(
@@ -120,7 +129,6 @@ describe('Create User', () => {
 			email,
 			role,
 			status: UserStatuses['pending'],
-			password: await hashProvider.hash(password),
 		});
 
 		await service.execute({ name, surname, email, password, role, actor: admin });
@@ -154,7 +162,6 @@ describe('Create User', () => {
 			email,
 			role,
 			status: UserStatuses['pending'],
-			password: await hashProvider.hash(password),
 		});
 		const initialToken = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({

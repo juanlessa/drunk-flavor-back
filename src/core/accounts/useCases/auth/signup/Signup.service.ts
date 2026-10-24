@@ -3,6 +3,7 @@ import { TokenTypes } from '@/core/accounts/entities/token.entity';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
+import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { Signup } from './signup.dtos';
 import { env } from '@/env';
@@ -20,6 +21,7 @@ export class SignupService {
 	constructor(
 		private usersRepository: IUsersRepository,
 		private tokensRepository: ITokensRepository,
+		private credentialsRepository: ICredentialsRepository,
 		private transactionManager: ITransactionManager,
 		private dateProvider: IDateProvider,
 		private hashProvider: IHashProvider,
@@ -49,9 +51,14 @@ export class SignupService {
 				name: name,
 				surname: surname,
 				email: email,
-				password: passwordHash,
+				email_verified: false,
 				role: Roles['member'],
 				status: UserStatuses['pending'],
+			});
+
+			await this.credentialsRepository.create({
+				user_id: createdUser._id.toString(),
+				password_hash: passwordHash,
 			});
 
 			await this.tokensRepository.create({

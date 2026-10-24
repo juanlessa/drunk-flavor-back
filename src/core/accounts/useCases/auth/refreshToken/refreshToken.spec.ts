@@ -9,7 +9,7 @@ import { RefreshTokenService } from './RefreshToken.service';
 let usersRepository: IUsersRepository;
 let service: RefreshTokenService;
 
-const { name, surname, email, password, role, status } = createUserFactory();
+const { name, surname, email, role, status } = createUserFactory();
 
 describe('Refresh Tokem', () => {
 	beforeEach(() => {
@@ -18,7 +18,7 @@ describe('Refresh Tokem', () => {
 	});
 
 	it('should be able to find an existing user to refresh their token', async () => {
-		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
+		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 
 		const result = await service.execute({ user_id: createdUser._id.toString() });
 

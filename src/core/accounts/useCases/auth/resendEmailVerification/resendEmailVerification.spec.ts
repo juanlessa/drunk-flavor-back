@@ -9,7 +9,6 @@ import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
 import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.provider';
-import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
 import { TokenTypes, Token } from '@/core/accounts/entities/token.entity';
 import { UserStatuses } from '@/core/accounts/entities/user.entity';
 import { Roles } from '@/shared/accessControl/roles';
@@ -24,12 +23,11 @@ let usersRepository: IUsersRepository;
 let tokensRepository: ITokensRepository;
 let dateProvider: IDateProvider;
 let cryptoProvider: ICryptoProvider;
-let hashProvider: BcryptHashProvider;
 let templateProvider: ITemplateProvider;
 let emailQueueProvider: MockEmailQueueProvider;
 let service: ResendEmailVerificationService;
 
-const { name, surname, email, password } = createUserFactory();
+const { name, surname, email } = createUserFactory();
 
 const createPendingUser = async () => {
 	return usersRepository.create({
@@ -38,7 +36,6 @@ const createPendingUser = async () => {
 		email,
 		role: Roles['member'],
 		status: UserStatuses['pending'],
-		password: await hashProvider.hash(password),
 	});
 };
 
@@ -51,7 +48,6 @@ describe('ResendEmailVerification', () => {
 		tokensRepository = new TokensRepositoryInMemory();
 		dateProvider = new DayjsProvider();
 		cryptoProvider = new NodeCryptoProvider();
-		hashProvider = new BcryptHashProvider();
 		templateProvider = new MjmlProvider();
 		emailQueueProvider = new MockEmailQueueProvider();
 		service = new ResendEmailVerificationService(
@@ -110,7 +106,6 @@ describe('ResendEmailVerification', () => {
 			email,
 			role: Roles['member'],
 			status: UserStatuses['active'],
-			password: await hashProvider.hash(password),
 		});
 
 		await expect(service.execute({ email })).rejects.toBeInstanceOf(BadRequestError);

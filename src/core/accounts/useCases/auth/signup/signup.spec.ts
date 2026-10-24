@@ -8,6 +8,8 @@ import { BcryptHashProvider } from '@/shared/providers/cryptography/implementati
 import { SignupService } from './Signup.service';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
 import { TokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Tokens.repository';
+import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
+import { CredentialsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Credentials.repository';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
@@ -23,6 +25,7 @@ import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.const
 
 let usersRepository: IUsersRepository;
 let tokensRepository: ITokensRepository;
+let credentialsRepository: ICredentialsRepository;
 let dateProvider: IDateProvider;
 let hashProvider: IHashProvider;
 let cryptoProvider: ICryptoProvider;
@@ -30,7 +33,8 @@ let templateProvider: ITemplateProvider;
 let emailQueueProvider: MockEmailQueueProvider;
 let service: SignupService;
 
-const { name, surname, email, password } = createUserFactory();
+const { name, surname, email } = createUserFactory();
+const password = 'Password-12345678';
 
 describe('Signup', () => {
 	beforeEach(async () => {
@@ -38,6 +42,7 @@ describe('Signup', () => {
 
 		usersRepository = new UsersRepositoryInMemory();
 		tokensRepository = new TokensRepositoryInMemory();
+		credentialsRepository = new CredentialsRepositoryInMemory();
 		dateProvider = new DayjsProvider();
 		hashProvider = new BcryptHashProvider();
 		cryptoProvider = new NodeCryptoProvider();
@@ -46,6 +51,7 @@ describe('Signup', () => {
 		service = new SignupService(
 			usersRepository,
 			tokensRepository,
+			credentialsRepository,
 			new FakeTransactionManager(),
 			dateProvider,
 			hashProvider,
@@ -77,6 +83,11 @@ describe('Signup', () => {
 
 		expect(verifyToken).not.toBeNull();
 		expect(verifyToken.token).toBeTruthy();
+
+		const verifyCredential = await credentialsRepository.findByUserId(verifyUser._id.toString());
+		expect(verifyCredential).not.toBeNull();
+		expect(verifyCredential?.password_hash).toBeTruthy();
+		expect(await hashProvider.compare(password, verifyCredential!.password_hash)).toBe(true);
 	});
 
 	it('Should queue the verification email after signup', async () => {
@@ -96,7 +107,6 @@ describe('Signup', () => {
 			email,
 			role: Roles['member'],
 			status: UserStatuses['active'],
-			password: await hashProvider.hash(password),
 		});
 
 		await expect(service.execute({ name, surname, email, password })).rejects.toBeInstanceOf(BadRequestError);
@@ -110,7 +120,6 @@ describe('Signup', () => {
 			email,
 			role: Roles['member'],
 			status: UserStatuses['pending'],
-			password: await hashProvider.hash(password),
 		});
 
 		await expect(service.execute({ name, surname, email, password })).rejects.toBeInstanceOf(BadRequestError);

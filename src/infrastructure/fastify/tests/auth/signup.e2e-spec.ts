@@ -22,9 +22,10 @@ describe('Signup', () => {
 	});
 
 	it('Should be able to signup', async () => {
-		const { name, surname, email, password } = createUserFactory({
+		const { name, surname, email } = createUserFactory({
 			email: 'partner@example.com',
 		});
+		const password = 'Password-12345678';
 
 		const response = await request(app.server).post('/signup').send({ name, surname, email, password });
 

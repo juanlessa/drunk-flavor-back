@@ -13,7 +13,8 @@ export type User = DatabaseCommonInfo & {
 	name: string;
 	surname: string;
 	email: string;
-	password: string;
+	email_verified: boolean;
+	avatar_url?: string;
 	role: Role;
 	status: UserStatus;
 };

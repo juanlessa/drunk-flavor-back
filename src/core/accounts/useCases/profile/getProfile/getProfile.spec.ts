@@ -9,7 +9,7 @@ import { GetProfileService } from './GetProfile.service';
 let usersRepository: IUsersRepository;
 let service: GetProfileService;
 
-const { name, surname, email, password, role, status } = createUserFactory();
+const { name, surname, email, role, status } = createUserFactory();
 
 describe('Get Profile', () => {
 	beforeEach(() => {
@@ -18,7 +18,7 @@ describe('Get Profile', () => {
 	});
 
 	it('should be able to find the profile', async () => {
-		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
+		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 
 		const result = await service.execute({ id: createdUser._id.toString() });
 

@@ -1,6 +1,7 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
+import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { ConfirmPassword } from './confirmPassword.dtos';
@@ -10,6 +11,7 @@ export class ConfirmPasswordService {
 	constructor(
 		private usersRepository: IUsersRepository,
 		private tokensRepository: ITokensRepository,
+		private credentialsRepository: ICredentialsRepository,
 		private dateProvider: IDateProvider,
 		private hashProvider: IHashProvider,
 		private cryptoProvider: ICryptoProvider,
@@ -34,7 +36,12 @@ export class ConfirmPasswordService {
 
 		const hashedPassword = await this.hashProvider.hash(password);
 
-		await this.usersRepository.update({ id: user._id.toString(), password: hashedPassword });
+		const existingCredential = await this.credentialsRepository.findByUserId(user._id.toString());
+		if (existingCredential) {
+			await this.credentialsRepository.update({ user_id: user._id.toString(), password_hash: hashedPassword });
+		} else {
+			await this.credentialsRepository.create({ user_id: user._id.toString(), password_hash: hashedPassword });
+		}
 		await this.tokensRepository.delete(tokenRecord._id.toString());
 	}
 }

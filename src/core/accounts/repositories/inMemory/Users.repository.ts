@@ -3,7 +3,6 @@ import { CreateUser, UpdateUser, UserWithoutPassword } from '@/core/accounts/dto
 import { ObjectId } from 'mongodb';
 import { User } from '@/core/accounts/entities/user.entity';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { omitUserPassword } from '../../mappers/user.mappers';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { QueryParams } from '@/shared/types/query.types';
 import { filterItemsBySearchCriteria, paginateItems, sortItemsByFields } from '@/shared/helpers/query.helpers';
@@ -16,6 +15,7 @@ export class UsersRepositoryInMemory implements IUsersRepository {
 		const record: User = {
 			_id: new ObjectId(),
 			...data,
+			email_verified: data.email_verified ?? false,
 			created_at: new Date(),
 			updated_at: new Date(),
 		};
@@ -80,6 +80,6 @@ export class UsersRepositoryInMemory implements IUsersRepository {
 			query.page || DEFAULT_QUERY_PARAMS.page,
 		);
 
-		return found.map(omitUserPassword);
+		return found;
 	}
 }

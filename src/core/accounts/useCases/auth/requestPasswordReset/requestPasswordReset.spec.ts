@@ -25,7 +25,7 @@ let mailerProvider: IMailerProvider;
 let templateProvider: ITemplateProvider;
 let service: RequestPasswordResetService;
 
-const { name, surname, email, password, role, status } = createUserFactory();
+const { name, surname, email, role, status } = createUserFactory();
 
 describe('RequestPasswordReset', () => {
 	beforeEach(async () => {
@@ -57,7 +57,7 @@ describe('RequestPasswordReset', () => {
 	});
 
 	it('Should be able to request a password reset', async () => {
-		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
+		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 
 		await service.execute({ email });
 
@@ -76,7 +76,7 @@ describe('RequestPasswordReset', () => {
 	});
 
 	it('Should not be able to request a password reset when it has been recently requested', async () => {
-		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
+		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
 			token: cryptoProvider.hashToken(token),
@@ -89,7 +89,7 @@ describe('RequestPasswordReset', () => {
 	});
 
 	it('Should be able to request a password reset after the token expiration time', async () => {
-		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
+		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 		const initialToken = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
 			token: cryptoProvider.hashToken(initialToken),

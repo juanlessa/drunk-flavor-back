@@ -4,8 +4,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
-import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
-import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { ConfirmEmailService } from './ConfirmEmail.service';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
@@ -18,13 +16,12 @@ import { TokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/
 import { ObjectId } from 'mongodb';
 
 let cryptoProvider: ICryptoProvider;
-let hashProvider: IHashProvider;
 let dateProvider: IDateProvider;
 let usersRepository: IUsersRepository;
 let tokensRepository: ITokensRepository;
 let service: ConfirmEmailService;
 
-const { name, surname, email, password, role } = createUserFactory();
+const { name, surname, email, role } = createUserFactory();
 
 describe('Confirm Email', () => {
 	beforeEach(async () => {
@@ -32,7 +29,6 @@ describe('Confirm Email', () => {
 
 		cryptoProvider = new NodeCryptoProvider();
 		dateProvider = new DayjsProvider();
-		hashProvider = new BcryptHashProvider();
 		usersRepository = new UsersRepositoryInMemory();
 		tokensRepository = new TokensRepositoryInMemory();
 		service = new ConfirmEmailService(usersRepository, tokensRepository, dateProvider, cryptoProvider);
@@ -43,14 +39,12 @@ describe('Confirm Email', () => {
 	});
 
 	it('Should be able confirm the email', async () => {
-		const hashedPassword = await hashProvider.hash(password);
 		const createdUser = await usersRepository.create({
 			name,
 			surname,
 			email,
 			role,
 			status: UserStatuses['pending'],
-			password: hashedPassword,
 		});
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
@@ -79,14 +73,12 @@ describe('Confirm Email', () => {
 	});
 
 	it('should not be able to confirm the email using a expired token', async () => {
-		const hashedPassword = await hashProvider.hash(password);
 		const createdUser = await usersRepository.create({
 			name,
 			surname,
 			email,
 			role,
 			status: UserStatuses['pending'],
-			password: hashedPassword,
 		});
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({

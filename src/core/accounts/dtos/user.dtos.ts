@@ -6,7 +6,8 @@ export type CreateUser = {
 	name: string;
 	surname: string;
 	email: string;
-	password: string;
+	email_verified?: boolean;
+	avatar_url?: string;
 	role: Role;
 	status: UserStatus;
 };
@@ -15,7 +16,8 @@ export type UpdateUser = { id: string } & Partial<{
 	name: string;
 	surname: string;
 	email: string;
-	password: string;
+	email_verified: boolean;
+	avatar_url: string;
 	role: Role;
 	status: UserStatus;
 }>;
@@ -26,4 +28,4 @@ export type UpdateUserRole = {
 	actor: Actor;
 };
 
-export type UserWithoutPassword = Omit<User, 'password'>;
+export type UserWithoutPassword = User;

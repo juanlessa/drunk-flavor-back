@@ -5,20 +5,16 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
-import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
 import { UpdateProfileService } from './UpdateProfile.service';
-import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 
-let hashProvider: IHashProvider;
 let usersRepository: IUsersRepository;
 let service: UpdateProfileService;
 
-const { name, surname, email, password, role, status } = createUserFactory();
+const { name, surname, email, role, status } = createUserFactory();
 const { name: updatedName, surname: updatedSurname } = createUserFactory({ name: 'updated', surname: 'updated' });
 
 describe('Update Profile', () => {
 	beforeEach(async () => {
-		hashProvider = new BcryptHashProvider();
 		usersRepository = new UsersRepositoryInMemory();
 		service = new UpdateProfileService(usersRepository);
 	});
@@ -30,7 +26,6 @@ describe('Update Profile', () => {
 			email,
 			role,
 			status,
-			password: await hashProvider.hash(password),
 		});
 		await service.execute({
 			id: createdUser._id.toString(),

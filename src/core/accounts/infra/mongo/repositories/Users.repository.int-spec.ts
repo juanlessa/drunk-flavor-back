@@ -30,7 +30,7 @@ describe('UsersRepository (integration)', () => {
 		expect(listed as Record<string, unknown>).not.toHaveProperty('__v');
 	});
 
-	it('strips the password on findAll', async () => {
+	it('never exposes a password field on findAll (password lives in credentials now)', async () => {
 		await repository.create(createUserFactory({ email: 'nopass@example.com' }));
 
 		const [listed] = await repository.findAll({});
@@ -46,16 +46,16 @@ describe('UsersRepository (integration)', () => {
 		expect(await repository.findByEmail('missing@example.com')).toBeNull();
 	});
 
-	it('findByEmail returns a non-lean document (current contract: keeps __v and password)', async () => {
+	it('findByEmail returns a non-lean document (current contract: keeps __v)', async () => {
 		// Finding F1 (report-only): unlike every other read, findByEmail is NOT lean.
-		// It returns a hydrated Mongoose document that still carries __v and the
-		// password. This test locks the current behavior; a future production-alignment
-		// task may flip it.
+		// It returns a hydrated Mongoose document that still carries __v. The password
+		// no longer lives on the user document (it moved to the credentials collection).
+		// This test locks the current behavior; a future production-alignment task may flip it.
 		await repository.create(createUserFactory({ email: 'hydrated@example.com' }));
 
 		const found = await repository.findByEmail('hydrated@example.com');
 		expect(found).not.toBeNull();
-		expect(found).toHaveProperty('password');
+		expect(found).not.toHaveProperty('password');
 		const raw = (found as unknown as { toObject: () => Record<string, unknown> }).toObject();
 		expect(raw).toHaveProperty('__v');
 	});
@@ -128,7 +128,7 @@ describe('UsersRepository (integration)', () => {
 				name: 'John',
 				surname: 'Doe',
 				email: `user${index}@example.com`,
-				password: 'Password-12345678',
+				email_verified: false,
 				role: 'member',
 				status: 'active',
 				created_at: sharedDate,

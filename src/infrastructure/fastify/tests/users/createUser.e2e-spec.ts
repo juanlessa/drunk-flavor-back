@@ -26,10 +26,11 @@ describe('Create User', () => {
 	it('Should be able to admin create a user', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 
-		const { name, surname, email, password, role } = createUserFactory({
+		const { name, surname, email, role } = createUserFactory({
 			email: 'partner@example.com',
 			role: Roles.partner,
 		});
+		const password = 'Password-12345678';
 
 		const response = await request(app.server)
 			.post('/users')
@@ -40,10 +41,11 @@ describe('Create User', () => {
 	});
 
 	it('Should not be able to create a user when unauthenticated', async () => {
-		const { name, surname, email, password, role } = createUserFactory({
+		const { name, surname, email, role } = createUserFactory({
 			email: 'partner@example.com',
 			role: Roles.partner,
 		});
+		const password = 'Password-12345678';
 
 		const response = await request(app.server).post('/users').send({ name, surname, email, password, role });
 

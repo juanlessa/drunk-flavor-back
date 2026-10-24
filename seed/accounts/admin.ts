@@ -1,6 +1,5 @@
 import { z } from 'zod/v4';
 import { UserStatuses } from '@/core/accounts/entities/user.entity';
-import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import {
 	userEmailValidation,
 	userNameValidation,
@@ -11,6 +10,8 @@ import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { Roles } from '@/shared/accessControl/roles';
 import { logger } from '@/shared/providers/logger';
 import { resolveHashProvider } from '@/shared/providers/cryptography';
+import { resolveUsersRepository, resolveCredentialsRepository } from '@/core/accounts/infra/mongo/container';
+import { resolveTransactionManager } from '@/infrastructure/mongo/transactions';
 
 process.on('unhandledRejection', (err) => {
 	logger.error('Unhandled Rejection:', err);
@@ -53,18 +54,28 @@ const seedDatabase = async () => {
 	const { ADMIN_NAME, ADMIN_SURNAME, ADMIN_EMAIL, ADMIN_PASSWORD } = adminSchema.parse(process.env);
 
 	const hashProvider = resolveHashProvider();
+	const usersRepository = resolveUsersRepository();
+	const credentialsRepository = resolveCredentialsRepository();
+	const transactionManager = resolveTransactionManager();
 
-	const adminUserData = {
-		name: ADMIN_NAME,
-		surname: ADMIN_SURNAME,
-		email: ADMIN_EMAIL,
-		password: await hashProvider.hash(ADMIN_PASSWORD),
-		role: Roles['admin'],
-		status: UserStatuses['active'],
-	};
+	const passwordHash = await hashProvider.hash(ADMIN_PASSWORD);
 
 	try {
-		await UserModel.create(adminUserData);
+		await transactionManager.withTransaction(async () => {
+			const createdUser = await usersRepository.create({
+				name: ADMIN_NAME,
+				surname: ADMIN_SURNAME,
+				email: ADMIN_EMAIL,
+				email_verified: true,
+				role: Roles['admin'],
+				status: UserStatuses['active'],
+			});
+
+			await credentialsRepository.create({
+				user_id: createdUser._id.toString(),
+				password_hash: passwordHash,
+			});
+		});
 		logger.info('Admin created successfully');
 	} catch (error) {
 		logger.error('Error creating admin user:', error);

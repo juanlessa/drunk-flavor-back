@@ -1,6 +1,5 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { GetProfile } from './getProfile.dtos';
-import { omitUserPassword } from '@/core/accounts/mappers/user.mappers';
 import { NotFoundError } from '@/shared/error/error.lib';
 
 export class GetProfileService {
@@ -13,6 +12,6 @@ export class GetProfileService {
 			throw new NotFoundError('apiResponses.users.notExist', { path: 'GetProfile.service' });
 		}
 
-		return omitUserPassword(user);
+		return user;
 	}
 }

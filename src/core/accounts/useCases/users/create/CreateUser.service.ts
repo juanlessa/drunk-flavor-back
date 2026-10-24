@@ -10,6 +10,7 @@ import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provide
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
+import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { IEmailQueueProvider } from '@/shared/providers/queue/email/IEmailQueue.provider';
 import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
@@ -21,6 +22,7 @@ export class CreateUserService {
 	constructor(
 		private usersRepository: IUsersRepository,
 		private tokensRepository: ITokensRepository,
+		private credentialsRepository: ICredentialsRepository,
 		private transactionManager: ITransactionManager,
 		private dateProvider: IDateProvider,
 		private hashProvider: IHashProvider,
@@ -66,9 +68,14 @@ export class CreateUserService {
 				name: name,
 				surname: surname,
 				email: email,
-				password: passwordHash,
+				email_verified: false,
 				role: role,
 				status: UserStatuses['pending'],
+			});
+
+			await this.credentialsRepository.create({
+				user_id: createdUser._id.toString(),
+				password_hash: passwordHash,
 			});
 
 			await this.tokensRepository.create({

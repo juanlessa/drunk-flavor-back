@@ -15,6 +15,8 @@ import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementati
 import { env } from '@/env';
 import { TokenTypes } from '@/core/accounts/entities/token.entity';
 import { TokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Tokens.repository';
+import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
+import { CredentialsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Credentials.repository';
 import { ObjectId } from 'mongodb';
 
 let cryptoProvider: ICryptoProvider;
@@ -22,9 +24,11 @@ let hashProvider: IHashProvider;
 let dateProvider: IDateProvider;
 let usersRepository: IUsersRepository;
 let tokensRepository: ITokensRepository;
+let credentialsRepository: ICredentialsRepository;
 let service: ConfirmPasswordService;
 
-const { name, surname, email, password, role, status } = createUserFactory();
+const { name, surname, email, role, status } = createUserFactory();
+const password = 'Password-12345678';
 const updatedPassword = 'Test-password-1234';
 
 describe('Confirm Password', () => {
@@ -36,9 +40,11 @@ describe('Confirm Password', () => {
 		hashProvider = new BcryptHashProvider();
 		usersRepository = new UsersRepositoryInMemory();
 		tokensRepository = new TokensRepositoryInMemory();
+		credentialsRepository = new CredentialsRepositoryInMemory();
 		service = new ConfirmPasswordService(
 			usersRepository,
 			tokensRepository,
+			credentialsRepository,
 			dateProvider,
 			hashProvider,
 			cryptoProvider,
@@ -57,7 +63,10 @@ describe('Confirm Password', () => {
 			email,
 			role,
 			status,
-			password: hashedPassword,
+		});
+		await credentialsRepository.create({
+			user_id: createdUser._id.toString(),
+			password_hash: hashedPassword,
 		});
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
@@ -73,9 +82,12 @@ describe('Confirm Password', () => {
 		});
 
 		const verifyUser = (await usersRepository.findById(createdUser._id.toString())) as User;
-
 		expect(verifyUser).toBeDefined();
-		expect(verifyUser.password).not.toEqual(hashedPassword);
+
+		const verifyCredential = await credentialsRepository.findByUserId(createdUser._id.toString());
+		expect(verifyCredential).not.toBeNull();
+		expect(verifyCredential?.password_hash).not.toEqual(hashedPassword);
+		expect(await hashProvider.compare(updatedPassword, verifyCredential!.password_hash)).toBe(true);
 	});
 
 	it('should not be able to confirm the password using a nonexisting token', async () => {
@@ -88,7 +100,7 @@ describe('Confirm Password', () => {
 	});
 
 	it('should not be able to confirm the password using a expired token', async () => {
-		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
+		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
 			token: cryptoProvider.hashToken(token),
