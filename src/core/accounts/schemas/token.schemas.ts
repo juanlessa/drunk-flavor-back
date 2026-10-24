@@ -5,4 +5,4 @@ import { env } from '@/env';
 // fields validation
 export const tokenValidation = z
 	.string({ error: 'apiResponses.auth.requiredToken' satisfies LocaleKey })
-	.length(env.USER_TOKEN_SIZE, { error: 'apiResponses.auth.invalidTokenFormat' satisfies LocaleKey });
+	.length(env.VERIFICATION_TOKEN_SIZE, { error: 'apiResponses.auth.invalidTokenFormat' satisfies LocaleKey });

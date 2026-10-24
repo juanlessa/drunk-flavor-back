@@ -5,7 +5,7 @@ import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { createAndAuthenticateUser, createUser } from '../helpers/authentication.helpers';
-import { UserTokenModel } from '@/core/accounts/infra/mongo/entities/userToken.model';
+import { TokenModel } from '@/core/accounts/infra/mongo/entities/token.model';
 import { Roles } from '@/shared/accessControl/roles';
 
 describe('Delete User', () => {
@@ -19,7 +19,7 @@ describe('Delete User', () => {
 
 	beforeEach(async () => {
 		await MongoConnection.Instance.emptyCollection(UserModel);
-		await MongoConnection.Instance.emptyCollection(UserTokenModel);
+		await MongoConnection.Instance.emptyCollection(TokenModel);
 	});
 
 	it('Should be able to admin delete a user', async () => {

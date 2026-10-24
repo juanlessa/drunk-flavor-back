@@ -1,8 +1,8 @@
-import { resolveUsersRepository, resolveUserTokensRepository } from '@/core/accounts/infra/mongo/container';
+import { resolveUsersRepository, resolveTokensRepository } from '@/core/accounts/infra/mongo/container';
 import { DeleteProfileService } from './DeleteProfile.service';
 
 const usersRepository = resolveUsersRepository();
-const userTokensRepository = resolveUserTokensRepository();
+const tokensRepository = resolveTokensRepository();
 
-const deleteProfileService = new DeleteProfileService(usersRepository, userTokensRepository);
+const deleteProfileService = new DeleteProfileService(usersRepository, tokensRepository);
 export const resolveDeleteProfileService = () => deleteProfileService;

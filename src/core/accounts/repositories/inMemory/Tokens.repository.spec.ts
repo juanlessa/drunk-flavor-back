@@ -1,21 +1,21 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ObjectId } from 'mongodb';
-import { UserTokensRepositoryInMemory } from './UserTokens.repository';
-import { CreateUserToken } from '../../dtos/userToken.dtos';
+import { TokensRepositoryInMemory } from './Tokens.repository';
+import { CreateToken } from '../../dtos/token.dtos';
 import { NotFoundError } from '@/shared/error/error.lib';
 
-const buildToken = (overrides?: Partial<CreateUserToken>): CreateUserToken => ({
+const buildToken = (overrides?: Partial<CreateToken>): CreateToken => ({
 	token: overrides?.token ?? new ObjectId().toString(),
 	user_id: overrides?.user_id ?? new ObjectId().toString(),
 	type: overrides?.type ?? 'email-verification',
 	expires_at: overrides?.expires_at ?? new Date(Date.now() + 60 * 60 * 1000),
 });
 
-let repository: UserTokensRepositoryInMemory;
+let repository: TokensRepositoryInMemory;
 
-describe('UserTokensRepositoryInMemory', () => {
+describe('TokensRepositoryInMemory', () => {
 	beforeEach(() => {
-		repository = new UserTokensRepositoryInMemory();
+		repository = new TokensRepositoryInMemory();
 	});
 
 	it('persists all fields and assigns _id and timestamps on create', async () => {

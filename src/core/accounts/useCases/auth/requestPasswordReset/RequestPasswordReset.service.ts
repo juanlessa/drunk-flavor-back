@@ -1,6 +1,6 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
-import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
-import { TokenTypes } from '@/core/accounts/entities/userToken.entity';
+import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
+import { TokenTypes } from '@/core/accounts/entities/token.entity';
 import { IMailerProvider } from '@/shared/providers/mailer/IMailer.provider';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
 import { BadRequestError } from '@/shared/error/error.lib';
@@ -14,7 +14,7 @@ import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 export class RequestPasswordResetService {
 	constructor(
 		private usersRepository: IUsersRepository,
-		private userTokensRepository: IUserTokensRepository,
+		private tokensRepository: ITokensRepository,
 		private dateProvider: IDateProvider,
 		private cryptoProvider: ICryptoProvider,
 		private mailerProvider: IMailerProvider,
@@ -27,7 +27,7 @@ export class RequestPasswordResetService {
 			throw new BadRequestError('apiResponses.users.notExist', { path: 'RequestPasswordReset.service.1' });
 		}
 
-		const tokenAlreadyExists = await this.userTokensRepository.findByUserIdAndType({
+		const tokenAlreadyExists = await this.tokensRepository.findByUserIdAndType({
 			user_id: user._id.toString(),
 			type: TokenTypes['forgot-password'],
 		});
@@ -39,10 +39,10 @@ export class RequestPasswordResetService {
 		}
 
 		if (tokenAlreadyExists && this.dateProvider.isExpiredDate(tokenAlreadyExists.expires_at)) {
-			await this.userTokensRepository.delete(tokenAlreadyExists._id.toString());
+			await this.tokensRepository.delete(tokenAlreadyExists._id.toString());
 		}
 
-		const token = await this.cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
+		const token = await this.cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 
 		const template = await this.templateProvider.forgotPassword({
 			userName: user.name,
@@ -56,11 +56,11 @@ export class RequestPasswordResetService {
 			html: template,
 		});
 
-		await this.userTokensRepository.create({
+		await this.tokensRepository.create({
 			token: this.cryptoProvider.hashToken(token),
 			type: TokenTypes['forgot-password'],
 			user_id: user._id.toString(),
-			expires_at: this.dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
+			expires_at: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 	}
 }

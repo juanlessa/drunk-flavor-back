@@ -1,13 +1,13 @@
-import { TokenType } from '../entities/userToken.entity';
+import { TokenType } from '../entities/token.entity';
 
-export type CreateUserToken = {
+export type CreateToken = {
 	token: string;
 	user_id: string;
 	type: TokenType;
 	expires_at: Date;
 };
 
-export type UpdateUserToken = { id: string } & Partial<{
+export type UpdateToken = { id: string } & Partial<{
 	token: string;
 	user_id: string;
 	type: TokenType;

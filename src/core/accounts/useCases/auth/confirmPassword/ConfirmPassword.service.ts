@@ -1,6 +1,6 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { BadRequestError } from '@/shared/error/error.lib';
-import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
+import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { ConfirmPassword } from './confirmPassword.dtos';
@@ -9,25 +9,25 @@ import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 export class ConfirmPasswordService {
 	constructor(
 		private usersRepository: IUsersRepository,
-		private userTokensRepository: IUserTokensRepository,
+		private tokensRepository: ITokensRepository,
 		private dateProvider: IDateProvider,
 		private hashProvider: IHashProvider,
 		private cryptoProvider: ICryptoProvider,
 	) {}
 
 	async execute({ token, password }: ConfirmPassword) {
-		const userToken = await this.userTokensRepository.findByToken(this.cryptoProvider.hashToken(token));
+		const tokenRecord = await this.tokensRepository.findByToken(this.cryptoProvider.hashToken(token));
 
-		if (!userToken) {
+		if (!tokenRecord) {
 			throw new BadRequestError('apiResponses.auth.tokenNotFound', { path: 'ConfirmPassword.service.1' });
 		}
 
-		if (userToken && this.dateProvider.isExpiredDate(userToken.expires_at)) {
-			await this.userTokensRepository.delete(userToken._id.toString());
+		if (tokenRecord && this.dateProvider.isExpiredDate(tokenRecord.expires_at)) {
+			await this.tokensRepository.delete(tokenRecord._id.toString());
 			throw new BadRequestError('apiResponses.auth.expiredToken', { path: 'ConfirmPassword.service.2' });
 		}
 
-		const user = await this.usersRepository.findById(userToken.user_id);
+		const user = await this.usersRepository.findById(tokenRecord.user_id);
 		if (!user) {
 			throw new BadRequestError('apiResponses.users.notExist', { path: 'ConfirmPassword.service.3' });
 		}
@@ -35,6 +35,6 @@ export class ConfirmPasswordService {
 		const hashedPassword = await this.hashProvider.hash(password);
 
 		await this.usersRepository.update({ id: user._id.toString(), password: hashedPassword });
-		await this.userTokensRepository.delete(userToken._id.toString());
+		await this.tokensRepository.delete(tokenRecord._id.toString());
 	}
 }

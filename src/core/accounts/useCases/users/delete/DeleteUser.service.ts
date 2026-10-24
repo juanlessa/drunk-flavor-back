@@ -1,6 +1,6 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
-import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
+import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
 import { DeleteUser } from './deleteUser.dtos';
 import { defineAbilityFor } from '@/shared/accessControl';
 import { userPermissionSchema } from '@/shared/accessControl/entities/user';
@@ -8,7 +8,7 @@ import { userPermissionSchema } from '@/shared/accessControl/entities/user';
 export class DeleteUserService {
 	constructor(
 		private usersRepository: IUsersRepository,
-		private userTokensRepository: IUserTokensRepository,
+		private tokensRepository: ITokensRepository,
 	) {}
 
 	async execute({ id, actor }: DeleteUser) {
@@ -25,6 +25,6 @@ export class DeleteUserService {
 
 		await this.usersRepository.delete(id);
 		// TODO: Enqueue engagement cleanup for comments and ratings by user id.
-		await this.userTokensRepository.deleteByUserId(id);
+		await this.tokensRepository.deleteByUserId(id);
 	}
 }

@@ -1,8 +1,8 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
-import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
-import { UserTokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/UserTokens.repository';
+import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
+import { TokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Tokens.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { RequestPasswordResetService } from './RequestPasswordReset.service';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
@@ -13,12 +13,12 @@ import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementati
 import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.provider';
 import { MockMailerProvider } from '@/shared/providers/mailer/implementations/MockMailer.provider';
 import { MjmlProvider } from '@/shared/providers/template/implementations/Mjml.provider';
-import { TokenTypes, UserToken } from '@/core/accounts/entities/userToken.entity';
+import { TokenTypes, Token } from '@/core/accounts/entities/token.entity';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { env } from '@/env';
 
 let usersRepository: IUsersRepository;
-let userTokensRepository: IUserTokensRepository;
+let tokensRepository: ITokensRepository;
 let dateProvider: IDateProvider;
 let cryptoProvider: ICryptoProvider;
 let mailerProvider: IMailerProvider;
@@ -33,14 +33,14 @@ describe('RequestPasswordReset', () => {
 		vi.useFakeTimers();
 
 		usersRepository = new UsersRepositoryInMemory();
-		userTokensRepository = new UserTokensRepositoryInMemory();
+		tokensRepository = new TokensRepositoryInMemory();
 		dateProvider = new DayjsProvider();
 		cryptoProvider = new NodeCryptoProvider();
 		mailerProvider = new MockMailerProvider();
 		templateProvider = new MjmlProvider();
 		service = new RequestPasswordResetService(
 			usersRepository,
-			userTokensRepository,
+			tokensRepository,
 			dateProvider,
 			cryptoProvider,
 			mailerProvider,
@@ -61,13 +61,13 @@ describe('RequestPasswordReset', () => {
 
 		await service.execute({ email });
 
-		const verifyUserToken = (await userTokensRepository.findByUserIdAndType({
+		const verifyToken = (await tokensRepository.findByUserIdAndType({
 			user_id: createdUser._id.toString(),
 			type: TokenTypes['forgot-password'],
-		})) as UserToken;
+		})) as Token;
 
-		expect(verifyUserToken).not.toBeNull();
-		expect(verifyUserToken.token).toBeTruthy();
+		expect(verifyToken).not.toBeNull();
+		expect(verifyToken.token).toBeTruthy();
 		expect(mailerProvider.send).toHaveBeenCalledTimes(1);
 	});
 
@@ -77,12 +77,12 @@ describe('RequestPasswordReset', () => {
 
 	it('Should not be able to request a password reset when it has been recently requested', async () => {
 		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
-		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
-		await userTokensRepository.create({
+		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
+		await tokensRepository.create({
 			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypes['forgot-password'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
+			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		await expect(service.execute({ email })).rejects.toBeInstanceOf(BadRequestError);
@@ -90,26 +90,26 @@ describe('RequestPasswordReset', () => {
 
 	it('Should be able to request a password reset after the token expiration time', async () => {
 		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
-		const initialToken = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
-		await userTokensRepository.create({
+		const initialToken = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
+		await tokensRepository.create({
 			token: cryptoProvider.hashToken(initialToken),
 			user_id: createdUser._id.toString(),
 			type: TokenTypes['forgot-password'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
+			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
-		vi.advanceTimersByTime(env.USER_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);
+		vi.advanceTimersByTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);
 
 		await service.execute({ email });
 
-		const verifyUserToken = (await userTokensRepository.findByUserIdAndType({
+		const verifyToken = (await tokensRepository.findByUserIdAndType({
 			user_id: createdUser._id.toString(),
 			type: TokenTypes['forgot-password'],
-		})) as UserToken;
+		})) as Token;
 
-		expect(verifyUserToken).not.toBeNull();
-		expect(verifyUserToken.token).toBeTruthy();
-		expect(verifyUserToken.token).not.toBe(cryptoProvider.hashToken(initialToken));
+		expect(verifyToken).not.toBeNull();
+		expect(verifyToken.token).toBeTruthy();
+		expect(verifyToken.token).not.toBe(cryptoProvider.hashToken(initialToken));
 		expect(mailerProvider.send).toHaveBeenCalledTimes(1);
 	});
 });

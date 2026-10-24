@@ -1,12 +1,12 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { BadRequestError } from '@/shared/error/error.lib';
-import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
+import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
 import { DeleteProfile } from './deleteProfile.dtos';
 
 export class DeleteProfileService {
 	constructor(
 		private usersRepository: IUsersRepository,
-		private userTokensRepository: IUserTokensRepository,
+		private tokensRepository: ITokensRepository,
 	) {}
 
 	async execute({ id }: DeleteProfile) {
@@ -17,6 +17,6 @@ export class DeleteProfileService {
 
 		await this.usersRepository.delete(id);
 		// TODO: Enqueue engagement cleanup for comments and ratings by user id.
-		await this.userTokensRepository.deleteByUserId(id);
+		await this.tokensRepository.deleteByUserId(id);
 	}
 }

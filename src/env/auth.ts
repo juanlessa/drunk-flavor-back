@@ -63,47 +63,49 @@ const refreshTokenExpiresInSecondsEnvMap = {
 	e2e: z.coerce.number().int().positive().default(5),
 } satisfies Record<NodeEnv, z.ZodType<number>>;
 
-const userTokenExpiresInSecondsEnvMap = {
-	production: z.coerce
-		.number()
-		.int()
-		.positive()
-		.max(86400, { message: 'USER_TOKEN_EXPIRES_IN_SECONDS must be at most 86400 (24 hours) in production' }),
+// VERIFICATION_TOKEN_* configures the single-use action tokens for email verification and password
+// reset that are persisted in the `tokens` collection. The env-var name follows purpose-naming while
+// the collection follows module-namespace naming, so the names diverge on purpose — do not "fix" the
+// mismatch by renaming either side.
+const verificationTokenExpiresInSecondsEnvMap = {
+	production: z.coerce.number().int().positive().max(86400, {
+		message: 'VERIFICATION_TOKEN_EXPIRES_IN_SECONDS must be at most 86400 (24 hours) in production',
+	}),
 	development: z.coerce.number().int().positive(),
 	testing: z.coerce.number().int().positive().default(5),
 	e2e: z.coerce.number().int().positive().default(5),
 } satisfies Record<NodeEnv, z.ZodType<number>>;
 
-// USER_TOKEN_SIZE is the hex-character count of the generated token. It must be EVEN in every
+// VERIFICATION_TOKEN_SIZE is the hex-character count of the generated token. It must be EVEN in every
 // environment because the crypto provider derives it from randomBytes(size / 2); an odd value
 // breaks generation. Production additionally enforces a [32, 128] entropy window (>= 128 bits).
 const isEven = (value: number): boolean => value % 2 === 0;
 
-const userTokenSizeEnvMap = {
+const verificationTokenSizeEnvMap = {
 	production: z.coerce
 		.number()
 		.int()
 		.positive()
-		.min(32, { message: 'USER_TOKEN_SIZE must be at least 32 hex characters (128 bits) in production' })
-		.max(128, { message: 'USER_TOKEN_SIZE must be at most 128 hex characters in production' })
-		.refine(isEven, { message: 'USER_TOKEN_SIZE must be an even number of hex characters' }),
+		.min(32, { message: 'VERIFICATION_TOKEN_SIZE must be at least 32 hex characters (128 bits) in production' })
+		.max(128, { message: 'VERIFICATION_TOKEN_SIZE must be at most 128 hex characters in production' })
+		.refine(isEven, { message: 'VERIFICATION_TOKEN_SIZE must be an even number of hex characters' }),
 	development: z.coerce
 		.number()
 		.int()
 		.positive()
-		.refine(isEven, { message: 'USER_TOKEN_SIZE must be an even number of hex characters' })
+		.refine(isEven, { message: 'VERIFICATION_TOKEN_SIZE must be an even number of hex characters' })
 		.default(16),
 	testing: z.coerce
 		.number()
 		.int()
 		.positive()
-		.refine(isEven, { message: 'USER_TOKEN_SIZE must be an even number of hex characters' })
+		.refine(isEven, { message: 'VERIFICATION_TOKEN_SIZE must be an even number of hex characters' })
 		.default(16),
 	e2e: z.coerce
 		.number()
 		.int()
 		.positive()
-		.refine(isEven, { message: 'USER_TOKEN_SIZE must be an even number of hex characters' })
+		.refine(isEven, { message: 'VERIFICATION_TOKEN_SIZE must be an even number of hex characters' })
 		.default(16),
 } satisfies Record<NodeEnv, z.ZodType<number>>;
 
@@ -139,8 +141,8 @@ export const buildAuthSchema = (nodeEnv: NodeEnv) =>
 		REFRESH_TOKEN_SECRET: refreshTokenSecretEnvMap[nodeEnv],
 		ACCESS_TOKEN_EXPIRES_IN_SECONDS: accessTokenExpiresInSecondsEnvMap[nodeEnv],
 		REFRESH_TOKEN_EXPIRES_IN_SECONDS: refreshTokenExpiresInSecondsEnvMap[nodeEnv],
-		USER_TOKEN_EXPIRES_IN_SECONDS: userTokenExpiresInSecondsEnvMap[nodeEnv],
-		USER_TOKEN_SIZE: userTokenSizeEnvMap[nodeEnv],
+		VERIFICATION_TOKEN_EXPIRES_IN_SECONDS: verificationTokenExpiresInSecondsEnvMap[nodeEnv],
+		VERIFICATION_TOKEN_SIZE: verificationTokenSizeEnvMap[nodeEnv],
 		PASSWORD_HASH_ROUNDS: passwordHashRoundsEnvMap[nodeEnv],
 		DUMMY_PASSWORD: dummyPasswordEnvMap[nodeEnv],
 	});

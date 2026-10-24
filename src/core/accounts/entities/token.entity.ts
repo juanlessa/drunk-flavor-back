@@ -7,7 +7,7 @@ export const TokenTypes = {
 
 export type TokenType = (typeof TokenTypes)[keyof typeof TokenTypes];
 
-export type UserToken = DatabaseCommonInfo & {
+export type Token = DatabaseCommonInfo & {
 	user_id: string;
 	token: string;
 	type: TokenType;

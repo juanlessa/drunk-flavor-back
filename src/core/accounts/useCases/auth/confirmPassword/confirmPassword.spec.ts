@@ -8,20 +8,20 @@ import { BcryptHashProvider } from '@/shared/providers/cryptography/implementati
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { ConfirmPasswordService } from './ConfirmPassword.service';
-import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
+import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
 import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.provider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
 import { env } from '@/env';
-import { TokenTypes } from '@/core/accounts/entities/userToken.entity';
-import { UserTokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/UserTokens.repository';
+import { TokenTypes } from '@/core/accounts/entities/token.entity';
+import { TokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Tokens.repository';
 import { ObjectId } from 'mongodb';
 
 let cryptoProvider: ICryptoProvider;
 let hashProvider: IHashProvider;
 let dateProvider: IDateProvider;
 let usersRepository: IUsersRepository;
-let userTokensRepository: IUserTokensRepository;
+let tokensRepository: ITokensRepository;
 let service: ConfirmPasswordService;
 
 const { name, surname, email, password, role, status } = createUserFactory();
@@ -35,10 +35,10 @@ describe('Confirm Password', () => {
 		dateProvider = new DayjsProvider();
 		hashProvider = new BcryptHashProvider();
 		usersRepository = new UsersRepositoryInMemory();
-		userTokensRepository = new UserTokensRepositoryInMemory();
+		tokensRepository = new TokensRepositoryInMemory();
 		service = new ConfirmPasswordService(
 			usersRepository,
-			userTokensRepository,
+			tokensRepository,
 			dateProvider,
 			hashProvider,
 			cryptoProvider,
@@ -59,12 +59,12 @@ describe('Confirm Password', () => {
 			status,
 			password: hashedPassword,
 		});
-		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
-		await userTokensRepository.create({
+		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
+		await tokensRepository.create({
 			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypes['forgot-password'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
+			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		await service.execute({
@@ -89,15 +89,15 @@ describe('Confirm Password', () => {
 
 	it('should not be able to confirm the password using a expired token', async () => {
 		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
-		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
-		await userTokensRepository.create({
+		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
+		await tokensRepository.create({
 			token: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypes['forgot-password'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
+			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
-		vi.advanceTimersByTime(env.USER_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);
+		vi.advanceTimersByTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);
 
 		await expect(
 			service.execute({
@@ -106,19 +106,19 @@ describe('Confirm Password', () => {
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 
-		const findUserToken = await userTokensRepository.findByToken(cryptoProvider.hashToken(token));
+		const findToken = await tokensRepository.findByToken(cryptoProvider.hashToken(token));
 
-		expect(findUserToken).toBeNull();
+		expect(findToken).toBeNull();
 	});
 
 	it('Should not be able to confirm the password of a nonexistent user', async () => {
-		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
+		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		const nonexistentUserId = new ObjectId().toString();
-		await userTokensRepository.create({
+		await tokensRepository.create({
 			token: cryptoProvider.hashToken(token),
 			user_id: nonexistentUserId,
 			type: TokenTypes['forgot-password'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
+			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		await expect(

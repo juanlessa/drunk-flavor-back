@@ -1,30 +1,30 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { ObjectId } from 'mongodb';
-import { UserTokensRepository } from './UserTokens.repository';
-import { UserTokenModel } from '../entities/userToken.model';
-import { CreateUserToken } from '@/core/accounts/dtos/userToken.dtos';
+import { TokensRepository } from './Tokens.repository';
+import { TokenModel } from '../entities/token.model';
+import { CreateToken } from '@/core/accounts/dtos/token.dtos';
 import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 
-const buildToken = (overrides?: Partial<CreateUserToken>): CreateUserToken => ({
+const buildToken = (overrides?: Partial<CreateToken>): CreateToken => ({
 	token: overrides?.token ?? new ObjectId().toString(),
 	user_id: overrides?.user_id ?? new ObjectId().toString(),
 	type: overrides?.type ?? 'email-verification',
 	expires_at: overrides?.expires_at ?? new Date(Date.now() + 60 * 60 * 1000),
 });
 
-let repository: UserTokensRepository;
+let repository: TokensRepository;
 
-describe('UserTokensRepository (integration)', () => {
+describe('TokensRepository (integration)', () => {
 	beforeAll(async () => {
-		await UserTokenModel.init();
+		await TokenModel.init();
 	});
 
 	beforeEach(() => {
-		repository = new UserTokensRepository();
+		repository = new TokensRepository();
 	});
 
 	afterEach(async () => {
-		await UserTokenModel.deleteMany({});
+		await TokenModel.deleteMany({});
 	});
 
 	it('returns lean documents without __v on every read', async () => {
@@ -135,7 +135,7 @@ describe('UserTokensRepository (integration)', () => {
 		expect(rejected).toHaveLength(1);
 		expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(BadRequestError);
 
-		expect(await UserTokenModel.countDocuments({ token })).toBe(1);
+		expect(await TokenModel.countDocuments({ token })).toBe(1);
 	});
 
 	it('resolves a concurrent duplicate (user_id, type) create race to one persisted record and one rejection', async () => {
@@ -152,6 +152,6 @@ describe('UserTokensRepository (integration)', () => {
 		expect(rejected).toHaveLength(1);
 		expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(BadRequestError);
 
-		expect(await UserTokenModel.countDocuments({ user_id, type: 'forgot-password' })).toBe(1);
+		expect(await TokenModel.countDocuments({ user_id, type: 'forgot-password' })).toBe(1);
 	});
 });

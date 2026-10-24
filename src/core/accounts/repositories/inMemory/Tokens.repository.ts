@@ -1,18 +1,18 @@
 import { ObjectId } from 'mongodb';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { UserToken } from '../../entities/userToken.entity';
-import { IUserTokensRepository } from '../IUserTokens.repository';
-import { CreateUserToken, FindByUserIdAndType, UpdateUserToken } from '../../dtos/userToken.dtos';
+import { Token } from '../../entities/token.entity';
+import { ITokensRepository } from '../ITokens.repository';
+import { CreateToken, FindByUserIdAndType, UpdateToken } from '../../dtos/token.dtos';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { filterItemsBySearchCriteria, paginateItems, sortItemsByFields } from '@/shared/helpers/query.helpers';
 import { QueryParams } from '@/shared/types/query.types';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 
-export class UserTokensRepositoryInMemory implements IUserTokensRepository {
-	collection: UserToken[] = [];
+export class TokensRepositoryInMemory implements ITokensRepository {
+	collection: Token[] = [];
 
-	async create(data: CreateUserToken): Promise<UserToken> {
-		const record: UserToken = {
+	async create(data: CreateToken): Promise<Token> {
+		const record: Token = {
 			_id: new ObjectId(),
 			...data,
 			created_at: new Date(),
@@ -22,11 +22,11 @@ export class UserTokensRepositoryInMemory implements IUserTokensRepository {
 		return record;
 	}
 
-	async update({ id, ...data }: UpdateUserToken): Promise<UserToken> {
+	async update({ id, ...data }: UpdateToken): Promise<Token> {
 		const recordIndex = this.collection.findIndex((u) => u._id.toString() === id);
 		if (recordIndex === -1) {
 			throw new NotFoundError('apiResponses.auth.tokenNotFound', {
-				path: 'UsersTokens.repository.update',
+				path: 'Tokens.repository.update',
 				cause: 'Error on findOneAndUpdate operation',
 			});
 		}
@@ -39,11 +39,11 @@ export class UserTokensRepositoryInMemory implements IUserTokensRepository {
 		return record;
 	}
 
-	async delete(id: string): Promise<UserToken> {
+	async delete(id: string): Promise<Token> {
 		const recordIndex = this.collection.findIndex((rec) => rec._id.toString() === id);
 		if (recordIndex === -1) {
 			throw new NotFoundError('apiResponses.auth.tokenNotFound', {
-				path: 'UsersTokens.repository.delete',
+				path: 'Tokens.repository.delete',
 				cause: 'Error on findOneAndDelete operation',
 			});
 		}
@@ -59,27 +59,27 @@ export class UserTokensRepositoryInMemory implements IUserTokensRepository {
 		return deletedCount;
 	}
 
-	async findByToken(token: string): Promise<UserToken | null> {
+	async findByToken(token: string): Promise<Token | null> {
 		const recordFound = this.collection.find((rec) => rec.token === token);
 		return recordFound || null;
 	}
 
-	async findByUserIdAndType({ user_id, type }: FindByUserIdAndType): Promise<UserToken | null> {
+	async findByUserIdAndType({ user_id, type }: FindByUserIdAndType): Promise<Token | null> {
 		const recordFound = this.collection.find((rec) => rec.user_id === user_id && rec.type === type);
 		return recordFound || null;
 	}
 
-	async findById(id: string): Promise<UserToken | null> {
+	async findById(id: string): Promise<Token | null> {
 		const recordFound = this.collection.find((rec) => rec._id.toString() === id);
 		return recordFound || null;
 	}
 
-	async findByUserId(user_id: string): Promise<UserToken[]> {
+	async findByUserId(user_id: string): Promise<Token[]> {
 		const recordsFound = this.collection.filter((rec) => rec.user_id === user_id);
 		return recordsFound;
 	}
 
-	async findAll(query: QueryParams): Promise<UserToken[]> {
+	async findAll(query: QueryParams): Promise<Token[]> {
 		let found = [...this.collection];
 
 		if (query.search) {
