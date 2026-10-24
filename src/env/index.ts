@@ -4,6 +4,7 @@ import { parseControlEnv } from './control';
 import { parseApiEnv } from './api';
 import { parseLogEnv } from './log';
 import { parseAuthEnv } from './auth';
+import { parseGoogleAuthEnv } from './googleAuth';
 import { parseCorsEnv } from './cors';
 import { parseSmtpEnv } from './smtp';
 import { parseClientEnv } from './client';
@@ -71,6 +72,7 @@ export type Env = ReturnType<typeof parseNodeEnv> &
 	ReturnType<typeof parseApiEnv> &
 	ReturnType<typeof parseLogEnv> &
 	ReturnType<typeof parseAuthEnv> &
+	ReturnType<typeof parseGoogleAuthEnv> &
 	ReturnType<typeof parseCorsEnv> &
 	ReturnType<typeof parseSmtpEnv> &
 	ReturnType<typeof parseClientEnv> &
@@ -92,6 +94,7 @@ const parseEnv = (source: NodeJS.ProcessEnv = process.env): Env => {
 	const api = parseApiEnv(source, NODE_ENV);
 	const log = parseLogEnv(source, NODE_ENV);
 	const auth = parseAuthEnv(source, NODE_ENV);
+	const googleAuth = parseGoogleAuthEnv(source, NODE_ENV);
 	const cors = parseCorsEnv(source, NODE_ENV);
 	const smtp = parseSmtpEnv(source, NODE_ENV);
 	const client = parseClientEnv(source, NODE_ENV);
@@ -166,6 +169,7 @@ const parseEnv = (source: NodeJS.ProcessEnv = process.env): Env => {
 		...api,
 		...log,
 		...auth,
+		...googleAuth,
 		...cors,
 		...smtp,
 		...client,
