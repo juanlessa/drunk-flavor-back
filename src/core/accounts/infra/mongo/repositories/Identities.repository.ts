@@ -35,4 +35,8 @@ export class IdentitiesRepository implements IIdentitiesRepository {
 			.lean<Identity[]>({ transform: removeLeanVersionKey })
 			.exec();
 	}
+
+	async deleteByUserId(userId: string): Promise<void> {
+		await this.model.deleteMany({ user_id: userId }).exec();
+	}
 }

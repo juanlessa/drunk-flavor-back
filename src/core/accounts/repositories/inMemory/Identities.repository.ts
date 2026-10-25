@@ -49,4 +49,8 @@ export class IdentitiesRepositoryInMemory implements IIdentitiesRepository {
 	async findByUserId(userId: string): Promise<Identity[]> {
 		return this.collection.filter((rec) => rec.user_id === userId);
 	}
+
+	async deleteByUserId(userId: string): Promise<void> {
+		this.collection = this.collection.filter((rec) => rec.user_id !== userId);
+	}
 }

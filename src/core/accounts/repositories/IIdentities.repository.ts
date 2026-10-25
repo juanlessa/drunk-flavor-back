@@ -6,4 +6,5 @@ export interface IIdentitiesRepository {
 	create(data: CreateIdentity): Promise<Identity>;
 	touchLastLogin(id: string, date: Date): Promise<void>;
 	findByUserId(userId: string): Promise<Identity[]>;
+	deleteByUserId(userId: string): Promise<void>;
 }
