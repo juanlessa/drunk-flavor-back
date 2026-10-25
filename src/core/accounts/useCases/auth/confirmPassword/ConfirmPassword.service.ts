@@ -18,13 +18,13 @@ export class ConfirmPasswordService {
 	) {}
 
 	async execute({ token, password }: ConfirmPassword) {
-		const tokenRecord = await this.tokensRepository.findByToken(this.cryptoProvider.hashToken(token));
-
+		const tokenHash = this.cryptoProvider.hashToken(token);
+		const tokenRecord = await this.tokensRepository.findByTokenHash(tokenHash);
 		if (!tokenRecord) {
 			throw new BadRequestError('apiResponses.auth.tokenNotFound', { path: 'ConfirmPassword.service.1' });
 		}
-
-		if (tokenRecord && this.dateProvider.isExpiredDate(tokenRecord.expires_at)) {
+		const isTokenExpired = this.dateProvider.isExpiredDate(tokenRecord.expires_at);
+		if (tokenRecord && isTokenExpired) {
 			await this.tokensRepository.delete(tokenRecord._id.toString());
 			throw new BadRequestError('apiResponses.auth.expiredToken', { path: 'ConfirmPassword.service.2' });
 		}

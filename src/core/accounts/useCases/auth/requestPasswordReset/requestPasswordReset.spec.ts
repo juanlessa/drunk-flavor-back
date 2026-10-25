@@ -8,12 +8,13 @@ import { RequestPasswordResetService } from './RequestPasswordReset.service';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
-import { IMailerProvider } from '@/shared/providers/mailer/IMailer.provider';
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
 import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.provider';
-import { MockMailerProvider } from '@/shared/providers/mailer/implementations/MockMailer.provider';
+import { MockEmailQueueProvider } from '@/shared/providers/queue/email/implementations/MockEmailQueue.provider';
 import { MjmlProvider } from '@/shared/providers/template/implementations/Mjml.provider';
-import { TokenTypes, Token } from '@/core/accounts/entities/token.entity';
+import { Token } from '@/core/accounts/entities/token.entity';
+import { TokenTypes } from '@/core/accounts/constants/token.constants';
+import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { env } from '@/env';
 
@@ -21,7 +22,7 @@ let usersRepository: IUsersRepository;
 let tokensRepository: ITokensRepository;
 let dateProvider: IDateProvider;
 let cryptoProvider: ICryptoProvider;
-let mailerProvider: IMailerProvider;
+let emailQueueProvider: MockEmailQueueProvider;
 let templateProvider: ITemplateProvider;
 let service: RequestPasswordResetService;
 
@@ -36,14 +37,14 @@ describe('RequestPasswordReset', () => {
 		tokensRepository = new TokensRepositoryInMemory();
 		dateProvider = new DayjsProvider();
 		cryptoProvider = new NodeCryptoProvider();
-		mailerProvider = new MockMailerProvider();
+		emailQueueProvider = new MockEmailQueueProvider();
 		templateProvider = new MjmlProvider();
 		service = new RequestPasswordResetService(
 			usersRepository,
 			tokensRepository,
 			dateProvider,
 			cryptoProvider,
-			mailerProvider,
+			emailQueueProvider,
 			templateProvider,
 		);
 	});
@@ -67,8 +68,12 @@ describe('RequestPasswordReset', () => {
 		})) as Token;
 
 		expect(verifyToken).not.toBeNull();
-		expect(verifyToken.token).toBeTruthy();
-		expect(mailerProvider.send).toHaveBeenCalledTimes(1);
+		expect(verifyToken.token_hash).toBeTruthy();
+		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
+		expect(emailQueueProvider.addMock).toHaveBeenCalledWith(
+			EMAIL_JOB_NAMES.forgotPassword,
+			expect.objectContaining({ to: email }),
+		);
 	});
 
 	it('Should not be able to request a password reset for a nonexistent user', async () => {
@@ -79,7 +84,7 @@ describe('RequestPasswordReset', () => {
 		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
-			token: cryptoProvider.hashToken(token),
+			token_hash: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypes['forgot-password'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
@@ -92,7 +97,7 @@ describe('RequestPasswordReset', () => {
 		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 		const initialToken = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
-			token: cryptoProvider.hashToken(initialToken),
+			token_hash: cryptoProvider.hashToken(initialToken),
 			user_id: createdUser._id.toString(),
 			type: TokenTypes['forgot-password'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
@@ -108,8 +113,8 @@ describe('RequestPasswordReset', () => {
 		})) as Token;
 
 		expect(verifyToken).not.toBeNull();
-		expect(verifyToken.token).toBeTruthy();
-		expect(verifyToken.token).not.toBe(cryptoProvider.hashToken(initialToken));
-		expect(mailerProvider.send).toHaveBeenCalledTimes(1);
+		expect(verifyToken.token_hash).toBeTruthy();
+		expect(verifyToken.token_hash).not.toBe(cryptoProvider.hashToken(initialToken));
+		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
 	});
 });

@@ -1,16 +1,35 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
+import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { BadRequestError } from '@/shared/error/error.lib';
-import { UpdateProfile } from './updateProfile.dtos';
+import { UpdateProfile, UpdateProfileResult } from './updateProfile.dtos';
 
 export class UpdateProfileService {
 	constructor(private usersRepository: IUsersRepository) {}
 
-	async execute({ id, name, surname }: UpdateProfile) {
+	async execute({ id, name, surname }: UpdateProfile): Promise<UpdateProfileResult> {
 		const user = await this.usersRepository.findById(id);
 		if (!user) {
 			throw new BadRequestError('apiResponses.users.notExist', { path: 'UpdateProfile.service' });
 		}
 
-		await this.usersRepository.update({ id, name, surname });
+		// Completing an `incomplete_profile` account (e.g. a Google sign-in whose
+		// token omitted a name part) with valid name + surname promotes it to active.
+		// An already-complete account keeps its status and only updates the names.
+		const shouldComplete = user.status === UserStatuses.incomplete_profile;
+
+		const updated = await this.usersRepository.update({
+			id,
+			name,
+			surname,
+			...(shouldComplete ? { status: UserStatuses.active } : {}),
+		});
+
+		return {
+			user: {
+				id: updated._id.toString(),
+				role: updated.role,
+				status: updated.status,
+			},
+		};
 	}
 }

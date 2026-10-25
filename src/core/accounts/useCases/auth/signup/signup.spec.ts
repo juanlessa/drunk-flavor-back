@@ -15,8 +15,10 @@ import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementati
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.provider';
-import { User, UserStatuses } from '@/core/accounts/entities/user.entity';
-import { TokenTypes, Token } from '@/core/accounts/entities/token.entity';
+import { User } from '@/core/accounts/entities/user.entity';
+import { UserStatuses } from '@/core/accounts/constants/user.constants';
+import { Token } from '@/core/accounts/entities/token.entity';
+import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { Roles } from '@/shared/accessControl/roles';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
 import { MjmlProvider } from '@/shared/providers/template/implementations/Mjml.provider';
@@ -82,7 +84,7 @@ describe('Signup', () => {
 		})) as Token;
 
 		expect(verifyToken).not.toBeNull();
-		expect(verifyToken.token).toBeTruthy();
+		expect(verifyToken.token_hash).toBeTruthy();
 
 		const verifyCredential = await credentialsRepository.findByUserId(verifyUser._id.toString());
 		expect(verifyCredential).not.toBeNull();

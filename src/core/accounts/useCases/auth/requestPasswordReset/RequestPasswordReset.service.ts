@@ -1,7 +1,8 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
-import { TokenTypes } from '@/core/accounts/entities/token.entity';
-import { IMailerProvider } from '@/shared/providers/mailer/IMailer.provider';
+import { TokenTypes } from '@/core/accounts/constants/token.constants';
+import { IEmailQueueProvider } from '@/shared/providers/queue/email/IEmailQueue.provider';
+import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { MAIL_SENDERS } from '@/shared/constants/mailer.constants';
@@ -17,7 +18,7 @@ export class RequestPasswordResetService {
 		private tokensRepository: ITokensRepository,
 		private dateProvider: IDateProvider,
 		private cryptoProvider: ICryptoProvider,
-		private mailerProvider: IMailerProvider,
+		private emailQueueProvider: IEmailQueueProvider,
 		private templateProvider: ITemplateProvider,
 	) {}
 
@@ -44,23 +45,23 @@ export class RequestPasswordResetService {
 
 		const token = await this.cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 
+		await this.tokensRepository.create({
+			token_hash: this.cryptoProvider.hashToken(token),
+			type: TokenTypes['forgot-password'],
+			user_id: user._id.toString(),
+			expires_at: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+		});
+
 		const template = await this.templateProvider.forgotPassword({
-			userName: user.name,
+			userName: user.name ?? '',
 			resetLink: `${env.CLIENT_BASE_URL}${CLIENT_PAGE_PATHS.resetPassword}/${token}`,
 		});
 
-		await this.mailerProvider.send({
+		await this.emailQueueProvider.add(EMAIL_JOB_NAMES.forgotPassword, {
 			to: user.email,
 			from: MAIL_SENDERS.noReply,
 			subject: 'reset password',
 			html: template,
-		});
-
-		await this.tokensRepository.create({
-			token: this.cryptoProvider.hashToken(token),
-			type: TokenTypes['forgot-password'],
-			user_id: user._id.toString(),
-			expires_at: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 	}
 }

@@ -9,7 +9,8 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
-import { User, UserStatuses } from '@/core/accounts/entities/user.entity';
+import { User } from '@/core/accounts/entities/user.entity';
+import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
@@ -18,7 +19,8 @@ import { MjmlProvider } from '@/shared/providers/template/implementations/Mjml.p
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
 import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.provider';
 import { TokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Tokens.repository';
-import { TokenTypes, Token } from '@/core/accounts/entities/token.entity';
+import { Token } from '@/core/accounts/entities/token.entity';
+import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
 import { CredentialsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Credentials.repository';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
@@ -94,7 +96,7 @@ describe('Create User', () => {
 		})) as Token;
 
 		expect(verifyToken).not.toBeNull();
-		expect(verifyToken.token).toBeTruthy();
+		expect(verifyToken.token_hash).toBeTruthy();
 
 		const verifyCredential = await credentialsRepository.findByUserId(verifyUser._id.toString());
 		expect(verifyCredential).not.toBeNull();
@@ -146,7 +148,7 @@ describe('Create User', () => {
 		})) as Token;
 
 		expect(verifyToken).not.toBeNull();
-		expect(verifyToken.token).toBeTruthy();
+		expect(verifyToken.token_hash).toBeTruthy();
 
 		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
 		expect(emailQueueProvider.addMock).toHaveBeenCalledWith(
@@ -165,7 +167,7 @@ describe('Create User', () => {
 		});
 		const initialToken = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
-			token: cryptoProvider.hashToken(initialToken),
+			token_hash: cryptoProvider.hashToken(initialToken),
 			user_id: createdUser._id.toString(),
 			type: TokenTypes['email-verification'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
@@ -188,7 +190,7 @@ describe('Create User', () => {
 		})) as Token;
 
 		expect(verifyToken).not.toBeNull();
-		expect(verifyToken.token).toBeTruthy();
+		expect(verifyToken.token_hash).toBeTruthy();
 
 		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
 		expect(emailQueueProvider.addMock).toHaveBeenCalledWith(

@@ -3,7 +3,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
 import { UnauthorizedError } from '@/shared/error/error.lib';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
-import { UserStatuses } from '@/core/accounts/entities/user.entity';
+import { UserStatuses } from '@/core/accounts/constants/user.constants';
 
 export class SigninService {
 	constructor(
@@ -48,6 +48,7 @@ export class SigninService {
 			user: {
 				id: user._id.toString(),
 				role: user.role,
+				status: user.status,
 			},
 		};
 	}

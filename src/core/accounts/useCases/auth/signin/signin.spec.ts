@@ -8,7 +8,7 @@ import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
 import { SigninService } from './Signin.service';
-import { UserStatuses } from '@/core/accounts/entities/user.entity';
+import { UserStatuses } from '@/core/accounts/constants/user.constants';
 
 let usersRepository: IUsersRepository;
 let credentialsRepository: ICredentialsRepository;
@@ -44,6 +44,7 @@ describe('Signin', () => {
 		});
 
 		expect(result).toHaveProperty('user');
+		expect(result.user.status).toBe(UserStatuses.active);
 	});
 
 	it('should reject a nonexistent account with a generic unauthorized error', async () => {

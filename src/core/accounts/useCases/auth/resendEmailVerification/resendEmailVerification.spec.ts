@@ -9,8 +9,9 @@ import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
 import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.provider';
-import { TokenTypes, Token } from '@/core/accounts/entities/token.entity';
-import { UserStatuses } from '@/core/accounts/entities/user.entity';
+import { Token } from '@/core/accounts/entities/token.entity';
+import { TokenTypes } from '@/core/accounts/constants/token.constants';
+import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { Roles } from '@/shared/accessControl/roles';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { env } from '@/env';
@@ -79,7 +80,7 @@ describe('ResendEmailVerification', () => {
 		})) as Token;
 
 		expect(verifyToken).not.toBeNull();
-		expect(verifyToken.token).toBeTruthy();
+		expect(verifyToken.token_hash).toBeTruthy();
 	});
 
 	it('Should queue the verification email when resend succeeds', async () => {
@@ -116,7 +117,7 @@ describe('ResendEmailVerification', () => {
 		const createdUser = await createPendingUser();
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
-			token: cryptoProvider.hashToken(token),
+			token_hash: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypes['email-verification'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
@@ -130,7 +131,7 @@ describe('ResendEmailVerification', () => {
 		const createdUser = await createPendingUser();
 		const initialToken = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
-			token: cryptoProvider.hashToken(initialToken),
+			token_hash: cryptoProvider.hashToken(initialToken),
 			user_id: createdUser._id.toString(),
 			type: TokenTypes['email-verification'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
@@ -146,9 +147,9 @@ describe('ResendEmailVerification', () => {
 		})) as Token;
 
 		expect(verifyToken).not.toBeNull();
-		expect(verifyToken.token).toBeTruthy();
-		expect(verifyToken.token).not.toBe(cryptoProvider.hashToken(initialToken));
-		expect(await tokensRepository.findByToken(cryptoProvider.hashToken(initialToken))).toBeNull();
+		expect(verifyToken.token_hash).toBeTruthy();
+		expect(verifyToken.token_hash).not.toBe(cryptoProvider.hashToken(initialToken));
+		expect(await tokensRepository.findByTokenHash(cryptoProvider.hashToken(initialToken))).toBeNull();
 
 		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
 		expect(emailQueueProvider.addMock).toHaveBeenCalledWith(

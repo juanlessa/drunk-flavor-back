@@ -10,7 +10,7 @@ import { resolveTokensRepository } from '@/core/accounts/infra/mongo/container';
 import { resolveCryptoProvider } from '@/shared/providers/cryptography';
 import { resolveDateProvider } from '@/shared/providers/date';
 import { env } from '@/env';
-import { TokenTypes } from '@/core/accounts/entities/token.entity';
+import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { Roles } from '@/shared/accessControl/roles';
 
 describe('Confirm Email', () => {
@@ -37,7 +37,7 @@ describe('Confirm Email', () => {
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 
 		await tokensRepository.create({
-			token: cryptoProvider.hashToken(token),
+			token_hash: cryptoProvider.hashToken(token),
 			type: TokenTypes['email-verification'],
 			user_id: id,
 			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),

@@ -4,7 +4,7 @@ import { ITokensRepository } from '@/core/accounts/repositories/ITokens.reposito
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { ConfirmEmail } from './confirmEmail.dtos';
-import { UserStatuses } from '@/core/accounts/entities/user.entity';
+import { UserStatuses } from '@/core/accounts/constants/user.constants';
 
 export class ConfirmEmailService {
 	constructor(
@@ -15,13 +15,15 @@ export class ConfirmEmailService {
 	) {}
 
 	async execute({ token }: ConfirmEmail) {
-		const tokenRecord = await this.tokensRepository.findByToken(this.cryptoProvider.hashToken(token));
+		const tokenHash = this.cryptoProvider.hashToken(token);
+		const tokenRecord = await this.tokensRepository.findByTokenHash(tokenHash);
 
 		if (!tokenRecord) {
 			throw new BadRequestError('apiResponses.auth.tokenNotFound', { path: 'ConfirmEmail.service.1' });
 		}
 
-		if (tokenRecord && this.dateProvider.isExpiredDate(tokenRecord.expires_at)) {
+		const isTokenExpired = this.dateProvider.isExpiredDate(tokenRecord.expires_at);
+		if (tokenRecord && isTokenExpired) {
 			await this.tokensRepository.delete(tokenRecord._id.toString());
 			throw new BadRequestError('apiResponses.auth.expiredToken', { path: 'ConfirmEmail.service.2' });
 		}

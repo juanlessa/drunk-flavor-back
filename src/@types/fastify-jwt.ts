@@ -3,12 +3,14 @@ import 'fastify';
 import { VerifyPayloadType, SignPayloadType, FastifyJwtSignOptions, FastifyJwtVerifyOptions } from '@fastify/jwt';
 import { DecodedToken } from '@/infrastructure/fastify/types/jwt.types';
 import type { Role } from '@/shared/accessControl/roles';
+import type { UserStatus } from '@/core/accounts/entities/user.entity';
 
 declare module '@fastify/jwt' {
 	interface FastifyJWT {
 		user: {
 			id: string;
 			role: Role;
+			status: UserStatus;
 		};
 	}
 }

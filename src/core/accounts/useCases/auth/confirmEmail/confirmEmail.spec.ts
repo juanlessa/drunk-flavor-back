@@ -1,4 +1,5 @@
-import { User, UserStatuses } from '@/core/accounts/entities/user.entity';
+import { User } from '@/core/accounts/entities/user.entity';
+import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BadRequestError } from '@/shared/error/error.lib';
@@ -11,7 +12,7 @@ import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.pro
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
 import { env } from '@/env';
-import { TokenTypes } from '@/core/accounts/entities/token.entity';
+import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { TokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Tokens.repository';
 import { ObjectId } from 'mongodb';
 
@@ -48,7 +49,7 @@ describe('Confirm Email', () => {
 		});
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
-			token: cryptoProvider.hashToken(token),
+			token_hash: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypes['email-verification'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
@@ -82,7 +83,7 @@ describe('Confirm Email', () => {
 		});
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
-			token: cryptoProvider.hashToken(token),
+			token_hash: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypes['email-verification'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
@@ -96,7 +97,7 @@ describe('Confirm Email', () => {
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 
-		const findToken = await tokensRepository.findByToken(cryptoProvider.hashToken(token));
+		const findToken = await tokensRepository.findByTokenHash(cryptoProvider.hashToken(token));
 
 		expect(findToken).toBeNull();
 	});
@@ -105,7 +106,7 @@ describe('Confirm Email', () => {
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		const nonexistentUserId = new ObjectId().toString();
 		await tokensRepository.create({
-			token: cryptoProvider.hashToken(token),
+			token_hash: cryptoProvider.hashToken(token),
 			user_id: nonexistentUserId,
 			type: TokenTypes['email-verification'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),

@@ -8,7 +8,7 @@ import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { TokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Tokens.repository';
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
-import { TokenTypes } from '@/core/accounts/entities/token.entity';
+import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { env } from '@/env';
 import { Actor } from '@/shared/accessControl/actor.types';
 import { Roles } from '@/shared/accessControl/roles';
@@ -61,13 +61,13 @@ describe('Delete User', () => {
 		const createdUser = await usersRepository.create(userData);
 		await tokensRepository.create({
 			user_id: createdUser._id.toString(),
-			token: await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE),
+			token_hash: await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE),
 			type: TokenTypes['forgot-password'],
 			expires_at: new Date(Date.now() + 60_000),
 		});
 		await tokensRepository.create({
 			user_id: createdUser._id.toString(),
-			token: await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE),
+			token_hash: await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE),
 			type: TokenTypes['email-verification'],
 			expires_at: new Date(Date.now() + 60_000),
 		});

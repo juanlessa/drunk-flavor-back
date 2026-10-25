@@ -14,13 +14,14 @@ export const signinController: Controller<{ Body: SigninReqBody }> = async (requ
 		email,
 	});
 
-	const accessToken = await reply.jwtSign({ role: user.role }, { sign: { sub: user.id } });
+	const accessToken = await reply.jwtSign({ role: user.role, status: user.status }, { sign: { sub: user.id } });
 	const refreshToken = await reply.sessionJwtSign({}, { sign: { sub: user.id } });
 
 	request.session.set(AUTH_SESSION, {
 		refreshToken,
 		userId: user.id,
 		userRole: user.role,
+		userStatus: user.status,
 	});
 	reply.setCookie(AUTH_COOKIE, accessToken, AUTH_COOKIE_OPTIONS);
 

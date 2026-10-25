@@ -17,7 +17,10 @@ export const refreshTokenController: Controller = async (request, reply) => {
 
 	const user = await service.execute({ user_id });
 
-	const accessToken = await reply.jwtSign({ role: user.role }, { sign: { sub: user._id.toString() } });
+	const accessToken = await reply.jwtSign(
+		{ role: user.role, status: user.status },
+		{ sign: { sub: user._id.toString() } },
+	);
 
 	reply.setCookie(AUTH_COOKIE, accessToken, AUTH_COOKIE_OPTIONS);
 

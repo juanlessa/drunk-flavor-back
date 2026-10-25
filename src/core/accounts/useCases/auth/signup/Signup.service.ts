@@ -1,5 +1,6 @@
-import { User, UserStatuses } from '@/core/accounts/entities/user.entity';
-import { TokenTypes } from '@/core/accounts/entities/token.entity';
+import { User } from '@/core/accounts/entities/user.entity';
+import { UserStatuses } from '@/core/accounts/constants/user.constants';
+import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
@@ -62,7 +63,7 @@ export class SignupService {
 			});
 
 			await this.tokensRepository.create({
-				token: this.cryptoProvider.hashToken(token),
+				token_hash: this.cryptoProvider.hashToken(token),
 				type: TokenTypes['email-verification'],
 				user_id: createdUser._id.toString(),
 				expires_at: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
@@ -72,7 +73,7 @@ export class SignupService {
 		});
 
 		const html = await this.templateProvider.emailVerification({
-			userName: user.name,
+			userName: name,
 			verificationLink: `${env.CLIENT_BASE_URL}${CLIENT_PAGE_PATHS.verifyEmail}/${token}`,
 		});
 

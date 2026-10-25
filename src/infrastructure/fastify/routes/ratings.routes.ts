@@ -18,6 +18,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { pluginGenerator } from '../helpers/fastify.helpers';
 import { verifyAndRenewToken } from '../middlewares/verifyAndRenewToken';
 import { verifyPermissions } from '../middlewares/verifyPermissions';
+import { enforceCompleteProfile } from '../middlewares/enforceCompleteProfile';
 import { Routes } from '../types/fastify.types';
 
 const routes: Routes = (server) => {
@@ -25,7 +26,7 @@ const routes: Routes = (server) => {
 		'/ratings',
 		{
 			schema: { tags: ['Ratings'], body: createRatingSchema },
-			preValidation: [verifyAndRenewToken, verifyPermissions('create', 'Rating')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('create', 'Rating')],
 		},
 		createRatingController,
 	);
@@ -34,7 +35,7 @@ const routes: Routes = (server) => {
 		'/me/ratings',
 		{
 			schema: { tags: ['Ratings'], querystring: ratingQuerySchema },
-			preValidation: [verifyAndRenewToken, verifyPermissions('list', 'Rating')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('list', 'Rating')],
 		},
 		listMyRatingsController,
 	);
@@ -59,7 +60,7 @@ const routes: Routes = (server) => {
 		'/ratings/:id',
 		{
 			schema: { tags: ['Ratings'], params: updateRatingParamsSchema, body: updateRatingBodySchema },
-			preValidation: [verifyAndRenewToken],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile],
 		},
 		updateRatingController,
 	);
@@ -68,7 +69,7 @@ const routes: Routes = (server) => {
 		'/ratings/:id',
 		{
 			schema: { tags: ['Ratings'], params: deleteRatingSchema },
-			preValidation: [verifyAndRenewToken],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile],
 		},
 		deleteRatingController,
 	);

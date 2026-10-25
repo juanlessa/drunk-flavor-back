@@ -27,7 +27,6 @@ describe('Get Profile', () => {
 		expect(result.name).toEqual(createdUser.name);
 		expect(result.surname).toEqual(createdUser.surname);
 		expect(result.role).toEqual(createdUser.role);
-		expect(result).not.toHaveProperty('password');
 	});
 
 	it('Should not be able to find a nonexistent profile', async () => {

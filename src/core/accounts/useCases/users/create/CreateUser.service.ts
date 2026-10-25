@@ -4,8 +4,8 @@ import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { CreateUserDTO } from './createUser.dtos';
 import { defineAbilityFor } from '@/shared/accessControl';
 import { userPermissionSchema } from '@/shared/accessControl/entities/user';
-import { UserStatuses } from '@/core/accounts/entities/user.entity';
-import { TokenTypes } from '@/core/accounts/entities/token.entity';
+import { UserStatuses } from '@/core/accounts/constants/user.constants';
+import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
@@ -79,7 +79,7 @@ export class CreateUserService {
 			});
 
 			await this.tokensRepository.create({
-				token: this.cryptoProvider.hashToken(token),
+				token_hash: this.cryptoProvider.hashToken(token),
 				type: TokenTypes['email-verification'],
 				user_id: createdUser._id.toString(),
 				expires_at: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
@@ -89,7 +89,7 @@ export class CreateUserService {
 		});
 
 		const html = await this.templateProvider.emailVerification({
-			userName: user.name,
+			userName: name,
 			verificationLink: `${env.CLIENT_BASE_URL}${CLIENT_PAGE_PATHS.verifyEmail}/${token}`,
 		});
 

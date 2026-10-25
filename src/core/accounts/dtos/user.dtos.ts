@@ -3,8 +3,8 @@ import { Actor } from '@/shared/accessControl/actor.types';
 import { Role } from '@/shared/accessControl/roles';
 
 export type CreateUser = {
-	name: string;
-	surname: string;
+	name?: string;
+	surname?: string;
 	email: string;
 	email_verified?: boolean;
 	avatar_url?: string;

@@ -1,3 +1,4 @@
+import { UserStatus } from '@/core/accounts/entities/user.entity';
 import { Role } from '@/shared/accessControl/roles';
 import { FastifyError } from 'fastify';
 
@@ -24,4 +25,5 @@ export type DecodedToken = {
 	[key: string]: any;
 	sub: string;
 	role: Role;
+	status: UserStatus;
 };

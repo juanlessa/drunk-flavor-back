@@ -1,5 +1,5 @@
-import { UserStatuses } from '@/core/accounts/entities/user.entity';
-import { TokenTypes } from '@/core/accounts/entities/token.entity';
+import { UserStatuses } from '@/core/accounts/constants/user.constants';
+import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
 import { BadRequestError } from '@/shared/error/error.lib';
@@ -55,14 +55,14 @@ export class ResendEmailVerificationService {
 		const token = await this.cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 
 		await this.tokensRepository.create({
-			token: this.cryptoProvider.hashToken(token),
+			token_hash: this.cryptoProvider.hashToken(token),
 			type: TokenTypes['email-verification'],
 			user_id: user._id.toString(),
 			expires_at: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		const html = await this.templateProvider.emailVerification({
-			userName: user.name,
+			userName: user.name ?? '',
 			verificationLink: `${env.CLIENT_BASE_URL}${CLIENT_PAGE_PATHS.verifyEmail}/${token}`,
 		});
 

@@ -13,7 +13,7 @@ import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.pro
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
 import { env } from '@/env';
-import { TokenTypes } from '@/core/accounts/entities/token.entity';
+import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { TokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Tokens.repository';
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
 import { CredentialsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Credentials.repository';
@@ -70,7 +70,7 @@ describe('Confirm Password', () => {
 		});
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
-			token: cryptoProvider.hashToken(token),
+			token_hash: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypes['forgot-password'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
@@ -103,7 +103,7 @@ describe('Confirm Password', () => {
 		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
-			token: cryptoProvider.hashToken(token),
+			token_hash: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypes['forgot-password'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
@@ -118,7 +118,7 @@ describe('Confirm Password', () => {
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 
-		const findToken = await tokensRepository.findByToken(cryptoProvider.hashToken(token));
+		const findToken = await tokensRepository.findByTokenHash(cryptoProvider.hashToken(token));
 
 		expect(findToken).toBeNull();
 	});
@@ -127,7 +127,7 @@ describe('Confirm Password', () => {
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		const nonexistentUserId = new ObjectId().toString();
 		await tokensRepository.create({
-			token: cryptoProvider.hashToken(token),
+			token_hash: cryptoProvider.hashToken(token),
 			user_id: nonexistentUserId,
 			type: TokenTypes['forgot-password'],
 			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),

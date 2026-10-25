@@ -3,6 +3,7 @@ import { Middleware } from '../types/fastify.types';
 import { instanceOfFastifyJwtError, instanceOfJwtAuthorizationTokenExpiredError } from '../errors/fastifyJwtError';
 import { signOut } from './signOut';
 import { resolveUsersRepository } from '@/core/accounts/infra/mongo/container';
+import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 
 export const verifyAndRenewToken: Middleware = async (request, reply) => {
@@ -36,11 +37,14 @@ export const verifyAndRenewToken: Middleware = async (request, reply) => {
 		throw new NotFoundError('apiResponses.users.notExist', { path: 'verifyAndRenewToken.middleware' });
 	}
 
-	if (user.status !== 'active') {
+	// An `incomplete_profile` user is not `active`, but must still be able to reach
+	// the profile routes to complete their profile. Allow both; the profile gate
+	// (enforceCompleteProfile) blocks incomplete users from business routes.
+	if (user.status !== UserStatuses.active && user.status !== UserStatuses.incomplete_profile) {
 		throw new BadRequestError('apiResponses.auth.inactiveAccount', { path: 'verifyAndRenewToken.middleware' });
 	}
 
 	// new access token
-	const newAccessToken = await reply.jwtSign({ role: user.role }, { sign: { sub: id } });
+	const newAccessToken = await reply.jwtSign({ role: user.role, status: user.status }, { sign: { sub: id } });
 	reply.setCookie(AUTH_COOKIE, newAccessToken, AUTH_COOKIE_OPTIONS);
 };
