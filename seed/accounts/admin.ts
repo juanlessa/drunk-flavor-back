@@ -1,5 +1,5 @@
 import { z } from 'zod/v4';
-import { UserStatuses } from '@/core/accounts/entities/user.entity';
+import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import {
 	userEmailValidation,
 	userNameValidation,

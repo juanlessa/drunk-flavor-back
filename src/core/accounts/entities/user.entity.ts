@@ -1,11 +1,6 @@
 import { DatabaseCommonInfo } from '@/infrastructure/mongo/types';
 import { Role } from '@/shared/accessControl/roles';
-
-export const UserStatuses = {
-	idle: 'idle',
-	pending: 'pending',
-	active: 'active',
-} as const;
+import { UserStatuses } from '../constants/user.constants';
 
 export type UserStatus = (typeof UserStatuses)[keyof typeof UserStatuses];
 

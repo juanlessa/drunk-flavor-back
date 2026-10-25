@@ -1,8 +1,5 @@
 import { DatabaseCommonInfo } from '@/infrastructure/mongo/types';
-
-export const IdentityProviders = {
-	google: 'google',
-} as const;
+import { IdentityProviders } from '../constants/identity.constants';
 
 export type IdentityProvider = (typeof IdentityProviders)[keyof typeof IdentityProviders];
 

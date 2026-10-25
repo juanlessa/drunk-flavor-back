@@ -1,14 +1,14 @@
 import { TokenType } from '../entities/token.entity';
 
 export type CreateToken = {
-	token: string;
+	token_hash: string;
 	user_id: string;
 	type: TokenType;
 	expires_at: Date;
 };
 
 export type UpdateToken = { id: string } & Partial<{
-	token: string;
+	token_hash: string;
 	user_id: string;
 	type: TokenType;
 	expires_at: Date;

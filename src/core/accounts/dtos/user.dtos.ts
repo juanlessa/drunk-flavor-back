@@ -1,4 +1,4 @@
-import { User, UserStatus } from '@/core/accounts/entities/user.entity';
+import { UserStatus } from '@/core/accounts/entities/user.entity';
 import { Actor } from '@/shared/accessControl/actor.types';
 import { Role } from '@/shared/accessControl/roles';
 
@@ -27,5 +27,3 @@ export type UpdateUserRole = {
 	role: Role;
 	actor: Actor;
 };
-
-export type UserWithoutPassword = User;
