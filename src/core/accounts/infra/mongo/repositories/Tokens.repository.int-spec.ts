@@ -6,7 +6,7 @@ import { CreateToken } from '@/core/accounts/dtos/token.dtos';
 import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 
 const buildToken = (overrides?: Partial<CreateToken>): CreateToken => ({
-	token: overrides?.token ?? new ObjectId().toString(),
+	token_hash: overrides?.token_hash ?? new ObjectId().toString(),
 	user_id: overrides?.user_id ?? new ObjectId().toString(),
 	type: overrides?.type ?? 'email-verification',
 	expires_at: overrides?.expires_at ?? new Date(Date.now() + 60 * 60 * 1000),
@@ -31,7 +31,7 @@ describe('TokensRepository (integration)', () => {
 		const created = await repository.create(buildToken());
 
 		const byId = await repository.findById(created._id.toString());
-		const byToken = await repository.findByToken(created.token);
+		const byToken = await repository.findByTokenHash(created.token_hash);
 		const byPair = await repository.findByUserIdAndType({ user_id: created.user_id, type: created.type });
 		const [byUser] = await repository.findByUserId(created.user_id);
 
@@ -46,17 +46,17 @@ describe('TokensRepository (integration)', () => {
 
 		const created = await repository.create(data);
 
-		expect(created.token).toBe(data.token);
+		expect(created.token_hash).toBe(data.token_hash);
 		expect(created.user_id).toBe(data.user_id);
 		expect(created.type).toBe('forgot-password');
 		expect(created.expires_at.getTime()).toBe(expires_at.getTime());
 	});
 
-	it('findByToken returns the matching token and null on no match', async () => {
+	it('findByTokenHash returns the matching token and null on no match', async () => {
 		const created = await repository.create(buildToken());
 
-		expect((await repository.findByToken(created.token))?.token).toBe(created.token);
-		expect(await repository.findByToken(new ObjectId().toString())).toBeNull();
+		expect((await repository.findByTokenHash(created.token_hash))?.token_hash).toBe(created.token_hash);
+		expect(await repository.findByTokenHash(new ObjectId().toString())).toBeNull();
 	});
 
 	it('findByUserIdAndType returns the right token and null when the pair does not exist', async () => {
@@ -96,24 +96,24 @@ describe('TokensRepository (integration)', () => {
 	});
 
 	it('throws NotFoundError on update/delete of a missing id', async () => {
-		await expect(repository.update({ id: new ObjectId().toString(), token: 'x' })).rejects.toBeInstanceOf(
+		await expect(repository.update({ id: new ObjectId().toString(), token_hash: 'x' })).rejects.toBeInstanceOf(
 			NotFoundError,
 		);
 		await expect(repository.delete(new ObjectId().toString())).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('translates a duplicate token create to a domain BadRequestError', async () => {
-		// Finding F3 (resolved): create wraps the 11000 violation on the token unique index
-		// and translates it to a domain BadRequestError via the shared mapDuplicateKeyError.
-		const token = new ObjectId().toString();
-		await repository.create(buildToken({ token }));
+		// create wraps the 11000 violation on the token unique index and translates it
+		// to a domain BadRequestError via the shared mapDuplicateKeyError.
+		const token_hash = new ObjectId().toString();
+		await repository.create(buildToken({ token_hash }));
 
-		const duplicate = repository.create(buildToken({ token }));
+		const duplicate = repository.create(buildToken({ token_hash }));
 		await expect(duplicate).rejects.toBeInstanceOf(BadRequestError);
 	});
 
 	it('translates a duplicate (user_id, type) create to a domain BadRequestError', async () => {
-		// Finding F3 (resolved): the compound unique index violation is translated too.
+		// The compound unique index violation is translated too.
 		const user_id = new ObjectId().toString();
 		await repository.create(buildToken({ user_id, type: 'forgot-password' }));
 
@@ -122,11 +122,11 @@ describe('TokensRepository (integration)', () => {
 	});
 
 	it('resolves a concurrent duplicate-token create race to one persisted record and one rejection', async () => {
-		const token = new ObjectId().toString();
+		const token_hash = new ObjectId().toString();
 
 		const results = await Promise.allSettled([
-			repository.create(buildToken({ token })),
-			repository.create(buildToken({ token })),
+			repository.create(buildToken({ token_hash })),
+			repository.create(buildToken({ token_hash })),
 		]);
 
 		const fulfilled = results.filter((result) => result.status === 'fulfilled');
@@ -135,7 +135,7 @@ describe('TokensRepository (integration)', () => {
 		expect(rejected).toHaveLength(1);
 		expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(BadRequestError);
 
-		expect(await TokenModel.countDocuments({ token })).toBe(1);
+		expect(await TokenModel.countDocuments({ token_hash })).toBe(1);
 	});
 
 	it('resolves a concurrent duplicate (user_id, type) create race to one persisted record and one rejection', async () => {

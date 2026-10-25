@@ -19,14 +19,12 @@ describe('UserModel (integration)', () => {
 		expect(UserModel.collection.collectionName).toBe('users');
 	});
 
-	it('declares exactly the expected named unique email index and no implicit field-level index', async () => {
+	it('declares exactly the expected named unique email index', async () => {
 		const indexes = await getIndexes();
 		const names = indexes.map((index) => index.name).sort();
 
-		// The email index is declared explicitly via a named unique index, mirroring
-		// drinks/engagement; the old field-level auto-named `email_1` must be gone.
+		// The email index is declared explicitly via a named unique index.
 		expect(names).toEqual(['_id_', USER_EMAIL_UNIQUE_INDEX].sort());
-		expect(names).not.toContain('email_1');
 
 		const emailIndex = indexes.find((index) => index.name === USER_EMAIL_UNIQUE_INDEX);
 		expect(emailIndex?.key).toEqual({ email: 1 });

@@ -18,7 +18,7 @@ type IndexInfo = {
 const getIndexes = async (): Promise<IndexInfo[]> => (await TokenModel.collection.indexes()) as unknown as IndexInfo[];
 
 const buildToken = (overrides?: Partial<CreateToken>): CreateToken => ({
-	token: overrides?.token ?? new ObjectId().toString(),
+	token_hash: overrides?.token_hash ?? new ObjectId().toString(),
 	user_id: overrides?.user_id ?? new ObjectId().toString(),
 	type: overrides?.type ?? 'email-verification',
 	expires_at: overrides?.expires_at ?? new Date(Date.now() + 60 * 60 * 1000),
@@ -37,23 +37,18 @@ describe('TokenModel (integration)', () => {
 		expect(TokenModel.collection.collectionName).toBe('tokens');
 	});
 
-	it('declares exactly the expected named indexes and no implicit field-level index', async () => {
+	it('declares exactly the expected named indexes', async () => {
 		const names = (await getIndexes()).map((index) => index.name).sort();
 
 		expect(names).toEqual(
 			['_id_', TOKEN_UNIQUE_INDEX, TOKEN_USER_TYPE_UNIQUE_INDEX, TOKEN_EXPIRES_AT_TTL_INDEX].sort(),
 		);
-
-		// The old auto-named indexes must no longer exist.
-		expect(names).not.toContain('token_1');
-		expect(names).not.toContain('user_id_1_type_1');
-		expect(names).not.toContain('expires_at_1');
 	});
 
 	it('enforces a unique token index', async () => {
 		const tokenIndex = (await getIndexes()).find((index) => index.name === TOKEN_UNIQUE_INDEX);
 
-		expect(tokenIndex?.key).toEqual({ token: 1 });
+		expect(tokenIndex?.key).toEqual({ token_hash: 1 });
 		expect(tokenIndex?.unique).toBe(true);
 	});
 
@@ -73,10 +68,10 @@ describe('TokenModel (integration)', () => {
 	});
 
 	it('rejects a duplicate token with an 11000 error', async () => {
-		const token = new ObjectId().toString();
-		await TokenModel.create(buildToken({ token }));
+		const token_hash = new ObjectId().toString();
+		await TokenModel.create(buildToken({ token_hash }));
 
-		await expect(TokenModel.create(buildToken({ token }))).rejects.toMatchObject({ code: 11000 });
+		await expect(TokenModel.create(buildToken({ token_hash }))).rejects.toMatchObject({ code: 11000 });
 	});
 
 	it('rejects a duplicate (user_id, type) pair with an 11000 error', async () => {
@@ -100,7 +95,7 @@ describe('TokenModel (integration)', () => {
 		const originalCreatedAt = created.created_at.getTime();
 		const originalUpdatedAt = created.updated_at.getTime();
 
-		created.token = new ObjectId().toString();
+		created.token_hash = new ObjectId().toString();
 		const updated = await created.save();
 
 		expect(updated.created_at.getTime()).toBe(originalCreatedAt);

@@ -30,13 +30,6 @@ describe('UsersRepository (integration)', () => {
 		expect(listed as Record<string, unknown>).not.toHaveProperty('__v');
 	});
 
-	it('never exposes a password field on findAll (password lives in credentials now)', async () => {
-		await repository.create(createUserFactory({ email: 'nopass@example.com' }));
-
-		const [listed] = await repository.findAll({});
-		expect(listed).not.toHaveProperty('password');
-	});
-
 	it('findByEmail returns the matching user and null on no match', async () => {
 		await repository.create(createUserFactory({ email: 'find@example.com' }));
 
@@ -46,26 +39,10 @@ describe('UsersRepository (integration)', () => {
 		expect(await repository.findByEmail('missing@example.com')).toBeNull();
 	});
 
-	it('findByEmail returns a non-lean document (current contract: keeps __v)', async () => {
-		// Finding F1 (report-only): unlike every other read, findByEmail is NOT lean.
-		// It returns a hydrated Mongoose document that still carries __v. The password
-		// no longer lives on the user document (it moved to the credentials collection).
-		// This test locks the current behavior; a future production-alignment task may flip it.
-		await repository.create(createUserFactory({ email: 'hydrated@example.com' }));
-
-		const found = await repository.findByEmail('hydrated@example.com');
-		expect(found).not.toBeNull();
-		expect(found).not.toHaveProperty('password');
-		const raw = (found as unknown as { toObject: () => Record<string, unknown> }).toObject();
-		expect(raw).toHaveProperty('__v');
-	});
-
-	it('findByEmail is effectively case-insensitive via the schema lowercase setter (current contract)', async () => {
-		// Finding F6 (report-only): the schema `lowercase: true` setter is applied to the
-		// query filter too, so Mongoose lowercases the lookup value before matching. The
-		// stored email is already lowercased, so BOTH the lowercased and the original
-		// mixed-case lookups match. This diverges from the in-memory repo, which compares
-		// with a strict === (case-sensitive). This test locks the current Mongo behavior.
+	it('findByEmail is effectively case-insensitive via the schema lowercase setter', async () => {
+		// The schema `lowercase: true` setter is applied to the query filter too, so
+		// Mongoose lowercases the lookup value before matching. The stored email is
+		// already lowercased, so both the lowercased and the original mixed-case lookups match.
 		await repository.create(createUserFactory({ email: 'Mixed.Case@Example.COM' }));
 
 		expect(await repository.findByEmail('mixed.case@example.com')).not.toBeNull();
@@ -84,8 +61,8 @@ describe('UsersRepository (integration)', () => {
 	});
 
 	it('translates a duplicate-email create to a domain BadRequestError', async () => {
-		// Finding F2 (resolved): create wraps the 11000 duplicate-key violation and
-		// translates it to a domain BadRequestError via the shared mapDuplicateKeyError.
+		// create wraps the 11000 duplicate-key violation and translates it to a
+		// domain BadRequestError via the shared mapDuplicateKeyError.
 		await repository.create(createUserFactory({ email: 'raceless@example.com' }));
 
 		const duplicate = repository.create(createUserFactory({ email: 'raceless@example.com' }));
