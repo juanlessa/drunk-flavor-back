@@ -59,8 +59,8 @@ export class TokensRepositoryInMemory implements ITokensRepository {
 		return deletedCount;
 	}
 
-	async findByToken(token: string): Promise<Token | null> {
-		const recordFound = this.collection.find((rec) => rec.token === token);
+	async findByTokenHash(tokenHash: string): Promise<Token | null> {
+		const recordFound = this.collection.find((rec) => rec.token_hash === tokenHash);
 		return recordFound || null;
 	}
 

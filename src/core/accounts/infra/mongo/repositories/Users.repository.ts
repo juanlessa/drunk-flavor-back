@@ -1,4 +1,4 @@
-import { CreateUser, UpdateUser, UserWithoutPassword } from '@/core/accounts/dtos/user.dtos';
+import { CreateUser, UpdateUser } from '@/core/accounts/dtos/user.dtos';
 import { User } from '@/core/accounts/entities/user.entity';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { USER_UNIQUE_INDEXES, UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
@@ -56,7 +56,7 @@ export class UsersRepository implements IUsersRepository {
 		return UserModel.findOne<User>({ email }).exec();
 	}
 
-	async findAll(query: QueryParams): Promise<UserWithoutPassword[]> {
-		return buildQuery(query, UserModel).lean<UserWithoutPassword[]>({ transform: removeLeanVersionKey }).exec();
+	async findAll(query: QueryParams): Promise<User[]> {
+		return buildQuery(query, UserModel).lean<User[]>({ transform: removeLeanVersionKey }).exec();
 	}
 }

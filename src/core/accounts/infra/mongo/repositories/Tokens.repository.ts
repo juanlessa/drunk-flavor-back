@@ -57,8 +57,11 @@ export class TokensRepository implements ITokensRepository {
 		return this.model.findById<Token>(id).lean<Token>({ transform: removeLeanVersionKey }).exec();
 	}
 
-	async findByToken(token: string): Promise<Token | null> {
-		return this.model.findOne<Token>({ token }).lean<Token>({ transform: removeLeanVersionKey }).exec();
+	async findByTokenHash(tokenHash: string): Promise<Token | null> {
+		return this.model
+			.findOne<Token>({ token_hash: tokenHash })
+			.lean<Token>({ transform: removeLeanVersionKey })
+			.exec();
 	}
 
 	async findByUserIdAndType({ user_id, type }: FindByUserIdAndType): Promise<Token | null> {

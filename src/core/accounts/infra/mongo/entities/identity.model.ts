@@ -1,5 +1,6 @@
 import mongoose, { Model, Schema } from 'mongoose';
-import { Identity, IdentityProviders } from '@/core/accounts/entities/identity.entity';
+import { Identity } from '@/core/accounts/entities/identity.entity';
+import { IdentityProviders } from '@/core/accounts/constants/identity.constants';
 
 export const IDENTITY_PROVIDER_SUB_UNIQUE_INDEX = 'identity_provider_sub_unique';
 export const IDENTITY_UNIQUE_INDEXES = [IDENTITY_PROVIDER_SUB_UNIQUE_INDEX] as const;

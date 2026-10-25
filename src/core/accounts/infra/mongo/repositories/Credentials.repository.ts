@@ -1,5 +1,6 @@
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
 import { Credential } from '@/core/accounts/entities/credential.entity';
+import { CreateCredential, UpdateCredential } from '@/core/accounts/dtos/credential.dtos';
 import { CREDENTIAL_UNIQUE_INDEXES, CredentialModel } from '../entities/credential.model';
 import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
 import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
@@ -7,7 +8,7 @@ import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.he
 export class CredentialsRepository implements ICredentialsRepository {
 	private model = CredentialModel;
 
-	async create(data: { user_id: string; password_hash: string }): Promise<Credential> {
+	async create(data: CreateCredential): Promise<Credential> {
 		try {
 			return await this.model.create(data);
 		} catch (error) {
@@ -17,7 +18,7 @@ export class CredentialsRepository implements ICredentialsRepository {
 		}
 	}
 
-	async update({ user_id, password_hash }: { user_id: string; password_hash: string }): Promise<void> {
+	async update({ user_id, password_hash }: UpdateCredential): Promise<void> {
 		await this.model.updateOne({ user_id }, { $set: { password_hash } }).exec();
 	}
 

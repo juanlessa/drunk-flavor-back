@@ -5,7 +5,7 @@ import { CreateToken } from '../../dtos/token.dtos';
 import { NotFoundError } from '@/shared/error/error.lib';
 
 const buildToken = (overrides?: Partial<CreateToken>): CreateToken => ({
-	token: overrides?.token ?? new ObjectId().toString(),
+	token_hash: overrides?.token_hash ?? new ObjectId().toString(),
 	user_id: overrides?.user_id ?? new ObjectId().toString(),
 	type: overrides?.type ?? 'email-verification',
 	expires_at: overrides?.expires_at ?? new Date(Date.now() + 60 * 60 * 1000),
@@ -25,7 +25,7 @@ describe('TokensRepositoryInMemory', () => {
 		const created = await repository.create(data);
 
 		expect(created._id).toBeInstanceOf(ObjectId);
-		expect(created.token).toBe(data.token);
+		expect(created.token_hash).toBe(data.token_hash);
 		expect(created.user_id).toBe(data.user_id);
 		expect(created.type).toBe('forgot-password');
 		expect(created.expires_at).toBe(expires_at);
@@ -39,7 +39,7 @@ describe('TokensRepositoryInMemory', () => {
 			await repository.create(data);
 
 			const found = await repository.findByUserIdAndType({ user_id: data.user_id, type: data.type });
-			expect(found?.token).toBe(data.token);
+			expect(found?.token_hash).toBe(data.token_hash);
 		});
 
 		it('returns null when the user_id matches but the type does not', async () => {
@@ -62,13 +62,13 @@ describe('TokensRepositoryInMemory', () => {
 		});
 	});
 
-	describe('findByToken and findByUserId', () => {
-		it('findByToken returns a match and null otherwise', async () => {
+	describe('findByTokenHash and findByUserId', () => {
+		it('findByTokenHash returns a match and null otherwise', async () => {
 			const data = buildToken();
 			await repository.create(data);
 
-			expect((await repository.findByToken(data.token))?.token).toBe(data.token);
-			expect(await repository.findByToken(new ObjectId().toString())).toBeNull();
+			expect((await repository.findByTokenHash(data.token_hash))?.token_hash).toBe(data.token_hash);
+			expect(await repository.findByTokenHash(new ObjectId().toString())).toBeNull();
 		});
 
 		it('findByUserId returns only the tokens of the given user', async () => {
@@ -102,18 +102,18 @@ describe('TokensRepositoryInMemory', () => {
 	describe('update', () => {
 		it('deep-merges data, refreshes updated_at and preserves untouched fields', async () => {
 			const created = await repository.create(buildToken({ type: 'email-verification' }));
-			const newToken = new ObjectId().toString();
+			const newTokenHash = new ObjectId().toString();
 
-			const updated = await repository.update({ id: created._id.toString(), token: newToken });
+			const updated = await repository.update({ id: created._id.toString(), token_hash: newTokenHash });
 
-			expect(updated.token).toBe(newToken);
+			expect(updated.token_hash).toBe(newTokenHash);
 			expect(updated.type).toBe('email-verification');
 			expect(updated.user_id).toBe(created.user_id);
 			expect(updated.updated_at.getTime()).toBeGreaterThanOrEqual(created.updated_at.getTime());
 		});
 
 		it('throws NotFoundError when the id is missing', async () => {
-			await expect(repository.update({ id: new ObjectId().toString(), token: 'x' })).rejects.toBeInstanceOf(
+			await expect(repository.update({ id: new ObjectId().toString(), token_hash: 'x' })).rejects.toBeInstanceOf(
 				NotFoundError,
 			);
 		});

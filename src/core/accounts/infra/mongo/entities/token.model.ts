@@ -1,5 +1,6 @@
 import mongoose, { Model, Schema } from 'mongoose';
-import { TokenTypes, Token } from '@/core/accounts/entities/token.entity';
+import { Token } from '@/core/accounts/entities/token.entity';
+import { TokenTypes } from '@/core/accounts/constants/token.constants';
 
 export const TOKEN_UNIQUE_INDEX = 'token_unique';
 export const TOKEN_USER_TYPE_UNIQUE_INDEX = 'token_user_id_type_unique';
@@ -8,7 +9,7 @@ export const TOKEN_UNIQUE_INDEXES = [TOKEN_UNIQUE_INDEX, TOKEN_USER_TYPE_UNIQUE_
 
 export const TokenSchema = new Schema<Token>(
 	{
-		token: { type: String, required: true },
+		token_hash: { type: String, required: true },
 		user_id: { type: String, required: true },
 		type: { type: String, required: true, enum: Object.values(TokenTypes) },
 		expires_at: { type: Date, required: true },
@@ -26,7 +27,7 @@ export const TokenSchema = new Schema<Token>(
 	},
 );
 
-TokenSchema.index({ token: 1 }, { unique: true, name: TOKEN_UNIQUE_INDEX });
+TokenSchema.index({ token_hash: 1 }, { unique: true, name: TOKEN_UNIQUE_INDEX });
 TokenSchema.index({ user_id: 1, type: 1 }, { unique: true, name: TOKEN_USER_TYPE_UNIQUE_INDEX });
 TokenSchema.index({ expires_at: 1 }, { expireAfterSeconds: 0, name: TOKEN_EXPIRES_AT_TTL_INDEX });
 

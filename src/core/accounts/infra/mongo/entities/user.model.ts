@@ -1,5 +1,6 @@
 import mongoose, { Model, Schema } from 'mongoose';
-import { User, UserStatuses } from '@/core/accounts/entities/user.entity';
+import { User } from '@/core/accounts/entities/user.entity';
+import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { Roles } from '@/shared/accessControl/roles';
 
 export const USER_EMAIL_UNIQUE_INDEX = 'user_email_unique';

@@ -1,4 +1,4 @@
-import { CreateUser, UpdateUser, UserWithoutPassword } from '@/core/accounts/dtos/user.dtos';
+import { CreateUser, UpdateUser } from '@/core/accounts/dtos/user.dtos';
 import { User } from '@/core/accounts/entities/user.entity';
 import { QueryParams } from '@/shared/types/query.types';
 
@@ -8,5 +8,5 @@ export interface IUsersRepository {
 	delete(id: string): Promise<User>;
 	findById(id: string): Promise<User | null>;
 	findByEmail(email: string): Promise<User | null>;
-	findAll(query: QueryParams): Promise<UserWithoutPassword[]>;
+	findAll(query: QueryParams): Promise<User[]>;
 }

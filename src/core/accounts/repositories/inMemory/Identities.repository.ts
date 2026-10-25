@@ -1,13 +1,13 @@
 import { MongoServerError, ObjectId } from 'mongodb';
 import { Identity, IdentityProvider } from '@/core/accounts/entities/identity.entity';
-import { DatabaseCommonInfo } from '@/infrastructure/mongo/types';
+import { CreateIdentity } from '@/core/accounts/dtos/identity.dtos';
 import { IDENTITY_PROVIDER_SUB_UNIQUE_INDEX } from '@/core/accounts/infra/mongo/entities/identity.model';
 import { IIdentitiesRepository } from '../IIdentities.repository';
 
 export class IdentitiesRepositoryInMemory implements IIdentitiesRepository {
 	collection: Identity[] = [];
 
-	async create(data: Omit<Identity, keyof DatabaseCommonInfo>): Promise<Identity> {
+	async create(data: CreateIdentity): Promise<Identity> {
 		const duplicate = this.collection.find(
 			(rec) => rec.provider === data.provider && rec.provider_sub === data.provider_sub,
 		);

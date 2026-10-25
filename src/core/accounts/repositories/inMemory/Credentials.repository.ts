@@ -1,11 +1,12 @@
 import { ObjectId } from 'mongodb';
 import { Credential } from '@/core/accounts/entities/credential.entity';
+import { CreateCredential, UpdateCredential } from '@/core/accounts/dtos/credential.dtos';
 import { ICredentialsRepository } from '../ICredentials.repository';
 
 export class CredentialsRepositoryInMemory implements ICredentialsRepository {
 	collection: Credential[] = [];
 
-	async create({ user_id, password_hash }: { user_id: string; password_hash: string }): Promise<Credential> {
+	async create({ user_id, password_hash }: CreateCredential): Promise<Credential> {
 		const record: Credential = {
 			_id: new ObjectId(),
 			user_id,
@@ -17,7 +18,7 @@ export class CredentialsRepositoryInMemory implements ICredentialsRepository {
 		return record;
 	}
 
-	async update({ user_id, password_hash }: { user_id: string; password_hash: string }): Promise<void> {
+	async update({ user_id, password_hash }: UpdateCredential): Promise<void> {
 		const record = this.collection.find((rec) => rec.user_id === user_id);
 		if (!record) {
 			return;

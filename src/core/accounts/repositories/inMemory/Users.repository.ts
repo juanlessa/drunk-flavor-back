@@ -1,5 +1,5 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
-import { CreateUser, UpdateUser, UserWithoutPassword } from '@/core/accounts/dtos/user.dtos';
+import { CreateUser, UpdateUser } from '@/core/accounts/dtos/user.dtos';
 import { ObjectId } from 'mongodb';
 import { User } from '@/core/accounts/entities/user.entity';
 import { NotFoundError } from '@/shared/error/error.lib';
@@ -63,7 +63,7 @@ export class UsersRepositoryInMemory implements IUsersRepository {
 		return recordFound || null;
 	}
 
-	async findAll(query: QueryParams): Promise<UserWithoutPassword[]> {
+	async findAll(query: QueryParams): Promise<User[]> {
 		let found = [...this.collection];
 
 		if (query.search) {

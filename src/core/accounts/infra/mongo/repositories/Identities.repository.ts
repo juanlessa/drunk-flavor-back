@@ -1,14 +1,14 @@
 import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.repository';
 import { Identity, IdentityProvider } from '@/core/accounts/entities/identity.entity';
+import { CreateIdentity } from '@/core/accounts/dtos/identity.dtos';
 import { IDENTITY_UNIQUE_INDEXES, IdentityModel } from '../entities/identity.model';
-import { DatabaseCommonInfo } from '@/infrastructure/mongo/types';
 import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
 import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
 
 export class IdentitiesRepository implements IIdentitiesRepository {
 	private model = IdentityModel;
 
-	async create(data: Omit<Identity, keyof DatabaseCommonInfo>): Promise<Identity> {
+	async create(data: CreateIdentity): Promise<Identity> {
 		try {
 			return await this.model.create(data);
 		} catch (error) {
