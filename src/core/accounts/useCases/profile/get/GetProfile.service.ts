@@ -7,7 +7,6 @@ export class GetProfileService {
 
 	async execute({ id }: GetProfile) {
 		const user = await this.usersRepository.findById(id);
-
 		if (!user) {
 			throw new NotFoundError('apiResponses.users.notExist', { path: 'GetProfile.service' });
 		}
