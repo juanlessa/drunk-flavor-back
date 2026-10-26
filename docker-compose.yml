@@ -50,7 +50,7 @@ services:
             - node-network
 
     redis:
-        image: redis:7
+        image: redis:8
         restart: always
         container_name: redis
         # BullMQ requires maxmemory-policy=noeviction so queue keys are never
