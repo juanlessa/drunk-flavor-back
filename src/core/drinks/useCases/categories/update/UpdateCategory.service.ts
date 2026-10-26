@@ -6,7 +6,7 @@ import { UpdateCategoryReqBody } from './updateCategory.dtos';
 export class UpdateCategoryService {
 	constructor(private categoriesRepository: ICategoriesRepository) {}
 
-	async execute({ id, translations }: UpdateCategoryReqBody) {
+	async execute({ id, translations, is_alcoholic }: UpdateCategoryReqBody) {
 		const categoryExists = await this.categoriesRepository.findById(id);
 		if (!categoryExists) {
 			throw new BadRequestError('apiResponses.categories.notExist', { path: 'UpdateCategory.service' });
@@ -21,6 +21,7 @@ export class UpdateCategoryService {
 		await this.categoriesRepository.update({
 			id,
 			translations,
+			is_alcoholic,
 		});
 	}
 }

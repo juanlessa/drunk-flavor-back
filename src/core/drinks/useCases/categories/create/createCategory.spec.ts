@@ -9,7 +9,7 @@ import { createCategoryFactory } from '@/core/drinks/factories/category.factorie
 let categoriesRepository: ICategoriesRepository;
 let service: CreateCategoryService;
 
-const { translations } = createCategoryFactory();
+const { translations, is_alcoholic } = createCategoryFactory({ is_alcoholic: true });
 
 describe('Create Category', () => {
 	beforeEach(() => {
@@ -18,16 +18,17 @@ describe('Create Category', () => {
 	});
 
 	it('should be able to create a new category', async () => {
-		await service.execute({ translations });
+		await service.execute({ translations, is_alcoholic });
 
 		const createdCategory = (await categoriesRepository.findByName(translations)) as Category;
 
 		expect(createdCategory).toHaveProperty('_id');
+		expect(createdCategory.is_alcoholic).toEqual(is_alcoholic);
 	});
 
 	it('should not be able to create a category with an existing name', async () => {
-		await categoriesRepository.create({ translations });
+		await categoriesRepository.create({ translations, is_alcoholic });
 
-		await expect(service.execute({ translations })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ translations, is_alcoholic })).rejects.toBeInstanceOf(BadRequestError);
 	});
 });

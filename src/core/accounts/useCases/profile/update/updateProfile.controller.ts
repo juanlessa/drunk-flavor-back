@@ -1,5 +1,7 @@
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { Controller } from '@/infrastructure/fastify/types/fastify.types';
+import { AUTH_SESSION } from '@/infrastructure/fastify/constants/session.constants';
+import { AUTH_COOKIE, AUTH_COOKIE_OPTIONS } from '@/infrastructure/fastify/constants/cookie.constants';
 import { UpdateUserProfileReqBody } from './updateProfile.dtos';
 import { resolveUpdateUpdateProfileService } from './updateProfile.container';
 
@@ -9,7 +11,18 @@ export const updateProfileController: Controller<{ Body: UpdateUserProfileReqBod
 
 	const service = resolveUpdateUpdateProfileService();
 
-	await service.execute({ id, name, surname });
+	const { user } = await service.execute({ id, name, surname });
+
+	// Re-issue the access token so the `status` claim reflects a just-completed
+	// profile; otherwise the stale token would keep the user gated. Mirror the
+	// cookie/session issuance used on sign-in.
+	const accessToken = await reply.jwtSign({ role: user.role, status: user.status }, { sign: { sub: user.id } });
+	reply.setCookie(AUTH_COOKIE, accessToken, AUTH_COOKIE_OPTIONS);
+
+	const session = request.session.get(AUTH_SESSION);
+	if (session) {
+		request.session.set(AUTH_SESSION, { ...session, userStatus: user.status });
+	}
 
 	return reply.status(HTTP_STATUS.no_content).send();
 };

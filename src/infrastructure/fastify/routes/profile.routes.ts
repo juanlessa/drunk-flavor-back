@@ -2,10 +2,10 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { pluginGenerator } from '../helpers/fastify.helpers';
 import { Routes } from '../types/fastify.types';
 import { verifyAndRenewToken } from '../middlewares/verifyAndRenewToken';
-import { getProfileController } from '@/core/accounts/useCases/profile/getProfile/getProfile.controller';
+import { getProfileController } from '@/core/accounts/useCases/profile/get/getProfile.controller';
 import { updateProfileSchema } from '@/core/accounts/useCases/profile/update/updateProfile.schema';
 import { updateProfileController } from '@/core/accounts/useCases/profile/update/updateProfile.controller';
-import { deleteProfileController } from '@/core/accounts/useCases/profile/deleteProfile/deleteProfile.controller';
+import { deleteProfileController } from '@/core/accounts/useCases/profile/delete/deleteProfile.controller';
 import { updatePasswordSchema } from '@/core/accounts/useCases/profile/updatePassword/updatePassword.schema';
 import { updatePasswordController } from '@/core/accounts/useCases/profile/updatePassword/updatePassword.controller';
 

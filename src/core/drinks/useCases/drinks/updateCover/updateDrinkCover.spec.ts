@@ -1,12 +1,15 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Ingredients.repository';
+import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Units.repository';
 import { ObjectId } from 'mongodb';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
+import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
+import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
 import { createDrinkFactory } from '@/core/drinks/factories/drink.factories';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
@@ -21,6 +24,7 @@ import { FileMetadata } from '@/shared/types/file.types';
 
 let categoriesRepository: ICategoriesRepository;
 let ingredientsRepository: IIngredientsRepository;
+let unitsRepository: IUnitsRepository;
 let drinksRepository: IDrinksRepository;
 let storageProvider: IStorageProvider;
 let service: UpdateDrinkCoverService;
@@ -51,15 +55,17 @@ describe('Update Drink', () => {
 
 		categoriesRepository = new CategoriesRepositoryInMemory();
 		ingredientsRepository = new IngredientsRepositoryInMemory();
+		unitsRepository = new UnitsRepositoryInMemory();
 		drinksRepository = new DrinksRepositoryInMemory();
 		storageProvider = new MockStorageProvider();
 		service = new UpdateDrinkCoverService(drinksRepository, storageProvider);
 
-		const category = await categoriesRepository.create({ translations: categoryTranslations });
+		const category = await categoriesRepository.create({ translations: categoryTranslations, is_alcoholic: false });
+		const unit = await unitsRepository.create(createUnitFactory());
 		ingredient = await ingredientsRepository.create({
 			translations: translationsIngredient,
-			is_alcoholic: false,
 			category: category,
+			unit,
 		});
 		createdDrink = await drinksRepository.create({
 			translations,

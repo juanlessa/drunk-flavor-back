@@ -5,8 +5,8 @@ import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { createUser } from '../helpers/authentication.helpers';
-import { UserTokenModel } from '@/core/accounts/infra/mongo/entities/userToken.model';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { TokenModel } from '@/core/accounts/infra/mongo/entities/token.model';
+import { Roles } from '@/shared/accessControl/roles';
 
 describe('Request Password Reset', () => {
 	beforeAll(async () => {
@@ -19,11 +19,11 @@ describe('Request Password Reset', () => {
 
 	beforeEach(async () => {
 		await MongoConnection.Instance.emptyCollection(UserModel);
-		await MongoConnection.Instance.emptyCollection(UserTokenModel);
+		await MongoConnection.Instance.emptyCollection(TokenModel);
 	});
 
 	it('Should be able to request a password reset', async () => {
-		const { email } = await createUser(app, { role: RolesEnum.member });
+		const { email } = await createUser(app, { role: Roles.member });
 
 		const response = await request(app.server).post('/password-reset/request').send({ email });
 

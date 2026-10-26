@@ -10,4 +10,5 @@ export const createCategoryFactory = (category?: DeepPartial<CreateCategoryReqBo
 			name: category?.translations?.pt?.name || 'Xarope simples',
 		},
 	},
+	is_alcoholic: category?.is_alcoholic ?? false,
 });

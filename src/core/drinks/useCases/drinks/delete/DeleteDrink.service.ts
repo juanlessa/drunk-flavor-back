@@ -16,6 +16,7 @@ export class DeleteDrinkService {
 		}
 
 		await this.drinksRepository.delete(id);
+		// TODO: Enqueue engagement cleanup for comments and ratings by drink id.
 
 		if (drinkExists.cover) {
 			await this.storageProvider.deleteFile(drinkExists.cover.name);

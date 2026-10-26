@@ -17,6 +17,7 @@ import { updateDrinkThumbnailController } from '@/core/drinks/useCases/drinks/up
 import { deleteDrinkSchema } from '@/core/drinks/useCases/drinks/delete/deleteDrink.schema';
 import { deleteDrinkController } from '@/core/drinks/useCases/drinks/delete/deleteDrink.controller';
 import { verifyPermissions } from '../middlewares/verifyPermissions';
+import { enforceCompleteProfile } from '../middlewares/enforceCompleteProfile';
 
 const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
@@ -26,7 +27,7 @@ const routes: Routes = (server) => {
 				tags: ['Drinks'],
 				body: createDrinkSchema,
 			},
-			preValidation: [verifyAndRenewToken, verifyPermissions('create', 'Drink')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('create', 'Drink')],
 		},
 		createDrinkController,
 	);
@@ -60,7 +61,7 @@ const routes: Routes = (server) => {
 				tags: ['Drinks'],
 				body: updateDrinkSchema,
 			},
-			preValidation: [verifyAndRenewToken, verifyPermissions('update', 'Drink')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('update', 'Drink')],
 		},
 		updateDrinkController,
 	);
@@ -72,7 +73,7 @@ const routes: Routes = (server) => {
 				tags: ['Drinks'],
 				params: updateDrinkCoverSchema,
 			},
-			preValidation: [verifyAndRenewToken, verifyPermissions('update', 'Drink')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('update', 'Drink')],
 		},
 		updateDrinkCoverController,
 	);
@@ -84,7 +85,7 @@ const routes: Routes = (server) => {
 				tags: ['Drinks'],
 				params: updateDrinkThumbnailSchema,
 			},
-			preValidation: [verifyAndRenewToken, verifyPermissions('update', 'Drink')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('update', 'Drink')],
 		},
 		updateDrinkThumbnailController,
 	);
@@ -96,7 +97,7 @@ const routes: Routes = (server) => {
 				tags: ['Drinks'],
 				body: deleteDrinkSchema,
 			},
-			preValidation: [verifyAndRenewToken, verifyPermissions('delete', 'Drink')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('delete', 'Drink')],
 		},
 		deleteDrinkController,
 	);

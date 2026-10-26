@@ -5,8 +5,8 @@ import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { createAndAuthenticateUser, createUser } from '../helpers/authentication.helpers';
-import { UserTokenModel } from '@/core/accounts/infra/mongo/entities/userToken.model';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { TokenModel } from '@/core/accounts/infra/mongo/entities/token.model';
+import { Roles } from '@/shared/accessControl/roles';
 
 describe('Delete Profile', () => {
 	beforeAll(async () => {
@@ -19,11 +19,11 @@ describe('Delete Profile', () => {
 
 	beforeEach(async () => {
 		await MongoConnection.Instance.emptyCollection(UserModel);
-		await MongoConnection.Instance.emptyCollection(UserTokenModel);
+		await MongoConnection.Instance.emptyCollection(TokenModel);
 	});
 
 	it('Should be able to delete the profile', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: RolesEnum.admin });
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 
 		const response = await request(app.server).delete('/me').set('Cookie', cookies).send();
 

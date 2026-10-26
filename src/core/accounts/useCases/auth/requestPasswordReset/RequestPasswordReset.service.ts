@@ -1,7 +1,8 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
-import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
-import { TokenTypeEnum } from '@/core/accounts/entities/userToken.entity';
-import { IMailerProvider } from '@/shared/providers/mailer/IMailer.provider';
+import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
+import { TokenTypes } from '@/core/accounts/constants/token.constants';
+import { IEmailQueueProvider } from '@/shared/providers/queue/email/IEmailQueue.provider';
+import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { MAIL_SENDERS } from '@/shared/constants/mailer.constants';
@@ -14,10 +15,10 @@ import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 export class RequestPasswordResetService {
 	constructor(
 		private usersRepository: IUsersRepository,
-		private userTokensRepository: IUserTokensRepository,
+		private tokensRepository: ITokensRepository,
 		private dateProvider: IDateProvider,
 		private cryptoProvider: ICryptoProvider,
-		private mailerProvider: IMailerProvider,
+		private emailQueueProvider: IEmailQueueProvider,
 		private templateProvider: ITemplateProvider,
 	) {}
 
@@ -27,9 +28,9 @@ export class RequestPasswordResetService {
 			throw new BadRequestError('apiResponses.users.notExist', { path: 'RequestPasswordReset.service.1' });
 		}
 
-		const tokenAlreadyExists = await this.userTokensRepository.findByUserIdAndType({
+		const tokenAlreadyExists = await this.tokensRepository.findByUserIdAndType({
 			user_id: user._id.toString(),
-			type: TokenTypeEnum['forgot-password'],
+			type: TokenTypes['forgot-password'],
 		});
 
 		if (tokenAlreadyExists && !this.dateProvider.isExpiredDate(tokenAlreadyExists.expires_at)) {
@@ -39,28 +40,28 @@ export class RequestPasswordResetService {
 		}
 
 		if (tokenAlreadyExists && this.dateProvider.isExpiredDate(tokenAlreadyExists.expires_at)) {
-			await this.userTokensRepository.delete(tokenAlreadyExists._id.toString());
+			await this.tokensRepository.delete(tokenAlreadyExists._id.toString());
 		}
 
-		const token = await this.cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
+		const token = await this.cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 
-		const template = await this.templateProvider.forgotPassword({
-			userName: user.name,
-			resetLink: `${env.CLIENT_BASE_URL}${CLIENT_PAGE_PATHS.resetPassword}/${token}`,
+		await this.tokensRepository.create({
+			token_hash: this.cryptoProvider.hashToken(token),
+			type: TokenTypes['forgot-password'],
+			user_id: user._id.toString(),
+			expires_at: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
-		await this.mailerProvider.send({
+		const template = await this.templateProvider.forgotPassword({
+			userName: user.name ?? '',
+			resetLink: `${env.CLIENT_BASE_URL}${CLIENT_PAGE_PATHS.confirmPassword}/${token}`,
+		});
+
+		await this.emailQueueProvider.add(EMAIL_JOB_NAMES.forgotPassword, {
 			to: user.email,
 			from: MAIL_SENDERS.noReply,
 			subject: 'reset password',
 			html: template,
-		});
-
-		await this.userTokensRepository.create({
-			token: this.cryptoProvider.hashToken(token),
-			type: TokenTypeEnum['forgot-password'],
-			user_id: user._id.toString(),
-			expires_at: this.dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
 		});
 	}
 }

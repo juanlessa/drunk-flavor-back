@@ -1,16 +1,11 @@
-import {
-	Translations,
-	TranslationAnyWithNameKey,
-	LanguagesEnum,
-	TranslationName,
-} from '@/core/drinks/types/translations';
+import { Translations, TranslationAnyWithNameKey, Languages, TranslationName } from '@/core/drinks/types/translations';
 import { DeepPartial } from '@/shared/types/utility.types';
 
 /**
  * Compares translation names across different languages.
  *
  * This function checks if any translation name in the provided `translations` object matches
- * any corresponding name in the `namesToCompare` object for the specified languages in `LanguagesEnum`.
+ * any corresponding name in the `namesToCompare` object for the specified languages in `Languages`.
  *
  * @param translations - An object containing translations with keys representing language codes
  * and values containing objects with a `name` property.
@@ -32,7 +27,7 @@ export const compareTranslationsName = (
 	translations: Translations<TranslationAnyWithNameKey>,
 	namesToCompare: DeepPartial<Translations<TranslationName>>,
 ): boolean => {
-	const languages = Object.keys(LanguagesEnum) as (keyof Translations<TranslationAnyWithNameKey>)[];
+	const languages = Object.keys(Languages) as (keyof Translations<TranslationAnyWithNameKey>)[];
 
 	return languages.some(
 		(lang) => namesToCompare[lang]?.name && translations[lang].name === namesToCompare[lang]?.name,

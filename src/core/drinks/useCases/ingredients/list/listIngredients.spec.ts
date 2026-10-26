@@ -4,12 +4,16 @@ import { ListIngredientsService } from './ListIngredients.service';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
+import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
+import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
+import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Units.repository';
 
 let categoriesRepository: ICategoriesRepository;
 let ingredientsRepository: IIngredientsRepository;
+let unitsRepository: IUnitsRepository;
 let service: ListIngredientsService;
 
 const createCategory1 = createCategoryFactory({
@@ -36,29 +40,31 @@ describe('List Ingredients', () => {
 	beforeEach(async () => {
 		categoriesRepository = new CategoriesRepositoryInMemory();
 		ingredientsRepository = new IngredientsRepositoryInMemory();
+		unitsRepository = new UnitsRepositoryInMemory();
 		service = new ListIngredientsService(ingredientsRepository);
 
 		const category1 = await categoriesRepository.create(createCategory1);
 		const category2 = await categoriesRepository.create(createCategory2);
+		const unit = await unitsRepository.create(createUnitFactory());
 		await ingredientsRepository.create({
 			translations: translationsIngredient1,
-			is_alcoholic: false,
 			category: category1,
+			unit,
 		});
 		await ingredientsRepository.create({
 			translations: translationsIngredient2,
-			is_alcoholic: false,
 			category: category1,
+			unit,
 		});
 		await ingredientsRepository.create({
 			translations: translationsIngredient3,
-			is_alcoholic: false,
 			category: category2,
+			unit,
 		});
 		await ingredientsRepository.create({
 			translations: translationsIngredient4,
-			is_alcoholic: false,
 			category: category2,
+			unit,
 		});
 	});
 

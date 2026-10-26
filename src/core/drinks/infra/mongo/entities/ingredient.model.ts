@@ -1,13 +1,19 @@
 import mongoose, { Model, Schema } from 'mongoose';
 import { Ingredient, IngredientTranslation } from '@/core/drinks/entities/ingredient.entity';
 import { CategorySchema } from '@/core/drinks/infra/mongo/entities/category.model';
+import { UnitSchema } from '@/core/drinks/infra/mongo/entities/unit.model';
 import { getTranslationsSchema } from '../helpers/translations.helpers';
+
+export const INGREDIENT_TRANSLATIONS_EN_NAME_UNIQUE_INDEX = 'ingredient_translations_en_name_unique';
+export const INGREDIENT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX = 'ingredient_translations_pt_name_unique';
+export const INGREDIENT_UNIQUE_INDEXES = [
+	INGREDIENT_TRANSLATIONS_EN_NAME_UNIQUE_INDEX,
+	INGREDIENT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX,
+] as const;
 
 export const IngredientTranslationSchema = new Schema<IngredientTranslation>(
 	{
-		name: { type: String, required: true, unique: true },
-		unit: { type: String, required: true },
-		unit_plural: { type: String, required: true },
+		name: { type: String, required: true },
 	},
 	{
 		_id: false,
@@ -21,7 +27,7 @@ export const IngredientSchema = new Schema<Ingredient>(
 			required: true,
 		},
 		category: { type: CategorySchema, excludeIndexes: true, required: true },
-		is_alcoholic: { type: Boolean, required: true },
+		unit: { type: UnitSchema, excludeIndexes: true, required: true },
 	},
 	{
 		toJSON: {
@@ -34,6 +40,15 @@ export const IngredientSchema = new Schema<Ingredient>(
 			updatedAt: 'updated_at',
 		},
 	},
+);
+
+IngredientSchema.index(
+	{ 'translations.en.name': 1 },
+	{ unique: true, name: INGREDIENT_TRANSLATIONS_EN_NAME_UNIQUE_INDEX },
+);
+IngredientSchema.index(
+	{ 'translations.pt.name': 1 },
+	{ unique: true, name: INGREDIENT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX },
 );
 
 export const IngredientModel =

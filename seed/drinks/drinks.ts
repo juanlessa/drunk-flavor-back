@@ -41,6 +41,9 @@ const drinks = [
 		],
 		cover: undefined,
 		thumbnail: undefined,
+		avg_rating: 0,
+		ratings_count: 0,
+		ratings_sum: 0,
 		created_at: new Date(),
 		updated_at: new Date(),
 	},
@@ -72,6 +75,9 @@ const drinks = [
 		],
 		cover: undefined,
 		thumbnail: undefined,
+		avg_rating: 0,
+		ratings_count: 0,
+		ratings_sum: 0,
 		created_at: new Date(),
 		updated_at: new Date(),
 	},
@@ -107,6 +113,9 @@ const drinks = [
 		],
 		cover: undefined,
 		thumbnail: undefined,
+		avg_rating: 0,
+		ratings_count: 0,
+		ratings_sum: 0,
 		created_at: new Date(),
 		updated_at: new Date(),
 	},
@@ -123,7 +132,7 @@ export async function insertDrinks() {
 		await DrinkModel.insertMany(drinks);
 		logger.info('Drinks inserted successfully');
 	} catch (error) {
-		logger.error('Error inserting Drinks:', error);
+		logger.error({ err: error }, 'Error inserting drinks');
 		throw error;
 	}
 }

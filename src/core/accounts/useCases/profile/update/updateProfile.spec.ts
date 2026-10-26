@@ -5,20 +5,17 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
-import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
+import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { UpdateProfileService } from './UpdateProfile.service';
-import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 
-let hashProvider: IHashProvider;
 let usersRepository: IUsersRepository;
 let service: UpdateProfileService;
 
-const { name, surname, email, password, role, status } = createUserFactory();
+const { name, surname, email, role, status } = createUserFactory();
 const { name: updatedName, surname: updatedSurname } = createUserFactory({ name: 'updated', surname: 'updated' });
 
 describe('Update Profile', () => {
 	beforeEach(async () => {
-		hashProvider = new BcryptHashProvider();
 		usersRepository = new UsersRepositoryInMemory();
 		service = new UpdateProfileService(usersRepository);
 	});
@@ -30,7 +27,6 @@ describe('Update Profile', () => {
 			email,
 			role,
 			status,
-			password: await hashProvider.hash(password),
 		});
 		await service.execute({
 			id: createdUser._id.toString(),
@@ -41,6 +37,50 @@ describe('Update Profile', () => {
 		const verifyUser = (await usersRepository.findById(createdUser._id.toString())) as User;
 
 		expect(verifyUser).toBeDefined();
+		expect(verifyUser.name).toEqual(updatedName);
+		expect(verifyUser.surname).toEqual(updatedSurname);
+	});
+
+	it('promotes an incomplete_profile user to active once a valid name and surname are supplied', async () => {
+		const createdUser = await usersRepository.create({
+			email,
+			role,
+			status: UserStatuses.incomplete_profile,
+		});
+
+		const result = await service.execute({
+			id: createdUser._id.toString(),
+			name: updatedName,
+			surname: updatedSurname,
+		});
+
+		expect(result.user.status).toBe(UserStatuses.active);
+
+		const verifyUser = (await usersRepository.findById(createdUser._id.toString())) as User;
+		expect(verifyUser.status).toBe(UserStatuses.active);
+		expect(verifyUser.name).toEqual(updatedName);
+		expect(verifyUser.surname).toEqual(updatedSurname);
+	});
+
+	it('keeps the status of an already-complete user and only updates the names', async () => {
+		const createdUser = await usersRepository.create({
+			name,
+			surname,
+			email,
+			role,
+			status: UserStatuses.active,
+		});
+
+		const result = await service.execute({
+			id: createdUser._id.toString(),
+			name: updatedName,
+			surname: updatedSurname,
+		});
+
+		expect(result.user.status).toBe(UserStatuses.active);
+
+		const verifyUser = (await usersRepository.findById(createdUser._id.toString())) as User;
+		expect(verifyUser.status).toBe(UserStatuses.active);
 		expect(verifyUser.name).toEqual(updatedName);
 		expect(verifyUser.surname).toEqual(updatedSurname);
 	});

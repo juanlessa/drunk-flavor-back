@@ -1,21 +1,35 @@
 import { CreateIngredient, FindIngredientByName, UpdateIngredient } from '@/core/drinks/dtos/ingredient.dtos';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
-import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.model';
+import { INGREDIENT_UNIQUE_INDEXES, IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.model';
 import { getNameCompareQuery } from '../helpers/translations.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
 import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
+import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
 import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
 
 export class IngredientsRepository implements IIngredientsRepository {
 	async create(data: CreateIngredient): Promise<Ingredient> {
-		return IngredientModel.create(data);
+		try {
+			return await IngredientModel.create(data);
+		} catch (error) {
+			throw mapDuplicateKeyError(error, INGREDIENT_UNIQUE_INDEXES, 'apiResponses.ingredients.alreadyExist', {
+				path: 'Ingredients.repository',
+			});
+		}
 	}
 	async update({ id, ...data }: UpdateIngredient): Promise<Ingredient> {
-		const ingredient = await IngredientModel.findByIdAndUpdate<Ingredient>(id, data, {
-			returnDocument: 'after',
-		}).exec();
+		let ingredient: Ingredient | null;
+		try {
+			ingredient = await IngredientModel.findByIdAndUpdate<Ingredient>(id, data, {
+				returnDocument: 'after',
+			}).exec();
+		} catch (error) {
+			throw mapDuplicateKeyError(error, INGREDIENT_UNIQUE_INDEXES, 'apiResponses.ingredients.alreadyExist', {
+				path: 'Ingredients.repository',
+			});
+		}
 		if (!ingredient) {
 			throw new NotFoundError('apiResponses.ingredients.notFound', {
 				path: 'Ingredients.repository',

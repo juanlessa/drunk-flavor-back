@@ -13,6 +13,7 @@ import { updateIngredientController } from '@/core/drinks/useCases/ingredients/u
 import { deleteIngredientSchema } from '@/core/drinks/useCases/ingredients/delete/deleteIngredient.schema';
 import { deleteIngredientController } from '@/core/drinks/useCases/ingredients/delete/deleteIngredient.controller';
 import { verifyPermissions } from '../middlewares/verifyPermissions';
+import { enforceCompleteProfile } from '../middlewares/enforceCompleteProfile';
 
 const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
@@ -22,7 +23,7 @@ const routes: Routes = (server) => {
 				tags: ['Ingredients'],
 				body: createIngredientSchema,
 			},
-			preValidation: [verifyAndRenewToken, verifyPermissions('create', 'Ingredient')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('create', 'Ingredient')],
 		},
 		createIngredientController,
 	);
@@ -56,7 +57,7 @@ const routes: Routes = (server) => {
 				tags: ['Ingredients'],
 				body: updateIngredientSchema,
 			},
-			preValidation: [verifyAndRenewToken, verifyPermissions('update', 'Ingredient')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('update', 'Ingredient')],
 		},
 		updateIngredientController,
 	);
@@ -68,7 +69,7 @@ const routes: Routes = (server) => {
 				tags: ['Ingredients'],
 				body: deleteIngredientSchema,
 			},
-			preValidation: [verifyAndRenewToken, verifyPermissions('delete', 'Ingredient')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('delete', 'Ingredient')],
 		},
 		deleteIngredientController,
 	);

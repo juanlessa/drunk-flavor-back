@@ -5,7 +5,7 @@ import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
-import { RolesEnum } from '@/shared/accessControl/roles';
+import { Roles } from '@/shared/accessControl/roles';
 
 describe('Update Password', () => {
 	beforeAll(async () => {
@@ -21,12 +21,13 @@ describe('Update Password', () => {
 	});
 
 	it('Should be able to update the password', async () => {
-		const { cookies, user } = await createAndAuthenticateUser(app, { role: RolesEnum.partner });
+		const { cookies, user } = await createAndAuthenticateUser(app, { role: Roles.partner });
+		const { password: currentPassword } = user;
 
 		const newPassword = 'New-password-87654321';
 
 		const response = await request(app.server).patch('/update-password').set('Cookie', cookies).send({
-			currentPassword: user.password,
+			currentPassword,
 			newPassword: newPassword,
 			confirmNewPassword: newPassword,
 		});

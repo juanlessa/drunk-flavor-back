@@ -18,4 +18,7 @@ export type Drink = DatabaseCommonInfo & {
 	cover: FileMetadata | undefined;
 	thumbnail: FileMetadata | undefined;
 	ingredients: DrinkIngredient[];
+	avg_rating: number;
+	ratings_count: number;
+	ratings_sum: number;
 };

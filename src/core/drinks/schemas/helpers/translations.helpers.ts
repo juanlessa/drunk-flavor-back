@@ -1,14 +1,14 @@
 import { z } from 'zod/v4';
-import { LanguagesEnum, Translations } from '@/core/drinks/types/translations';
+import { Languages, Translations } from '@/core/drinks/types/translations';
 
 /**
  * Generates a Zod schema for translations.
  *
  * @param schema - The Zod schema to validate each language.
- * @returns A Zod object schema with translations for each language defined in LanguagesEnum.
+ * @returns A Zod object schema with translations for each language defined in Languages.
  */
 export const generateTranslationsSchema = <Schema extends z.ZodType>(schema: Schema) => {
-	const languages = Object.keys(LanguagesEnum) as Array<keyof typeof LanguagesEnum>;
+	const languages = Object.keys(Languages) as Array<keyof typeof Languages>;
 	const translationsSchema = languages.reduce(
 		(accumulator, lang) => ({ ...accumulator, [lang]: schema }),
 		{} as Translations<Schema>,
@@ -34,7 +34,7 @@ export const generateTranslationsFieldSchema = <
 	fields: Field[],
 	fieldSchema: Validation,
 ) => {
-	const languages = Object.keys(LanguagesEnum) as Array<keyof typeof LanguagesEnum>;
+	const languages = Object.keys(Languages) as Array<keyof typeof Languages>;
 
 	const fieldsSchema = fields.reduce<Record<string, Validation>>((acc, field) => {
 		languages.forEach((lang) => {

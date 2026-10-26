@@ -1,0 +1,43 @@
+name: coverage report flow
+
+on:
+    pull_request:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# Scoped to the minimum needed to post a coverage comment on the pull request.
+permissions:
+    contents: read
+    pull-requests: write
+
+jobs:
+    report-coverage:
+        name: merged coverage report (informational)
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Git checkout
+              uses: actions/checkout@v7
+
+            - name: Use Node.js from .nvmrc
+              uses: actions/setup-node@v7
+              with:
+                  node-version-file: '.nvmrc'
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Merged unit + integration coverage
+              continue-on-error: true
+              run: npm run test:coverage:all
+
+            - name: Report merged coverage on PR
+              uses: davelosert/vitest-coverage-report-action@v2
+              with:
+                  name: 'Merged coverage (unit + integration)'
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  vite-config-path: ./vitest-merge.config.ts
+                  json-summary-path: ./coverage/merged/coverage-summary.json
+                  json-final-path: ./coverage/merged/coverage-final.json

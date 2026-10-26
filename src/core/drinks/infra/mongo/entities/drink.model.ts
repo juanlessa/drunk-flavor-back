@@ -15,9 +15,16 @@ export const FileMetadataSchema = new Schema<FileMetadata>(
 	},
 );
 
+export const DRINK_TRANSLATIONS_EN_NAME_UNIQUE_INDEX = 'drink_translations_en_name_unique';
+export const DRINK_TRANSLATIONS_PT_NAME_UNIQUE_INDEX = 'drink_translations_pt_name_unique';
+export const DRINK_UNIQUE_INDEXES = [
+	DRINK_TRANSLATIONS_EN_NAME_UNIQUE_INDEX,
+	DRINK_TRANSLATIONS_PT_NAME_UNIQUE_INDEX,
+] as const;
+
 export const DrinkTranslationSchema = new Schema<DrinkTranslation>(
 	{
-		name: { type: String, required: true, unique: true },
+		name: { type: String, required: true },
 		method: { type: String, required: true },
 	},
 	{
@@ -44,11 +51,34 @@ export const DrinkSchema = new Schema<Drink>(
 		cover: { type: FileMetadataSchema, default: undefined },
 		thumbnail: { type: FileMetadataSchema, default: undefined },
 		ingredients: { type: [DrinkIngredientSchema], required: true },
+		avg_rating: { type: Number, required: true, default: 0, min: 0, max: 5 },
+		ratings_count: {
+			type: Number,
+			required: true,
+			default: 0,
+			min: 0,
+			validate: {
+				validator: Number.isInteger,
+				message: 'Ratings count must be an integer',
+			},
+		},
+		ratings_sum: {
+			type: Number,
+			required: true,
+			default: 0,
+			min: 0,
+			select: false,
+			validate: {
+				validator: Number.isInteger,
+				message: 'Ratings sum must be an integer',
+			},
+		},
 	},
 	{
 		toJSON: {
 			transform: (_, ret) => {
 				Reflect.deleteProperty(ret, '__v');
+				Reflect.deleteProperty(ret, 'ratings_sum');
 			},
 		},
 		timestamps: {
@@ -57,6 +87,9 @@ export const DrinkSchema = new Schema<Drink>(
 		},
 	},
 );
+
+DrinkSchema.index({ 'translations.en.name': 1 }, { unique: true, name: DRINK_TRANSLATIONS_EN_NAME_UNIQUE_INDEX });
+DrinkSchema.index({ 'translations.pt.name': 1 }, { unique: true, name: DRINK_TRANSLATIONS_PT_NAME_UNIQUE_INDEX });
 
 export const DrinkModel =
 	(mongoose.models['drinks'] as Model<Drink> | undefined) ?? mongoose.model<Drink>('drinks', DrinkSchema);

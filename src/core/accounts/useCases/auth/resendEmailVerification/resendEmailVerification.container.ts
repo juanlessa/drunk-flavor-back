@@ -1,4 +1,4 @@
-import { resolveUsersRepository, resolveUserTokensRepository } from '@/core/accounts/infra/mongo/container';
+import { resolveUsersRepository, resolveTokensRepository } from '@/core/accounts/infra/mongo/container';
 import { resolveCryptoProvider } from '@/shared/providers/cryptography';
 import { resolveDateProvider } from '@/shared/providers/date';
 import { resolveTemplateProvider } from '@/shared/providers/template';
@@ -8,13 +8,13 @@ import { ResendEmailVerificationService } from './ResendEmailVerification.servic
 const dateProvider = resolveDateProvider();
 const cryptoProvider = resolveCryptoProvider();
 const usersRepository = resolveUsersRepository();
-const userTokensRepository = resolveUserTokensRepository();
+const tokensRepository = resolveTokensRepository();
 const templateProvider = resolveTemplateProvider();
 const emailQueueProvider = resolveEmailQueueProvider();
 
 const resendEmailVerificationService = new ResendEmailVerificationService(
 	usersRepository,
-	userTokensRepository,
+	tokensRepository,
 	dateProvider,
 	cryptoProvider,
 	templateProvider,
