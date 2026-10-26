@@ -31,9 +31,11 @@ export class UnitsRepositoryInMemory implements IUnitsRepository {
 				cause: 'Error on findByIdAndUpdate operation',
 			});
 		}
+		const { symbol, ...rest } = data;
 		let record = this.collection[recordIndex];
-		record = deepUpdate<Unit>(data, record);
-		if (data.symbol !== undefined) record.symbol = data.symbol;
+		record = deepUpdate<Unit>(rest, record);
+		if (symbol === null) delete record.symbol;
+		else if (symbol !== undefined) record.symbol = symbol;
 		if (data.space_before_symbol !== undefined) record.space_before_symbol = data.space_before_symbol;
 		record.updated_at = new Date();
 		this.collection[recordIndex] = record;

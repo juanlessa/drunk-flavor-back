@@ -54,7 +54,7 @@ export class RequestPasswordResetService {
 
 		const template = await this.templateProvider.forgotPassword({
 			userName: user.name ?? '',
-			resetLink: `${env.CLIENT_BASE_URL}${CLIENT_PAGE_PATHS.resetPassword}/${token}`,
+			resetLink: `${env.CLIENT_BASE_URL}${CLIENT_PAGE_PATHS.confirmPassword}/${token}`,
 		});
 
 		await this.emailQueueProvider.add(EMAIL_JOB_NAMES.forgotPassword, {

@@ -129,7 +129,7 @@ export async function insertDrinks() {
 		await DrinkModel.insertMany(drinks);
 		logger.info('Drinks inserted successfully');
 	} catch (error) {
-		logger.error('Error inserting Drinks:', error);
+		logger.error({ err: error }, 'Error inserting drinks');
 		throw error;
 	}
 }

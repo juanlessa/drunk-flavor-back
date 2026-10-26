@@ -17,6 +17,18 @@ const units = [
 		created_at: new Date(),
 		updated_at: new Date(),
 	},
+	{
+		_id: new ObjectId(),
+		translations: {
+			en: { name: 'leaf', name_plural: 'leaves' },
+			pt: { name: 'folha', name_plural: 'folhas' },
+		},
+		space_before_symbol: true,
+		allow_decimal: false,
+		kind: 'count',
+		created_at: new Date(),
+		updated_at: new Date(),
+	},
 ] as const satisfies readonly Unit[];
 
 type UnitEnName = (typeof units)[number]['translations']['en']['name'];
@@ -30,7 +42,7 @@ export async function insertUnits() {
 		await UnitModel.insertMany(units);
 		logger.info('Units inserted successfully');
 	} catch (error) {
-		logger.error('Error inserting units:', error);
+		logger.error({ err: error }, 'Error inserting units');
 		throw error;
 	}
 }

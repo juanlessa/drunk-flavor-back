@@ -6,7 +6,7 @@ import { insertIngredients } from './ingredients';
 import { insertDrinks } from './drinks';
 
 process.on('unhandledRejection', (err) => {
-	logger.error('Unhandled Rejection:', err);
+	logger.error({ err }, 'Unhandled Rejection');
 	process.exit(1);
 });
 
@@ -19,7 +19,7 @@ const closeDatabase = async () => {
 	try {
 		await MongoConnection.Instance.stop();
 	} catch (error) {
-		logger.error('Error during close connection:', error);
+		logger.error({ err: error }, 'Error during close connection');
 		process.exit(1);
 	}
 };
@@ -29,7 +29,7 @@ const gracefulShutdown = (signal: string) => async () => {
 	try {
 		await MongoConnection.Instance.stop();
 	} catch (error) {
-		logger.error('Error during shutdown:', error);
+		logger.error({ err: error }, 'Error during shutdown');
 		process.exit(1);
 	}
 	process.exit(0);
