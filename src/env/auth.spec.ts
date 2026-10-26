@@ -14,8 +14,8 @@ const STRONG_PROD_ENV = {
 	REFRESH_TOKEN_SECRET: 'c'.repeat(32) + '-refresh',
 	ACCESS_TOKEN_EXPIRES_IN_SECONDS: '900',
 	REFRESH_TOKEN_EXPIRES_IN_SECONDS: '1209600',
-	USER_TOKEN_EXPIRES_IN_SECONDS: '3600',
-	USER_TOKEN_SIZE: '64',
+	VERIFICATION_TOKEN_EXPIRES_IN_SECONDS: '3600',
+	VERIFICATION_TOKEN_SIZE: '64',
 	PASSWORD_HASH_ROUNDS: '12',
 	DUMMY_PASSWORD: 'd'.repeat(12) + '-dummy',
 } satisfies Record<string, string>;
@@ -28,8 +28,8 @@ const WEAK_VALID_ENV = {
 	REFRESH_TOKEN_SECRET: 'z',
 	ACCESS_TOKEN_EXPIRES_IN_SECONDS: '1',
 	REFRESH_TOKEN_EXPIRES_IN_SECONDS: '1',
-	USER_TOKEN_EXPIRES_IN_SECONDS: '1',
-	USER_TOKEN_SIZE: '16',
+	VERIFICATION_TOKEN_EXPIRES_IN_SECONDS: '1',
+	VERIFICATION_TOKEN_SIZE: '16',
 	PASSWORD_HASH_ROUNDS: '4',
 	DUMMY_PASSWORD: 'x',
 } satisfies Record<string, string>;
@@ -43,8 +43,8 @@ const EXPECTED_DEFAULTS = {
 		REFRESH_TOKEN_SECRET: 'bad-refresh-token-secret-testing',
 		ACCESS_TOKEN_EXPIRES_IN_SECONDS: 2,
 		REFRESH_TOKEN_EXPIRES_IN_SECONDS: 5,
-		USER_TOKEN_EXPIRES_IN_SECONDS: 5,
-		USER_TOKEN_SIZE: 16,
+		VERIFICATION_TOKEN_EXPIRES_IN_SECONDS: 5,
+		VERIFICATION_TOKEN_SIZE: 16,
 		PASSWORD_HASH_ROUNDS: 3,
 		DUMMY_PASSWORD: 'timing-equalization-placeholder',
 	},
@@ -54,8 +54,8 @@ const EXPECTED_DEFAULTS = {
 		REFRESH_TOKEN_SECRET: 'bad-refresh-token-secret-e2e',
 		ACCESS_TOKEN_EXPIRES_IN_SECONDS: 2,
 		REFRESH_TOKEN_EXPIRES_IN_SECONDS: 5,
-		USER_TOKEN_EXPIRES_IN_SECONDS: 5,
-		USER_TOKEN_SIZE: 16,
+		VERIFICATION_TOKEN_EXPIRES_IN_SECONDS: 5,
+		VERIFICATION_TOKEN_SIZE: 16,
 		PASSWORD_HASH_ROUNDS: 3,
 		DUMMY_PASSWORD: 'timing-equalization-placeholder',
 	},
@@ -92,7 +92,7 @@ describe('parseAuthEnv', () => {
 		it.each([
 			['ACCESS_TOKEN_EXPIRES_IN_SECONDS', '1.5'],
 			['REFRESH_TOKEN_EXPIRES_IN_SECONDS', '-1'],
-			['USER_TOKEN_EXPIRES_IN_SECONDS', '0'],
+			['VERIFICATION_TOKEN_EXPIRES_IN_SECONDS', '0'],
 		] as const)('rejects a non-positive-integer %s', (key, value) => {
 			expect(() => parseAuthEnv(withEnv(STRONG_PROD_ENV, { [key]: value }), 'production')).toThrow();
 		});
@@ -100,14 +100,19 @@ describe('parseAuthEnv', () => {
 		it.each([
 			['ACCESS_TOKEN_EXPIRES_IN_SECONDS', '3601'],
 			['REFRESH_TOKEN_EXPIRES_IN_SECONDS', '2592001'],
-			['USER_TOKEN_EXPIRES_IN_SECONDS', '86401'],
+			['VERIFICATION_TOKEN_EXPIRES_IN_SECONDS', '86401'],
 		] as const)('rejects an over-max %s', (key, value) => {
 			expect(() => parseAuthEnv(withEnv(STRONG_PROD_ENV, { [key]: value }), 'production')).toThrow();
 		});
 
-		it.each(['31', '33', '16', '130'] as const)('rejects an odd or out-of-range USER_TOKEN_SIZE "%s"', (value) => {
-			expect(() => parseAuthEnv(withEnv(STRONG_PROD_ENV, { USER_TOKEN_SIZE: value }), 'production')).toThrow();
-		});
+		it.each(['31', '33', '16', '130'] as const)(
+			'rejects an odd or out-of-range VERIFICATION_TOKEN_SIZE "%s"',
+			(value) => {
+				expect(() =>
+					parseAuthEnv(withEnv(STRONG_PROD_ENV, { VERIFICATION_TOKEN_SIZE: value }), 'production'),
+				).toThrow();
+			},
+		);
 
 		it.each(['11', '16'] as const)('rejects an out-of-range PASSWORD_HASH_ROUNDS "%s"', (value) => {
 			expect(() =>
@@ -125,8 +130,8 @@ describe('parseAuthEnv', () => {
 			expect(result.REFRESH_TOKEN_SECRET).toBe(STRONG_PROD_ENV.REFRESH_TOKEN_SECRET);
 			expect(result.ACCESS_TOKEN_EXPIRES_IN_SECONDS).toBe(900);
 			expect(result.REFRESH_TOKEN_EXPIRES_IN_SECONDS).toBe(1209600);
-			expect(result.USER_TOKEN_EXPIRES_IN_SECONDS).toBe(3600);
-			expect(result.USER_TOKEN_SIZE).toBe(64);
+			expect(result.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS).toBe(3600);
+			expect(result.VERIFICATION_TOKEN_SIZE).toBe(64);
 			expect(result.PASSWORD_HASH_ROUNDS).toBe(12);
 			expect(result.DUMMY_PASSWORD).toBe(STRONG_PROD_ENV.DUMMY_PASSWORD);
 		});
@@ -150,11 +155,13 @@ describe('parseAuthEnv', () => {
 		});
 	});
 
-	describe.each(ALL_ENVS)('USER_TOKEN_SIZE even-ness is enforced in "%s"', (nodeEnv) => {
-		it('rejects an odd USER_TOKEN_SIZE', () => {
+	describe.each(ALL_ENVS)('VERIFICATION_TOKEN_SIZE even-ness is enforced in "%s"', (nodeEnv) => {
+		it('rejects an odd VERIFICATION_TOKEN_SIZE', () => {
 			// 65 is odd and within the production [32, 128] window, so only the
 			// even-ness rule can reject it there; it is also odd in every other env.
-			expect(() => parseAuthEnv(withEnv(baselineFor(nodeEnv), { USER_TOKEN_SIZE: '65' }), nodeEnv)).toThrow();
+			expect(() =>
+				parseAuthEnv(withEnv(baselineFor(nodeEnv), { VERIFICATION_TOKEN_SIZE: '65' }), nodeEnv),
+			).toThrow();
 		});
 	});
 
@@ -169,8 +176,10 @@ describe('parseAuthEnv', () => {
 			).not.toThrow();
 		});
 
-		it('accepts a USER_TOKEN_SIZE below the production minimum', () => {
-			expect(() => parseAuthEnv(withEnv(baselineFor(nodeEnv), { USER_TOKEN_SIZE: '8' }), nodeEnv)).not.toThrow();
+		it('accepts a VERIFICATION_TOKEN_SIZE below the production minimum', () => {
+			expect(() =>
+				parseAuthEnv(withEnv(baselineFor(nodeEnv), { VERIFICATION_TOKEN_SIZE: '8' }), nodeEnv),
+			).not.toThrow();
 		});
 
 		it('accepts PASSWORD_HASH_ROUNDS below the production minimum', () => {
@@ -196,8 +205,8 @@ describe('parseAuthEnv', () => {
 			expect(result.REFRESH_TOKEN_SECRET).toBe(expected.REFRESH_TOKEN_SECRET);
 			expect(result.ACCESS_TOKEN_EXPIRES_IN_SECONDS).toBe(expected.ACCESS_TOKEN_EXPIRES_IN_SECONDS);
 			expect(result.REFRESH_TOKEN_EXPIRES_IN_SECONDS).toBe(expected.REFRESH_TOKEN_EXPIRES_IN_SECONDS);
-			expect(result.USER_TOKEN_EXPIRES_IN_SECONDS).toBe(expected.USER_TOKEN_EXPIRES_IN_SECONDS);
-			expect(result.USER_TOKEN_SIZE).toBe(expected.USER_TOKEN_SIZE);
+			expect(result.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS).toBe(expected.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS);
+			expect(result.VERIFICATION_TOKEN_SIZE).toBe(expected.VERIFICATION_TOKEN_SIZE);
 			expect(result.PASSWORD_HASH_ROUNDS).toBe(expected.PASSWORD_HASH_ROUNDS);
 		});
 	});
@@ -213,7 +222,7 @@ describe('parseAuthEnv', () => {
 			const result = parseAuthEnv(asSource(withoutRounds), 'development');
 
 			expect(result.COOKIE_SECRET).toBe('x');
-			expect(result.USER_TOKEN_SIZE).toBe(16);
+			expect(result.VERIFICATION_TOKEN_SIZE).toBe(16);
 			expect(result.PASSWORD_HASH_ROUNDS).toBe(8);
 		});
 	});

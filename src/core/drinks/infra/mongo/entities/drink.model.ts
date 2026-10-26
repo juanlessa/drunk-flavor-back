@@ -62,11 +62,23 @@ export const DrinkSchema = new Schema<Drink>(
 				message: 'Ratings count must be an integer',
 			},
 		},
+		ratings_sum: {
+			type: Number,
+			required: true,
+			default: 0,
+			min: 0,
+			select: false,
+			validate: {
+				validator: Number.isInteger,
+				message: 'Ratings sum must be an integer',
+			},
+		},
 	},
 	{
 		toJSON: {
 			transform: (_, ret) => {
 				Reflect.deleteProperty(ret, '__v');
+				Reflect.deleteProperty(ret, 'ratings_sum');
 			},
 		},
 		timestamps: {

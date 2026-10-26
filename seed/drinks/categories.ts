@@ -227,7 +227,7 @@ export async function insertCategories() {
 		await CategoryModel.insertMany(categories);
 		logger.info('Categories inserted successfully');
 	} catch (error) {
-		logger.error('Error inserting categories:', error);
+		logger.error({ err: error }, 'Error inserting categories');
 		throw error;
 	}
 }

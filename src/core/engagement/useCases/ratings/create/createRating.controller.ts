@@ -8,7 +8,7 @@ export const createRatingController: Controller<{ Body: CreateRatingReqBody }> =
 	const actor = { id: request.user.id, role: request.user.role };
 
 	const service = resolveCreateRatingService();
-	const id = await service.execute({ drink_id, value, actor });
+	const result = await service.execute({ drink_id, value, actor });
 
-	return reply.status(HTTP_STATUS.created).send({ id });
+	return reply.status(HTTP_STATUS.created).send(result);
 };

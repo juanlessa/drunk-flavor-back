@@ -26,8 +26,8 @@ describe('UsersRepositoryInMemory', () => {
 
 		it('matches case-sensitively (strict === on the stored value)', async () => {
 			// The in-memory repo compares with a strict ===, so a differently-cased email
-			// does NOT match. Note (finding F6): this diverges from the Mongo repo, where the
-			// schema lowercase setter makes findByEmail effectively case-insensitive.
+			// does NOT match. This diverges from the Mongo repo, where the schema lowercase
+			// setter makes findByEmail effectively case-insensitive.
 			await repository.create(createUserFactory({ email: 'find@example.com' }));
 
 			expect(await repository.findByEmail('FIND@EXAMPLE.COM')).toBeNull();

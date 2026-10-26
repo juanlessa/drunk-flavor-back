@@ -2,8 +2,10 @@ import { createRatingController } from '@/core/engagement/useCases/ratings/creat
 import { createRatingSchema } from '@/core/engagement/useCases/ratings/create/createRating.schema';
 import { deleteRatingController } from '@/core/engagement/useCases/ratings/delete/deleteRating.controller';
 import { deleteRatingSchema } from '@/core/engagement/useCases/ratings/delete/deleteRating.schema';
+import { getMineByDrinkController } from '@/core/engagement/useCases/ratings/getMineByDrink/getMineByDrink.controller';
 import { getRatingController } from '@/core/engagement/useCases/ratings/get/getRating.controller';
 import { getRatingSchema } from '@/core/engagement/useCases/ratings/get/getRating.schema';
+import { getSummaryByDrinkController } from '@/core/engagement/useCases/ratings/getSummaryByDrink/getSummaryByDrink.controller';
 import { listRatingsController } from '@/core/engagement/useCases/ratings/list/listRatings.controller';
 import { listRatingsByDrinkController } from '@/core/engagement/useCases/ratings/listByDrink/listRatingsByDrink.controller';
 import { listRatingsByDrinkSchema } from '@/core/engagement/useCases/ratings/listByDrink/listRatingsByDrink.schema';
@@ -18,6 +20,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { pluginGenerator } from '../helpers/fastify.helpers';
 import { verifyAndRenewToken } from '../middlewares/verifyAndRenewToken';
 import { verifyPermissions } from '../middlewares/verifyPermissions';
+import { enforceCompleteProfile } from '../middlewares/enforceCompleteProfile';
 import { Routes } from '../types/fastify.types';
 
 const routes: Routes = (server) => {
@@ -25,7 +28,7 @@ const routes: Routes = (server) => {
 		'/ratings',
 		{
 			schema: { tags: ['Ratings'], body: createRatingSchema },
-			preValidation: [verifyAndRenewToken, verifyPermissions('create', 'Rating')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('create', 'Rating')],
 		},
 		createRatingController,
 	);
@@ -34,10 +37,27 @@ const routes: Routes = (server) => {
 		'/me/ratings',
 		{
 			schema: { tags: ['Ratings'], querystring: ratingQuerySchema },
-			preValidation: [verifyAndRenewToken, verifyPermissions('list', 'Rating')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('list', 'Rating')],
 		},
 		listMyRatingsController,
 	);
+
+	server.withTypeProvider<ZodTypeProvider>().get(
+		'/drinks/:drink_id/ratings/me',
+		{
+			schema: { tags: ['Ratings'], params: listRatingsByDrinkSchema },
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('list', 'Rating')],
+		},
+		getMineByDrinkController,
+	);
+
+	server
+		.withTypeProvider<ZodTypeProvider>()
+		.get(
+			'/drinks/:drink_id/ratings/summary',
+			{ schema: { tags: ['Ratings'], params: listRatingsByDrinkSchema } },
+			getSummaryByDrinkController,
+		);
 
 	server
 		.withTypeProvider<ZodTypeProvider>()
@@ -59,7 +79,7 @@ const routes: Routes = (server) => {
 		'/ratings/:id',
 		{
 			schema: { tags: ['Ratings'], params: updateRatingParamsSchema, body: updateRatingBodySchema },
-			preValidation: [verifyAndRenewToken],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile],
 		},
 		updateRatingController,
 	);
@@ -68,7 +88,7 @@ const routes: Routes = (server) => {
 		'/ratings/:id',
 		{
 			schema: { tags: ['Ratings'], params: deleteRatingSchema },
-			preValidation: [verifyAndRenewToken],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile],
 		},
 		deleteRatingController,
 	);

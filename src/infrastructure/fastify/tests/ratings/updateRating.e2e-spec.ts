@@ -41,7 +41,7 @@ describe('Update Rating', () => {
 		const stored = await RatingModel.findById(id).lean();
 
 		const response = await request(app.server).patch(`/ratings/${id}`).set('Cookie', cookies).send({ value: 1 });
-		expect(response.status).toBe(HTTP_STATUS.no_content);
+		expect(response.status).toBe(HTTP_STATUS.ok);
 
 		const after = await RatingModel.findById(id).lean();
 		expect(after?.value).toBe(1);

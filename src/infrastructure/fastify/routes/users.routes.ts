@@ -13,6 +13,7 @@ import { updateUserRoleController } from '@/core/accounts/useCases/users/updateR
 import { deleteUserSchema } from '@/core/accounts/useCases/users/delete/deleteUser.schema';
 import { deleteUserController } from '@/core/accounts/useCases/users/delete/deleteUser.controller';
 import { verifyPermissions } from '../middlewares/verifyPermissions';
+import { enforceCompleteProfile } from '../middlewares/enforceCompleteProfile';
 
 const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
@@ -22,7 +23,7 @@ const routes: Routes = (server) => {
 				tags: ['Users'],
 				body: createUserSchema,
 			},
-			preValidation: [verifyAndRenewToken, verifyPermissions('create', 'User')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('create', 'User')],
 		},
 		createUserController,
 	);
@@ -34,7 +35,7 @@ const routes: Routes = (server) => {
 				tags: ['Users'],
 				params: getUserSchema,
 			},
-			preValidation: [verifyAndRenewToken, verifyPermissions('get', 'User')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('get', 'User')],
 		},
 		getUserController,
 	);
@@ -46,7 +47,7 @@ const routes: Routes = (server) => {
 				tags: ['Users'],
 				querystring: listUsersQuerySchema,
 			},
-			preValidation: [verifyAndRenewToken, verifyPermissions('list', 'User')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('list', 'User')],
 		},
 		listUsersController,
 	);
@@ -58,7 +59,7 @@ const routes: Routes = (server) => {
 				tags: ['Users'],
 				body: updateUserRoleSchema,
 			},
-			preValidation: [verifyAndRenewToken, verifyPermissions('update', 'User')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('update', 'User')],
 		},
 		updateUserRoleController,
 	);
@@ -70,7 +71,7 @@ const routes: Routes = (server) => {
 				tags: ['Users'],
 				body: deleteUserSchema,
 			},
-			preValidation: [verifyAndRenewToken, verifyPermissions('delete', 'User')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('delete', 'User')],
 		},
 		deleteUserController,
 	);

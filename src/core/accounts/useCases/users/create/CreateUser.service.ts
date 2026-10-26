@@ -4,12 +4,13 @@ import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { CreateUserDTO } from './createUser.dtos';
 import { defineAbilityFor } from '@/shared/accessControl';
 import { userPermissionSchema } from '@/shared/accessControl/entities/user';
-import { UserStatuses } from '@/core/accounts/entities/user.entity';
-import { TokenTypes } from '@/core/accounts/entities/userToken.entity';
+import { UserStatuses } from '@/core/accounts/constants/user.constants';
+import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
-import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
+import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
+import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { IEmailQueueProvider } from '@/shared/providers/queue/email/IEmailQueue.provider';
 import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
@@ -20,7 +21,8 @@ import { env } from '@/env';
 export class CreateUserService {
 	constructor(
 		private usersRepository: IUsersRepository,
-		private userTokensRepository: IUserTokensRepository,
+		private tokensRepository: ITokensRepository,
+		private credentialsRepository: ICredentialsRepository,
 		private transactionManager: ITransactionManager,
 		private dateProvider: IDateProvider,
 		private hashProvider: IHashProvider,
@@ -45,11 +47,11 @@ export class CreateUserService {
 			});
 		}
 		if (existingUser && existingUser.status === UserStatuses['pending']) {
-			const existingUserToken = await this.userTokensRepository.findByUserIdAndType({
+			const existingToken = await this.tokensRepository.findByUserIdAndType({
 				user_id: existingUser._id.toString(),
 				type: TokenTypes['email-verification'],
 			});
-			if (!existingUserToken || this.dateProvider.isExpiredDate(existingUserToken.expires_at)) {
+			if (!existingToken || this.dateProvider.isExpiredDate(existingToken.expires_at)) {
 				await this.usersRepository.delete(existingUser._id.toString());
 			} else {
 				throw new BadRequestError('apiResponses.auth.emailVerificationPending', {
@@ -59,30 +61,35 @@ export class CreateUserService {
 		}
 
 		const passwordHash = await this.hashProvider.hash(password);
-		const token = await this.cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
+		const token = await this.cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 
 		const user = await this.transactionManager.withTransaction(async () => {
 			const createdUser = await this.usersRepository.create({
 				name: name,
 				surname: surname,
 				email: email,
-				password: passwordHash,
+				email_verified: false,
 				role: role,
 				status: UserStatuses['pending'],
 			});
 
-			await this.userTokensRepository.create({
-				token: this.cryptoProvider.hashToken(token),
+			await this.credentialsRepository.create({
+				user_id: createdUser._id.toString(),
+				password_hash: passwordHash,
+			});
+
+			await this.tokensRepository.create({
+				token_hash: this.cryptoProvider.hashToken(token),
 				type: TokenTypes['email-verification'],
 				user_id: createdUser._id.toString(),
-				expires_at: this.dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
+				expires_at: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 			});
 
 			return createdUser;
 		});
 
 		const html = await this.templateProvider.emailVerification({
-			userName: user.name,
+			userName: name,
 			verificationLink: `${env.CLIENT_BASE_URL}${CLIENT_PAGE_PATHS.verifyEmail}/${token}`,
 		});
 

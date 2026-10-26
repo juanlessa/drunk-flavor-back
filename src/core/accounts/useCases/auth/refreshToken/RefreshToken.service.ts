@@ -1,6 +1,5 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { RefreshToken } from './refreshToken.dtos';
-import { omitUserPassword } from '@/core/accounts/mappers/user.mappers';
 import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 
 export class RefreshTokenService {
@@ -16,6 +15,6 @@ export class RefreshTokenService {
 			throw new BadRequestError('apiResponses.auth.inactiveAccount', { path: 'RefreshToken.service' });
 		}
 
-		return omitUserPassword(user);
+		return user;
 	}
 }

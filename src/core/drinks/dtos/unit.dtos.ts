@@ -12,7 +12,8 @@ export type CreateUnit = {
 
 export type UpdateUnit = {
 	id: string;
-} & DeepPartial<CreateUnit>;
+	symbol?: string | null;
+} & DeepPartial<Omit<CreateUnit, 'symbol'>>;
 
 export type DeleteUnit = {
 	id: string;

@@ -1,19 +1,22 @@
 import { Signin } from './signin.dtos';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
+import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
 import { UnauthorizedError } from '@/shared/error/error.lib';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
-import { UserStatuses } from '@/core/accounts/entities/user.entity';
+import { UserStatuses } from '@/core/accounts/constants/user.constants';
 
 export class SigninService {
 	constructor(
 		private usersRepository: IUsersRepository,
+		private credentialsRepository: ICredentialsRepository,
 		private hashProvider: IHashProvider,
 	) {}
 
 	async execute({ email, password }: Signin) {
 		const user = await this.usersRepository.findByEmail(email);
+		const credential = user ? await this.credentialsRepository.findByUserId(user._id.toString()) : null;
 
-		const hashToCompare = user ? user.password : await this.hashProvider.getDummyHash();
+		const hashToCompare = credential ? credential.password_hash : await this.hashProvider.getDummyHash();
 		const passwordMatch = await this.hashProvider.compare(password, hashToCompare);
 
 		if (!user) {
@@ -45,6 +48,7 @@ export class SigninService {
 			user: {
 				id: user._id.toString(),
 				role: user.role,
+				status: user.status,
 			},
 		};
 	}

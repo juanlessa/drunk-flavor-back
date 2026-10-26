@@ -1,3 +1,4 @@
+import { DrinkRatingSummary } from '@/shared/providers/moduleCommunication/drinks';
 import { Actor } from '@/shared/accessControl/actor.types';
 import { z } from 'zod/v4';
 import { updateRatingBodySchema, updateRatingParamsSchema } from './updateRating.schema';
@@ -9,4 +10,8 @@ export type UpdateRatingCommand = {
 	id: string;
 	value: number;
 	actor: Actor;
+};
+
+export type UpdateRatingResult = {
+	summary: DrinkRatingSummary;
 };

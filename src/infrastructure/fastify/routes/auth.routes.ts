@@ -7,6 +7,8 @@ import { signupSchema } from '@/core/accounts/useCases/auth/signup/signup.schema
 import { signupController } from '@/core/accounts/useCases/auth/signup/signup.controller';
 import { signinSchema } from '@/core/accounts/useCases/auth/signin/signin.schema';
 import { signinController } from '@/core/accounts/useCases/auth/signin/signin.controller';
+import { googleAuthSchema } from '@/core/accounts/useCases/auth/googleAuth/googleAuth.schema';
+import { googleAuthController } from '@/core/accounts/useCases/auth/googleAuth/googleAuth.controller';
 import { requestPasswordResetSchema } from '@/core/accounts/useCases/auth/requestPasswordReset/requestPasswordReset.schema';
 import { requestPasswordResetController } from '@/core/accounts/useCases/auth/requestPasswordReset/requestPasswordReset.controller';
 import { confirmPasswordSchema } from '@/core/accounts/useCases/auth/confirmPassword/confirmPassword.schema';
@@ -47,6 +49,27 @@ const routes: Routes = (server) => {
 			},
 		},
 		signinController,
+	);
+
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/google',
+		{
+			config: {
+				rateLimitPolicy: {
+					limiter: server.createRateLimit({ max: 5, timeWindow: ONE_MINUTE }),
+					shouldCountFailure: countInvalidCredentials,
+				},
+			},
+			preHandler: [enforceRateLimit],
+			onError: [recordRateLimitFailure],
+			schema: {
+				tags: ['Auth'],
+				summary: 'Sign in with Google',
+				description: 'Authenticates the user with a Google ID token, creating or linking the account as needed',
+				body: googleAuthSchema,
+			},
+		},
+		googleAuthController,
 	);
 
 	server.withTypeProvider<ZodTypeProvider>().post(

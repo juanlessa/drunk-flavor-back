@@ -8,7 +8,7 @@ export const deleteRatingController: Controller<{ Params: DeleteRatingReqParam }
 	const actor = { id: request.user.id, role: request.user.role };
 
 	const service = resolveDeleteRatingService();
-	await service.execute({ id, actor });
+	const result = await service.execute({ id, actor });
 
-	return reply.status(HTTP_STATUS.no_content).send();
+	return reply.status(HTTP_STATUS.ok).send(result);
 };

@@ -8,7 +8,7 @@ describe('Forgot Password Template', () => {
 	it('should be able to generate the template', async () => {
 		const input: ForgotPasswordProps = {
 			userName: 'John',
-			resetLink: 'http://example.test/reset-password/',
+			resetLink: 'http://example.test/confirm-password/',
 		};
 		const [id, template] = forgotPasswordTemplate(input);
 		const parseResult = await mjml2html(template);

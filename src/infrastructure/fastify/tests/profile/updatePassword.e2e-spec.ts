@@ -22,11 +22,12 @@ describe('Update Password', () => {
 
 	it('Should be able to update the password', async () => {
 		const { cookies, user } = await createAndAuthenticateUser(app, { role: Roles.partner });
+		const { password: currentPassword } = user;
 
 		const newPassword = 'New-password-87654321';
 
 		const response = await request(app.server).patch('/update-password').set('Cookie', cookies).send({
-			currentPassword: user.password,
+			currentPassword,
 			newPassword: newPassword,
 			confirmNewPassword: newPassword,
 		});

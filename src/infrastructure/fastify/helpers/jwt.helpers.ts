@@ -6,8 +6,8 @@ import { logger } from '@/shared/providers/logger';
 import { NotFoundError } from '@/shared/error/error.lib';
 
 export const mapDecodedTokenToUser = (user: string | object | Buffer): FastifyJWT['user'] => {
-	const { sub, role } = user as DecodedToken;
-	return { id: sub, role };
+	const { sub, role, status } = user as DecodedToken;
+	return { id: sub, role, status };
 };
 
 export const retrieveRefreshTokenFromSession = (request: FastifyRequest) => {

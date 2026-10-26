@@ -5,24 +5,20 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateUserRoleService } from './UpdateUserRole.service';
 import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
-import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
-import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
 import { Roles } from '@/shared/accessControl/roles';
 import { Actor } from '@/shared/accessControl/actor.types';
 
 let usersRepository: IUsersRepository;
-let hashProvider: IHashProvider;
 let service: UpdateUserRoleService;
 
-const { name, surname, email, password, role, status } = createUserFactory({ role: Roles.partner });
+const { name, surname, email, role, status } = createUserFactory({ role: Roles.partner });
 
 const admin: Actor = { id: new ObjectId().toString(), role: Roles.admin };
 const member: Actor = { id: new ObjectId().toString(), role: Roles.member };
 
 describe('Update User Role', () => {
 	beforeEach(async () => {
-		hashProvider = new BcryptHashProvider();
 		usersRepository = new UsersRepositoryInMemory();
 		service = new UpdateUserRoleService(usersRepository);
 	});
@@ -34,7 +30,6 @@ describe('Update User Role', () => {
 			email,
 			role,
 			status,
-			password: await hashProvider.hash(password),
 		});
 
 		await service.execute({ user_id: createdPartnerUser._id.toString(), role: Roles.admin, actor: admin });
@@ -62,7 +57,6 @@ describe('Update User Role', () => {
 			email,
 			role,
 			status,
-			password: await hashProvider.hash(password),
 		});
 
 		await expect(

@@ -47,4 +47,30 @@ describe('Update Unit', () => {
 			kind: 'mass',
 		});
 	});
+
+	it('Should be able to remove the symbol of a unit by sending null', async () => {
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
+		const { id } = await createUnit();
+		await UnitModel.updateOne({ _id: id }, { $set: { symbol: 'ml' } }).exec();
+
+		const response = await request(app.server)
+			.patch('/units')
+			.set('Cookie', cookies)
+			.send({ id, ...createUnitFactory(), symbol: null });
+
+		expect(response.status).toBe(HTTP_STATUS.no_content);
+		expect(await UnitModel.findById(id).lean().exec()).not.toHaveProperty('symbol');
+	});
+
+	it('Should reject an empty symbol', async () => {
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
+		const { id } = await createUnit();
+
+		const response = await request(app.server)
+			.patch('/units')
+			.set('Cookie', cookies)
+			.send({ id, ...createUnitFactory(), symbol: '' });
+
+		expect(response.status).toBe(HTTP_STATUS.bad_request);
+	});
 });

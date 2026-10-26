@@ -11,7 +11,7 @@ import { Roles } from '@/shared/accessControl/roles';
 let usersRepository: IUsersRepository;
 let service: GetUserService;
 
-const { name, surname, email, password, role, status } = createUserFactory();
+const { name, surname, email, role, status } = createUserFactory();
 
 const admin: Actor = { id: new ObjectId().toString(), role: Roles.admin };
 const member: Actor = { id: new ObjectId().toString(), role: Roles.member };
@@ -23,7 +23,7 @@ describe('Get User', () => {
 	});
 
 	it('should be able to get a user when the actor is an admin', async () => {
-		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
+		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 
 		const result = await service.execute({ id: createdUser._id.toString(), actor: admin });
 
@@ -32,7 +32,6 @@ describe('Get User', () => {
 		expect(result.name).toEqual(createdUser.name);
 		expect(result.surname).toEqual(createdUser.surname);
 		expect(result.role).toEqual(createdUser.role);
-		expect(result).not.toHaveProperty('password');
 	});
 
 	it('Should not be able to find a nonexistent user', async () => {
@@ -41,7 +40,7 @@ describe('Get User', () => {
 	});
 
 	it('should not be able to get a user when the actor is a member', async () => {
-		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
+		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 
 		await expect(service.execute({ id: createdUser._id.toString(), actor: member })).rejects.toBeInstanceOf(
 			ForbiddenError,

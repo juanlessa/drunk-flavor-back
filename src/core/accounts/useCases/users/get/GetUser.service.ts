@@ -1,6 +1,5 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { GetUser } from './getUser.dtos';
-import { omitUserPassword } from '@/core/accounts/mappers/user.mappers';
 import { ForbiddenError, NotFoundError } from '@/shared/error/error.lib';
 import { defineAbilityFor } from '@/shared/accessControl';
 import { userPermissionSchema } from '@/shared/accessControl/entities/user';
@@ -19,6 +18,6 @@ export class GetUserService {
 		if (!user) {
 			throw new NotFoundError('apiResponses.users.notExist', { path: 'GetUser.service' });
 		}
-		return omitUserPassword(user);
+		return user;
 	}
 }

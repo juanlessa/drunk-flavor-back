@@ -33,6 +33,20 @@ describe('Update Unit', () => {
 		expect(found).not.toHaveProperty('symbol');
 		expect(found).not.toHaveProperty('space_before_symbol');
 	});
+	it('keeps the current symbol when symbol is omitted', async () => {
+		const created = await repository.create(createUnitFactory({ symbol: 'ml' }));
+		await service.execute({ id: created._id.toString(), ...createUnitFactory() });
+
+		expect((await repository.findById(created._id.toString()))?.symbol).toBe('ml');
+	});
+
+	it('removes the symbol when symbol is null', async () => {
+		const created = await repository.create(createUnitFactory({ symbol: 'ml' }));
+		await service.execute({ id: created._id.toString(), ...createUnitFactory(), symbol: null });
+
+		expect(await repository.findById(created._id.toString())).not.toHaveProperty('symbol');
+	});
+
 	it('rejects a nonexistent unit', async () => {
 		await expect(service.execute({ id: new ObjectId().toString(), ...createUnitFactory() })).rejects.toBeInstanceOf(
 			BadRequestError,

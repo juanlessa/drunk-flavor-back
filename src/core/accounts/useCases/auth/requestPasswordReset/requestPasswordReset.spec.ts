@@ -1,31 +1,32 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
-import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
-import { UserTokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/UserTokens.repository';
+import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
+import { TokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Tokens.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { RequestPasswordResetService } from './RequestPasswordReset.service';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
-import { IMailerProvider } from '@/shared/providers/mailer/IMailer.provider';
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
 import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.provider';
-import { MockMailerProvider } from '@/shared/providers/mailer/implementations/MockMailer.provider';
+import { MockEmailQueueProvider } from '@/shared/providers/queue/email/implementations/MockEmailQueue.provider';
 import { MjmlProvider } from '@/shared/providers/template/implementations/Mjml.provider';
-import { TokenTypes, UserToken } from '@/core/accounts/entities/userToken.entity';
+import { Token } from '@/core/accounts/entities/token.entity';
+import { TokenTypes } from '@/core/accounts/constants/token.constants';
+import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { env } from '@/env';
 
 let usersRepository: IUsersRepository;
-let userTokensRepository: IUserTokensRepository;
+let tokensRepository: ITokensRepository;
 let dateProvider: IDateProvider;
 let cryptoProvider: ICryptoProvider;
-let mailerProvider: IMailerProvider;
+let emailQueueProvider: MockEmailQueueProvider;
 let templateProvider: ITemplateProvider;
 let service: RequestPasswordResetService;
 
-const { name, surname, email, password, role, status } = createUserFactory();
+const { name, surname, email, role, status } = createUserFactory();
 
 describe('RequestPasswordReset', () => {
 	beforeEach(async () => {
@@ -33,17 +34,17 @@ describe('RequestPasswordReset', () => {
 		vi.useFakeTimers();
 
 		usersRepository = new UsersRepositoryInMemory();
-		userTokensRepository = new UserTokensRepositoryInMemory();
+		tokensRepository = new TokensRepositoryInMemory();
 		dateProvider = new DayjsProvider();
 		cryptoProvider = new NodeCryptoProvider();
-		mailerProvider = new MockMailerProvider();
+		emailQueueProvider = new MockEmailQueueProvider();
 		templateProvider = new MjmlProvider();
 		service = new RequestPasswordResetService(
 			usersRepository,
-			userTokensRepository,
+			tokensRepository,
 			dateProvider,
 			cryptoProvider,
-			mailerProvider,
+			emailQueueProvider,
 			templateProvider,
 		);
 	});
@@ -57,18 +58,22 @@ describe('RequestPasswordReset', () => {
 	});
 
 	it('Should be able to request a password reset', async () => {
-		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
+		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 
 		await service.execute({ email });
 
-		const verifyUserToken = (await userTokensRepository.findByUserIdAndType({
+		const verifyToken = (await tokensRepository.findByUserIdAndType({
 			user_id: createdUser._id.toString(),
 			type: TokenTypes['forgot-password'],
-		})) as UserToken;
+		})) as Token;
 
-		expect(verifyUserToken).not.toBeNull();
-		expect(verifyUserToken.token).toBeTruthy();
-		expect(mailerProvider.send).toHaveBeenCalledTimes(1);
+		expect(verifyToken).not.toBeNull();
+		expect(verifyToken.token_hash).toBeTruthy();
+		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
+		expect(emailQueueProvider.addMock).toHaveBeenCalledWith(
+			EMAIL_JOB_NAMES.forgotPassword,
+			expect.objectContaining({ to: email }),
+		);
 	});
 
 	it('Should not be able to request a password reset for a nonexistent user', async () => {
@@ -76,40 +81,40 @@ describe('RequestPasswordReset', () => {
 	});
 
 	it('Should not be able to request a password reset when it has been recently requested', async () => {
-		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
-		const token = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
-		await userTokensRepository.create({
-			token: cryptoProvider.hashToken(token),
+		const createdUser = await usersRepository.create({ name, surname, email, role, status });
+		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
+		await tokensRepository.create({
+			token_hash: cryptoProvider.hashToken(token),
 			user_id: createdUser._id.toString(),
 			type: TokenTypes['forgot-password'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
+			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		await expect(service.execute({ email })).rejects.toBeInstanceOf(BadRequestError);
 	});
 
 	it('Should be able to request a password reset after the token expiration time', async () => {
-		const createdUser = await usersRepository.create({ name, surname, email, password, role, status });
-		const initialToken = await cryptoProvider.generateToken(env.USER_TOKEN_SIZE);
-		await userTokensRepository.create({
-			token: cryptoProvider.hashToken(initialToken),
+		const createdUser = await usersRepository.create({ name, surname, email, role, status });
+		const initialToken = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
+		await tokensRepository.create({
+			token_hash: cryptoProvider.hashToken(initialToken),
 			user_id: createdUser._id.toString(),
 			type: TokenTypes['forgot-password'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.USER_TOKEN_EXPIRES_IN_SECONDS),
+			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
-		vi.advanceTimersByTime(env.USER_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);
+		vi.advanceTimersByTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);
 
 		await service.execute({ email });
 
-		const verifyUserToken = (await userTokensRepository.findByUserIdAndType({
+		const verifyToken = (await tokensRepository.findByUserIdAndType({
 			user_id: createdUser._id.toString(),
 			type: TokenTypes['forgot-password'],
-		})) as UserToken;
+		})) as Token;
 
-		expect(verifyUserToken).not.toBeNull();
-		expect(verifyUserToken.token).toBeTruthy();
-		expect(verifyUserToken.token).not.toBe(cryptoProvider.hashToken(initialToken));
-		expect(mailerProvider.send).toHaveBeenCalledTimes(1);
+		expect(verifyToken).not.toBeNull();
+		expect(verifyToken.token_hash).toBeTruthy();
+		expect(verifyToken.token_hash).not.toBe(cryptoProvider.hashToken(initialToken));
+		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
 	});
 });

@@ -5,17 +5,25 @@ import { DeleteUserService } from './DeleteUser.service';
 import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
-import { UserTokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/UserTokens.repository';
+import { TokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Tokens.repository';
+import { CredentialsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Credentials.repository';
+import { IdentitiesRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Identities.repository';
+import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
-import { IUserTokensRepository } from '@/core/accounts/repositories/IUserTokens.repository';
-import { TokenTypes } from '@/core/accounts/entities/userToken.entity';
+import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
+import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
+import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.repository';
+import { TokenTypes } from '@/core/accounts/constants/token.constants';
+import { IdentityProviders } from '@/core/accounts/constants/identity.constants';
 import { env } from '@/env';
 import { Actor } from '@/shared/accessControl/actor.types';
 import { Roles } from '@/shared/accessControl/roles';
 
 let cryptoProvider: NodeCryptoProvider;
 let usersRepository: IUsersRepository;
-let userTokensRepository: IUserTokensRepository;
+let tokensRepository: ITokensRepository;
+let credentialsRepository: ICredentialsRepository;
+let identitiesRepository: IIdentitiesRepository;
 let service: DeleteUserService;
 
 const userData = createUserFactory();
@@ -27,8 +35,16 @@ describe('Delete User', () => {
 	beforeEach(() => {
 		cryptoProvider = new NodeCryptoProvider();
 		usersRepository = new UsersRepositoryInMemory();
-		userTokensRepository = new UserTokensRepositoryInMemory();
-		service = new DeleteUserService(usersRepository, userTokensRepository);
+		tokensRepository = new TokensRepositoryInMemory();
+		credentialsRepository = new CredentialsRepositoryInMemory();
+		identitiesRepository = new IdentitiesRepositoryInMemory();
+		service = new DeleteUserService(
+			usersRepository,
+			tokensRepository,
+			credentialsRepository,
+			identitiesRepository,
+			new FakeTransactionManager(),
+		);
 	});
 
 	it('should be able to delete a user', async () => {
@@ -57,27 +73,34 @@ describe('Delete User', () => {
 		expect(findUser).not.toBeNull();
 	});
 
-	it('should be able to delete all existing user tokens', async () => {
+	it('should delete the user together with its tokens, credential and identities', async () => {
 		const createdUser = await usersRepository.create(userData);
-		await userTokensRepository.create({
-			user_id: createdUser._id.toString(),
-			token: await cryptoProvider.generateToken(env.USER_TOKEN_SIZE),
+		const userId = createdUser._id.toString();
+
+		await tokensRepository.create({
+			user_id: userId,
+			token_hash: await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE),
 			type: TokenTypes['forgot-password'],
 			expires_at: new Date(Date.now() + 60_000),
 		});
-		await userTokensRepository.create({
-			user_id: createdUser._id.toString(),
-			token: await cryptoProvider.generateToken(env.USER_TOKEN_SIZE),
+		await tokensRepository.create({
+			user_id: userId,
+			token_hash: await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE),
 			type: TokenTypes['email-verification'],
 			expires_at: new Date(Date.now() + 60_000),
 		});
+		await credentialsRepository.create({ user_id: userId, password_hash: 'hashed-password' });
+		await identitiesRepository.create({
+			user_id: userId,
+			provider: IdentityProviders.google,
+			provider_sub: 'google-sub-123',
+		});
 
-		await service.execute({ id: createdUser._id.toString(), actor: admin });
+		await service.execute({ id: userId, actor: admin });
 
-		const findDeledUser = await usersRepository.findById(createdUser._id.toString());
-		const findDeledTokens = await userTokensRepository.findByUserId(createdUser._id.toString());
-
-		expect(findDeledUser).toBeNull();
-		expect(findDeledTokens).toHaveLength(0);
+		expect(await usersRepository.findById(userId)).toBeNull();
+		expect(await tokensRepository.findByUserId(userId)).toHaveLength(0);
+		expect(await credentialsRepository.findByUserId(userId)).toBeNull();
+		expect(await identitiesRepository.findByUserId(userId)).toHaveLength(0);
 	});
 });

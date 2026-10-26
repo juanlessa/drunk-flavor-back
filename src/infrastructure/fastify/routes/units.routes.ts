@@ -12,6 +12,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { pluginGenerator } from '../helpers/fastify.helpers';
 import { verifyAndRenewToken } from '../middlewares/verifyAndRenewToken';
 import { verifyPermissions } from '../middlewares/verifyPermissions';
+import { enforceCompleteProfile } from '../middlewares/enforceCompleteProfile';
 import { Routes } from '../types/fastify.types';
 
 const routes: Routes = (server) => {
@@ -19,7 +20,7 @@ const routes: Routes = (server) => {
 		'/units',
 		{
 			schema: { tags: ['Units'], body: createUnitSchema },
-			preValidation: [verifyAndRenewToken, verifyPermissions('create', 'Unit')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('create', 'Unit')],
 		},
 		createUnitController,
 	);
@@ -33,7 +34,7 @@ const routes: Routes = (server) => {
 		'/units',
 		{
 			schema: { tags: ['Units'], body: updateUnitSchema },
-			preValidation: [verifyAndRenewToken, verifyPermissions('update', 'Unit')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('update', 'Unit')],
 		},
 		updateUnitController,
 	);
@@ -41,7 +42,7 @@ const routes: Routes = (server) => {
 		'/units',
 		{
 			schema: { tags: ['Units'], body: deleteUnitSchema },
-			preValidation: [verifyAndRenewToken, verifyPermissions('delete', 'Unit')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('delete', 'Unit')],
 		},
 		deleteUnitController,
 	);

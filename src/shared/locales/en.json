@@ -21,8 +21,11 @@
 	"apiResponses.auth.requiredToken": "token is required",
 	"apiResponses.auth.invalidTokenFormat": "Invalid token format",
 	"apiResponses.auth.inactiveAccount": "Your account is not active. Please verify your email for pending actions to complete the activation process",
+	"apiResponses.auth.profileIncomplete": "Complete your profile to continue",
 	"apiResponses.auth.invalidResource": "invalid resource",
 	"apiResponses.auth.tooManyRequests": "Too many requests. Please try again later.",
+	"apiResponses.auth.googleEmailNotVerified": "Your Google account email is not verified.",
+	"apiResponses.auth.googleTokenRequired": "Google ID token is required.",
 
 	"apiResponses.users.notExist": "User does not exist",
 	"apiResponses.users.forbidden": "You are not allowed to perform this action on this user",

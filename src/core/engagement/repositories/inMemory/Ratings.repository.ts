@@ -1,4 +1,10 @@
-import { CreateRating, RatingListQuery, RatingSortField, UpdateRating } from '@/core/engagement/dtos/rating.dtos';
+import {
+	CreateRating,
+	RatingListQuery,
+	RatingSortField,
+	RatingSummary,
+	UpdateRating,
+} from '@/core/engagement/dtos/rating.dtos';
 import { Rating } from '@/core/engagement/entities/rating.entity';
 import { IRatingsRepository } from '@/core/engagement/repositories/IRatings.repository';
 import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
@@ -112,6 +118,14 @@ export class RatingsRepositoryInMemory implements IRatingsRepository {
 
 	async findByDrinkAndUser(drinkId: string, userId: string): Promise<Rating | null> {
 		return this.collection.find((record) => record.drink_id === drinkId && record.user_id === userId) ?? null;
+	}
+
+	async summarizeByDrink(drinkId: string): Promise<RatingSummary> {
+		const ratings = this.collection.filter((record) => record.drink_id === drinkId);
+		if (ratings.length === 0) return { average: 0, count: 0 };
+
+		const total = ratings.reduce((sum, rating) => sum + rating.value, 0);
+		return { average: total / ratings.length, count: ratings.length };
 	}
 
 	async deleteByUser(userId: string): Promise<number> {

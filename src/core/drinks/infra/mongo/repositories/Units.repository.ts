@@ -20,10 +20,15 @@ export class UnitsRepository implements IUnitsRepository {
 		}
 	}
 
-	async update({ id, ...data }: UpdateUnit): Promise<Unit> {
+	async update({ id, symbol, ...data }: UpdateUnit): Promise<Unit> {
+		const update =
+			symbol === null
+				? { $set: data, $unset: { symbol: 1 } }
+				: { $set: symbol === undefined ? data : { ...data, symbol } };
+
 		let unit: Unit | null;
 		try {
-			unit = await UnitModel.findByIdAndUpdate<Unit>(id, data, { returnDocument: 'after' }).exec();
+			unit = await UnitModel.findByIdAndUpdate<Unit>(id, update, { returnDocument: 'after' }).exec();
 		} catch (error) {
 			throw mapDuplicateKeyError(error, UNIT_UNIQUE_INDEXES, 'apiResponses.units.alreadyExist', {
 				path: 'Units.repository',

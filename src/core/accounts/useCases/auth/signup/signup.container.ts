@@ -1,4 +1,8 @@
-import { resolveUsersRepository, resolveUserTokensRepository } from '@/core/accounts/infra/mongo/container';
+import {
+	resolveUsersRepository,
+	resolveTokensRepository,
+	resolveCredentialsRepository,
+} from '@/core/accounts/infra/mongo/container';
 import { resolveTransactionManager } from '@/infrastructure/mongo/transactions';
 import { resolveCryptoProvider, resolveHashProvider } from '@/shared/providers/cryptography';
 import { resolveDateProvider } from '@/shared/providers/date';
@@ -10,14 +14,16 @@ const dateProvider = resolveDateProvider();
 const hashProvider = resolveHashProvider();
 const cryptoProvider = resolveCryptoProvider();
 const usersRepository = resolveUsersRepository();
-const userTokensRepository = resolveUserTokensRepository();
+const tokensRepository = resolveTokensRepository();
+const credentialsRepository = resolveCredentialsRepository();
 const transactionManager = resolveTransactionManager();
 const templateProvider = resolveTemplateProvider();
 const emailQueueProvider = resolveEmailQueueProvider();
 
 const signupService = new SignupService(
 	usersRepository,
-	userTokensRepository,
+	tokensRepository,
+	credentialsRepository,
 	transactionManager,
 	dateProvider,
 	hashProvider,

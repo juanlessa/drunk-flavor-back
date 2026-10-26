@@ -1,6 +1,6 @@
+import { CreateDrink, FindDrinkByName, UpdateDrink } from '@/core/drinks/dtos/drink.dtos';
 import { Drink } from '@/core/drinks/entities/drink.entity';
-import { CreateDrink, UpdateDrink } from '@/core/drinks/dtos/drink.dtos';
-import { FindDrinkByName } from '@/core/drinks/dtos/drink.dtos';
+import { ApplyRatingDelta, DrinkRatingSummary } from '@/shared/providers/moduleCommunication/drinks';
 import { QueryParams } from '@/shared/types/query.types';
 
 export interface IDrinksRepository {
@@ -10,4 +10,5 @@ export interface IDrinksRepository {
 	findByName(data: FindDrinkByName): Promise<Drink | null>;
 	findById(id: string): Promise<Drink | null>;
 	findAll(query: QueryParams): Promise<Drink[]>;
+	applyRatingDelta(input: ApplyRatingDelta): Promise<DrinkRatingSummary>;
 }

@@ -13,6 +13,7 @@ import { listCategoriesController } from '@/core/drinks/useCases/categories/list
 import { updateCategorySchema } from '@/core/drinks/useCases/categories/update/updateCategory.schema';
 import { updateCategoryController } from '@/core/drinks/useCases/categories/update/updateCategory.controller';
 import { verifyPermissions } from '../middlewares/verifyPermissions';
+import { enforceCompleteProfile } from '../middlewares/enforceCompleteProfile';
 
 const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
@@ -22,7 +23,7 @@ const routes: Routes = (server) => {
 				tags: ['Categories'],
 				body: createCategorySchema,
 			},
-			preValidation: [verifyAndRenewToken, verifyPermissions('create', 'Category')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('create', 'Category')],
 		},
 		createCategoryController,
 	);
@@ -56,7 +57,7 @@ const routes: Routes = (server) => {
 				tags: ['Categories'],
 				body: updateCategorySchema,
 			},
-			preValidation: [verifyAndRenewToken, verifyPermissions('update', 'Category')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('update', 'Category')],
 		},
 		updateCategoryController,
 	);
@@ -68,7 +69,7 @@ const routes: Routes = (server) => {
 				tags: ['Categories'],
 				body: deleteCategorySchema,
 			},
-			preValidation: [verifyAndRenewToken, verifyPermissions('delete', 'Category')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('delete', 'Category')],
 		},
 		deleteCategoryController,
 	);

@@ -1,4 +1,4 @@
 export const CLIENT_PAGE_PATHS = {
-	resetPassword: '/reset-password',
+	confirmPassword: '/confirm-password',
 	verifyEmail: '/verify-email',
 };

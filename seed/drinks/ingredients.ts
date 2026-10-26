@@ -411,7 +411,7 @@ const ingredients = [
 			pt: { name: 'hortelã' },
 		},
 		category: categoriesMap.get('Herb')!,
-		unit: unitsMap.get('milliliter')!,
+		unit: unitsMap.get('leaf')!,
 		created_at: new Date(),
 		updated_at: new Date(),
 	},
@@ -442,16 +442,35 @@ const ingredients = [
 
 type IngredientEnName = (typeof ingredients)[number]['translations']['en']['name'];
 
+// Mirrors `ingredientNameValidation` (trim, lowercase, capitalize the first letter) so seeded
+// names match what the API stores for ingredients created through POST /ingredients.
+const normalizeIngredientName = (name: string): string => {
+	const lower = name.trim().toLowerCase();
+	return `${lower.charAt(0).toLocaleUpperCase()}${lower.slice(1)}`;
+};
+
+const toIngredientDocument = (ingredient: Ingredient): Ingredient => ({
+	...ingredient,
+	translations: {
+		en: { name: normalizeIngredientName(ingredient.translations.en.name) },
+		pt: { name: normalizeIngredientName(ingredient.translations.pt.name) },
+	},
+});
+
+// Keyed by the raw English name (stable lookup key for drinks.ts); values are the normalized documents.
 export const ingredientsMap = new Map<IngredientEnName, Ingredient>(
-	ingredients.map<[IngredientEnName, Ingredient]>((ingredient) => [ingredient.translations.en.name, ingredient]),
+	ingredients.map<[IngredientEnName, Ingredient]>((ingredient) => [
+		ingredient.translations.en.name,
+		toIngredientDocument(ingredient),
+	]),
 );
 
 export async function insertIngredients() {
 	try {
-		await IngredientModel.insertMany(ingredients);
+		await IngredientModel.insertMany([...ingredientsMap.values()]);
 		logger.info('Ingredients inserted successfully');
 	} catch (error) {
-		logger.error('Error inserting ingredients:', error);
+		logger.error({ err: error }, 'Error inserting ingredients');
 		throw error;
 	}
 }

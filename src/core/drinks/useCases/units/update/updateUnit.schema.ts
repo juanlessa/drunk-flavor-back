@@ -12,7 +12,8 @@ import { z } from 'zod/v4';
 export const updateUnitSchema = z.object({
 	id: unitIdValidation,
 	translations: generateTranslationsSchema(unitTranslationSchema),
-	symbol: unitSymbolValidation.optional(),
+	// Omitted keeps the current symbol; `null` removes it (the unit has no symbol).
+	symbol: unitSymbolValidation.nullable().optional(),
 	space_before_symbol: unitSpaceBeforeSymbolValidation.optional(),
 	allow_decimal: unitAllowDecimalValidation,
 	kind: unitKindValidation,

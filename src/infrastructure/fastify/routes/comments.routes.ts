@@ -23,6 +23,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { pluginGenerator } from '../helpers/fastify.helpers';
 import { verifyAndRenewToken } from '../middlewares/verifyAndRenewToken';
 import { verifyPermissions } from '../middlewares/verifyPermissions';
+import { enforceCompleteProfile } from '../middlewares/enforceCompleteProfile';
 import { Routes } from '../types/fastify.types';
 
 const routes: Routes = (server) => {
@@ -30,7 +31,7 @@ const routes: Routes = (server) => {
 		'/comments',
 		{
 			schema: { tags: ['Comments'], body: createCommentSchema },
-			preValidation: [verifyAndRenewToken, verifyPermissions('create', 'Comment')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('create', 'Comment')],
 		},
 		createCommentController,
 	);
@@ -39,7 +40,7 @@ const routes: Routes = (server) => {
 		'/me/comments',
 		{
 			schema: { tags: ['Comments'], querystring: commentQuerySchema },
-			preValidation: [verifyAndRenewToken, verifyPermissions('list', 'Comment')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('list', 'Comment')],
 		},
 		listMyCommentsController,
 	);
@@ -64,7 +65,7 @@ const routes: Routes = (server) => {
 		'/comments/:id/status',
 		{
 			schema: { tags: ['Comments'], params: moderateCommentParamsSchema, body: moderateCommentBodySchema },
-			preValidation: [verifyAndRenewToken, verifyPermissions('moderate', 'Comment')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('moderate', 'Comment')],
 		},
 		moderateCommentController,
 	);
@@ -73,7 +74,7 @@ const routes: Routes = (server) => {
 		'/comments/:id',
 		{
 			schema: { tags: ['Comments'], params: updateCommentParamsSchema, body: updateCommentBodySchema },
-			preValidation: [verifyAndRenewToken],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile],
 		},
 		updateCommentController,
 	);
@@ -82,7 +83,7 @@ const routes: Routes = (server) => {
 		'/comments/:id',
 		{
 			schema: { tags: ['Comments'], params: deleteCommentSchema },
-			preValidation: [verifyAndRenewToken],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile],
 		},
 		deleteCommentController,
 	);
