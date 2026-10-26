@@ -2,8 +2,10 @@ import { createRatingController } from '@/core/engagement/useCases/ratings/creat
 import { createRatingSchema } from '@/core/engagement/useCases/ratings/create/createRating.schema';
 import { deleteRatingController } from '@/core/engagement/useCases/ratings/delete/deleteRating.controller';
 import { deleteRatingSchema } from '@/core/engagement/useCases/ratings/delete/deleteRating.schema';
+import { getMineByDrinkController } from '@/core/engagement/useCases/ratings/getMineByDrink/getMineByDrink.controller';
 import { getRatingController } from '@/core/engagement/useCases/ratings/get/getRating.controller';
 import { getRatingSchema } from '@/core/engagement/useCases/ratings/get/getRating.schema';
+import { getSummaryByDrinkController } from '@/core/engagement/useCases/ratings/getSummaryByDrink/getSummaryByDrink.controller';
 import { listRatingsController } from '@/core/engagement/useCases/ratings/list/listRatings.controller';
 import { listRatingsByDrinkController } from '@/core/engagement/useCases/ratings/listByDrink/listRatingsByDrink.controller';
 import { listRatingsByDrinkSchema } from '@/core/engagement/useCases/ratings/listByDrink/listRatingsByDrink.schema';
@@ -39,6 +41,23 @@ const routes: Routes = (server) => {
 		},
 		listMyRatingsController,
 	);
+
+	server.withTypeProvider<ZodTypeProvider>().get(
+		'/drinks/:drink_id/ratings/me',
+		{
+			schema: { tags: ['Ratings'], params: listRatingsByDrinkSchema },
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('list', 'Rating')],
+		},
+		getMineByDrinkController,
+	);
+
+	server
+		.withTypeProvider<ZodTypeProvider>()
+		.get(
+			'/drinks/:drink_id/ratings/summary',
+			{ schema: { tags: ['Ratings'], params: listRatingsByDrinkSchema } },
+			getSummaryByDrinkController,
+		);
 
 	server
 		.withTypeProvider<ZodTypeProvider>()

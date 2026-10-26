@@ -9,6 +9,11 @@ export type UpdateRating = {
 	value: number;
 };
 
+export type RatingSummary = {
+	average: number;
+	count: number;
+};
+
 export type RatingSortField = 'created_at' | 'updated_at' | 'value' | '_id';
 
 export type RatingListQuery = {

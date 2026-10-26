@@ -1,4 +1,4 @@
-import { CreateRating, RatingListQuery, UpdateRating } from '@/core/engagement/dtos/rating.dtos';
+import { CreateRating, RatingListQuery, RatingSummary, UpdateRating } from '@/core/engagement/dtos/rating.dtos';
 import { Rating } from '@/core/engagement/entities/rating.entity';
 import { RATING_DRINK_USER_UNIQUE_INDEX, RatingModel } from '@/core/engagement/infra/mongo/entities/rating.model';
 import { IRatingsRepository } from '@/core/engagement/repositories/IRatings.repository';
@@ -71,6 +71,18 @@ export class RatingsRepository implements IRatingsRepository {
 		return RatingModel.findOne<Rating>({ drink_id: drinkId, user_id: userId })
 			.lean<Rating>({ transform: removeLeanVersionKey })
 			.exec();
+	}
+
+	async summarizeByDrink(drinkId: string): Promise<RatingSummary> {
+		const [summary] = await RatingModel.aggregate<{ _id: null; average: number; count: number }>([
+			{ $match: { drink_id: drinkId } },
+			{ $group: { _id: null, average: { $avg: '$value' }, count: { $sum: 1 } } },
+		]).exec();
+
+		return {
+			average: summary?.average ?? 0,
+			count: summary?.count ?? 0,
+		};
 	}
 
 	async deleteByUser(userId: string): Promise<number> {
