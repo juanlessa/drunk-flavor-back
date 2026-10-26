@@ -11,6 +11,7 @@ import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.m
 import { UnitModel } from '@/core/drinks/infra/mongo/entities/unit.model';
 import { RatingModel } from '@/core/engagement/infra/mongo/entities/rating.model';
 import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
+import { createDrink } from '../helpers/drink.helpers';
 import { createRatingRecord } from '../helpers/rating.helpers';
 
 describe('Delete Rating', () => {
@@ -34,9 +35,10 @@ describe('Delete Rating', () => {
 
 	it('Should be able to delete an own rating as a member', async () => {
 		const { cookies, user } = await createAndAuthenticateUser(app, { role: Roles.member });
-		const { id } = await createRatingRecord({ user_id: user.id, value: 4 });
+		const { id: drink_id } = await createDrink();
+		const { id } = await createRatingRecord({ drink_id, user_id: user.id, value: 4 });
 		const response = await request(app.server).delete(`/ratings/${id}`).set('Cookie', cookies).send();
-		expect(response.status).toBe(HTTP_STATUS.no_content);
+		expect(response.status).toBe(HTTP_STATUS.ok);
 		expect(await RatingModel.findById(id).lean()).toBeNull();
 	});
 });

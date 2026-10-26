@@ -1,11 +1,13 @@
+import { IDrinksModule } from '@/shared/providers/moduleCommunication/drinks';
 import { Actor } from '@/shared/accessControl/actor.types';
 import { IRatingsRepository } from '@/core/engagement/repositories/IRatings.repository';
 import { RatingsRepositoryInMemory } from '@/core/engagement/repositories/inMemory/Ratings.repository';
 import { resolveUpdateRatingService } from './updateRating.container';
 import { Roles } from '@/shared/accessControl/roles';
 import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
+import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { ObjectId } from 'mongodb';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UpdateRatingService } from './UpdateRating.service';
 
 let ratingsRepository: IRatingsRepository;
@@ -15,11 +17,15 @@ const ownerId = new ObjectId().toString();
 const drinkId = new ObjectId().toString();
 const owner: Actor = { id: ownerId, role: Roles.member };
 const foreign: Actor = { id: new ObjectId().toString(), role: Roles.member };
+const drinksModule: IDrinksModule = {
+	applyRatingDelta: vi.fn().mockResolvedValue({ average: 2, count: 1 }),
+};
+const transactionManager = new FakeTransactionManager();
 
 describe('Update Rating', () => {
 	beforeEach(() => {
 		ratingsRepository = new RatingsRepositoryInMemory();
-		service = new UpdateRatingService(ratingsRepository);
+		service = new UpdateRatingService(ratingsRepository, drinksModule, transactionManager);
 	});
 
 	it('re-rates the same record and preserves associations and creation time', async () => {
@@ -45,8 +51,8 @@ describe('Update Rating', () => {
 		);
 	});
 
-	it('exposes a container without a Drink repository dependency', () => {
+	it('exposes a container using the public Drinks module boundary', () => {
 		expect(resolveUpdateRatingService()).toBeInstanceOf(UpdateRatingService);
-		expect(Object.values(resolveUpdateRatingService())).toHaveLength(1);
+		expect(Object.values(resolveUpdateRatingService())).toHaveLength(3);
 	});
 });

@@ -1,4 +1,5 @@
-import { GoogleTokenPayload, IGoogleTokenVerifier } from '../IGoogleTokenVerifier';
+import { IGoogleTokenVerifier } from '../IGoogleTokenVerifier';
+import { GoogleTokenPayload } from '../googleAuth.dtos';
 
 const DEFAULT_PAYLOAD: GoogleTokenPayload = {
 	sub: 'fake-google-sub',

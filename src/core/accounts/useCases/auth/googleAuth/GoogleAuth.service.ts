@@ -4,8 +4,9 @@ import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { IGoogleTokenVerifier } from '@/shared/providers/googleAuth/IGoogleTokenVerifier';
 import { UnauthorizedError } from '@/shared/error/error.lib';
-import { IdentityProviders } from '@/core/accounts/entities/identity.entity';
-import { UserStatuses, User } from '@/core/accounts/entities/user.entity';
+import { IdentityProviders } from '@/core/accounts/constants/identity.constants';
+import { User } from '@/core/accounts/entities/user.entity';
+import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { Roles } from '@/shared/accessControl/roles';
 import { isDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
 import { IDENTITY_PROVIDER_SUB_UNIQUE_INDEX } from '@/core/accounts/infra/mongo/entities/identity.model';
@@ -14,14 +15,8 @@ type GoogleAuthResult = {
 	user: {
 		id: string;
 		role: User['role'];
+		status: User['status'];
 	};
-};
-
-// Derives a non-empty display name from the email local part when Google omits
-// `given_name`. `name` is required and must be non-empty for display.
-const deriveNameFromEmail = (email?: string): string => {
-	const localPart = email?.split('@')[0];
-	return localPart && localPart.length > 0 ? localPart : 'user';
 };
 
 export class GoogleAuthService {
@@ -37,8 +32,8 @@ export class GoogleAuthService {
 
 		const sub = payload.sub;
 		const email = payload.email?.toLowerCase();
-		const name = payload.given_name ?? deriveNameFromEmail(email);
-		const surname = payload.family_name ?? '';
+		const name = payload.given_name;
+		const surname = payload.family_name;
 		const picture = payload.picture;
 		const now = new Date();
 
@@ -46,8 +41,6 @@ export class GoogleAuthService {
 		const identity = await this.identitiesRepository.findByProviderSub(IdentityProviders.google, sub);
 		if (identity) {
 			const user = await this.usersRepository.findById(identity.user_id);
-			// Defensive: an identity whose user row is gone is a data-integrity
-			// orphan. Fail with the same opaque 401 used everywhere here.
 			if (!user) {
 				throw new UnauthorizedError('apiResponses.auth.invalidCredentials', {
 					path: 'GoogleAuth.service.orphanIdentity',
@@ -57,7 +50,7 @@ export class GoogleAuthService {
 
 			await this.identitiesRepository.touchLastLogin(identity._id.toString(), now);
 
-			return { user: { id: user._id.toString(), role: user.role } };
+			return { user: { id: user._id.toString(), role: user.role, status: user.status } };
 		}
 
 		// Branches (b) and (c) require a verified email.
@@ -91,28 +84,34 @@ export class GoogleAuthService {
 						last_login_at: now,
 					});
 
+					let status = existingUser.status;
 					if (existingUser.status !== UserStatuses.active || !existingUser.email_verified) {
-						await this.usersRepository.update({
+						const updated = await this.usersRepository.update({
 							id: existingUser._id.toString(),
 							status: UserStatuses.active,
 							email_verified: true,
 						});
+						status = updated.status;
 					}
 
-					return { user: { id: existingUser._id.toString(), role: existingUser.role } };
+					return { user: { id: existingUser._id.toString(), role: existingUser.role, status } };
 				});
 			}
 
-			// Branch (c): create a new active, verified user + identity.
+			// Branch (c): create a new verified user + identity. Google ID tokens may
+			// omit `given_name`/`family_name`; rather than fabricating a name, create
+			// the account as `incomplete_profile` and gate business routes until the
+			// user completes it. When both parts are present, the account is active.
+			const hasFullName = name !== undefined && surname !== undefined;
 			return await this.transactionManager.withTransaction(async () => {
 				const user = await this.usersRepository.create({
-					name,
-					surname,
+					...(name !== undefined ? { name } : {}),
+					...(surname !== undefined ? { surname } : {}),
 					email,
 					email_verified: true,
 					avatar_url: picture,
 					role: Roles.member,
-					status: UserStatuses.active,
+					status: hasFullName ? UserStatuses.active : UserStatuses.incomplete_profile,
 				});
 
 				await this.identitiesRepository.create({
@@ -125,7 +124,7 @@ export class GoogleAuthService {
 					last_login_at: now,
 				});
 
-				return { user: { id: user._id.toString(), role: user.role } };
+				return { user: { id: user._id.toString(), role: user.role, status: user.status } };
 			});
 		} catch (error) {
 			// A concurrent request won the race to insert the same (provider,
@@ -136,7 +135,7 @@ export class GoogleAuthService {
 				if (racedIdentity) {
 					const user = await this.usersRepository.findById(racedIdentity.user_id);
 					if (user) {
-						return { user: { id: user._id.toString(), role: user.role } };
+						return { user: { id: user._id.toString(), role: user.role, status: user.status } };
 					}
 				}
 			}

@@ -6,10 +6,10 @@ import { IdentityModel } from '@/core/accounts/infra/mongo/entities/identity.mod
 import { CredentialModel } from '@/core/accounts/infra/mongo/entities/credential.model';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { resetFakeGoogleTokenVerifier, setNextGoogleTokenPayload } from '@/shared/providers/googleAuth';
-import { GoogleTokenPayload } from '@/shared/providers/googleAuth/IGoogleTokenVerifier';
+import { GoogleTokenPayload } from '@/shared/providers/googleAuth/googleAuth.dtos';
 import { createUser } from '../helpers/authentication.helpers';
 import { resolveIdentitiesRepository } from '@/core/accounts/infra/mongo/container';
-import { IdentityProviders } from '@/core/accounts/entities/identity.entity';
+import { IdentityProviders } from '@/core/accounts/constants/identity.constants';
 import { AUTH_COOKIE } from '@/infrastructure/fastify/constants/cookie.constants';
 import { resolveRateLimitStore } from '@/infrastructure/fastify/rateLimitStore';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
@@ -75,6 +75,38 @@ describe('Google Sign-In', () => {
 		expect(created).not.toBeNull();
 		expect(created?.status).toBe('active');
 		expect(created?.email_verified).toBe(true);
+	});
+
+	it('branch (c): creates an incomplete_profile account when family_name is missing', async () => {
+		const { family_name: _omitted, ...withoutFamily } = verifiedPayload;
+		setNextGoogleTokenPayload(withoutFamily);
+
+		const response = await request(app.server).post('/google').send({ idToken });
+
+		expect(response.status).toBe(200);
+		expect(hasAuthCookie(response.headers['set-cookie'])).toBe(true);
+
+		const created = await UserModel.findOne({ email: verifiedPayload.email }).exec();
+		expect(created).not.toBeNull();
+		expect(created?.status).toBe('incomplete_profile');
+		expect(created?.surname).toBeUndefined();
+		expect(created?.name).toBe(verifiedPayload.given_name);
+	});
+
+	it('branch (c): creates an incomplete_profile account when given_name is missing', async () => {
+		const { given_name: _omitted, ...withoutGiven } = verifiedPayload;
+		setNextGoogleTokenPayload(withoutGiven);
+
+		const response = await request(app.server).post('/google').send({ idToken });
+
+		expect(response.status).toBe(200);
+		expect(hasAuthCookie(response.headers['set-cookie'])).toBe(true);
+
+		const created = await UserModel.findOne({ email: verifiedPayload.email }).exec();
+		expect(created).not.toBeNull();
+		expect(created?.status).toBe('incomplete_profile');
+		expect(created?.name).toBeUndefined();
+		expect(created?.surname).toBe(verifiedPayload.family_name);
 	});
 
 	it('branch (a): signs in an existing identity', async () => {

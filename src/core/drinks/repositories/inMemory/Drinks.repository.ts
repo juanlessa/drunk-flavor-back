@@ -1,5 +1,6 @@
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { CreateDrink, FindDrinkByName, UpdateDrink } from '@/core/drinks/dtos/drink.dtos';
+import { ApplyRatingDelta, DrinkRatingSummary } from '@/shared/providers/moduleCommunication/drinks';
 import { ObjectId } from 'mongodb';
 import { Drink } from '@/core/drinks/entities/drink.entity';
 import { compareTranslationsName } from '@/core/drinks/helpers/translations.helpers';
@@ -19,6 +20,7 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 			thumbnail: undefined,
 			avg_rating: 0,
 			ratings_count: 0,
+			ratings_sum: 0,
 			_id: new ObjectId(),
 			created_at: new Date(),
 			updated_at: new Date(),
@@ -84,5 +86,28 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 		);
 
 		return found;
+	}
+
+	async applyRatingDelta({ drinkId, countDelta, sumDelta }: ApplyRatingDelta): Promise<DrinkRatingSummary> {
+		const record = this.collection.find((drink) => drink._id.toString() === drinkId);
+		if (!record) {
+			throw new NotFoundError('apiResponses.drinks.notFound', {
+				path: 'drinksInMemory.repository',
+				cause: 'Drink missing during rating projection update',
+			});
+		}
+
+		const ratingsCount = record.ratings_count + countDelta;
+		const ratingsSum = record.ratings_sum + sumDelta;
+		if (ratingsCount < 0 || ratingsSum < 0) {
+			throw new Error('Rating projection invariant violated');
+		}
+
+		record.ratings_count = ratingsCount;
+		record.ratings_sum = ratingsSum;
+		record.avg_rating = ratingsCount === 0 ? 0 : ratingsSum / ratingsCount;
+		record.updated_at = new Date();
+
+		return { average: record.avg_rating, count: record.ratings_count };
 	}
 }

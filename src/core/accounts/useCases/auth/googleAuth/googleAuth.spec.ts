@@ -6,9 +6,9 @@ import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransact
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.repository';
 import { UnauthorizedError } from '@/shared/error/error.lib';
-import { GoogleTokenPayload } from '@/shared/providers/googleAuth/IGoogleTokenVerifier';
-import { UserStatuses } from '@/core/accounts/entities/user.entity';
-import { IdentityProviders } from '@/core/accounts/entities/identity.entity';
+import { GoogleTokenPayload } from '@/shared/providers/googleAuth/googleAuth.dtos';
+import { UserStatuses } from '@/core/accounts/constants/user.constants';
+import { IdentityProviders } from '@/core/accounts/constants/identity.constants';
 import { Roles } from '@/shared/accessControl/roles';
 import { GoogleAuthService } from './GoogleAuth.service';
 
@@ -58,6 +58,7 @@ describe('GoogleAuth', () => {
 
 		expect(result.user.id).toBe(user._id.toString());
 		expect(result.user.role).toBe(Roles.member);
+		expect(result.user.status).toBe(UserStatuses.active);
 		// No extra user was created.
 		expect(usersRepository).toBeDefined();
 	});
@@ -96,6 +97,7 @@ describe('GoogleAuth', () => {
 
 		expect(result.user.id).toBe(existing._id.toString());
 		expect(result.user.role).toBe(Roles.partner);
+		expect(result.user.status).toBe(UserStatuses.active);
 
 		const linked = await identitiesRepository.findByProviderSub(IdentityProviders.google, verifiedPayload.sub);
 		expect(linked).not.toBeNull();
@@ -116,6 +118,7 @@ describe('GoogleAuth', () => {
 		expect(result.user.id).toBe(created?._id.toString());
 		expect(created?.email_verified).toBe(true);
 		expect(created?.status).toBe(UserStatuses.active);
+		expect(result.user.status).toBe(UserStatuses.active);
 		expect(created?.role).toBe(Roles.member);
 		expect(created?.avatar_url).toBe(verifiedPayload.picture);
 
@@ -124,24 +127,30 @@ describe('GoogleAuth', () => {
 		expect(identity?.user_id).toBe(created?._id.toString());
 	});
 
-	it('branch (c): surname falls back to empty string when family_name is absent', async () => {
+	it('branch (c): creates an incomplete_profile user without a surname when family_name is absent', async () => {
 		const { family_name: _omitted, ...withoutFamily } = verifiedPayload;
 		verifier.setNextPayload(withoutFamily);
 
-		await service.execute({ idToken });
+		const result = await service.execute({ idToken });
 
 		const created = await usersRepository.findByEmail('janedoe@example.com');
-		expect(created?.surname).toBe('');
+		expect(created?.status).toBe(UserStatuses.incomplete_profile);
+		expect(created?.name).toBe('Jane');
+		expect(created?.surname).toBeUndefined();
+		expect(result.user.status).toBe(UserStatuses.incomplete_profile);
 	});
 
-	it('branch (c): name falls back to the email local part when given_name is absent', async () => {
+	it('branch (c): creates an incomplete_profile user without a name when given_name is absent', async () => {
 		const { given_name: _omitted, ...withoutGiven } = verifiedPayload;
 		verifier.setNextPayload(withoutGiven);
 
-		await service.execute({ idToken });
+		const result = await service.execute({ idToken });
 
 		const created = await usersRepository.findByEmail('janedoe@example.com');
-		expect(created?.name).toBe('janedoe');
+		expect(created?.status).toBe(UserStatuses.incomplete_profile);
+		expect(created?.name).toBeUndefined();
+		expect(created?.surname).toBe('Doe');
+		expect(result.user.status).toBe(UserStatuses.incomplete_profile);
 	});
 
 	it('E11000 race: falls back to branch (a) when a concurrent create wins', async () => {

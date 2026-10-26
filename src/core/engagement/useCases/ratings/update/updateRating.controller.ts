@@ -12,7 +12,7 @@ export const updateRatingController: Controller<{
 	const actor = { id: request.user.id, role: request.user.role };
 
 	const service = resolveUpdateRatingService();
-	await service.execute({ id, value, actor });
+	const result = await service.execute({ id, value, actor });
 
-	return reply.status(HTTP_STATUS.no_content).send();
+	return reply.status(HTTP_STATUS.ok).send(result);
 };

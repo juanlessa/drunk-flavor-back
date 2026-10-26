@@ -1,7 +1,8 @@
 import { OAuth2Client } from 'google-auth-library';
 import { env } from '@/env';
 import { UnauthorizedError } from '@/shared/error/error.lib';
-import { GoogleTokenPayload, IGoogleTokenVerifier } from '../IGoogleTokenVerifier';
+import { IGoogleTokenVerifier } from '../IGoogleTokenVerifier';
+import { GoogleTokenPayload } from '../googleAuth.dtos';
 
 export class GoogleAuthLibraryVerifier implements IGoogleTokenVerifier {
 	private client = new OAuth2Client(env.GOOGLE_CLIENT_ID);

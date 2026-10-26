@@ -32,8 +32,9 @@ export const createPersistedDrinkFactory = (drink?: DeepPartial<Drink>): Drink =
 	cover: undefined,
 	thumbnail: undefined,
 	ingredients: [],
-	avg_rating: 0,
-	ratings_count: 0,
+	avg_rating: drink?.avg_rating ?? 0,
+	ratings_count: drink?.ratings_count ?? 0,
+	ratings_sum: drink?.ratings_sum ?? 0,
 	created_at: new Date(),
 	updated_at: new Date(),
 });

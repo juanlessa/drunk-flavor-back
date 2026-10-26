@@ -20,4 +20,5 @@ export type Drink = DatabaseCommonInfo & {
 	ingredients: DrinkIngredient[];
 	avg_rating: number;
 	ratings_count: number;
+	ratings_sum: number;
 };
