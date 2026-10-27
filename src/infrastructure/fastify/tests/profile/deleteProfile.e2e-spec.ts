@@ -8,6 +8,8 @@ import { createAndAuthenticateUser, createUser } from '../helpers/authentication
 import { TokenModel } from '@/core/accounts/infra/mongo/entities/token.model';
 import { Roles } from '@/shared/accessControl/roles';
 
+type ErrorResponseBody = { localeKey: string };
+
 describe('Delete Profile', () => {
 	beforeAll(async () => {
 		await app.ready();
@@ -28,5 +30,17 @@ describe('Delete Profile', () => {
 		const response = await request(app.server).delete('/me').set('Cookie', cookies).send();
 
 		expect(response.status).toBe(HTTP_STATUS.no_content);
+	});
+
+	it('Does not let the owner delete their own profile', async () => {
+		const { cookies, user } = await createAndAuthenticateUser(app, { role: Roles.owner });
+
+		const response = await request(app.server).delete('/me').set('Cookie', cookies).send();
+
+		expect(response.status).toBe(HTTP_STATUS.forbidden);
+		expect((response.body as ErrorResponseBody).localeKey).toBe(
+			'apiResponses.users.ownerManagementRequiresTransfer',
+		);
+		expect(await UserModel.findById(user.id).lean().exec()).not.toBeNull();
 	});
 });

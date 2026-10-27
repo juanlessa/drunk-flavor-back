@@ -1,7 +1,9 @@
 # User Administration Authorization Policy
 
-**Status:** Policy and CASL model implemented; use-case adoption remains pending  
-**Scope:** `drunk-flavor-back` user administration  
+**Status:** Policy, CASL model, and user-administration use-case enforcement implemented
+
+**Scope:** `drunk-flavor-back` user administration
+
 **Version:** 1.1
 
 ## Purpose
@@ -164,21 +166,22 @@ These rules apply even when a broad CASL rule would otherwise allow an action.
 2. At most one owner must be enforced by a database constraint, not only by an application-level count.
 3. The owner cannot be created by a generic user-creation endpoint.
 4. The owner cannot be changed, suspended, reactivated, or deleted by generic administration.
-5. Ownership can change only through the dedicated ownership-transfer use case.
-6. An actor cannot change their own role through generic administration.
-7. An actor cannot suspend, reactivate, or delete their own account through generic administration.
-8. An admin cannot mutate an admin or owner account.
-9. An admin cannot create or promote an admin.
-10. A partner, member, or anonymous requester cannot use generic user-administration operations.
-11. Authorization must use the actor's current persisted role and status for security-sensitive operations. A stale
+5. The owner cannot delete the owner account through self-service; ownership must be transferred first.
+6. Ownership can change only through the dedicated ownership-transfer use case.
+7. An actor cannot change their own role through generic administration.
+8. An actor cannot suspend, reactivate, or delete their own account through generic administration.
+9. An admin cannot mutate an admin or owner account.
+10. An admin cannot create or promote an admin.
+11. A partner, member, or anonymous requester cannot use generic user-administration operations.
+12. Authorization must use the actor's current persisted role and status for security-sensitive operations. A stale
     token claim is insufficient.
-12. Role and status changes must eventually invalidate stale authorization sessions as defined by the session-versioning
+13. Role and status changes must eventually invalidate stale authorization sessions as defined by the session-versioning
     implementation stage.
-13. Ownership transfer and privileged role changes must eventually require recent authentication as defined by the
+14. Ownership transfer and privileged role changes must eventually require recent authentication as defined by the
     reauthentication implementation stage.
-14. Administrative mutations must eventually produce immutable audit events as defined by the audit implementation
+15. Administrative mutations must eventually produce immutable audit events as defined by the audit implementation
     stage.
-15. UI visibility and client-side CASL checks are advisory only; the backend is authoritative.
+16. UI visibility and client-side CASL checks are advisory only; the backend is authoritative.
 
 ## CASL modeling rules
 
@@ -306,12 +309,15 @@ Implemented:
 4. Admin user grants are explicit and conditional; admin no longer receives `manage all`.
 5. `UserAdministrationPolicy` centralizes concrete-subject checks, transition rules, self-administration guards, owner
    guards, and the idempotent role-change outcome.
+6. Every user administration use case reloads the actor from persistence and delegates authorization to the policy;
+   target mutations use concrete subjects.
+7. Role changes use `changeRole` exclusively and resolve an authorized same-role request without persistence.
+8. Create, role-change, and delete authorization is rechecked in the same transaction as the mutation.
+9. Profile self-deletion rejects the owner inside the account-deletion transaction; ownership must be transferred first.
 
 Pending:
 
-1. Apply the policy and concrete-subject checks to every user administration use case.
-2. Remove the temporary legacy `update` action after role updates use `changeRole` exclusively.
-3. Add authorization-version invalidation, audit events, suspension, reauthentication, and ownership transfer in their
+1. Add authorization-version invalidation, audit events, suspension, reauthentication, and ownership transfer in their
    dedicated stages.
 
 ## Review checklist

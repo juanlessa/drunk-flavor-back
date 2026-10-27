@@ -16,6 +16,8 @@ import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementati
 import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { IdentityProviders } from '@/core/accounts/constants/identity.constants';
 import { env } from '@/env';
+import { OwnerManagementRequiresTransferError } from '@/core/accounts/errors/user.errors';
+import { Roles } from '@/shared/accessControl/roles';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { MockStorageProvider } from '@/shared/providers/storage/implementations/MockStorage.provider';
 
@@ -112,6 +114,15 @@ describe('Delete Profile', () => {
 
 		await service.execute({ id: createdUser.id });
 
+		expect(storageProvider.deleteFile).not.toHaveBeenCalled();
+	});
+
+	it('does not let the owner delete their own profile', async () => {
+		const owner = await usersRepository.create(createUserFactory({ role: Roles.owner }));
+
+		await expect(service.execute({ id: owner.id })).rejects.toBeInstanceOf(OwnerManagementRequiresTransferError);
+
+		expect(await usersRepository.findById(owner.id)).not.toBeNull();
 		expect(storageProvider.deleteFile).not.toHaveBeenCalled();
 	});
 });

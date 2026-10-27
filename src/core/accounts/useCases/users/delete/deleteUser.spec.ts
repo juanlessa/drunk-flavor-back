@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
 import { ObjectId } from 'mongodb';
 import { DeleteUserService } from './DeleteUser.service';
-import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
+import { NotFoundError, ForbiddenError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { TokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Tokens.repository';
@@ -16,6 +16,11 @@ import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.
 import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { IdentityProviders } from '@/core/accounts/constants/identity.constants';
 import { env } from '@/env';
+import {
+	AdminPeerManagementForbiddenError,
+	OwnerManagementRequiresTransferError,
+	UserSelfAdministrationForbiddenError,
+} from '@/core/accounts/errors/user.errors';
 import { Actor } from '@/shared/accessControl/actor.types';
 import { Roles } from '@/shared/accessControl/roles';
 
@@ -28,13 +33,26 @@ let service: DeleteUserService;
 
 const userData = createUserFactory();
 
-const admin: Actor = { id: new ObjectId().toString(), role: Roles.admin };
-const member: Actor = { id: new ObjectId().toString(), role: Roles.member };
+let owner: Actor;
+let admin: Actor;
+let member: Actor;
 
 describe('Delete User', () => {
-	beforeEach(() => {
+	beforeEach(async () => {
 		cryptoProvider = new NodeCryptoProvider();
 		usersRepository = new UsersRepositoryInMemory();
+		const persistedOwner = await usersRepository.create(
+			createUserFactory({ email: 'owner-actor@example.com', role: Roles.owner }),
+		);
+		const persistedAdmin = await usersRepository.create(
+			createUserFactory({ email: 'admin-actor@example.com', role: Roles.admin }),
+		);
+		const persistedMember = await usersRepository.create(
+			createUserFactory({ email: 'member-actor@example.com', role: Roles.member }),
+		);
+		owner = { id: persistedOwner.id, role: persistedOwner.role };
+		admin = { id: persistedAdmin.id, role: persistedAdmin.role };
+		member = { id: persistedMember.id, role: persistedMember.role };
 		tokensRepository = new TokensRepositoryInMemory();
 		credentialsRepository = new CredentialsRepositoryInMemory();
 		identitiesRepository = new IdentitiesRepositoryInMemory();
@@ -59,7 +77,7 @@ describe('Delete User', () => {
 
 	it('should not be able to delete a nonexistent user', async () => {
 		const nonexistentId = new ObjectId().toString();
-		await expect(service.execute({ id: nonexistentId, actor: admin })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ id: nonexistentId, actor: admin })).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('should not be able to delete a user when the actor is a member', async () => {
@@ -100,5 +118,38 @@ describe('Delete User', () => {
 		expect(await tokensRepository.findByUserId(userId)).toHaveLength(0);
 		expect(await credentialsRepository.findByUserId(userId)).toBeNull();
 		expect(await identitiesRepository.findByUserId(userId)).toHaveLength(0);
+	});
+
+	it('does not delete the owner through user administration', async () => {
+		await expect(service.execute({ id: owner.id, actor: admin })).rejects.toBeInstanceOf(
+			OwnerManagementRequiresTransferError,
+		);
+
+		expect(await usersRepository.findById(owner.id)).not.toBeNull();
+	});
+
+	it('does not let an admin delete their own account through user administration', async () => {
+		await expect(service.execute({ id: admin.id, actor: admin })).rejects.toBeInstanceOf(
+			UserSelfAdministrationForbiddenError,
+		);
+
+		expect(await usersRepository.findById(admin.id)).not.toBeNull();
+	});
+
+	it('does not let an admin delete another admin', async () => {
+		const otherAdmin = await usersRepository.create(
+			createUserFactory({ email: 'other-admin@example.com', role: Roles.admin }),
+		);
+
+		await expect(service.execute({ id: otherAdmin.id, actor: admin })).rejects.toBeInstanceOf(
+			AdminPeerManagementForbiddenError,
+		);
+		expect(await usersRepository.findById(otherAdmin.id)).not.toBeNull();
+	});
+
+	it('lets the owner delete an admin', async () => {
+		await service.execute({ id: admin.id, actor: owner });
+
+		expect(await usersRepository.findById(admin.id)).toBeNull();
 	});
 });

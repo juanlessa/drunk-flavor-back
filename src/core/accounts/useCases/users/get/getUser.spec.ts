@@ -13,12 +13,20 @@ let service: GetUserService;
 
 const { name, surname, email, role, status } = createUserFactory();
 
-const admin: Actor = { id: new ObjectId().toString(), role: Roles.admin };
-const member: Actor = { id: new ObjectId().toString(), role: Roles.member };
+let admin: Actor;
+let member: Actor;
 
 describe('Get User', () => {
-	beforeEach(() => {
+	beforeEach(async () => {
 		usersRepository = new UsersRepositoryInMemory();
+		const persistedAdmin = await usersRepository.create(
+			createUserFactory({ email: 'admin-actor@example.com', role: Roles.admin }),
+		);
+		const persistedMember = await usersRepository.create(
+			createUserFactory({ email: 'member-actor@example.com', role: Roles.member }),
+		);
+		admin = { id: persistedAdmin.id, role: persistedAdmin.role };
+		member = { id: persistedMember.id, role: persistedMember.role };
 		service = new GetUserService(usersRepository);
 	});
 

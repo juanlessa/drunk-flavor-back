@@ -59,7 +59,7 @@ const routes: Routes = (server) => {
 				tags: ['Users'],
 				body: updateUserRoleSchema,
 			},
-			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('update', 'User')],
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('changeRole', 'User')],
 		},
 		updateUserRoleController,
 	);

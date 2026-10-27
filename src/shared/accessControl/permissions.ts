@@ -29,14 +29,6 @@ export const permissions: Record<Role, PermissionsByRole> = {
 			role: { $in: ADMIN_MANAGED_ROLES },
 			requestedRole: { $in: ADMIN_MANAGED_ROLES },
 		});
-
-		// Compatibility grant for use cases that still check the legacy `update`
-		// action by subject type. Remove it when every role change uses `changeRole`
-		// with a concrete User subject.
-		can('update', 'User', {
-			id: { $ne: user.id },
-			role: { $in: ADMIN_MANAGED_ROLES },
-		});
 	},
 	partner(user, { can }) {
 		can('manage', 'Category');

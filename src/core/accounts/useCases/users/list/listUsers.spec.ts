@@ -7,13 +7,12 @@ import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 import { Roles } from '@/shared/accessControl/roles';
 import { Actor } from '@/shared/accessControl/actor.types';
 import { ForbiddenError } from '@/shared/error/error.lib';
-import { ObjectId } from 'mongodb';
 
 let usersRepository: IUsersRepository;
 let service: ListUsersService;
 
-const admin: Actor = { id: new ObjectId().toString(), role: Roles.admin };
-const member: Actor = { id: new ObjectId().toString(), role: Roles.member };
+let admin: Actor;
+let member: Actor;
 
 const adminUser = createUserFactory({ email: 'admin1@example.com', role: Roles.admin });
 const createUser1 = createUserFactory({ email: 'partner1@example.com', role: Roles.partner });
@@ -26,7 +25,12 @@ describe('List Users', () => {
 		usersRepository = new UsersRepositoryInMemory();
 		service = new ListUsersService(usersRepository);
 
-		await usersRepository.create(adminUser);
+		const persistedAdmin = await usersRepository.create(adminUser);
+		const persistedMember = await usersRepository.create(
+			createUserFactory({ email: 'member-actor@example.com', role: Roles.member }),
+		);
+		admin = { id: persistedAdmin.id, role: persistedAdmin.role };
+		member = { id: persistedMember.id, role: persistedMember.role };
 		await usersRepository.create(createUser1);
 		await usersRepository.create(createUser2);
 		await usersRepository.create(createUser3);

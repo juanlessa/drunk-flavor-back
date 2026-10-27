@@ -14,14 +14,14 @@ Roles & permissions.
 - Member
 - Anonymous (not logged-in users)
 
-Owner is the single governance authority and retains the broad `manage all` CASL baseline. Admin permissions are now
+Owner is the single governance authority and retains the broad `manage all` CASL baseline. Admin permissions are
 explicit: content operations are enumerated, and user mutations are conditional on the concrete target and requested
 role. Generic user creation and role-update requests cannot assign Owner; ownership will be changed only by the
 dedicated transfer flow introduced in a later stage.
 
-The user administration use cases still perform coarse subject-type checks until the next implementation stage. The
-conditional rules become authoritative for mutations only when those services load and check concrete User subjects. The
-resource tables retain their legacy columns; Owner currently has every operational capability shown for Admin.
+User routes use subject-type checks only as an early fail-fast gate. Every user administration service reloads the actor
+from persistence, and target mutations are authorized against concrete User subjects. The resource tables retain their
+legacy columns; where Owner is omitted, Owner follows the Admin column unless the section states otherwise.
 
 ### Permissions Table
 
@@ -34,26 +34,35 @@ resource tables retain their legacy columns; Owner currently has every operation
 User management is Owner/Admin-only. Partner and Member have no abilities over the `User` subject, so any `/users`
 operation returns `403 Forbidden` for them. Generic create and role-update payloads reject the Owner role.
 
-|                  | Admin | Partner | Member | Anonymous |
-| ---------------- | :---: | :-----: | :----: | :-------: |
-| Create user      |  ✅   |   ❌    |   ❌   |    ❌     |
-| Get user         |  ✅   |   ❌    |   ❌   |    ❌     |
-| List users       |  ✅   |   ❌    |   ❌   |    ❌     |
-| Update user role |  ✅   |   ❌    |   ❌   |    ❌     |
-| Delete user      |  ✅   |   ❌    |   ❌   |    ❌     |
+| Capability                                   | Owner | Admin | Partner | Member | Anonymous |
+| -------------------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
+| Create member or partner                     |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Create admin                                 |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Get or list users                            |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Change member ↔ partner                      |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Promote member/partner to admin              |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Demote admin to member/partner               |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Delete member or partner                     |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Delete admin                                 |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Create, change, or delete owner generically  |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Change role or delete self through `/users`  |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Repeat an authorized current-role assignment | No-op | No-op |   ❌    |   ❌   |    ❌     |
+
+Role-change and delete decisions use the actor and target records loaded from persistence in the same transaction as the
+mutation. A valid access token carrying a stale role cannot override the actor's current persisted role.
 
 #### Profile (self-service)
 
 Profile operations act only on the authenticated user. They are gated by authentication (`verifyAndRenewToken`) and are
-not enforced by CASL: there is no `Profile` subject. Any authenticated role may manage its own profile; Anonymous
-cannot.
+not enforced by CASL: there is no `Profile` subject. Authenticated roles may manage their own profile, except that Owner
+cannot delete the owner account before transferring ownership.
 
-|                            | Admin | Partner | Member | Anonymous |
-| -------------------------- | :---: | :-----: | :----: | :-------: |
-| Get own profile (`/me`)    |  ✅   |   ✅    |   ✅   |    ❌     |
-| Update own profile (`/me`) |  ✅   |   ✅    |   ✅   |    ❌     |
-| Delete own profile (`/me`) |  ✅   |   ✅    |   ✅   |    ❌     |
-| Update own password        |  ✅   |   ✅    |   ✅   |    ❌     |
+|                            | Owner | Admin | Partner | Member | Anonymous |
+| -------------------------- | :---: | :---: | :-----: | :----: | :-------: |
+| Get own profile (`/me`)    |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Update own profile (`/me`) |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Delete own profile (`/me`) |  ❌   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Update own password        |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
 
 #### Categories
 

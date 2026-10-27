@@ -1,12 +1,11 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
-import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
+import { UserAdministrationPolicy } from '@/core/accounts/policies/UserAdministration.policy';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
 import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.repository';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { DeleteUser } from './deleteUser.dtos';
-import { defineAbilityFor } from '@/shared/accessControl';
-import { userPermissionSchema } from '@/shared/accessControl/entities/user';
+import { findRequiredAdministrationUser, toAdministrationActor } from '../userAdministration.helpers';
 
 export class DeleteUserService {
 	constructor(
@@ -15,21 +14,19 @@ export class DeleteUserService {
 		private credentialsRepository: ICredentialsRepository,
 		private identitiesRepository: IIdentitiesRepository,
 		private transactionManager: ITransactionManager,
+		private userAdministrationPolicy = new UserAdministrationPolicy(),
 	) {}
 
-	async execute({ id, actor }: DeleteUser) {
-		const permissionUser = userPermissionSchema.parse({ id: actor.id, role: actor.role });
-		const { cannot } = defineAbilityFor(permissionUser);
-		if (cannot('delete', 'User')) {
-			throw new ForbiddenError('apiResponses.users.forbidden', { path: 'DeleteUser.service' });
-		}
-
-		const user = await this.usersRepository.findById(id);
-		if (!user) {
-			throw new BadRequestError('apiResponses.users.notExist', { path: 'DeleteUser.service' });
-		}
-
+	async execute({ id, actor }: DeleteUser): Promise<void> {
 		await this.transactionManager.withTransaction(async () => {
+			const persistedActor = await findRequiredAdministrationUser(
+				this.usersRepository,
+				actor.id,
+				'DeleteUser.service.actor',
+			);
+			const target = await findRequiredAdministrationUser(this.usersRepository, id, 'DeleteUser.service.target');
+			this.userAdministrationPolicy.assertCanDeleteUser(toAdministrationActor(persistedActor), target);
+
 			await this.usersRepository.delete(id);
 			await this.credentialsRepository.deleteByUserId(id);
 			await this.identitiesRepository.deleteByUserId(id);

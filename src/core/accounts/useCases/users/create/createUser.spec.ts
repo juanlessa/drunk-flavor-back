@@ -4,7 +4,6 @@ import { CreateUserService } from './CreateUser.service';
 import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
 import { Actor } from '@/shared/accessControl/actor.types';
 import { Roles } from '@/shared/accessControl/roles';
-import { ObjectId } from 'mongodb';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
@@ -41,9 +40,9 @@ let service: CreateUserService;
 const { name, surname, email, role } = createUserFactory();
 const password = 'Password-12345678';
 
-const admin: Actor = { id: new ObjectId().toString(), role: Roles.admin };
-const member: Actor = { id: new ObjectId().toString(), role: Roles.member };
-const partner: Actor = { id: new ObjectId().toString(), role: Roles.partner };
+let admin: Actor;
+let member: Actor;
+let partner: Actor;
 
 describe('Create User', () => {
 	beforeEach(async () => {
@@ -51,6 +50,18 @@ describe('Create User', () => {
 		vi.useFakeTimers();
 
 		usersRepository = new UsersRepositoryInMemory();
+		const persistedAdmin = await usersRepository.create(
+			createUserFactory({ email: 'admin-actor@example.com', role: Roles.admin }),
+		);
+		const persistedMember = await usersRepository.create(
+			createUserFactory({ email: 'member-actor@example.com', role: Roles.member }),
+		);
+		const persistedPartner = await usersRepository.create(
+			createUserFactory({ email: 'partner-actor@example.com', role: Roles.partner }),
+		);
+		admin = { id: persistedAdmin.id, role: persistedAdmin.role };
+		member = { id: persistedMember.id, role: persistedMember.role };
+		partner = { id: persistedPartner.id, role: persistedPartner.role };
 		tokensRepository = new TokensRepositoryInMemory();
 		credentialsRepository = new CredentialsRepositoryInMemory();
 		dateProvider = new DayjsProvider();

@@ -1,10 +1,8 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
-import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
+import { BadRequestError } from '@/shared/error/error.lib';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { CreateUserDTO } from './createUser.dtos';
-import { defineAbilityFor } from '@/shared/accessControl';
-import { userPermissionSchema } from '@/shared/accessControl/entities/user';
-import { Roles } from '@/shared/accessControl/roles';
+import { UserAdministrationPolicy } from '@/core/accounts/policies/UserAdministration.policy';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
@@ -18,6 +16,7 @@ import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.const
 import { MAIL_SENDERS } from '@/shared/constants/mailer.constants';
 import { CLIENT_PAGE_PATHS } from '@/shared/constants/client.constants';
 import { env } from '@/env';
+import { findRequiredAdministrationUser, toAdministrationActor } from '../userAdministration.helpers';
 
 export class CreateUserService {
 	constructor(
@@ -30,53 +29,64 @@ export class CreateUserService {
 		private cryptoProvider: ICryptoProvider,
 		private templateProvider: ITemplateProvider,
 		private emailQueueProvider: IEmailQueueProvider,
+		private userAdministrationPolicy = new UserAdministrationPolicy(),
 	) {}
 
 	async execute({ name, surname, email, password, role, actor }: CreateUserDTO): Promise<void> {
-		const permissionUser = userPermissionSchema.parse({ id: actor.id, role: actor.role });
-		const { cannot } = defineAbilityFor(permissionUser);
-		if (role === Roles.owner || cannot('create', 'User')) {
-			throw new ForbiddenError('apiResponses.users.forbidden', {
-				path: 'CreateUser.service.authorization',
-			});
-		}
-
-		const existingUser = await this.usersRepository.findByEmail(email);
-		if (existingUser && existingUser.status === UserStatuses['active']) {
-			throw new BadRequestError('apiResponses.users.alreadyExist', {
-				path: 'CreateUser.service.ensureEmailIsAvailable.active',
-			});
-		}
-		if (existingUser && existingUser.status === UserStatuses['pending']) {
-			const existingToken = await this.tokensRepository.findByUserIdAndType({
-				userId: existingUser.id,
-				type: TokenTypes['email-verification'],
-			});
-			if (!existingToken || this.dateProvider.isExpiredDate(existingToken.expiresAt)) {
-				await this.usersRepository.delete(existingUser.id);
-			} else {
-				throw new BadRequestError('apiResponses.auth.emailVerificationPending', {
-					path: 'CreateUser.service.ensureEmailIsAvailable.pending',
-				});
-			}
-		}
+		const initialActor = await findRequiredAdministrationUser(
+			this.usersRepository,
+			actor.id,
+			'CreateUser.service.actor',
+		);
+		this.userAdministrationPolicy.assertCanCreateUser(toAdministrationActor(initialActor), role);
 
 		const passwordHash = await this.hashProvider.hash(password);
 		const token = await this.cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 
 		const user = await this.transactionManager.withTransaction(async () => {
+			const persistedActor = await findRequiredAdministrationUser(
+				this.usersRepository,
+				actor.id,
+				'CreateUser.service.actor',
+			);
+			const currentActor = toAdministrationActor(persistedActor);
+			this.userAdministrationPolicy.assertCanCreateUser(currentActor, role);
+
+			const existingUser = await this.usersRepository.findByEmail(email);
+			if (existingUser && existingUser.status === UserStatuses.active) {
+				throw new BadRequestError('apiResponses.users.alreadyExist', {
+					path: 'CreateUser.service.ensureEmailIsAvailable.active',
+				});
+			}
+			if (existingUser && existingUser.status === UserStatuses.pending) {
+				const existingToken = await this.tokensRepository.findByUserIdAndType({
+					userId: existingUser.id,
+					type: TokenTypes['email-verification'],
+				});
+				if (existingToken && !this.dateProvider.isExpiredDate(existingToken.expiresAt)) {
+					throw new BadRequestError('apiResponses.auth.emailVerificationPending', {
+						path: 'CreateUser.service.ensureEmailIsAvailable.pending',
+					});
+				}
+
+				this.userAdministrationPolicy.assertCanDeleteUser(currentActor, existingUser);
+				await this.usersRepository.delete(existingUser.id);
+				await this.credentialsRepository.deleteByUserId(existingUser.id);
+				await this.tokensRepository.deleteByUserId(existingUser.id);
+			}
+
 			const createdUser = await this.usersRepository.create({
-				name: name,
-				surname: surname,
-				email: email,
+				name,
+				surname,
+				email,
 				emailVerified: false,
-				role: role,
-				status: UserStatuses['pending'],
+				role,
+				status: UserStatuses.pending,
 			});
 
 			await this.credentialsRepository.create({
 				userId: createdUser.id,
-				passwordHash: passwordHash,
+				passwordHash,
 			});
 
 			await this.tokensRepository.create({
