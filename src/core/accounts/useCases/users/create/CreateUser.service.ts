@@ -4,6 +4,7 @@ import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { CreateUserDTO } from './createUser.dtos';
 import { defineAbilityFor } from '@/shared/accessControl';
 import { userPermissionSchema } from '@/shared/accessControl/entities/user';
+import { Roles } from '@/shared/accessControl/roles';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
@@ -34,7 +35,7 @@ export class CreateUserService {
 	async execute({ name, surname, email, password, role, actor }: CreateUserDTO): Promise<void> {
 		const permissionUser = userPermissionSchema.parse({ id: actor.id, role: actor.role });
 		const { cannot } = defineAbilityFor(permissionUser);
-		if (cannot('create', 'User')) {
+		if (role === Roles.owner || cannot('create', 'User')) {
 			throw new ForbiddenError('apiResponses.users.forbidden', {
 				path: 'CreateUser.service.authorization',
 			});

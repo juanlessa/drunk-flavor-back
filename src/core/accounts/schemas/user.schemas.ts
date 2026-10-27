@@ -1,7 +1,7 @@
 import { z } from 'zod/v4';
 import { LocaleKey } from '@/shared/types/locale.types';
 import { getObjectIdSchema } from '@/infrastructure/mongo/schemas/helpers/objectId.helpers';
-import { roleSchema } from '@/shared/accessControl/roles';
+import { nonOwnerRoleSchema, roleSchema } from '@/shared/accessControl/roles';
 
 // fields validation
 export const userIdValidation = getObjectIdSchema({
@@ -35,3 +35,4 @@ export const userPasswordValidation = z
 	.regex(passwordPattern, { error: 'apiResponses.users.weakPassword' satisfies LocaleKey });
 
 export const userRoleValidation = roleSchema;
+export const userAdministrationRoleValidation = nonOwnerRoleSchema;

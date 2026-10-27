@@ -4,7 +4,8 @@ import { Roles } from '@/shared/accessControl/roles';
 import { isProfileNameRequired } from '@/core/accounts/infra/mongo/helpers/user.helpers';
 
 export const USER_EMAIL_UNIQUE_INDEX = 'user_email_unique';
-export const USER_UNIQUE_INDEXES = [USER_EMAIL_UNIQUE_INDEX] as const;
+export const USER_OWNER_UNIQUE_INDEX = 'user_owner_unique';
+export const USER_UNIQUE_INDEXES = [USER_EMAIL_UNIQUE_INDEX, USER_OWNER_UNIQUE_INDEX] as const;
 
 const userSchemaDefinition = {
 	name: {
@@ -58,6 +59,14 @@ export const UserSchema = new Schema<UserPersistence>(userSchemaDefinition, {
 });
 
 UserSchema.index({ email: 1 }, { unique: true, name: USER_EMAIL_UNIQUE_INDEX });
+UserSchema.index(
+	{ role: 1 },
+	{
+		unique: true,
+		name: USER_OWNER_UNIQUE_INDEX,
+		partialFilterExpression: { role: Roles.owner },
+	},
+);
 
 export const UserModel =
 	(mongoose.models['users'] as Model<UserPersistence> | undefined) ??

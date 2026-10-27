@@ -2,7 +2,7 @@ import {
 	userEmailValidation,
 	userNameValidation,
 	userPasswordValidation,
-	userRoleValidation,
+	userAdministrationRoleValidation,
 	userSurnameValidation,
 } from '@/core/accounts/schemas/user.schemas';
 import { z } from 'zod/v4';
@@ -12,5 +12,5 @@ export const createUserSchema = z.object({
 	surname: userSurnameValidation,
 	email: userEmailValidation,
 	password: userPasswordValidation,
-	role: userRoleValidation,
+	role: userAdministrationRoleValidation,
 });

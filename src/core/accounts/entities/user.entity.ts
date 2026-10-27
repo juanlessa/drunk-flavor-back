@@ -13,7 +13,7 @@ export type UserStatus = (typeof UserStatuses)[keyof typeof UserStatuses];
  *     email: string
  *     emailVerified: boolean
  *     avatarUrl?: string
- *     role: Role ("admin" | "partner" | "member")
+ *     role: Role ("owner" | "admin" | "partner" | "member")
  *     createdAt: Date
  *     updatedAt: Date
  */

@@ -298,7 +298,7 @@ If you are running the API locally you also will find the documentation on path 
 ## Seed
 
 Once the application is running, it's beneficial to have a populated database to aid in testing and development, as well
-as to establish an initial admin user. For these purposes, there are several seed scripts available.
+as to establish the initial owner account. For these purposes, there are several seed scripts available.
 
 **Note**: To run the seed scripts, ensure you have a valid `.env` file. The seed scripts rely on parts of the
 application code that require environment validation.
@@ -312,22 +312,25 @@ categories into the database:
 npm run seed:drinks
 ```
 
-### Admin Seed
+### Owner Bootstrap
 
-Run the admin seed script with the following command to create an initial admin user:
+Run the owner bootstrap to create the application's initial owner account:
 
 ```shell
-npm run seed:admin
+npm run seed:owner
 ```
 
-The admin is created based on the following environment variables:
+The bootstrap creates an active, verified owner from these environment variables:
 
 ```dotenv
-ADMIN_NAME=''
-ADMIN_SURNAME=''
-ADMIN_EMAIL=''
-ADMIN_PASSWORD=''
+OWNER_NAME=''
+OWNER_SURNAME=''
+OWNER_EMAIL=''
+OWNER_PASSWORD=''
 ```
 
-**Security Note**: For security purposes, make sure to remove these variables from your `.env` file after creating the
-admin user.
+The command is idempotent: when an owner already exists, it exits successfully without creating another account. The
+database also enforces that at most one owner can exist.
+
+**Security Note**: Remove these variables from your environment after creating the owner. A subsequent bootstrap run
+does not require them when an owner already exists.

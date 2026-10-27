@@ -1,5 +1,6 @@
 import { z } from 'zod/v4';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
+import { UserOwnerAlreadyExistsError } from '@/core/accounts/errors/user.errors';
 import {
 	userEmailValidation,
 	userNameValidation,
@@ -44,41 +45,49 @@ const gracefulShutdown = (signal: string) => async () => {
 };
 
 const seedDatabase = async () => {
-	const adminSchema = z.object({
-		ADMIN_NAME: userNameValidation,
-		ADMIN_SURNAME: userSurnameValidation,
-		ADMIN_EMAIL: userEmailValidation,
-		ADMIN_PASSWORD: userPasswordValidation,
+	const usersRepository = resolveUsersRepository();
+	const existingOwner = await usersRepository.findByRole(Roles.owner);
+	if (existingOwner) {
+		logger.info('Owner already exists; skipping bootstrap');
+		return;
+	}
+
+	const ownerSchema = z.object({
+		OWNER_NAME: userNameValidation,
+		OWNER_SURNAME: userSurnameValidation,
+		OWNER_EMAIL: userEmailValidation,
+		OWNER_PASSWORD: userPasswordValidation,
 	});
 
-	const { ADMIN_NAME, ADMIN_SURNAME, ADMIN_EMAIL, ADMIN_PASSWORD } = adminSchema.parse(process.env);
-
+	const { OWNER_NAME, OWNER_SURNAME, OWNER_EMAIL, OWNER_PASSWORD } = ownerSchema.parse(process.env);
 	const hashProvider = resolveHashProvider();
-	const usersRepository = resolveUsersRepository();
 	const credentialsRepository = resolveCredentialsRepository();
 	const transactionManager = resolveTransactionManager();
-
-	const passwordHash = await hashProvider.hash(ADMIN_PASSWORD);
+	const passwordHash = await hashProvider.hash(OWNER_PASSWORD);
 
 	try {
 		await transactionManager.withTransaction(async () => {
 			const createdUser = await usersRepository.create({
-				name: ADMIN_NAME,
-				surname: ADMIN_SURNAME,
-				email: ADMIN_EMAIL,
+				name: OWNER_NAME,
+				surname: OWNER_SURNAME,
+				email: OWNER_EMAIL,
 				emailVerified: true,
-				role: Roles['admin'],
-				status: UserStatuses['active'],
+				role: Roles.owner,
+				status: UserStatuses.active,
 			});
 
 			await credentialsRepository.create({
 				userId: createdUser.id,
-				passwordHash: passwordHash,
+				passwordHash,
 			});
 		});
-		logger.info('Admin created successfully');
+		logger.info('Owner created successfully');
 	} catch (error) {
-		logger.error({ err: error }, 'Error creating admin user');
+		if (error instanceof UserOwnerAlreadyExistsError) {
+			logger.info('Owner already exists; skipping bootstrap');
+			return;
+		}
+		logger.error({ err: error }, 'Error creating owner user');
 		throw error;
 	}
 };

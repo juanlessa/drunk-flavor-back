@@ -1,15 +1,42 @@
 import { AbilityBuilder } from '@casl/ability';
 import { AppAbility } from './types';
-import { Role } from './roles';
+import { Role, Roles } from './roles';
 import { UserPermissionModel } from './entities/user';
+
+const ADMIN_MANAGED_ROLES = [Roles.partner, Roles.member];
 
 type PermissionsByRole = (user: UserPermissionModel, builder: AbilityBuilder<AppAbility>) => void;
 
 export const permissions: Record<Role, PermissionsByRole> = {
-	admin(user, { can, cannot }) {
+	owner(user, { can, cannot }) {
 		can('manage', 'all');
-		can('manage', 'User');
 		cannot('update', ['Comment', 'Rating'], { user_id: { $ne: user.id } });
+	},
+	admin(user, { can }) {
+		can('manage', ['Category', 'Unit', 'Ingredient', 'Drink']);
+		can(['create', 'list', 'get', 'delete'], ['Comment', 'Rating']);
+		can('moderate', 'Comment');
+		can('update', ['Comment', 'Rating'], { user_id: { $eq: user.id } });
+
+		can(['list', 'get'], 'User');
+		can('create', 'User', { role: { $in: ADMIN_MANAGED_ROLES } });
+		can(['delete', 'suspend', 'reactivate'], 'User', {
+			id: { $ne: user.id },
+			role: { $in: ADMIN_MANAGED_ROLES },
+		});
+		can('changeRole', 'User', {
+			id: { $ne: user.id },
+			role: { $in: ADMIN_MANAGED_ROLES },
+			requestedRole: { $in: ADMIN_MANAGED_ROLES },
+		});
+
+		// Compatibility grant for use cases that still check the legacy `update`
+		// action by subject type. Remove it when every role change uses `changeRole`
+		// with a concrete User subject.
+		can('update', 'User', {
+			id: { $ne: user.id },
+			role: { $in: ADMIN_MANAGED_ROLES },
+		});
 	},
 	partner(user, { can }) {
 		can('manage', 'Category');

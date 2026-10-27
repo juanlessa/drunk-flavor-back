@@ -2,12 +2,26 @@
 
 Roles & permissions.
 
+> This README describes the currently implemented access-control behavior. The approved target design for administrative
+> user management is defined in [USER_ADMINISTRATION_POLICY.md](./USER_ADMINISTRATION_POLICY.md) and will be enforced
+> incrementally in subsequent implementation stages.
+
 ### Roles
 
+- Owner
 - Admin
 - Partner
 - Member
 - Anonymous (not logged-in users)
+
+Owner is the single governance authority and retains the broad `manage all` CASL baseline. Admin permissions are now
+explicit: content operations are enumerated, and user mutations are conditional on the concrete target and requested
+role. Generic user creation and role-update requests cannot assign Owner; ownership will be changed only by the
+dedicated transfer flow introduced in a later stage.
+
+The user administration use cases still perform coarse subject-type checks until the next implementation stage. The
+conditional rules become authoritative for mutations only when those services load and check concrete User subjects. The
+resource tables retain their legacy columns; Owner currently has every operational capability shown for Admin.
 
 ### Permissions Table
 
@@ -17,8 +31,8 @@ Roles & permissions.
 
 #### Users
 
-User management is admin-only. Partner and Member have no abilities over the `User` subject, so any `/users` operation
-returns `403 Forbidden` for them.
+User management is Owner/Admin-only. Partner and Member have no abilities over the `User` subject, so any `/users`
+operation returns `403 Forbidden` for them. Generic create and role-update payloads reject the Owner role.
 
 |                  | Admin | Partner | Member | Anonymous |
 | ---------------- | :---: | :-----: | :----: | :-------: |
@@ -107,9 +121,9 @@ Moderation (`PATCH /comments/:id/status`) is Admin-only.
 
 ##### Conditions
 
-- Only owner may update comment
-- Only owner or admins may delete comment
-- Only admins may moderate comment status
+- Only the resource owner may update a comment.
+- The resource owner or an Owner/Admin actor may delete a comment.
+- Only Owner/Admin actors may moderate comment status.
 
 #### Ratings
 
@@ -128,8 +142,8 @@ always scopes to the caller. Ownership for update and delete is evaluated agains
 
 ##### Conditions
 
-- Only owner may update rating
-- Only owner or admins may delete rating
+- Only the resource owner may update a rating.
+- The resource owner or an Owner/Admin actor may delete a rating.
 
 #### Auth (public)
 

@@ -2,7 +2,8 @@ import { randomUUID } from 'node:crypto';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { CreateUser, UpdateUser } from '@/core/accounts/dtos/user.dtos';
 import { User } from '@/core/accounts/entities/user.entity';
-import { UserEmailAlreadyExistsError } from '@/core/accounts/errors/user.errors';
+import { UserEmailAlreadyExistsError, UserOwnerAlreadyExistsError } from '@/core/accounts/errors/user.errors';
+import { Roles, type Role } from '@/shared/accessControl/roles';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { QueryParams } from '@/shared/types/query.types';
@@ -13,6 +14,10 @@ export class UsersRepositoryInMemory implements IUsersRepository {
 	collection: User[] = [];
 
 	async create(data: CreateUser): Promise<User> {
+		if (data.role === Roles.owner && this.collection.some((record) => record.role === Roles.owner)) {
+			throw new UserOwnerAlreadyExistsError({ path: 'UsersRepositoryInMemory.create' });
+		}
+
 		if (this.collection.some((record) => record.email.toLowerCase() === data.email.toLowerCase())) {
 			throw new UserEmailAlreadyExistsError({ path: 'UsersRepositoryInMemory.create' });
 		}
@@ -45,6 +50,13 @@ export class UsersRepositoryInMemory implements IUsersRepository {
 		}
 
 		const current = this.collection[recordIndex];
+		if (
+			data.role === Roles.owner &&
+			this.collection.some((candidate, index) => index !== recordIndex && candidate.role === Roles.owner)
+		) {
+			throw new UserOwnerAlreadyExistsError({ path: 'UsersRepositoryInMemory.update' });
+		}
+
 		const record: User = { ...deepUpdate(data, current), ...data, updatedAt: new Date() };
 		if (
 			data.email !== undefined &&
@@ -75,6 +87,11 @@ export class UsersRepositoryInMemory implements IUsersRepository {
 
 	async findByEmail(email: string): Promise<User | null> {
 		const recordFound = this.collection.find((record) => record.email === email);
+		return recordFound || null;
+	}
+
+	async findByRole(role: Role): Promise<User | null> {
+		const recordFound = this.collection.find((record) => record.role === role);
 		return recordFound || null;
 	}
 

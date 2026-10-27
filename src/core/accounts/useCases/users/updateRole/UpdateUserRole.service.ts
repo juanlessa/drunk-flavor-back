@@ -3,6 +3,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
 import { defineAbilityFor } from '@/shared/accessControl';
 import { userPermissionSchema } from '@/shared/accessControl/entities/user';
+import { Roles } from '@/shared/accessControl/roles';
 
 export class UpdateUserRoleService {
 	constructor(private usersRepository: IUsersRepository) {}
@@ -10,7 +11,7 @@ export class UpdateUserRoleService {
 	async execute({ userId, role, actor }: UpdateUserRole) {
 		const permissionUser = userPermissionSchema.parse({ id: actor.id, role: actor.role });
 		const { cannot } = defineAbilityFor(permissionUser);
-		if (cannot('update', 'User')) {
+		if (role === Roles.owner || cannot('update', 'User')) {
 			throw new ForbiddenError('apiResponses.users.forbidden', { path: 'UpdateUserRole.service' });
 		}
 
