@@ -9,7 +9,7 @@ const verifier: IGoogleTokenVerifier =
 export const resolveGoogleTokenVerifier = () => verifier;
 
 export {
-	setNextGoogleTokenPayload,
+	setNextVerifiedGoogleIdentity,
 	setNextGoogleTokenError,
 	resetFakeGoogleTokenVerifier,
 } from './fakes/FakeGoogleTokenVerifier';

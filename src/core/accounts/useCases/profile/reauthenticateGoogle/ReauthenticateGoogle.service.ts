@@ -13,8 +13,11 @@ export class ReauthenticateGoogleService {
 	) {}
 
 	async execute({ userId, idToken }: ReauthenticateGoogle): Promise<GoogleReauthenticationResult> {
-		const payload = await this.googleTokenVerifier.verify(idToken);
-		const identity = await this.identitiesRepository.findByProviderSub(IdentityProviders.google, payload.sub);
+		const googleIdentity = await this.googleTokenVerifier.verify(idToken);
+		const identity = await this.identitiesRepository.findByProviderSub(
+			IdentityProviders.google,
+			googleIdentity.subject,
+		);
 
 		if (!identity || identity.user_id !== userId) {
 			throw new UnauthorizedError('apiResponses.profile.invalidReauthentication', {

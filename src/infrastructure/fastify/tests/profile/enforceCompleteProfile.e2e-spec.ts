@@ -10,8 +10,8 @@ import { DrinkModel } from '@/core/drinks/infra/mongo/entities/drink.model';
 import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.model';
 import { UnitModel } from '@/core/drinks/infra/mongo/entities/unit.model';
 import { CommentModel } from '@/core/engagement/infra/mongo/entities/comment.model';
-import { resetFakeGoogleTokenVerifier, setNextGoogleTokenPayload } from '@/shared/providers/googleAuth';
-import { GoogleTokenPayload } from '@/shared/providers/googleAuth/googleAuth.dtos';
+import { resetFakeGoogleTokenVerifier, setNextVerifiedGoogleIdentity } from '@/shared/providers/googleAuth';
+import { VerifiedGoogleIdentity } from '@/shared/providers/googleAuth/googleAuth.dtos';
 import { resolveRateLimitStore } from '@/infrastructure/fastify/rateLimitStore';
 import { createDrink } from '../helpers/drink.helpers';
 
@@ -23,13 +23,13 @@ interface ErrorBody {
 
 const idToken = 'any-google-id-token';
 
-// A Google token missing `family_name` creates an `incomplete_profile` account.
-const incompletePayload: GoogleTokenPayload = {
-	sub: 'google-incomplete-sub',
+// A verified Google identity without `familyName` creates an `incomplete_profile` account.
+const incompleteIdentity: VerifiedGoogleIdentity = {
+	subject: 'google-incomplete-sub',
 	email: 'incomplete@example.com',
-	email_verified: true,
-	given_name: 'Incomplete',
-	picture: 'https://example.com/avatar.png',
+	isEmailVerified: true,
+	givenName: 'Incomplete',
+	pictureUrl: 'https://example.com/avatar.png',
 };
 
 describe('enforceCompleteProfile gate', () => {
@@ -60,7 +60,7 @@ describe('enforceCompleteProfile gate', () => {
 	});
 
 	it('blocks a business route for an incomplete profile, then allows it after completion', async () => {
-		setNextGoogleTokenPayload(incompletePayload);
+		setNextVerifiedGoogleIdentity(incompleteIdentity);
 		const authResponse = await request(app.server).post('/google').send({ idToken });
 		expect(authResponse.status).toBe(200);
 		const cookies = authResponse.headers['set-cookie'];
@@ -85,7 +85,7 @@ describe('enforceCompleteProfile gate', () => {
 		expect(completion.status).toBe(HTTP_STATUS.no_content);
 		const refreshedCookies = completion.headers['set-cookie'];
 
-		const promoted = await UserModel.findOne({ email: incompletePayload.email }).exec();
+		const promoted = await UserModel.findOne({ email: incompleteIdentity.email }).exec();
 		expect(promoted?.status).toBe('active');
 		expect(promoted?.surname).toBe('User');
 

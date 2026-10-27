@@ -3,7 +3,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.repository';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { IGoogleTokenVerifier } from '@/shared/providers/googleAuth/IGoogleTokenVerifier';
-import { GoogleTokenPayload } from '@/shared/providers/googleAuth/googleAuth.dtos';
+import { VerifiedGoogleIdentity } from '@/shared/providers/googleAuth/googleAuth.dtos';
 import { ConflictError, UnauthorizedError } from '@/shared/error/error.lib';
 import { IdentityProviders } from '@/core/accounts/constants/identity.constants';
 import { User } from '@/core/accounts/entities/user.entity';
@@ -31,7 +31,7 @@ export class GoogleAuthService {
 		const googleProfile = await this.googleTokenVerifier.verify(idToken);
 		const authenticatedAt = new Date();
 
-		const linkedGoogleSignIn = await this.signInWithLinkedGoogleIdentity(googleProfile.sub, authenticatedAt);
+		const linkedGoogleSignIn = await this.signInWithLinkedGoogleIdentity(googleProfile.subject, authenticatedAt);
 		if (linkedGoogleSignIn) {
 			return linkedGoogleSignIn;
 		}
@@ -42,7 +42,7 @@ export class GoogleAuthService {
 		try {
 			return await this.createAccountWithGoogleIdentity(googleProfile, verifiedEmail, authenticatedAt);
 		} catch (error) {
-			return this.resolveConcurrentGoogleIdentityCreation(error, googleProfile.sub);
+			return this.resolveConcurrentGoogleIdentityCreation(error, googleProfile.subject);
 		}
 	}
 
@@ -68,11 +68,11 @@ export class GoogleAuthService {
 		return { user: { id: user._id.toString(), role: user.role, status: user.status } };
 	}
 
-	private requireVerifiedEmailForGoogleSignup(googleProfile: GoogleTokenPayload): string {
-		if (googleProfile.email_verified !== true) {
+	private requireVerifiedEmailForGoogleSignup(googleProfile: VerifiedGoogleIdentity): string {
+		if (googleProfile.isEmailVerified !== true) {
 			throw new UnauthorizedError('apiResponses.auth.googleEmailNotVerified', {
 				path: 'GoogleAuth.service.emailNotVerified',
-				cause: 'google token email_verified is not true',
+				cause: 'verified Google identity does not contain a verified email',
 			});
 		}
 
@@ -97,12 +97,12 @@ export class GoogleAuthService {
 	}
 
 	private async createAccountWithGoogleIdentity(
-		googleProfile: GoogleTokenPayload,
+		googleProfile: VerifiedGoogleIdentity,
 		verifiedEmail: string,
 		authenticatedAt: Date,
 	): Promise<GoogleAuthResult> {
-		const name = googleProfile.given_name;
-		const surname = googleProfile.family_name;
+		const name = googleProfile.givenName;
+		const surname = googleProfile.familyName;
 		const hasFullName = name !== undefined && surname !== undefined;
 
 		return this.transactionManager.withTransaction(async () => {
@@ -111,7 +111,7 @@ export class GoogleAuthService {
 				...(surname !== undefined ? { surname } : {}),
 				email: verifiedEmail,
 				email_verified: true,
-				avatar_url: googleProfile.picture,
+				avatar_url: googleProfile.pictureUrl,
 				role: Roles.member,
 				status: hasFullName ? UserStatuses.active : UserStatuses.incomplete_profile,
 			});
@@ -119,10 +119,10 @@ export class GoogleAuthService {
 			await this.identitiesRepository.create({
 				user_id: user._id.toString(),
 				provider: IdentityProviders.google,
-				provider_sub: googleProfile.sub,
+				provider_sub: googleProfile.subject,
 				email: verifiedEmail,
 				email_verified: true,
-				picture: googleProfile.picture,
+				picture: googleProfile.pictureUrl,
 				last_login_at: authenticatedAt,
 			});
 

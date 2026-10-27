@@ -6,17 +6,17 @@ import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { app } from '@/infrastructure/fastify/app';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
-import { resetFakeGoogleTokenVerifier, setNextGoogleTokenPayload } from '@/shared/providers/googleAuth';
+import { resetFakeGoogleTokenVerifier, setNextVerifiedGoogleIdentity } from '@/shared/providers/googleAuth';
 import { resolveRateLimitStore } from '@/infrastructure/fastify/rateLimitStore';
 
 const idToken = 'google-password-setup-token';
 const password = 'Created-password-123456';
-const googlePayload = {
-	sub: 'google-password-setup-sub',
+const googleIdentity = {
+	subject: 'google-password-setup-sub',
 	email: 'provider-only@example.com',
-	email_verified: true,
-	given_name: 'Provider',
-	family_name: 'Only',
+	isEmailVerified: true,
+	givenName: 'Provider',
+	familyName: 'Only',
 };
 
 type ProfileResponseBody = {
@@ -47,7 +47,7 @@ describe('Profile password methods', () => {
 	});
 
 	it('allows a Google-only account to add password login while preserving Google login', async () => {
-		setNextGoogleTokenPayload(googlePayload);
+		setNextVerifiedGoogleIdentity(googleIdentity);
 		const googleLogin = await request(app.server).post('/google').send({ idToken });
 		const cookies = googleLogin.headers['set-cookie'];
 
@@ -57,7 +57,7 @@ describe('Profile password methods', () => {
 			providers: ['google'],
 		});
 
-		setNextGoogleTokenPayload(googlePayload);
+		setNextVerifiedGoogleIdentity(googleIdentity);
 		const reauthenticated = await request(app.server)
 			.post('/me/reauthentication/google')
 			.set('Cookie', cookies)
@@ -73,16 +73,16 @@ describe('Profile password methods', () => {
 			providers: ['google'],
 		});
 
-		const passwordLogin = await request(app.server).post('/signin').send({ email: googlePayload.email, password });
+		const passwordLogin = await request(app.server).post('/signin').send({ email: googleIdentity.email, password });
 		expect(passwordLogin.status).toBe(HTTP_STATUS.ok);
 
-		setNextGoogleTokenPayload(googlePayload);
+		setNextVerifiedGoogleIdentity(googleIdentity);
 		const secondGoogleLogin = await request(app.server).post('/google').send({ idToken });
 		expect(secondGoogleLogin.status).toBe(HTTP_STATUS.ok);
 	});
 
 	it('rejects creating a second credential', async () => {
-		setNextGoogleTokenPayload(googlePayload);
+		setNextVerifiedGoogleIdentity(googleIdentity);
 		const googleLogin = await request(app.server).post('/google').send({ idToken });
 		const cookies = googleLogin.headers['set-cookie'];
 

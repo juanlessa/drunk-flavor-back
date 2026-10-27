@@ -1,8 +1,8 @@
-export type GoogleTokenPayload = {
-	sub: string;
+export type VerifiedGoogleIdentity = {
+	subject: string;
 	email?: string;
-	email_verified?: boolean;
-	given_name?: string;
-	family_name?: string;
-	picture?: string;
+	isEmailVerified: boolean;
+	givenName?: string;
+	familyName?: string;
+	pictureUrl?: string;
 };

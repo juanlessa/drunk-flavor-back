@@ -35,8 +35,8 @@ export class LinkGoogleIdentityService {
 			});
 		}
 
-		const payload = await this.googleTokenVerifier.verify(idToken);
-		if (payload.email_verified !== true) {
+		const googleIdentity = await this.googleTokenVerifier.verify(idToken);
+		if (googleIdentity.isEmailVerified !== true) {
 			throw new UnauthorizedError('apiResponses.auth.googleEmailNotVerified', {
 				path: 'LinkGoogleIdentity.service.email',
 			});
@@ -44,7 +44,7 @@ export class LinkGoogleIdentityService {
 
 		const existingIdentity = await this.identitiesRepository.findByProviderSub(
 			IdentityProviders.google,
-			payload.sub,
+			googleIdentity.subject,
 		);
 		if (existingIdentity) {
 			throw new ConflictError(
@@ -65,10 +65,10 @@ export class LinkGoogleIdentityService {
 		await this.identitiesRepository.create({
 			user_id: userId,
 			provider: IdentityProviders.google,
-			provider_sub: payload.sub,
-			email: payload.email?.toLowerCase(),
+			provider_sub: googleIdentity.subject,
+			email: googleIdentity.email?.toLowerCase(),
 			email_verified: true,
-			picture: payload.picture,
+			picture: googleIdentity.pictureUrl,
 			last_login_at: this.dateProvider.dateNow(),
 		});
 	}

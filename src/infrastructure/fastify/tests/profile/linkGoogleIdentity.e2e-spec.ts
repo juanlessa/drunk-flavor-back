@@ -6,17 +6,17 @@ import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { app } from '@/infrastructure/fastify/app';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
-import { resetFakeGoogleTokenVerifier, setNextGoogleTokenPayload } from '@/shared/providers/googleAuth';
+import { resetFakeGoogleTokenVerifier, setNextVerifiedGoogleIdentity } from '@/shared/providers/googleAuth';
 import { resolveRateLimitStore } from '@/infrastructure/fastify/rateLimitStore';
 import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
 
 const idToken = 'google-link-token';
-const googlePayload = {
-	sub: 'explicit-google-link-sub',
+const googleIdentity = {
+	subject: 'explicit-google-link-sub',
 	email: 'secondary-google@example.com',
-	email_verified: true,
-	given_name: 'Secondary',
-	family_name: 'Google',
+	isEmailVerified: true,
+	givenName: 'Secondary',
+	familyName: 'Google',
 };
 
 type ProfileResponseBody = {
@@ -48,7 +48,7 @@ describe('Link Google identity', () => {
 		const { cookies, user } = await createAndAuthenticateUser(app, {
 			email: 'primary-local@example.com',
 		});
-		setNextGoogleTokenPayload(googlePayload);
+		setNextVerifiedGoogleIdentity(googleIdentity);
 
 		const linked = await request(app.server)
 			.post('/me/identities/google')
@@ -62,7 +62,7 @@ describe('Link Google identity', () => {
 			providers: ['google'],
 		});
 
-		setNextGoogleTokenPayload(googlePayload);
+		setNextVerifiedGoogleIdentity(googleIdentity);
 		expect((await request(app.server).post('/google').send({ idToken })).status).toBe(HTTP_STATUS.ok);
 		expect(
 			(await request(app.server).post('/signin').send({ email: user.email, password: user.password })).status,
@@ -71,7 +71,7 @@ describe('Link Google identity', () => {
 
 	it('rejects linking when the current password is invalid', async () => {
 		const { cookies } = await createAndAuthenticateUser(app);
-		setNextGoogleTokenPayload(googlePayload);
+		setNextVerifiedGoogleIdentity(googleIdentity);
 
 		const response = await request(app.server)
 			.post('/me/identities/google')
