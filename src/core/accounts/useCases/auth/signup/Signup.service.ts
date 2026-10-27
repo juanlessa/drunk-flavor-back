@@ -52,21 +52,21 @@ export class SignupService {
 				name: name,
 				surname: surname,
 				email: email,
-				email_verified: false,
+				emailVerified: false,
 				role: Roles['member'],
 				status: UserStatuses['pending'],
 			});
 
 			await this.credentialsRepository.create({
-				user_id: createdUser._id.toString(),
-				password_hash: passwordHash,
+				userId: createdUser.id,
+				passwordHash: passwordHash,
 			});
 
 			await this.tokensRepository.create({
-				token_hash: this.cryptoProvider.hashToken(token),
+				tokenHash: this.cryptoProvider.hashToken(token),
 				type: TokenTypes['email-verification'],
-				user_id: createdUser._id.toString(),
-				expires_at: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+				userId: createdUser.id,
+				expiresAt: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 			});
 
 			return createdUser;

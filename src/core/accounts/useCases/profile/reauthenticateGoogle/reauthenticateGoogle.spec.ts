@@ -25,9 +25,9 @@ describe('ReauthenticateGoogleService', () => {
 
 	it('accepts a valid token for the Google identity linked to the current user', async () => {
 		await identitiesRepository.create({
-			user_id: userId,
+			userId: userId,
 			provider: IdentityProviders.google,
-			provider_sub: 'fake-google-sub',
+			providerSubject: 'fake-google-sub',
 		});
 
 		const result = await service.execute({ userId, idToken: 'valid-token' });
@@ -38,9 +38,9 @@ describe('ReauthenticateGoogleService', () => {
 
 	it('rejects a valid Google identity linked to another user', async () => {
 		await identitiesRepository.create({
-			user_id: '507f1f77bcf86cd799439012',
+			userId: '507f1f77bcf86cd799439012',
 			provider: IdentityProviders.google,
-			provider_sub: 'fake-google-sub',
+			providerSubject: 'fake-google-sub',
 		});
 
 		await expect(service.execute({ userId, idToken: 'valid-token' })).rejects.toBeInstanceOf(UnauthorizedError);

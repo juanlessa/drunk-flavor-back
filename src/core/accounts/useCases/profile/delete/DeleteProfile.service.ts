@@ -32,7 +32,7 @@ export class DeleteProfileService {
 			await this.tokensRepository.deleteByUserId(id);
 		});
 
-		const avatarName = getManagedStoredFileName(user.avatar_url, id, 'avatar');
+		const avatarName = getManagedStoredFileName(user.avatarUrl, id, 'avatar');
 		if (avatarName) {
 			try {
 				await this.storageProvider.deleteFile(avatarName);

@@ -38,12 +38,12 @@ describe('UpdateAvatarService', () => {
 		const user = await usersRepository.create(createUserFactory());
 		vi.mocked(storageProvider.getFileURL).mockImplementation((name) => `https://cdn.example.com/${name}`);
 
-		await service.execute({ userId: user._id.toString(), fileStream, mimetype: 'image/png' });
+		await service.execute({ userId: user.id, fileStream, mimetype: 'image/png' });
 
-		const updated = await usersRepository.findById(user._id.toString());
+		const updated = await usersRepository.findById(user.id);
 		expect(storageProvider.uploadFile).toHaveBeenCalledOnce();
-		expect(updated?.avatar_url).toMatch(
-			new RegExp(`^https://cdn\\.example\\.com/[0-9a-f]{32}-${user._id.toString()}-avatar\\.png$`),
+		expect(updated?.avatarUrl).toMatch(
+			new RegExp(`^https://cdn\\.example\\.com/[0-9a-f]{32}-${user.id}-avatar\\.png$`),
 		);
 	});
 
@@ -51,7 +51,7 @@ describe('UpdateAvatarService', () => {
 		const user = await usersRepository.create(createUserFactory());
 
 		await expect(
-			service.execute({ userId: user._id.toString(), fileStream, mimetype: 'application/pdf' }),
+			service.execute({ userId: user.id, fileStream, mimetype: 'application/pdf' }),
 		).rejects.toBeInstanceOf(BadRequestError);
 		expect(storageProvider.uploadFile).not.toHaveBeenCalled();
 	});
@@ -65,23 +65,23 @@ describe('UpdateAvatarService', () => {
 	it('deletes the previous server-managed avatar after replacement', async () => {
 		const user = await usersRepository.create(
 			createUserFactory({
-				avatar_url: 'https://cdn.example.com/0123456789abcdef0123456789abcdef-owner-avatar.webp',
+				avatarUrl: 'https://cdn.example.com/0123456789abcdef0123456789abcdef-owner-avatar.webp',
 			}),
 		);
-		const managedName = `0123456789abcdef0123456789abcdef-${user._id.toString()}-avatar.webp`;
-		await usersRepository.update({ id: user._id.toString(), avatar_url: `https://cdn.example.com/${managedName}` });
+		const managedName = `0123456789abcdef0123456789abcdef-${user.id}-avatar.webp`;
+		await usersRepository.update({ id: user.id, avatarUrl: `https://cdn.example.com/${managedName}` });
 
-		await service.execute({ userId: user._id.toString(), fileStream, mimetype: 'image/jpeg' });
+		await service.execute({ userId: user.id, fileStream, mimetype: 'image/jpeg' });
 
 		expect(storageProvider.deleteFile).toHaveBeenCalledWith(managedName);
 	});
 
 	it('does not delete an external provider avatar', async () => {
 		const user = await usersRepository.create(
-			createUserFactory({ avatar_url: 'https://accounts.example.com/avatar.png' }),
+			createUserFactory({ avatarUrl: 'https://accounts.example.com/avatar.png' }),
 		);
 
-		await service.execute({ userId: user._id.toString(), fileStream, mimetype: 'image/png' });
+		await service.execute({ userId: user.id, fileStream, mimetype: 'image/png' });
 
 		expect(storageProvider.deleteFile).not.toHaveBeenCalled();
 	});

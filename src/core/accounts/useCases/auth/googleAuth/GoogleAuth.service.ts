@@ -55,7 +55,7 @@ export class GoogleAuthService {
 			return null;
 		}
 
-		const user = await this.usersRepository.findById(identity.user_id);
+		const user = await this.usersRepository.findById(identity.userId);
 		if (!user) {
 			throw new UnauthorizedError('apiResponses.auth.invalidCredentials', {
 				path: 'GoogleAuth.service.orphanIdentity',
@@ -63,9 +63,9 @@ export class GoogleAuthService {
 			});
 		}
 
-		await this.identitiesRepository.touchLastLogin(identity._id.toString(), authenticatedAt);
+		await this.identitiesRepository.touchLastLogin(identity.id, authenticatedAt);
 
-		return { user: { id: user._id.toString(), role: user.role, status: user.status } };
+		return { user: { id: user.id, role: user.role, status: user.status } };
 	}
 
 	private requireVerifiedEmailForGoogleSignup(googleProfile: VerifiedGoogleIdentity): string {
@@ -110,23 +110,23 @@ export class GoogleAuthService {
 				...(name !== undefined ? { name } : {}),
 				...(surname !== undefined ? { surname } : {}),
 				email: verifiedEmail,
-				email_verified: true,
-				avatar_url: googleProfile.pictureUrl,
+				emailVerified: true,
+				avatarUrl: googleProfile.pictureUrl,
 				role: Roles.member,
 				status: hasFullName ? UserStatuses.active : UserStatuses.incomplete_profile,
 			});
 
 			await this.identitiesRepository.create({
-				user_id: user._id.toString(),
+				userId: user.id,
 				provider: IdentityProviders.google,
-				provider_sub: googleProfile.subject,
+				providerSubject: googleProfile.subject,
 				email: verifiedEmail,
-				email_verified: true,
-				picture: googleProfile.pictureUrl,
-				last_login_at: authenticatedAt,
+				isEmailVerified: true,
+				pictureUrl: googleProfile.pictureUrl,
+				lastLoginAt: authenticatedAt,
 			});
 
-			return { user: { id: user._id.toString(), role: user.role, status: user.status } };
+			return { user: { id: user.id, role: user.role, status: user.status } };
 		});
 	}
 
@@ -143,11 +143,11 @@ export class GoogleAuthService {
 			throw error;
 		}
 
-		const user = await this.usersRepository.findById(identity.user_id);
+		const user = await this.usersRepository.findById(identity.userId);
 		if (!user) {
 			throw error;
 		}
 
-		return { user: { id: user._id.toString(), role: user.role, status: user.status } };
+		return { user: { id: user.id, role: user.role, status: user.status } };
 	}
 }

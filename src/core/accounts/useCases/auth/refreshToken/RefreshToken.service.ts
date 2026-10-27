@@ -5,8 +5,8 @@ import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 export class RefreshTokenService {
 	constructor(private usersRepository: IUsersRepository) {}
 
-	async execute({ user_id }: RefreshToken) {
-		const user = await this.usersRepository.findById(user_id);
+	async execute({ userId }: RefreshToken) {
+		const user = await this.usersRepository.findById(userId);
 		if (!user) {
 			throw new NotFoundError('apiResponses.users.notExist', { path: 'RefreshToken.service' });
 		}

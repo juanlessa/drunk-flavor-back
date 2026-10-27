@@ -27,19 +27,19 @@ describe('CreatePasswordService', () => {
 	it('creates the first credential with a hashed password', async () => {
 		const user = await usersRepository.create(createUserFactory());
 
-		await service.execute({ userId: user._id.toString(), password });
+		await service.execute({ userId: user.id, password });
 
-		const credential = await credentialsRepository.findByUserId(user._id.toString());
+		const credential = await credentialsRepository.findByUserId(user.id);
 		expect(credential).not.toBeNull();
-		expect(credential?.password_hash).not.toBe(password);
-		expect(await hashProvider.compare(password, credential!.password_hash)).toBe(true);
+		expect(credential?.passwordHash).not.toBe(password);
+		expect(await hashProvider.compare(password, credential!.passwordHash)).toBe(true);
 	});
 
 	it('rejects an account that already has a password', async () => {
 		const user = await usersRepository.create(createUserFactory());
-		await credentialsRepository.create({ user_id: user._id.toString(), password_hash: 'hash' });
+		await credentialsRepository.create({ userId: user.id, passwordHash: 'hash' });
 
-		await expect(service.execute({ userId: user._id.toString(), password })).rejects.toBeInstanceOf(ConflictError);
+		await expect(service.execute({ userId: user.id, password })).rejects.toBeInstanceOf(ConflictError);
 	});
 
 	it('rejects a nonexistent user', async () => {

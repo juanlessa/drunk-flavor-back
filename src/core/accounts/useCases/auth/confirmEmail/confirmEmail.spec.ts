@@ -49,17 +49,17 @@ describe('Confirm Email', () => {
 		});
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
-			token_hash: cryptoProvider.hashToken(token),
-			user_id: createdUser._id.toString(),
+			tokenHash: cryptoProvider.hashToken(token),
+			userId: createdUser.id,
 			type: TokenTypes['email-verification'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+			expiresAt: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		await service.execute({
 			token,
 		});
 
-		const verifyUser = (await usersRepository.findById(createdUser._id.toString())) as User;
+		const verifyUser = (await usersRepository.findById(createdUser.id)) as User;
 
 		expect(verifyUser).toBeDefined();
 		expect(verifyUser.status).toEqual(UserStatuses['active']);
@@ -83,10 +83,10 @@ describe('Confirm Email', () => {
 		});
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
-			token_hash: cryptoProvider.hashToken(token),
-			user_id: createdUser._id.toString(),
+			tokenHash: cryptoProvider.hashToken(token),
+			userId: createdUser.id,
 			type: TokenTypes['email-verification'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+			expiresAt: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		vi.advanceTimersByTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);
@@ -106,10 +106,10 @@ describe('Confirm Email', () => {
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		const nonexistentUserId = new ObjectId().toString();
 		await tokensRepository.create({
-			token_hash: cryptoProvider.hashToken(token),
-			user_id: nonexistentUserId,
+			tokenHash: cryptoProvider.hashToken(token),
+			userId: nonexistentUserId,
 			type: TokenTypes['email-verification'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+			expiresAt: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		await expect(

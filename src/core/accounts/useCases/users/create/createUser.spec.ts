@@ -91,16 +91,16 @@ describe('Create User', () => {
 		expect(verifyUser.role).toEqual(role);
 
 		const verifyToken = (await tokensRepository.findByUserIdAndType({
-			user_id: verifyUser._id.toString(),
+			userId: verifyUser.id,
 			type: TokenTypes['email-verification'],
 		})) as Token;
 
 		expect(verifyToken).not.toBeNull();
-		expect(verifyToken.token_hash).toBeTruthy();
+		expect(verifyToken.tokenHash).toBeTruthy();
 
-		const verifyCredential = await credentialsRepository.findByUserId(verifyUser._id.toString());
+		const verifyCredential = await credentialsRepository.findByUserId(verifyUser.id);
 		expect(verifyCredential).not.toBeNull();
-		expect(await hashProvider.compare(password, verifyCredential!.password_hash)).toBe(true);
+		expect(await hashProvider.compare(password, verifyCredential!.passwordHash)).toBe(true);
 
 		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
 		expect(emailQueueProvider.addMock).toHaveBeenCalledWith(
@@ -143,12 +143,12 @@ describe('Create User', () => {
 		expect(verifyUser.surname).toEqual(surname);
 
 		const verifyToken = (await tokensRepository.findByUserIdAndType({
-			user_id: verifyUser._id.toString(),
+			userId: verifyUser.id,
 			type: TokenTypes['email-verification'],
 		})) as Token;
 
 		expect(verifyToken).not.toBeNull();
-		expect(verifyToken.token_hash).toBeTruthy();
+		expect(verifyToken.tokenHash).toBeTruthy();
 
 		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
 		expect(emailQueueProvider.addMock).toHaveBeenCalledWith(
@@ -167,10 +167,10 @@ describe('Create User', () => {
 		});
 		const initialToken = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
-			token_hash: cryptoProvider.hashToken(initialToken),
-			user_id: createdUser._id.toString(),
+			tokenHash: cryptoProvider.hashToken(initialToken),
+			userId: createdUser.id,
 			type: TokenTypes['email-verification'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+			expiresAt: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		vi.advanceTimersByTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);
@@ -185,12 +185,12 @@ describe('Create User', () => {
 		expect(verifyUser?.surname).toEqual(surname);
 
 		const verifyToken = (await tokensRepository.findByUserIdAndType({
-			user_id: verifyUser._id.toString(),
+			userId: verifyUser.id,
 			type: TokenTypes['email-verification'],
 		})) as Token;
 
 		expect(verifyToken).not.toBeNull();
-		expect(verifyToken.token_hash).toBeTruthy();
+		expect(verifyToken.tokenHash).toBeTruthy();
 
 		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
 		expect(emailQueueProvider.addMock).toHaveBeenCalledWith(

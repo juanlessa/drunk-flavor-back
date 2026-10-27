@@ -20,14 +20,14 @@ describe('Refresh Tokem', () => {
 	it('should be able to find an existing user to refresh their token', async () => {
 		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 
-		const result = await service.execute({ user_id: createdUser._id.toString() });
+		const result = await service.execute({ userId: createdUser.id });
 
-		expect(result._id).toEqual(createdUser._id);
+		expect(result.id).toEqual(createdUser.id);
 		expect(result.role).toEqual(createdUser.role);
 	});
 
 	it('should not be able to find a non-existent user to refresh their token', async () => {
 		const nonexistentId = new ObjectId().toString();
-		await expect(service.execute({ user_id: nonexistentId })).rejects.toBeInstanceOf(NotFoundError);
+		await expect(service.execute({ userId: nonexistentId })).rejects.toBeInstanceOf(NotFoundError);
 	});
 });

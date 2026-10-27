@@ -38,21 +38,21 @@ describe('UsersRepositoryInMemory', () => {
 		it('returns a match and null otherwise', async () => {
 			const created = await repository.create(createUserFactory({ email: 'byid@example.com' }));
 
-			expect((await repository.findById(created._id.toString()))?.email).toBe('byid@example.com');
+			expect((await repository.findById(created.id))?.email).toBe('byid@example.com');
 			expect(await repository.findById(new ObjectId().toString())).toBeNull();
 		});
 	});
 
 	describe('update', () => {
-		it('deep-merges partial data, refreshes updated_at and preserves untouched fields', async () => {
+		it('deep-merges partial data, refreshes updatedAt and preserves untouched fields', async () => {
 			const created = await repository.create(createUserFactory({ email: 'update@example.com' }));
 
-			const updated = await repository.update({ id: created._id.toString(), name: 'Jane' });
+			const updated = await repository.update({ id: created.id, name: 'Jane' });
 
 			expect(updated.name).toBe('Jane');
 			expect(updated.surname).toBe(created.surname);
 			expect(updated.email).toBe('update@example.com');
-			expect(updated.updated_at.getTime()).toBeGreaterThanOrEqual(created.updated_at.getTime());
+			expect(updated.updatedAt.getTime()).toBeGreaterThanOrEqual(created.updatedAt.getTime());
 		});
 
 		it('throws NotFoundError when the id is missing', async () => {
@@ -66,9 +66,9 @@ describe('UsersRepositoryInMemory', () => {
 		it('returns the removed record', async () => {
 			const created = await repository.create(createUserFactory({ email: 'delete@example.com' }));
 
-			const deleted = await repository.delete(created._id.toString());
-			expect(deleted._id.toString()).toBe(created._id.toString());
-			expect(await repository.findById(created._id.toString())).toBeNull();
+			const deleted = await repository.delete(created.id);
+			expect(deleted.id).toBe(created.id);
+			expect(await repository.findById(created.id)).toBeNull();
 		});
 
 		it('throws NotFoundError when the id is missing', async () => {

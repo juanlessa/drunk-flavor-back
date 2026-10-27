@@ -26,6 +26,6 @@ export class CreatePasswordService {
 		}
 
 		const passwordHash = await this.hashProvider.hash(password);
-		await this.credentialsRepository.create({ user_id: userId, password_hash: passwordHash });
+		await this.credentialsRepository.create({ userId: userId, passwordHash: passwordHash });
 	}
 }

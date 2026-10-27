@@ -129,7 +129,7 @@ describe('Google Sign-In', () => {
 		const { email } = await createUser(app, {
 			email: verifiedIdentity.email,
 			status: 'active',
-			email_verified: true,
+			emailVerified: true,
 		});
 
 		setNextVerifiedGoogleIdentity(verifiedIdentity);

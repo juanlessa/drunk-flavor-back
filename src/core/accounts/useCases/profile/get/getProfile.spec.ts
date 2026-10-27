@@ -29,31 +29,31 @@ describe('Get Profile', () => {
 	it('returns a provider-only profile without exposing identity details', async () => {
 		const user = await usersRepository.create(userData);
 		await identitiesRepository.create({
-			user_id: user._id.toString(),
+			userId: user.id,
 			provider: IdentityProviders.google,
-			provider_sub: 'google-sub',
+			providerSubject: 'google-sub',
 		});
 
-		const result = await service.execute({ id: user._id.toString() });
+		const result = await service.execute({ id: user.id });
 
 		expect(result.authentication_methods).toEqual({
 			password: { enabled: false },
 			providers: [IdentityProviders.google],
 		});
-		expect(result).not.toHaveProperty('password_hash');
-		expect(result).not.toHaveProperty('provider_sub');
+		expect(result).not.toHaveProperty('passwordHash');
+		expect(result).not.toHaveProperty('providerSubject');
 	});
 
 	it('reports both password and Google for a hybrid account', async () => {
 		const user = await usersRepository.create(userData);
-		await credentialsRepository.create({ user_id: user._id.toString(), password_hash: 'hash' });
+		await credentialsRepository.create({ userId: user.id, passwordHash: 'hash' });
 		await identitiesRepository.create({
-			user_id: user._id.toString(),
+			userId: user.id,
 			provider: IdentityProviders.google,
-			provider_sub: 'google-sub',
+			providerSubject: 'google-sub',
 		});
 
-		const result = await service.execute({ id: user._id.toString() });
+		const result = await service.execute({ id: user.id });
 
 		expect(result.authentication_methods).toEqual({
 			password: { enabled: true },

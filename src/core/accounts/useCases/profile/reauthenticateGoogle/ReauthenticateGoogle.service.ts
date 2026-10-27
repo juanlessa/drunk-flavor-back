@@ -19,7 +19,7 @@ export class ReauthenticateGoogleService {
 			googleIdentity.subject,
 		);
 
-		if (!identity || identity.user_id !== userId) {
+		if (!identity || identity.userId !== userId) {
 			throw new UnauthorizedError('apiResponses.profile.invalidReauthentication', {
 				path: 'ReauthenticateGoogle.service',
 				cause: 'Google identity is not linked to the authenticated user',

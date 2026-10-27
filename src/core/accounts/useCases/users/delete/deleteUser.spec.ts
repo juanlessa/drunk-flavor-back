@@ -50,9 +50,9 @@ describe('Delete User', () => {
 	it('should be able to delete a user', async () => {
 		const createdUser = await usersRepository.create(userData);
 
-		await service.execute({ id: createdUser._id.toString(), actor: admin });
+		await service.execute({ id: createdUser.id, actor: admin });
 
-		const findDeledUser = await usersRepository.findById(createdUser._id.toString());
+		const findDeledUser = await usersRepository.findById(createdUser.id);
 
 		expect(findDeledUser).toBeNull();
 	});
@@ -65,35 +65,33 @@ describe('Delete User', () => {
 	it('should not be able to delete a user when the actor is a member', async () => {
 		const createdUser = await usersRepository.create(userData);
 
-		await expect(service.execute({ id: createdUser._id.toString(), actor: member })).rejects.toBeInstanceOf(
-			ForbiddenError,
-		);
+		await expect(service.execute({ id: createdUser.id, actor: member })).rejects.toBeInstanceOf(ForbiddenError);
 
-		const findUser = await usersRepository.findById(createdUser._id.toString());
+		const findUser = await usersRepository.findById(createdUser.id);
 		expect(findUser).not.toBeNull();
 	});
 
 	it('should delete the user together with its tokens, credential and identities', async () => {
 		const createdUser = await usersRepository.create(userData);
-		const userId = createdUser._id.toString();
+		const userId = createdUser.id;
 
 		await tokensRepository.create({
-			user_id: userId,
-			token_hash: await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE),
+			userId: userId,
+			tokenHash: await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE),
 			type: TokenTypes['forgot-password'],
-			expires_at: new Date(Date.now() + 60_000),
+			expiresAt: new Date(Date.now() + 60_000),
 		});
 		await tokensRepository.create({
-			user_id: userId,
-			token_hash: await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE),
+			userId: userId,
+			tokenHash: await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE),
 			type: TokenTypes['email-verification'],
-			expires_at: new Date(Date.now() + 60_000),
+			expiresAt: new Date(Date.now() + 60_000),
 		});
-		await credentialsRepository.create({ user_id: userId, password_hash: 'hashed-password' });
+		await credentialsRepository.create({ userId: userId, passwordHash: 'hashed-password' });
 		await identitiesRepository.create({
-			user_id: userId,
+			userId: userId,
 			provider: IdentityProviders.google,
-			provider_sub: 'google-sub-123',
+			providerSubject: 'google-sub-123',
 		});
 
 		await service.execute({ id: userId, actor: admin });

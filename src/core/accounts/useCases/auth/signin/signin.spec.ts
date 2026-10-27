@@ -21,8 +21,8 @@ const password = 'Password-12345678';
 const seedUserWithCredential = async (userStatus = status) => {
 	const user = await usersRepository.create({ name, surname, email, role, status: userStatus });
 	await credentialsRepository.create({
-		user_id: user._id.toString(),
-		password_hash: await hashProvider.hash(password),
+		userId: user.id,
+		passwordHash: await hashProvider.hash(password),
 	});
 	return user;
 };

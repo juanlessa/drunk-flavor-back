@@ -41,22 +41,22 @@ describe('GoogleAuth', () => {
 			name: 'Jane',
 			surname: 'Doe',
 			email: 'janedoe@example.com',
-			email_verified: true,
+			emailVerified: true,
 			role: Roles.member,
 			status: UserStatuses.active,
 		});
 		await identitiesRepository.create({
-			user_id: user._id.toString(),
+			userId: user.id,
 			provider: IdentityProviders.google,
-			provider_sub: verifiedIdentity.subject,
+			providerSubject: verifiedIdentity.subject,
 			email: 'janedoe@example.com',
-			email_verified: true,
+			isEmailVerified: true,
 		});
 		verifier.setNextIdentity(verifiedIdentity);
 
 		const result = await service.execute({ idToken });
 
-		expect(result.user.id).toBe(user._id.toString());
+		expect(result.user.id).toBe(user.id);
 		expect(result.user.role).toBe(Roles.member);
 		expect(result.user.status).toBe(UserStatuses.active);
 		// No extra user was created.
@@ -65,9 +65,9 @@ describe('GoogleAuth', () => {
 
 	it('branch (a) orphan: rejects an identity whose user is gone', async () => {
 		await identitiesRepository.create({
-			user_id: '000000000000000000000000',
+			userId: '000000000000000000000000',
 			provider: IdentityProviders.google,
-			provider_sub: verifiedIdentity.subject,
+			providerSubject: verifiedIdentity.subject,
 		});
 		verifier.setNextIdentity(verifiedIdentity);
 
@@ -87,7 +87,7 @@ describe('GoogleAuth', () => {
 			name: 'Jane',
 			surname: 'Doe',
 			email: 'janedoe@example.com',
-			email_verified: true,
+			emailVerified: true,
 			role: Roles.partner,
 			status: UserStatuses.active,
 		});
@@ -97,7 +97,7 @@ describe('GoogleAuth', () => {
 
 		const linked = await identitiesRepository.findByProviderSub(IdentityProviders.google, verifiedIdentity.subject);
 		expect(linked).toBeNull();
-		expect((await usersRepository.findById(existing._id.toString()))?.status).toBe(UserStatuses.active);
+		expect((await usersRepository.findById(existing.id))?.status).toBe(UserStatuses.active);
 	});
 
 	it('branch (c): creates a new active, verified member user + identity', async () => {
@@ -107,19 +107,19 @@ describe('GoogleAuth', () => {
 
 		const created = await usersRepository.findByEmail('janedoe@example.com');
 		expect(created).not.toBeNull();
-		expect(result.user.id).toBe(created?._id.toString());
-		expect(created?.email_verified).toBe(true);
+		expect(result.user.id).toBe(created?.id);
+		expect(created?.emailVerified).toBe(true);
 		expect(created?.status).toBe(UserStatuses.active);
 		expect(result.user.status).toBe(UserStatuses.active);
 		expect(created?.role).toBe(Roles.member);
-		expect(created?.avatar_url).toBe(verifiedIdentity.pictureUrl);
+		expect(created?.avatarUrl).toBe(verifiedIdentity.pictureUrl);
 
 		const identity = await identitiesRepository.findByProviderSub(
 			IdentityProviders.google,
 			verifiedIdentity.subject,
 		);
 		expect(identity).not.toBeNull();
-		expect(identity?.user_id).toBe(created?._id.toString());
+		expect(identity?.userId).toBe(created?.id);
 	});
 
 	it('branch (c): creates an incomplete_profile user without a surname when familyName is absent', async () => {
@@ -155,14 +155,14 @@ describe('GoogleAuth', () => {
 			name: 'Jane',
 			surname: 'Doe',
 			email: 'janedoe@example.com',
-			email_verified: true,
+			emailVerified: true,
 			role: Roles.member,
 			status: UserStatuses.active,
 		});
 		await identitiesRepository.create({
-			user_id: racedUser._id.toString(),
+			userId: racedUser.id,
 			provider: IdentityProviders.google,
-			provider_sub: verifiedIdentity.subject,
+			providerSubject: verifiedIdentity.subject,
 		});
 
 		// Force the service to skip branch (a) by making findByProviderSub return

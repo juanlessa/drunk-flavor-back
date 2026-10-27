@@ -9,16 +9,18 @@ import {
 	IDENTITY_PROVIDER_SUB_UNIQUE_INDEX,
 	IDENTITY_USER_PROVIDER_UNIQUE_INDEX,
 	IdentityModel,
+	IdentityPersistence,
 } from '../entities/identity.model';
+import { IdentityMapper } from '../mappers/identity.mapper';
 import { isDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
-import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
 
 export class IdentitiesRepository implements IIdentitiesRepository {
 	private model = IdentityModel;
 
 	async create(data: CreateIdentity): Promise<Identity> {
 		try {
-			return await this.model.create(data);
+			const document = await this.model.create(IdentityMapper.toPersistence(data));
+			return IdentityMapper.toDomain(document);
 		} catch (error) {
 			if (isDuplicateKeyError(error, [IDENTITY_PROVIDER_SUB_UNIQUE_INDEX])) {
 				throw new IdentityProviderSubjectAlreadyExistsError({ path: 'Identities.repository' });
@@ -30,11 +32,12 @@ export class IdentitiesRepository implements IIdentitiesRepository {
 		}
 	}
 
-	async findByProviderSub(provider: IdentityProvider, providerSub: string): Promise<Identity | null> {
-		return this.model
-			.findOne<Identity>({ provider, provider_sub: providerSub })
-			.lean<Identity>({ transform: removeLeanVersionKey })
+	async findByProviderSub(provider: IdentityProvider, providerSubject: string): Promise<Identity | null> {
+		const document = await this.model
+			.findOne({ provider, provider_sub: providerSubject })
+			.lean<IdentityPersistence>()
 			.exec();
+		return document ? IdentityMapper.toDomain(document) : null;
 	}
 
 	async listProvidersByUserId(userId: string): Promise<IdentityProvider[]> {
@@ -43,14 +46,24 @@ export class IdentitiesRepository implements IIdentitiesRepository {
 	}
 
 	async touchLastLogin(id: string, date: Date): Promise<void> {
-		await this.model.updateOne({ _id: id }, { $set: { last_login_at: date } }).exec();
+		const objectId = IdentityMapper.toObjectId(id);
+		if (!objectId) {
+			return;
+		}
+		await this.model
+			.updateOne(
+				{ _id: objectId },
+				{ $set: IdentityMapper.toPersistence({ lastLoginAt: date }) },
+				{
+					runValidators: true,
+				},
+			)
+			.exec();
 	}
 
 	async findByUserId(userId: string): Promise<Identity[]> {
-		return this.model
-			.find<Identity>({ user_id: userId })
-			.lean<Identity[]>({ transform: removeLeanVersionKey })
-			.exec();
+		const documents = await this.model.find({ user_id: userId }).lean<IdentityPersistence[]>().exec();
+		return documents.map((document) => IdentityMapper.toDomain(document));
 	}
 
 	async deleteByUserId(userId: string): Promise<void> {

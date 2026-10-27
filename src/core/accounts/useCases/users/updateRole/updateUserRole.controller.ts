@@ -10,7 +10,7 @@ export const updateUserRoleController: Controller<{ Body: UpdateUserRoleReqBody 
 
 	const service = resolveUpdateUserRoleService();
 
-	await service.execute({ user_id, role, actor });
+	await service.execute({ userId: user_id, role, actor });
 
 	return reply.status(HTTP_STATUS.no_content).send();
 };

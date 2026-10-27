@@ -11,16 +11,13 @@ export const refreshTokenController: Controller = async (request, reply) => {
 		throw error;
 	}
 
-	const { id: user_id } = request.user;
+	const userId = request.user.id;
 
 	const service = resolveRefreshTokenService();
 
-	const user = await service.execute({ user_id });
+	const user = await service.execute({ userId });
 
-	const accessToken = await reply.jwtSign(
-		{ role: user.role, status: user.status },
-		{ sign: { sub: user._id.toString() } },
-	);
+	const accessToken = await reply.jwtSign({ role: user.role, status: user.status }, { sign: { sub: user.id } });
 
 	reply.setCookie(AUTH_COOKIE, accessToken, AUTH_COOKIE_OPTIONS);
 

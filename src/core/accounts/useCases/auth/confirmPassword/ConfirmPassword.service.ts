@@ -23,25 +23,25 @@ export class ConfirmPasswordService {
 		if (!tokenRecord) {
 			throw new BadRequestError('apiResponses.auth.tokenNotFound', { path: 'ConfirmPassword.service.1' });
 		}
-		const isTokenExpired = this.dateProvider.isExpiredDate(tokenRecord.expires_at);
+		const isTokenExpired = this.dateProvider.isExpiredDate(tokenRecord.expiresAt);
 		if (tokenRecord && isTokenExpired) {
-			await this.tokensRepository.delete(tokenRecord._id.toString());
+			await this.tokensRepository.delete(tokenRecord.id);
 			throw new BadRequestError('apiResponses.auth.expiredToken', { path: 'ConfirmPassword.service.2' });
 		}
 
-		const user = await this.usersRepository.findById(tokenRecord.user_id);
+		const user = await this.usersRepository.findById(tokenRecord.userId);
 		if (!user) {
 			throw new BadRequestError('apiResponses.users.notExist', { path: 'ConfirmPassword.service.3' });
 		}
 
 		const hashedPassword = await this.hashProvider.hash(password);
 
-		const existingCredential = await this.credentialsRepository.findByUserId(user._id.toString());
+		const existingCredential = await this.credentialsRepository.findByUserId(user.id);
 		if (existingCredential) {
-			await this.credentialsRepository.update({ user_id: user._id.toString(), password_hash: hashedPassword });
+			await this.credentialsRepository.update({ userId: user.id, passwordHash: hashedPassword });
 		} else {
-			await this.credentialsRepository.create({ user_id: user._id.toString(), password_hash: hashedPassword });
+			await this.credentialsRepository.create({ userId: user.id, passwordHash: hashedPassword });
 		}
-		await this.tokensRepository.delete(tokenRecord._id.toString());
+		await this.tokensRepository.delete(tokenRecord.id);
 	}
 }

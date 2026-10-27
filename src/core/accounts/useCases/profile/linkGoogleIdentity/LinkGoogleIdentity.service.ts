@@ -27,7 +27,7 @@ export class LinkGoogleIdentityService {
 		}
 
 		const credential = await this.credentialsRepository.findByUserId(userId);
-		const passwordHash = credential?.password_hash ?? (await this.hashProvider.getDummyHash());
+		const passwordHash = credential?.passwordHash ?? (await this.hashProvider.getDummyHash());
 		if (!credential || !(await this.hashProvider.compare(currentPassword, passwordHash))) {
 			throw new UnauthorizedError('apiResponses.auth.invalidCredentials', {
 				path: 'LinkGoogleIdentity.service.password',
@@ -48,7 +48,7 @@ export class LinkGoogleIdentityService {
 		);
 		if (existingIdentity) {
 			throw new ConflictError(
-				existingIdentity.user_id === userId
+				existingIdentity.userId === userId
 					? 'apiResponses.profile.googleAlreadyConnected'
 					: 'apiResponses.profile.googleIdentityUnavailable',
 				{ path: 'LinkGoogleIdentity.service.identity' },
@@ -63,13 +63,13 @@ export class LinkGoogleIdentityService {
 		}
 
 		await this.identitiesRepository.create({
-			user_id: userId,
+			userId: userId,
 			provider: IdentityProviders.google,
-			provider_sub: googleIdentity.subject,
+			providerSubject: googleIdentity.subject,
 			email: googleIdentity.email?.toLowerCase(),
-			email_verified: true,
-			picture: googleIdentity.pictureUrl,
-			last_login_at: this.dateProvider.dateNow(),
+			isEmailVerified: true,
+			pictureUrl: googleIdentity.pictureUrl,
+			lastLoginAt: this.dateProvider.dateNow(),
 		});
 	}
 }

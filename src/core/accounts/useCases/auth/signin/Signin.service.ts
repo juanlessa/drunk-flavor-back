@@ -14,9 +14,9 @@ export class SigninService {
 
 	async execute({ email, password }: Signin) {
 		const user = await this.usersRepository.findByEmail(email);
-		const credential = user ? await this.credentialsRepository.findByUserId(user._id.toString()) : null;
+		const credential = user ? await this.credentialsRepository.findByUserId(user.id) : null;
 
-		const hashToCompare = credential ? credential.password_hash : await this.hashProvider.getDummyHash();
+		const hashToCompare = credential ? credential.passwordHash : await this.hashProvider.getDummyHash();
 		const passwordMatch = await this.hashProvider.compare(password, hashToCompare);
 
 		if (!user) {
@@ -46,7 +46,7 @@ export class SigninService {
 
 		return {
 			user: {
-				id: user._id.toString(),
+				id: user.id,
 				role: user.role,
 				status: user.status,
 			},

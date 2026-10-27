@@ -48,11 +48,11 @@ export class CreateUserService {
 		}
 		if (existingUser && existingUser.status === UserStatuses['pending']) {
 			const existingToken = await this.tokensRepository.findByUserIdAndType({
-				user_id: existingUser._id.toString(),
+				userId: existingUser.id,
 				type: TokenTypes['email-verification'],
 			});
-			if (!existingToken || this.dateProvider.isExpiredDate(existingToken.expires_at)) {
-				await this.usersRepository.delete(existingUser._id.toString());
+			if (!existingToken || this.dateProvider.isExpiredDate(existingToken.expiresAt)) {
+				await this.usersRepository.delete(existingUser.id);
 			} else {
 				throw new BadRequestError('apiResponses.auth.emailVerificationPending', {
 					path: 'CreateUser.service.ensureEmailIsAvailable.pending',
@@ -68,21 +68,21 @@ export class CreateUserService {
 				name: name,
 				surname: surname,
 				email: email,
-				email_verified: false,
+				emailVerified: false,
 				role: role,
 				status: UserStatuses['pending'],
 			});
 
 			await this.credentialsRepository.create({
-				user_id: createdUser._id.toString(),
-				password_hash: passwordHash,
+				userId: createdUser.id,
+				passwordHash: passwordHash,
 			});
 
 			await this.tokensRepository.create({
-				token_hash: this.cryptoProvider.hashToken(token),
+				tokenHash: this.cryptoProvider.hashToken(token),
 				type: TokenTypes['email-verification'],
-				user_id: createdUser._id.toString(),
-				expires_at: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+				userId: createdUser.id,
+				expiresAt: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 			});
 
 			return createdUser;

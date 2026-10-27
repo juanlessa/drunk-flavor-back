@@ -79,17 +79,17 @@ describe('Signup', () => {
 		expect(verifyUser.status).toEqual(UserStatuses['pending']);
 
 		const verifyToken = (await tokensRepository.findByUserIdAndType({
-			user_id: verifyUser._id.toString(),
+			userId: verifyUser.id,
 			type: TokenTypes['email-verification'],
 		})) as Token;
 
 		expect(verifyToken).not.toBeNull();
-		expect(verifyToken.token_hash).toBeTruthy();
+		expect(verifyToken.tokenHash).toBeTruthy();
 
-		const verifyCredential = await credentialsRepository.findByUserId(verifyUser._id.toString());
+		const verifyCredential = await credentialsRepository.findByUserId(verifyUser.id);
 		expect(verifyCredential).not.toBeNull();
-		expect(verifyCredential?.password_hash).toBeTruthy();
-		expect(await hashProvider.compare(password, verifyCredential!.password_hash)).toBe(true);
+		expect(verifyCredential?.passwordHash).toBeTruthy();
+		expect(await hashProvider.compare(password, verifyCredential!.passwordHash)).toBe(true);
 	});
 
 	it('Should queue the verification email after signup', async () => {

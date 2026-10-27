@@ -1,8 +1,7 @@
+import { randomUUID } from 'node:crypto';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { CreateUser, UpdateUser } from '@/core/accounts/dtos/user.dtos';
-import { ObjectId } from 'mongodb';
-import { CompleteUser, IncompleteProfileUser, User } from '@/core/accounts/entities/user.entity';
-import { UserStatuses } from '@/core/accounts/constants/user.constants';
+import { User } from '@/core/accounts/entities/user.entity';
 import { UserEmailAlreadyExistsError } from '@/core/accounts/errors/user.errors';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
@@ -18,41 +17,26 @@ export class UsersRepositoryInMemory implements IUsersRepository {
 			throw new UserEmailAlreadyExistsError({ path: 'UsersRepositoryInMemory.create' });
 		}
 
-		const base = {
-			_id: new ObjectId(),
+		const now = new Date();
+		const record: User = {
+			id: randomUUID(),
+			name: data.name,
+			surname: data.surname,
 			email: data.email,
-			email_verified: data.email_verified ?? false,
-			avatar_url: data.avatar_url,
+			emailVerified: data.emailVerified ?? false,
+			avatarUrl: data.avatarUrl,
 			role: data.role,
-			created_at: new Date(),
-			updated_at: new Date(),
+			status: data.status,
+			createdAt: now,
+			updatedAt: now,
 		};
-
-		let record: User;
-		if (data.status === UserStatuses.incomplete_profile) {
-			const incomplete: IncompleteProfileUser = {
-				...base,
-				status: UserStatuses.incomplete_profile,
-				name: data.name,
-				surname: data.surname,
-			};
-			record = incomplete;
-		} else {
-			const complete: CompleteUser = {
-				...base,
-				status: data.status,
-				name: data.name ?? '',
-				surname: data.surname ?? '',
-			};
-			record = complete;
-		}
 
 		this.collection.push(record);
 		return record;
 	}
 
 	async update({ id, ...data }: UpdateUser): Promise<User> {
-		const recordIndex = this.collection.findIndex((rec) => rec._id.toString() === id);
+		const recordIndex = this.collection.findIndex((record) => record.id === id);
 		if (recordIndex === -1) {
 			throw new NotFoundError('apiResponses.users.notFound', {
 				path: 'Users.repository.update',
@@ -61,24 +45,15 @@ export class UsersRepositoryInMemory implements IUsersRepository {
 		}
 
 		const current = this.collection[recordIndex];
-		// deepUpdate only iterates existing keys, so fields absent from the stored
-		// record (e.g. name/surname on an incomplete_profile user being completed)
-		// must be added explicitly from the update payload.
-		const merged = { ...deepUpdate(data, current), ...data, updated_at: new Date() };
+		const record: User = { ...deepUpdate(data, current), ...data, updatedAt: new Date() };
 		if (
 			data.email !== undefined &&
 			this.collection.some(
-				(record, index) => index !== recordIndex && record.email.toLowerCase() === data.email?.toLowerCase(),
+				(candidate, index) =>
+					index !== recordIndex && candidate.email.toLowerCase() === data.email?.toLowerCase(),
 			)
 		) {
 			throw new UserEmailAlreadyExistsError({ path: 'UsersRepositoryInMemory.update' });
-		}
-
-		let record: User;
-		if (merged.status === UserStatuses.incomplete_profile) {
-			record = { ...merged, status: UserStatuses.incomplete_profile };
-		} else {
-			record = { ...merged, status: merged.status, name: merged.name ?? '', surname: merged.surname ?? '' };
 		}
 
 		this.collection[recordIndex] = record;
@@ -86,7 +61,7 @@ export class UsersRepositoryInMemory implements IUsersRepository {
 	}
 
 	async delete(id: string): Promise<User> {
-		const recordIndex = this.collection.findIndex((rec) => rec._id.toString() === id);
+		const recordIndex = this.collection.findIndex((record) => record.id === id);
 		if (recordIndex === -1) {
 			throw new NotFoundError('apiResponses.users.notFound', {
 				path: 'Users.repository.delete',
@@ -99,12 +74,12 @@ export class UsersRepositoryInMemory implements IUsersRepository {
 	}
 
 	async findByEmail(email: string): Promise<User | null> {
-		const recordFound = this.collection.find((rec) => rec.email === email);
+		const recordFound = this.collection.find((record) => record.email === email);
 		return recordFound || null;
 	}
 
 	async findById(id: string): Promise<User | null> {
-		const recordFound = this.collection.find((rec) => rec._id.toString() === id);
+		const recordFound = this.collection.find((record) => record.id === id);
 		return recordFound || null;
 	}
 

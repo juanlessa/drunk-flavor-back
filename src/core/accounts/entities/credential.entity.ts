@@ -1,14 +1,14 @@
-import { DatabaseCommonInfo } from '@/infrastructure/mongo/types';
+import { EntityMetadata } from '@/shared/types/entity.types';
 
 /**
  * Credential =
- *     _id: ObjectId
- *     user_id: string (references User._id)
- *     password_hash: string (bcrypt hash of the local password)
- *     created_at: Date
- *     updated_at: Date
+ *     id: string
+ *     userId: string (references User.id)
+ *     passwordHash: string (bcrypt hash of the local password)
+ *     createdAt: Date
+ *     updatedAt: Date
  */
-export type Credential = DatabaseCommonInfo & {
-	user_id: string;
-	password_hash: string;
+export type Credential = EntityMetadata & {
+	userId: string;
+	passwordHash: string;
 };

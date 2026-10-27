@@ -24,7 +24,7 @@ describe('UsersRepository (integration)', () => {
 	it('returns lean documents without __v on findById and findAll', async () => {
 		const created = await repository.create(createUserFactory({ email: 'lean@example.com' }));
 
-		const byId = await repository.findById(created._id.toString());
+		const byId = await repository.findById(created.id);
 		const [listed] = await repository.findAll({});
 
 		expect(byId as Record<string, unknown>).not.toHaveProperty('__v');
@@ -57,8 +57,15 @@ describe('UsersRepository (integration)', () => {
 		await expect(repository.delete(new ObjectId().toString())).rejects.toBeInstanceOf(NotFoundError);
 
 		const created = await repository.create(createUserFactory({ email: 'update@example.com' }));
-		const updated = await repository.update({ id: created._id.toString(), name: 'Jane' });
+		const updated = await repository.update({ id: created.id, name: 'Jane' });
 		expect(updated.name).toBe('Jane');
+	});
+
+	it('runs schema validators on updates', async () => {
+		const created = await repository.create(createUserFactory({ email: 'validated-update@example.com' }));
+
+		await expect(repository.update({ id: created.id, role: 'superuser' as never })).rejects.toThrow();
+		await expect(repository.update({ id: created.id, status: 'frozen' as never })).rejects.toThrow();
 	});
 
 	it('translates a duplicate email on create to UserEmailAlreadyExistsError', async () => {
@@ -90,7 +97,7 @@ describe('UsersRepository (integration)', () => {
 		const existing = await repository.create(createUserFactory({ email: 'taken@example.com' }));
 		const mover = await repository.create(createUserFactory({ email: 'mover@example.com' }));
 
-		await expect(repository.update({ id: mover._id.toString(), email: existing.email })).rejects.toBeInstanceOf(
+		await expect(repository.update({ id: mover.id, email: existing.email })).rejects.toBeInstanceOf(
 			UserEmailAlreadyExistsError,
 		);
 	});
@@ -114,11 +121,11 @@ describe('UsersRepository (integration)', () => {
 
 		const expectedOrder = [...ids].map((id) => id.toString()).sort((a, b) => (a > b ? -1 : 1));
 
-		const firstPage = await repository.findAll({ page: 1, limit: 2, sort: { created_at: -1 } });
-		const secondPage = await repository.findAll({ page: 2, limit: 2, sort: { created_at: -1 } });
+		const firstPage = await repository.findAll({ page: 1, limit: 2, sort: { createdAt: -1 } });
+		const secondPage = await repository.findAll({ page: 2, limit: 2, sort: { createdAt: -1 } });
 
-		expect(firstPage.map((item) => item._id.toString())).toEqual(expectedOrder.slice(0, 2));
-		expect(secondPage.map((item) => item._id.toString())).toEqual(expectedOrder.slice(2, 3));
+		expect(firstPage.map((item) => item.id)).toEqual(expectedOrder.slice(0, 2));
+		expect(secondPage.map((item) => item.id)).toEqual(expectedOrder.slice(2, 3));
 	});
 
 	it('succeeds with no sort supplied', async () => {

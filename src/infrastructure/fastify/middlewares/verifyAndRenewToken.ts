@@ -2,7 +2,7 @@ import { AUTH_COOKIE, AUTH_COOKIE_OPTIONS } from '../constants/cookie.constants'
 import { Middleware } from '../types/fastify.types';
 import { instanceOfFastifyJwtError, instanceOfJwtAuthorizationTokenExpiredError } from '../errors/fastifyJwtError';
 import { signOut } from './signOut';
-import { resolveUsersRepository } from '@/core/accounts/infra/mongo/container';
+import { resolveAccountsModule } from '@/core/accounts/public';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 
@@ -31,8 +31,8 @@ export const verifyAndRenewToken: Middleware = async (request, reply) => {
 	// verify user
 	const { id } = request.user;
 
-	const usersRepository = resolveUsersRepository();
-	const user = await usersRepository.findById(id);
+	const accountsModule = resolveAccountsModule();
+	const user = await accountsModule.findUserById(id);
 	if (!user) {
 		throw new NotFoundError('apiResponses.users.notExist', { path: 'verifyAndRenewToken.middleware' });
 	}

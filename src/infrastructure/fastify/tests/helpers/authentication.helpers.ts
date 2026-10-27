@@ -17,10 +17,10 @@ export const createUser = async (
 	const userData = createUserFactory(userOptions);
 	const user = await usersRepository.create(userData);
 	await credentialsRepository.create({
-		user_id: user._id.toString(),
-		password_hash: await hashProvider.hash(password),
+		userId: user.id,
+		passwordHash: await hashProvider.hash(password),
 	});
-	return { ...userData, password, id: user._id.toString() };
+	return { ...userData, password, id: user.id };
 };
 
 export async function createAndAuthenticateUser(

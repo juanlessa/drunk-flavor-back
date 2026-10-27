@@ -13,9 +13,6 @@ export const updateProfileController: Controller<{ Body: UpdateUserProfileReqBod
 
 	const { user } = await service.execute({ id, name, surname });
 
-	// Re-issue the access token so the `status` claim reflects a just-completed
-	// profile; otherwise the stale token would keep the user gated. Mirror the
-	// cookie/session issuance used on sign-in.
 	const accessToken = await reply.jwtSign({ role: user.role, status: user.status }, { sign: { sub: user.id } });
 	reply.setCookie(AUTH_COOKIE, accessToken, AUTH_COOKIE_OPTIONS);
 

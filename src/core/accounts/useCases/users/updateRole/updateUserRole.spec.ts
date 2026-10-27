@@ -32,9 +32,9 @@ describe('Update User Role', () => {
 			status,
 		});
 
-		await service.execute({ user_id: createdPartnerUser._id.toString(), role: Roles.admin, actor: admin });
+		await service.execute({ userId: createdPartnerUser.id, role: Roles.admin, actor: admin });
 
-		const verifyUser = (await usersRepository.findById(createdPartnerUser._id.toString())) as User;
+		const verifyUser = (await usersRepository.findById(createdPartnerUser.id)) as User;
 
 		expect(verifyUser.role).toEqual(Roles.admin);
 	});
@@ -43,7 +43,7 @@ describe('Update User Role', () => {
 		const nonexistentId = new ObjectId().toString();
 		await expect(
 			service.execute({
-				user_id: nonexistentId,
+				userId: nonexistentId,
 				role: Roles.admin,
 				actor: admin,
 			}),
@@ -60,10 +60,10 @@ describe('Update User Role', () => {
 		});
 
 		await expect(
-			service.execute({ user_id: createdPartnerUser._id.toString(), role: Roles.admin, actor: member }),
+			service.execute({ userId: createdPartnerUser.id, role: Roles.admin, actor: member }),
 		).rejects.toBeInstanceOf(ForbiddenError);
 
-		const verifyUser = (await usersRepository.findById(createdPartnerUser._id.toString())) as User;
+		const verifyUser = (await usersRepository.findById(createdPartnerUser.id)) as User;
 		expect(verifyUser.role).toEqual(role);
 	});
 });

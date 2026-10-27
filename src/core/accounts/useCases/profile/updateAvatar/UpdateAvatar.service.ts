@@ -27,13 +27,13 @@ export class UpdateAvatarService {
 		await this.storageProvider.uploadFile({ fileStream, name, mimetype });
 
 		try {
-			await this.usersRepository.update({ id: userId, avatar_url: this.storageProvider.getFileURL(name) });
+			await this.usersRepository.update({ id: userId, avatarUrl: this.storageProvider.getFileURL(name) });
 		} catch (error) {
 			await this.storageProvider.deleteFile(name);
 			throw error;
 		}
 
-		const previousName = getManagedStoredFileName(user.avatar_url, userId, 'avatar');
+		const previousName = getManagedStoredFileName(user.avatarUrl, userId, 'avatar');
 		if (previousName) await this.storageProvider.deleteFile(previousName);
 	}
 }

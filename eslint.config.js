@@ -31,10 +31,9 @@ const typescriptConfig = tsEslint.config({
 /**
  * Module boundary enforcement for the modular monolith.
  *
- * Each bounded context under `src/core/<module>` must stay self-contained: it may
- * not import from a sibling module. Cross-module communication will go through a
- * public interface exposed in `src/shared`. This mirrors the "no-restricted-imports
- * with patterns" guidance from the ESLint docs, scoped per module via `files`.
+ * Each bounded context under `src/core/<module>` must stay self-contained. Imports
+ * from sibling modules are allowed only through that module's `public` folder;
+ * internal entities, repositories, use cases, and infrastructure remain private.
  */
 const coreModules = ['accounts', 'drinks', 'engagement'];
 
@@ -47,8 +46,8 @@ const moduleBoundaryConfigs = coreModules.map((module) => {
 				'error',
 				{
 					patterns: otherModules.map((other) => ({
-						group: [`@/core/${other}`, `@/core/${other}/**`],
-						message: `"${module}" must not import from the "${other}" module. Cross-module communication must go through a public interface exposed in "src/shared".`,
+						regex: `^@/core/${other}(?:$|/(?!public(?:/|$)))`,
+						message: `"${module}" may import from the "${other}" module only through "@/core/${other}/public".`,
 					})),
 				},
 			],

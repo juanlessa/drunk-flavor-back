@@ -22,7 +22,7 @@ const updatedPassword = 'Test-password-1234';
 const seedUserWithCredential = async () => {
 	const hashedPassword = await hashProvider.hash(password);
 	const createdUser = await usersRepository.create({ name, surname, email, role, status });
-	await credentialsRepository.create({ user_id: createdUser._id.toString(), password_hash: hashedPassword });
+	await credentialsRepository.create({ userId: createdUser.id, passwordHash: hashedPassword });
 	return { createdUser, hashedPassword };
 };
 
@@ -38,15 +38,15 @@ describe('Update Password', () => {
 		const { createdUser, hashedPassword } = await seedUserWithCredential();
 
 		await service.execute({
-			id: createdUser._id.toString(),
+			id: createdUser.id,
 			currentPassword: password,
 			newPassword: updatedPassword,
 		});
 
-		const verifyCredential = await credentialsRepository.findByUserId(createdUser._id.toString());
+		const verifyCredential = await credentialsRepository.findByUserId(createdUser.id);
 		expect(verifyCredential).not.toBeNull();
-		expect(verifyCredential?.password_hash).not.toEqual(hashedPassword);
-		expect(await hashProvider.compare(updatedPassword, verifyCredential!.password_hash)).toBe(true);
+		expect(verifyCredential?.passwordHash).not.toEqual(hashedPassword);
+		expect(await hashProvider.compare(updatedPassword, verifyCredential!.passwordHash)).toBe(true);
 	});
 
 	it('Should not be able to update the password of a nonexistent user', async () => {
@@ -66,7 +66,7 @@ describe('Update Password', () => {
 
 		await expect(
 			service.execute({
-				id: createdUser._id.toString(),
+				id: createdUser.id,
 				currentPassword: password,
 				newPassword: updatedPassword,
 			}),
@@ -78,7 +78,7 @@ describe('Update Password', () => {
 
 		await expect(
 			service.execute({
-				id: createdUser._id.toString(),
+				id: createdUser.id,
 				currentPassword: 'invalid-current-password',
 				newPassword: updatedPassword,
 			}),
@@ -90,7 +90,7 @@ describe('Update Password', () => {
 
 		await expect(
 			service.execute({
-				id: createdUser._id.toString(),
+				id: createdUser.id,
 				currentPassword: password,
 				newPassword: password,
 			}),

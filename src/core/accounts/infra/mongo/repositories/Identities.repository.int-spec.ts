@@ -7,12 +7,13 @@ import {
 	IdentityUserProviderAlreadyExistsError,
 } from '@/core/accounts/errors/identity.errors';
 
-const buildIdentity = (overrides?: { user_id?: string; provider_sub?: string }) => ({
-	user_id: overrides?.user_id ?? new ObjectId().toString(),
+const buildIdentity = (overrides?: { userId?: string; providerSubject?: string }) => ({
+	userId: overrides?.userId ?? new ObjectId().toString(),
 	provider: 'google' as const,
-	provider_sub: overrides?.provider_sub ?? new ObjectId().toString(),
+	providerSubject: overrides?.providerSubject ?? new ObjectId().toString(),
 	email: 'johndoe@example.com',
-	email_verified: true,
+	isEmailVerified: true,
+	pictureUrl: 'https://example.com/avatar.png',
 });
 
 let repository: IdentitiesRepository;
@@ -21,21 +22,19 @@ describe('IdentitiesRepository (integration)', () => {
 	beforeAll(async () => {
 		await IdentityModel.init();
 	});
-
 	beforeEach(() => {
 		repository = new IdentitiesRepository();
 	});
-
 	afterEach(async () => {
 		await IdentityModel.deleteMany({});
 	});
 
-	it('creates and finds an identity by provider/provider_sub without __v', async () => {
-		const provider_sub = new ObjectId().toString();
-		const created = await repository.create(buildIdentity({ provider_sub }));
-
-		const found = await repository.findByProviderSub('google', provider_sub);
-		expect(found?._id.toString()).toBe(created._id.toString());
+	it('creates and finds a camelCase identity without __v', async () => {
+		const providerSubject = new ObjectId().toString();
+		const created = await repository.create(buildIdentity({ providerSubject }));
+		const found = await repository.findByProviderSub('google', providerSubject);
+		expect(found?.id).toBe(created.id);
+		expect(found?.pictureUrl).toBe('https://example.com/avatar.png');
 		expect(found as Record<string, unknown>).not.toHaveProperty('__v');
 	});
 
@@ -43,56 +42,47 @@ describe('IdentitiesRepository (integration)', () => {
 		expect(await repository.findByProviderSub('google', new ObjectId().toString())).toBeNull();
 	});
 
-	it('touchLastLogin sets last_login_at', async () => {
+	it('touchLastLogin sets lastLoginAt', async () => {
 		const created = await repository.create(buildIdentity());
 		const date = new Date('2030-01-01T00:00:00.000Z');
-
-		await repository.touchLastLogin(created._id.toString(), date);
-
-		const found = await repository.findByProviderSub('google', created.provider_sub);
-		expect(found?.last_login_at?.getTime()).toBe(date.getTime());
+		await repository.touchLastLogin(created.id, date);
+		const found = await repository.findByProviderSub('google', created.providerSubject);
+		expect(found?.lastLoginAt?.getTime()).toBe(date.getTime());
 	});
 
 	it('findByUserId returns the identity of a user', async () => {
-		const user_id = new ObjectId().toString();
-		await repository.create(buildIdentity({ user_id }));
+		const userId = new ObjectId().toString();
+		await repository.create(buildIdentity({ userId }));
 		await repository.create(buildIdentity());
-
-		expect(await repository.findByUserId(user_id)).toHaveLength(1);
+		expect(await repository.findByUserId(userId)).toHaveLength(1);
 	});
 
 	it('rejects a second identity for the same user and provider', async () => {
-		const user_id = new ObjectId().toString();
-		await repository.create(buildIdentity({ user_id }));
-
-		await expect(repository.create(buildIdentity({ user_id }))).rejects.toBeInstanceOf(
+		const userId = new ObjectId().toString();
+		await repository.create(buildIdentity({ userId }));
+		await expect(repository.create(buildIdentity({ userId }))).rejects.toBeInstanceOf(
 			IdentityUserProviderAlreadyExistsError,
 		);
 	});
 
 	it('translates a duplicate provider subject to a semantic identity error', async () => {
-		const provider_sub = new ObjectId().toString();
-		await repository.create(buildIdentity({ provider_sub }));
-
-		await expect(repository.create(buildIdentity({ provider_sub }))).rejects.toBeInstanceOf(
+		const providerSubject = new ObjectId().toString();
+		await repository.create(buildIdentity({ providerSubject }));
+		await expect(repository.create(buildIdentity({ providerSubject }))).rejects.toBeInstanceOf(
 			IdentityProviderSubjectAlreadyExistsError,
 		);
 	});
 
-	it('resolves a concurrent duplicate identity create race to one persisted record and one rejection', async () => {
-		const provider_sub = new ObjectId().toString();
-
+	it('resolves a concurrent duplicate identity race to one record and one rejection', async () => {
+		const providerSubject = new ObjectId().toString();
 		const results = await Promise.allSettled([
-			repository.create(buildIdentity({ provider_sub })),
-			repository.create(buildIdentity({ provider_sub })),
+			repository.create(buildIdentity({ providerSubject })),
+			repository.create(buildIdentity({ providerSubject })),
 		]);
-
-		const fulfilled = results.filter((result) => result.status === 'fulfilled');
+		expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
 		const rejected = results.filter((result) => result.status === 'rejected');
-		expect(fulfilled).toHaveLength(1);
 		expect(rejected).toHaveLength(1);
 		expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(IdentityProviderSubjectAlreadyExistsError);
-
-		expect(await IdentityModel.countDocuments({ provider: 'google', provider_sub })).toBe(1);
+		expect(await IdentityModel.countDocuments({ provider: 'google', provider_sub: providerSubject })).toBe(1);
 	});
 });

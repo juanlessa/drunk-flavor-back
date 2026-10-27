@@ -26,8 +26,8 @@ const currentPassword = 'Current-password-123';
 const seedCredentialAccount = async () => {
 	const user = await usersRepository.create(createUserFactory({ email: 'local@example.com' }));
 	await credentialsRepository.create({
-		user_id: user._id.toString(),
-		password_hash: await hashProvider.hash(currentPassword),
+		userId: user.id,
+		passwordHash: await hashProvider.hash(currentPassword),
 	});
 	return user;
 };
@@ -52,44 +52,44 @@ describe('LinkGoogleIdentityService', () => {
 	it('links a verified Google identity after proving the current password', async () => {
 		const user = await seedCredentialAccount();
 
-		await service.execute({ userId: user._id.toString(), currentPassword, idToken: 'token' });
+		await service.execute({ userId: user.id, currentPassword, idToken: 'token' });
 
 		const identity = await identitiesRepository.findByProviderSub(IdentityProviders.google, 'fake-google-sub');
-		expect(identity?.user_id).toBe(user._id.toString());
+		expect(identity?.userId).toBe(user.id);
 	});
 
 	it('rejects an invalid current password before linking', async () => {
 		const user = await seedCredentialAccount();
 
 		await expect(
-			service.execute({ userId: user._id.toString(), currentPassword: 'wrong', idToken: 'token' }),
+			service.execute({ userId: user.id, currentPassword: 'wrong', idToken: 'token' }),
 		).rejects.toBeInstanceOf(UnauthorizedError);
-		expect(await identitiesRepository.listProvidersByUserId(user._id.toString())).toEqual([]);
+		expect(await identitiesRepository.listProvidersByUserId(user.id)).toEqual([]);
 	});
 
 	it('rejects a Google identity already owned by another user', async () => {
 		const user = await seedCredentialAccount();
 		await identitiesRepository.create({
-			user_id: '507f1f77bcf86cd799439012',
+			userId: '507f1f77bcf86cd799439012',
 			provider: IdentityProviders.google,
-			provider_sub: 'fake-google-sub',
+			providerSubject: 'fake-google-sub',
 		});
 
-		await expect(
-			service.execute({ userId: user._id.toString(), currentPassword, idToken: 'token' }),
-		).rejects.toBeInstanceOf(ConflictError);
+		await expect(service.execute({ userId: user.id, currentPassword, idToken: 'token' })).rejects.toBeInstanceOf(
+			ConflictError,
+		);
 	});
 
 	it('rejects connecting a second Google identity to the same user', async () => {
 		const user = await seedCredentialAccount();
 		await identitiesRepository.create({
-			user_id: user._id.toString(),
+			userId: user.id,
 			provider: IdentityProviders.google,
-			provider_sub: 'another-google-sub',
+			providerSubject: 'another-google-sub',
 		});
 
-		await expect(
-			service.execute({ userId: user._id.toString(), currentPassword, idToken: 'token' }),
-		).rejects.toBeInstanceOf(ConflictError);
+		await expect(service.execute({ userId: user.id, currentPassword, idToken: 'token' })).rejects.toBeInstanceOf(
+			ConflictError,
+		);
 	});
 });

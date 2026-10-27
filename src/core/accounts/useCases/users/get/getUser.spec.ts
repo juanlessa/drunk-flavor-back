@@ -25,9 +25,9 @@ describe('Get User', () => {
 	it('should be able to get a user when the actor is an admin', async () => {
 		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 
-		const result = await service.execute({ id: createdUser._id.toString(), actor: admin });
+		const result = await service.execute({ id: createdUser.id, actor: admin });
 
-		expect(result._id).toEqual(createdUser._id);
+		expect(result.id).toEqual(createdUser.id);
 		expect(result.email).toEqual(createdUser.email);
 		expect(result.name).toEqual(createdUser.name);
 		expect(result.surname).toEqual(createdUser.surname);
@@ -42,8 +42,6 @@ describe('Get User', () => {
 	it('should not be able to get a user when the actor is a member', async () => {
 		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 
-		await expect(service.execute({ id: createdUser._id.toString(), actor: member })).rejects.toBeInstanceOf(
-			ForbiddenError,
-		);
+		await expect(service.execute({ id: createdUser.id, actor: member })).rejects.toBeInstanceOf(ForbiddenError);
 	});
 });

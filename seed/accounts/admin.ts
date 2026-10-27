@@ -66,14 +66,14 @@ const seedDatabase = async () => {
 				name: ADMIN_NAME,
 				surname: ADMIN_SURNAME,
 				email: ADMIN_EMAIL,
-				email_verified: true,
+				emailVerified: true,
 				role: Roles['admin'],
 				status: UserStatuses['active'],
 			});
 
 			await credentialsRepository.create({
-				user_id: createdUser._id.toString(),
-				password_hash: passwordHash,
+				userId: createdUser.id,
+				passwordHash: passwordHash,
 			});
 		});
 		logger.info('Admin created successfully');

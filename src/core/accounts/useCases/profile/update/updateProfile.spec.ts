@@ -29,12 +29,12 @@ describe('Update Profile', () => {
 			status,
 		});
 		await service.execute({
-			id: createdUser._id.toString(),
+			id: createdUser.id,
 			name: updatedName,
 			surname: updatedSurname,
 		});
 
-		const verifyUser = (await usersRepository.findById(createdUser._id.toString())) as User;
+		const verifyUser = (await usersRepository.findById(createdUser.id)) as User;
 
 		expect(verifyUser).toBeDefined();
 		expect(verifyUser.name).toEqual(updatedName);
@@ -49,14 +49,14 @@ describe('Update Profile', () => {
 		});
 
 		const result = await service.execute({
-			id: createdUser._id.toString(),
+			id: createdUser.id,
 			name: updatedName,
 			surname: updatedSurname,
 		});
 
 		expect(result.user.status).toBe(UserStatuses.active);
 
-		const verifyUser = (await usersRepository.findById(createdUser._id.toString())) as User;
+		const verifyUser = (await usersRepository.findById(createdUser.id)) as User;
 		expect(verifyUser.status).toBe(UserStatuses.active);
 		expect(verifyUser.name).toEqual(updatedName);
 		expect(verifyUser.surname).toEqual(updatedSurname);
@@ -72,14 +72,14 @@ describe('Update Profile', () => {
 		});
 
 		const result = await service.execute({
-			id: createdUser._id.toString(),
+			id: createdUser.id,
 			name: updatedName,
 			surname: updatedSurname,
 		});
 
 		expect(result.user.status).toBe(UserStatuses.active);
 
-		const verifyUser = (await usersRepository.findById(createdUser._id.toString())) as User;
+		const verifyUser = (await usersRepository.findById(createdUser.id)) as User;
 		expect(verifyUser.status).toBe(UserStatuses.active);
 		expect(verifyUser.name).toEqual(updatedName);
 		expect(verifyUser.surname).toEqual(updatedSurname);

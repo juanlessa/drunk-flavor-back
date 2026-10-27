@@ -1,20 +1,20 @@
 import { TokenType } from '../entities/token.entity';
 
 export type CreateToken = {
-	token_hash: string;
-	user_id: string;
+	tokenHash: string;
+	userId: string;
 	type: TokenType;
-	expires_at: Date;
+	expiresAt: Date;
 };
 
 export type UpdateToken = { id: string } & Partial<{
-	token_hash: string;
-	user_id: string;
+	tokenHash: string;
+	userId: string;
 	type: TokenType;
-	expires_at: Date;
+	expiresAt: Date;
 }>;
 
 export type FindByUserIdAndType = {
-	user_id: string;
+	userId: string;
 	type: TokenType;
 };

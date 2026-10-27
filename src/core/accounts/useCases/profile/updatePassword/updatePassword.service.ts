@@ -17,21 +17,21 @@ export class UpdatePasswordService {
 			throw new BadRequestError('apiResponses.users.notExist', { path: 'UpdatePassword.service.1' });
 		}
 
-		const credential = await this.credentialsRepository.findByUserId(user._id.toString());
+		const credential = await this.credentialsRepository.findByUserId(user.id);
 		if (!credential) {
 			throw new ConflictError('apiResponses.profile.passwordNotConfigured', {
 				path: 'UpdatePassword.service.credential',
 			});
 		}
 
-		const currentPasswordMatch = await this.hashProvider.compare(currentPassword, credential.password_hash);
+		const currentPasswordMatch = await this.hashProvider.compare(currentPassword, credential.passwordHash);
 		if (!currentPasswordMatch) {
 			throw new BadRequestError('apiResponses.users.invalidCurrentPassword', {
 				path: 'UpdatePassword.service.2',
 			});
 		}
 
-		const isNewPasswordSameAsCurrent = await this.hashProvider.compare(newPassword, credential.password_hash);
+		const isNewPasswordSameAsCurrent = await this.hashProvider.compare(newPassword, credential.passwordHash);
 		if (isNewPasswordSameAsCurrent) {
 			throw new BadRequestError('apiResponses.users.newPasswordCannotMatchCurrent', {
 				path: 'UpdatePassword.service.3',
@@ -40,6 +40,6 @@ export class UpdatePasswordService {
 
 		const hashedPassword = await this.hashProvider.hash(newPassword);
 
-		await this.credentialsRepository.update({ user_id: user._id.toString(), password_hash: hashedPassword });
+		await this.credentialsRepository.update({ userId: user.id, passwordHash: hashedPassword });
 	}
 }
