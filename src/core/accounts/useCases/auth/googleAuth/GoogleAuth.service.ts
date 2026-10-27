@@ -3,6 +3,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.repository';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { IGoogleTokenVerifier } from '@/shared/providers/googleAuth/IGoogleTokenVerifier';
+import { GoogleTokenPayload } from '@/shared/providers/googleAuth/googleAuth.dtos';
 import { ConflictError, UnauthorizedError } from '@/shared/error/error.lib';
 import { IdentityProviders } from '@/core/accounts/constants/identity.constants';
 import { User } from '@/core/accounts/entities/user.entity';
@@ -27,98 +28,126 @@ export class GoogleAuthService {
 	) {}
 
 	async execute({ idToken }: GoogleAuth): Promise<GoogleAuthResult> {
-		const payload = await this.googleTokenVerifier.verify(idToken);
+		const googleProfile = await this.googleTokenVerifier.verify(idToken);
+		const authenticatedAt = new Date();
 
-		const sub = payload.sub;
-		const email = payload.email?.toLowerCase();
-		const name = payload.given_name;
-		const surname = payload.family_name;
-		const picture = payload.picture;
-		const now = new Date();
-
-		// Branch (a): a known identity signs in.
-		const identity = await this.identitiesRepository.findByProviderSub(IdentityProviders.google, sub);
-		if (identity) {
-			const user = await this.usersRepository.findById(identity.user_id);
-			if (!user) {
-				throw new UnauthorizedError('apiResponses.auth.invalidCredentials', {
-					path: 'GoogleAuth.service.orphanIdentity',
-					cause: 'identity references a missing user',
-				});
-			}
-
-			await this.identitiesRepository.touchLastLogin(identity._id.toString(), now);
-
-			return { user: { id: user._id.toString(), role: user.role, status: user.status } };
+		const linkedGoogleSignIn = await this.signInWithLinkedGoogleIdentity(googleProfile.sub, authenticatedAt);
+		if (linkedGoogleSignIn) {
+			return linkedGoogleSignIn;
 		}
 
-		// Branches (b) and (c) require a verified email.
-		if (payload.email_verified !== true) {
+		const verifiedEmail = this.requireVerifiedEmailForGoogleSignup(googleProfile);
+		await this.ensureEmailIsAvailableForGoogleSignup(verifiedEmail);
+
+		try {
+			return await this.createAccountWithGoogleIdentity(googleProfile, verifiedEmail, authenticatedAt);
+		} catch (error) {
+			return this.resolveConcurrentGoogleIdentityCreation(error, googleProfile.sub);
+		}
+	}
+
+	private async signInWithLinkedGoogleIdentity(
+		googleSubject: string,
+		authenticatedAt: Date,
+	): Promise<GoogleAuthResult | null> {
+		const identity = await this.identitiesRepository.findByProviderSub(IdentityProviders.google, googleSubject);
+		if (!identity) {
+			return null;
+		}
+
+		const user = await this.usersRepository.findById(identity.user_id);
+		if (!user) {
+			throw new UnauthorizedError('apiResponses.auth.invalidCredentials', {
+				path: 'GoogleAuth.service.orphanIdentity',
+				cause: 'identity references a missing user',
+			});
+		}
+
+		await this.identitiesRepository.touchLastLogin(identity._id.toString(), authenticatedAt);
+
+		return { user: { id: user._id.toString(), role: user.role, status: user.status } };
+	}
+
+	private requireVerifiedEmailForGoogleSignup(googleProfile: GoogleTokenPayload): string {
+		if (googleProfile.email_verified !== true) {
 			throw new UnauthorizedError('apiResponses.auth.googleEmailNotVerified', {
 				path: 'GoogleAuth.service.emailNotVerified',
 				cause: 'google token email_verified is not true',
 			});
 		}
 
-		if (!email) {
+		if (!googleProfile.email) {
 			throw new UnauthorizedError('apiResponses.auth.invalidCredentials', {
 				path: 'GoogleAuth.service.missingEmail',
 				cause: 'verified google token without an email',
 			});
 		}
 
-		const existingUser = await this.usersRepository.findByEmail(email);
+		return googleProfile.email.toLowerCase();
+	}
 
-		try {
-			if (existingUser) {
-				throw new ConflictError('apiResponses.auth.accountLinkRequired', {
-					path: 'GoogleAuth.service.accountLinkRequired',
-					cause: 'An account with this verified email already exists without this Google identity',
-				});
-			}
-
-			// Branch (c): create a new verified user + identity. Google ID tokens may
-			// omit `given_name`/`family_name`; rather than fabricating a name, create
-			// the account as `incomplete_profile` and gate business routes until the
-			// user completes it. When both parts are present, the account is active.
-			const hasFullName = name !== undefined && surname !== undefined;
-			return await this.transactionManager.withTransaction(async () => {
-				const user = await this.usersRepository.create({
-					...(name !== undefined ? { name } : {}),
-					...(surname !== undefined ? { surname } : {}),
-					email,
-					email_verified: true,
-					avatar_url: picture,
-					role: Roles.member,
-					status: hasFullName ? UserStatuses.active : UserStatuses.incomplete_profile,
-				});
-
-				await this.identitiesRepository.create({
-					user_id: user._id.toString(),
-					provider: IdentityProviders.google,
-					provider_sub: sub,
-					email,
-					email_verified: true,
-					picture,
-					last_login_at: now,
-				});
-
-				return { user: { id: user._id.toString(), role: user.role, status: user.status } };
+	private async ensureEmailIsAvailableForGoogleSignup(verifiedEmail: string): Promise<void> {
+		const existingUser = await this.usersRepository.findByEmail(verifiedEmail);
+		if (existingUser) {
+			throw new ConflictError('apiResponses.auth.accountLinkRequired', {
+				path: 'GoogleAuth.service.accountLinkRequired',
+				cause: 'An account with this verified email already exists without this Google identity',
 			});
-		} catch (error) {
-			// A concurrent request won the race to insert the same (provider,
-			// provider_sub). This is a recoverable concurrency outcome, not a client
-			// error: re-read the now-existing identity and continue as branch (a).
-			if (error instanceof IdentityProviderSubjectAlreadyExistsError) {
-				const racedIdentity = await this.identitiesRepository.findByProviderSub(IdentityProviders.google, sub);
-				if (racedIdentity) {
-					const user = await this.usersRepository.findById(racedIdentity.user_id);
-					if (user) {
-						return { user: { id: user._id.toString(), role: user.role, status: user.status } };
-					}
-				}
-			}
+		}
+	}
+
+	private async createAccountWithGoogleIdentity(
+		googleProfile: GoogleTokenPayload,
+		verifiedEmail: string,
+		authenticatedAt: Date,
+	): Promise<GoogleAuthResult> {
+		const name = googleProfile.given_name;
+		const surname = googleProfile.family_name;
+		const hasFullName = name !== undefined && surname !== undefined;
+
+		return this.transactionManager.withTransaction(async () => {
+			const user = await this.usersRepository.create({
+				...(name !== undefined ? { name } : {}),
+				...(surname !== undefined ? { surname } : {}),
+				email: verifiedEmail,
+				email_verified: true,
+				avatar_url: googleProfile.picture,
+				role: Roles.member,
+				status: hasFullName ? UserStatuses.active : UserStatuses.incomplete_profile,
+			});
+
+			await this.identitiesRepository.create({
+				user_id: user._id.toString(),
+				provider: IdentityProviders.google,
+				provider_sub: googleProfile.sub,
+				email: verifiedEmail,
+				email_verified: true,
+				picture: googleProfile.picture,
+				last_login_at: authenticatedAt,
+			});
+
+			return { user: { id: user._id.toString(), role: user.role, status: user.status } };
+		});
+	}
+
+	private async resolveConcurrentGoogleIdentityCreation(
+		error: unknown,
+		googleSubject: string,
+	): Promise<GoogleAuthResult> {
+		if (!(error instanceof IdentityProviderSubjectAlreadyExistsError)) {
 			throw error;
 		}
+
+		const identity = await this.identitiesRepository.findByProviderSub(IdentityProviders.google, googleSubject);
+		if (!identity) {
+			throw error;
+		}
+
+		const user = await this.usersRepository.findById(identity.user_id);
+		if (!user) {
+			throw error;
+		}
+
+		return { user: { id: user._id.toString(), role: user.role, status: user.status } };
 	}
 }
