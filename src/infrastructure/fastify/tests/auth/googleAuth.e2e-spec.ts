@@ -125,24 +125,26 @@ describe('Google Sign-In', () => {
 		expect(identities).toHaveLength(1);
 	});
 
-	it('branch (b): links to an existing local account by verified email', async () => {
-		const { email } = await createUser(app, { email: verifiedPayload.email, status: 'pending' });
+	it('requires explicit profile linking for an existing local account with the same verified email', async () => {
+		const { email } = await createUser(app, {
+			email: verifiedPayload.email,
+			status: 'active',
+			email_verified: true,
+		});
 
 		setNextGoogleTokenPayload(verifiedPayload);
 		const response = await request(app.server).post('/google').send({ idToken });
 
-		expect(response.status).toBe(200);
-		expect(hasAuthCookie(response.headers['set-cookie'])).toBe(true);
+		expect(response.status).toBe(HTTP_STATUS.conflict);
+		expect((response.body as ErrorBody).localeKey).toBe('apiResponses.auth.accountLinkRequired');
+		expect(hasAuthCookie(response.headers['set-cookie'])).toBe(false);
 
 		const linked = await IdentityModel.findOne({
 			provider: IdentityProviders.google,
 			provider_sub: verifiedPayload.sub,
 		}).exec();
-		expect(linked).not.toBeNull();
-
-		const promoted = await UserModel.findOne({ email }).exec();
-		expect(promoted?.status).toBe('active');
-		expect(promoted?.email_verified).toBe(true);
+		expect(linked).toBeNull();
+		expect((await UserModel.findOne({ email }).exec())?.status).toBe('active');
 	});
 
 	it('returns 401 googleEmailNotVerified when the token email is not verified', async () => {

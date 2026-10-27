@@ -3,7 +3,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.repository';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { IGoogleTokenVerifier } from '@/shared/providers/googleAuth/IGoogleTokenVerifier';
-import { UnauthorizedError } from '@/shared/error/error.lib';
+import { ConflictError, UnauthorizedError } from '@/shared/error/error.lib';
 import { IdentityProviders } from '@/core/accounts/constants/identity.constants';
 import { User } from '@/core/accounts/entities/user.entity';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
@@ -72,29 +72,9 @@ export class GoogleAuthService {
 
 		try {
 			if (existingUser) {
-				// Branch (b): link a new Google identity to the existing local account.
-				return await this.transactionManager.withTransaction(async () => {
-					await this.identitiesRepository.create({
-						user_id: existingUser._id.toString(),
-						provider: IdentityProviders.google,
-						provider_sub: sub,
-						email,
-						email_verified: true,
-						picture,
-						last_login_at: now,
-					});
-
-					let status = existingUser.status;
-					if (existingUser.status !== UserStatuses.active || !existingUser.email_verified) {
-						const updated = await this.usersRepository.update({
-							id: existingUser._id.toString(),
-							status: UserStatuses.active,
-							email_verified: true,
-						});
-						status = updated.status;
-					}
-
-					return { user: { id: existingUser._id.toString(), role: existingUser.role, status } };
+				throw new ConflictError('apiResponses.auth.accountLinkRequired', {
+					path: 'GoogleAuth.service.accountLinkRequired',
+					cause: 'An account with this verified email already exists without this Google identity',
 				});
 			}
 

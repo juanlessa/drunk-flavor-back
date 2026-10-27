@@ -1,6 +1,6 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { ConflictError, BadRequestError } from '@/shared/error/error.lib';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { UpdatePassword } from './updatePassword.dtos';
 
@@ -19,7 +19,7 @@ export class UpdatePasswordService {
 
 		const credential = await this.credentialsRepository.findByUserId(user._id.toString());
 		if (!credential) {
-			throw new BadRequestError('apiResponses.users.invalidCurrentPassword', {
+			throw new ConflictError('apiResponses.profile.passwordNotConfigured', {
 				path: 'UpdatePassword.service.credential',
 			});
 		}

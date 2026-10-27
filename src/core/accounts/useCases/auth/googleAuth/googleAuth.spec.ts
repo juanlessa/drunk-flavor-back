@@ -5,7 +5,7 @@ import { FakeGoogleTokenVerifier } from '@/shared/providers/googleAuth/fakes/Fak
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.repository';
-import { UnauthorizedError } from '@/shared/error/error.lib';
+import { ConflictError, UnauthorizedError } from '@/shared/error/error.lib';
 import { GoogleTokenPayload } from '@/shared/providers/googleAuth/googleAuth.dtos';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { IdentityProviders } from '@/core/accounts/constants/identity.constants';
@@ -82,30 +82,22 @@ describe('GoogleAuth', () => {
 		await expect(service.execute({ idToken })).rejects.toThrow('apiResponses.auth.googleEmailNotVerified');
 	});
 
-	it('branch (b): links the identity to an existing local account and promotes it', async () => {
+	it('requires explicit linking when a local account already uses the verified email', async () => {
 		const existing = await usersRepository.create({
 			name: 'Jane',
 			surname: 'Doe',
 			email: 'janedoe@example.com',
-			email_verified: false,
+			email_verified: true,
 			role: Roles.partner,
-			status: UserStatuses.pending,
+			status: UserStatuses.active,
 		});
 		verifier.setNextPayload(verifiedPayload);
 
-		const result = await service.execute({ idToken });
-
-		expect(result.user.id).toBe(existing._id.toString());
-		expect(result.user.role).toBe(Roles.partner);
-		expect(result.user.status).toBe(UserStatuses.active);
+		await expect(service.execute({ idToken })).rejects.toBeInstanceOf(ConflictError);
 
 		const linked = await identitiesRepository.findByProviderSub(IdentityProviders.google, verifiedPayload.sub);
-		expect(linked).not.toBeNull();
-		expect(linked?.user_id).toBe(existing._id.toString());
-
-		const promoted = await usersRepository.findById(existing._id.toString());
-		expect(promoted?.status).toBe(UserStatuses.active);
-		expect(promoted?.email_verified).toBe(true);
+		expect(linked).toBeNull();
+		expect((await usersRepository.findById(existing._id.toString()))?.status).toBe(UserStatuses.active);
 	});
 
 	it('branch (c): creates a new active, verified member user + identity', async () => {
@@ -153,7 +145,7 @@ describe('GoogleAuth', () => {
 		expect(result.user.status).toBe(UserStatuses.incomplete_profile);
 	});
 
-	it('E11000 race: falls back to branch (a) when a concurrent create wins', async () => {
+	it('does not auto-link when an identity lookup races with an existing account', async () => {
 		// Pre-seed the identity + its user so the in-memory identities repo throws a
 		// duplicate-key error on the branch (c) create, exercising the recovery path.
 		const racedUser = await usersRepository.create({
@@ -184,9 +176,6 @@ describe('GoogleAuth', () => {
 
 		verifier.setNextPayload(verifiedPayload);
 
-		const result = await service.execute({ idToken });
-
-		expect(result.user.id).toBe(racedUser._id.toString());
-		expect(result.user.role).toBe(Roles.member);
+		await expect(service.execute({ idToken })).rejects.toBeInstanceOf(ConflictError);
 	});
 });

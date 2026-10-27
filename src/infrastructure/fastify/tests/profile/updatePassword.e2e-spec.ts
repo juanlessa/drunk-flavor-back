@@ -26,10 +26,9 @@ describe('Update Password', () => {
 
 		const newPassword = 'New-password-87654321';
 
-		const response = await request(app.server).patch('/update-password').set('Cookie', cookies).send({
+		const response = await request(app.server).patch('/me/password').set('Cookie', cookies).send({
 			currentPassword,
-			newPassword: newPassword,
-			confirmNewPassword: newPassword,
+			newPassword,
 		});
 
 		expect(response.status).toBe(HTTP_STATUS.no_content);

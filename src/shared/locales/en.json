@@ -26,6 +26,7 @@
 	"apiResponses.auth.tooManyRequests": "Too many requests. Please try again later.",
 	"apiResponses.auth.googleEmailNotVerified": "Your Google account email is not verified.",
 	"apiResponses.auth.googleTokenRequired": "Google ID token is required.",
+	"apiResponses.auth.accountLinkRequired": "An account with this email already exists. Sign in and connect Google from your profile.",
 
 	"apiResponses.users.notExist": "User does not exist",
 	"apiResponses.users.forbidden": "You are not allowed to perform this action on this user",
@@ -48,6 +49,15 @@
 	"apiResponses.users.invalidCurrentPassword": "The current password is invalid",
 	"apiResponses.users.requiredRole": "Role is required",
 	"apiResponses.users.invalidRoleFormat": "Invalid role",
+
+	"apiResponses.profile.avatarRequired": "Avatar file is required",
+	"apiResponses.profile.invalidAvatarFileType": "Invalid avatar file type. Upload a JPG, PNG, or WebP image",
+	"apiResponses.profile.passwordAlreadyConfigured": "A password is already configured for this account",
+	"apiResponses.profile.passwordNotConfigured": "This account does not have a password yet",
+	"apiResponses.profile.recentAuthenticationRequired": "Please authenticate again before continuing",
+	"apiResponses.profile.invalidReauthentication": "The authentication method could not be verified",
+	"apiResponses.profile.googleAlreadyConnected": "Google is already connected to this account",
+	"apiResponses.profile.googleIdentityUnavailable": "This Google account is already connected to another account",
 
 	"apiResponses.categories.notExist": "Category does not exist",
 	"apiResponses.categories.alreadyExist": "Category already exists",

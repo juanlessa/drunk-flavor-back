@@ -22,6 +22,8 @@ export const signinController: Controller<{ Body: SigninReqBody }> = async (requ
 		userId: user.id,
 		userRole: user.role,
 		userStatus: user.status,
+		authenticatedAt: new Date().toISOString(),
+		authenticationMethod: 'password',
 	});
 	reply.setCookie(AUTH_COOKIE, accessToken, AUTH_COOKIE_OPTIONS);
 

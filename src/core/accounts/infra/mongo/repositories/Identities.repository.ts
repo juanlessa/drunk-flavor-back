@@ -25,6 +25,11 @@ export class IdentitiesRepository implements IIdentitiesRepository {
 			.exec();
 	}
 
+	async listProvidersByUserId(userId: string): Promise<IdentityProvider[]> {
+		const records = await this.model.find({ user_id: userId }, { provider: 1, _id: 0 }).lean().exec();
+		return records.map((record) => record.provider);
+	}
+
 	async touchLastLogin(id: string, date: Date): Promise<void> {
 		await this.model.updateOne({ _id: id }, { $set: { last_login_at: date } }).exec();
 	}

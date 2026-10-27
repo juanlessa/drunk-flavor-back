@@ -50,13 +50,19 @@ describe('IdentitiesRepository (integration)', () => {
 		expect(found?.last_login_at?.getTime()).toBe(date.getTime());
 	});
 
-	it('findByUserId returns all identities of a user', async () => {
+	it('findByUserId returns the identity of a user', async () => {
 		const user_id = new ObjectId().toString();
-		await repository.create(buildIdentity({ user_id }));
 		await repository.create(buildIdentity({ user_id }));
 		await repository.create(buildIdentity());
 
-		expect(await repository.findByUserId(user_id)).toHaveLength(2);
+		expect(await repository.findByUserId(user_id)).toHaveLength(1);
+	});
+
+	it('rejects a second identity for the same user and provider', async () => {
+		const user_id = new ObjectId().toString();
+		await repository.create(buildIdentity({ user_id }));
+
+		await expect(repository.create(buildIdentity({ user_id }))).rejects.toBeInstanceOf(BadRequestError);
 	});
 
 	it('translates a duplicate (provider, provider_sub) create to a domain BadRequestError', async () => {

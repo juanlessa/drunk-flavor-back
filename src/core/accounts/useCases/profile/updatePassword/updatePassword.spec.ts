@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
 import { CredentialsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Credentials.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { BadRequestError, ConflictError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
@@ -70,7 +70,7 @@ describe('Update Password', () => {
 				currentPassword: password,
 				newPassword: updatedPassword,
 			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(ConflictError);
 	});
 
 	it('Should not be able to update the password using an invalid current password', async () => {

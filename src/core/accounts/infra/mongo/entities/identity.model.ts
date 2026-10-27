@@ -3,7 +3,11 @@ import { Identity } from '@/core/accounts/entities/identity.entity';
 import { IdentityProviders } from '@/core/accounts/constants/identity.constants';
 
 export const IDENTITY_PROVIDER_SUB_UNIQUE_INDEX = 'identity_provider_sub_unique';
-export const IDENTITY_UNIQUE_INDEXES = [IDENTITY_PROVIDER_SUB_UNIQUE_INDEX] as const;
+export const IDENTITY_USER_PROVIDER_UNIQUE_INDEX = 'identity_user_provider_unique';
+export const IDENTITY_UNIQUE_INDEXES = [
+	IDENTITY_PROVIDER_SUB_UNIQUE_INDEX,
+	IDENTITY_USER_PROVIDER_UNIQUE_INDEX,
+] as const;
 
 export const IdentitySchema = new Schema<Identity>(
 	{
@@ -29,7 +33,7 @@ export const IdentitySchema = new Schema<Identity>(
 );
 
 IdentitySchema.index({ provider: 1, provider_sub: 1 }, { unique: true, name: IDENTITY_PROVIDER_SUB_UNIQUE_INDEX });
-IdentitySchema.index({ user_id: 1 }, { name: 'identity_user_id' });
+IdentitySchema.index({ user_id: 1, provider: 1 }, { unique: true, name: IDENTITY_USER_PROVIDER_UNIQUE_INDEX });
 
 export const IdentityModel =
 	(mongoose.models['identities'] as Model<Identity> | undefined) ??

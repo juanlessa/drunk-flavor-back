@@ -75,6 +75,16 @@ export class NotFoundError extends AppError {
 	}
 }
 
+export class ConflictError extends AppError {
+	constructor(message: LocaleKey, options: AppErrorOptions) {
+		super(message, {
+			...options,
+			status: HTTP_STATUS.conflict,
+			type: 'Conflict.',
+		});
+	}
+}
+
 export class TooManyRequestsError extends AppError {
 	constructor(message: LocaleKey, options: AppErrorOptions) {
 		super(message, {

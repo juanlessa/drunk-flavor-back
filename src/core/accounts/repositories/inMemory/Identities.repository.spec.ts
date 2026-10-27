@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { MongoServerError, ObjectId } from 'mongodb';
 import { IdentitiesRepositoryInMemory } from './Identities.repository';
 import { isDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
-import { IDENTITY_PROVIDER_SUB_UNIQUE_INDEX } from '@/core/accounts/infra/mongo/entities/identity.model';
+import {
+	IDENTITY_PROVIDER_SUB_UNIQUE_INDEX,
+	IDENTITY_USER_PROVIDER_UNIQUE_INDEX,
+} from '@/core/accounts/infra/mongo/entities/identity.model';
 
 const buildIdentity = (overrides?: { user_id?: string; provider_sub?: string }) => ({
 	user_id: overrides?.user_id ?? new ObjectId().toString(),
@@ -46,13 +49,21 @@ describe('IdentitiesRepositoryInMemory', () => {
 		);
 	});
 
-	it('findByUserId returns all identities of a user', async () => {
+	it('findByUserId returns the identity of a user', async () => {
 		const user_id = new ObjectId().toString();
-		await repository.create(buildIdentity({ user_id }));
 		await repository.create(buildIdentity({ user_id }));
 		await repository.create(buildIdentity());
 
-		expect(await repository.findByUserId(user_id)).toHaveLength(2);
+		expect(await repository.findByUserId(user_id)).toHaveLength(1);
+	});
+
+	it('rejects a second identity for the same user and provider', async () => {
+		const user_id = new ObjectId().toString();
+		await repository.create(buildIdentity({ user_id }));
+
+		const error = await repository.create(buildIdentity({ user_id })).catch((caught: unknown) => caught);
+		expect(error).toBeInstanceOf(MongoServerError);
+		expect(isDuplicateKeyError(error, [IDENTITY_USER_PROVIDER_UNIQUE_INDEX])).toBe(true);
 	});
 
 	it('throws a duplicate-key MongoServerError that isDuplicateKeyError recognizes on a duplicate (provider, provider_sub)', async () => {

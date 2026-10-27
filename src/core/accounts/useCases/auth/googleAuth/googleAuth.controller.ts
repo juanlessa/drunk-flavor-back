@@ -19,6 +19,8 @@ export const googleAuthController: Controller<{ Body: GoogleAuthReqBody }> = asy
 		userId: user.id,
 		userRole: user.role,
 		userStatus: user.status,
+		authenticatedAt: new Date().toISOString(),
+		authenticationMethod: 'google',
 	});
 	reply.setCookie(AUTH_COOKIE, accessToken, AUTH_COOKIE_OPTIONS);
 

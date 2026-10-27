@@ -6,6 +6,7 @@ import {
 } from '@/core/accounts/infra/mongo/container';
 import { resolveTransactionManager } from '@/infrastructure/mongo/transactions';
 import { DeleteProfileService } from './DeleteProfile.service';
+import { resolveStorageProvider } from '@/shared/providers/storage';
 
 const usersRepository = resolveUsersRepository();
 const tokensRepository = resolveTokensRepository();
@@ -19,5 +20,6 @@ const deleteProfileService = new DeleteProfileService(
 	credentialsRepository,
 	identitiesRepository,
 	transactionManager,
+	resolveStorageProvider(),
 );
 export const resolveDeleteProfileService = () => deleteProfileService;

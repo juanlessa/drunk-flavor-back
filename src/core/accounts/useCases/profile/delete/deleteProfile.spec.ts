@@ -16,12 +16,15 @@ import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementati
 import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { IdentityProviders } from '@/core/accounts/constants/identity.constants';
 import { env } from '@/env';
+import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
+import { MockStorageProvider } from '@/shared/providers/storage/implementations/MockStorage.provider';
 
 let cryptoProvider: NodeCryptoProvider;
 let usersRepository: IUsersRepository;
 let tokensRepository: ITokensRepository;
 let credentialsRepository: ICredentialsRepository;
 let identitiesRepository: IIdentitiesRepository;
+let storageProvider: IStorageProvider;
 let service: DeleteProfileService;
 
 const userData = createUserFactory();
@@ -33,12 +36,14 @@ describe('Delete Profile', () => {
 		tokensRepository = new TokensRepositoryInMemory();
 		credentialsRepository = new CredentialsRepositoryInMemory();
 		identitiesRepository = new IdentitiesRepositoryInMemory();
+		storageProvider = new MockStorageProvider();
 		service = new DeleteProfileService(
 			usersRepository,
 			tokensRepository,
 			credentialsRepository,
 			identitiesRepository,
 			new FakeTransactionManager(),
+			storageProvider,
 		);
 	});
 
@@ -86,5 +91,27 @@ describe('Delete Profile', () => {
 		expect(await tokensRepository.findByUserId(userId)).toHaveLength(0);
 		expect(await credentialsRepository.findByUserId(userId)).toBeNull();
 		expect(await identitiesRepository.findByUserId(userId)).toHaveLength(0);
+	});
+
+	it('deletes a server-managed avatar after the account transaction succeeds', async () => {
+		const createdUser = await usersRepository.create(userData);
+		const userId = createdUser._id.toString();
+		const avatarName = `0123456789abcdef0123456789abcdef-${userId}-avatar.png`;
+		await usersRepository.update({ id: userId, avatar_url: `https://cdn.example.com/${avatarName}` });
+
+		await service.execute({ id: userId });
+
+		expect(storageProvider.deleteFile).toHaveBeenCalledWith(avatarName);
+	});
+
+	it('does not send an external provider avatar to storage deletion', async () => {
+		const createdUser = await usersRepository.create({
+			...userData,
+			avatar_url: 'https://accounts.example.com/avatar.png',
+		});
+
+		await service.execute({ id: createdUser._id.toString() });
+
+		expect(storageProvider.deleteFile).not.toHaveBeenCalled();
 	});
 });
