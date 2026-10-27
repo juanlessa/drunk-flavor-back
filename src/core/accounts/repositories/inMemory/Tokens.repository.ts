@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { Token } from '../../entities/token.entity';
+import { TokenHashAlreadyExistsError, TokenUserTypeAlreadyExistsError } from '../../errors/token.errors';
 import { ITokensRepository } from '../ITokens.repository';
 import { CreateToken, FindByUserIdAndType, UpdateToken } from '../../dtos/token.dtos';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
@@ -12,6 +13,13 @@ export class TokensRepositoryInMemory implements ITokensRepository {
 	collection: Token[] = [];
 
 	async create(data: CreateToken): Promise<Token> {
+		if (this.collection.some((record) => record.token_hash === data.token_hash)) {
+			throw new TokenHashAlreadyExistsError({ path: 'TokensRepositoryInMemory.create' });
+		}
+		if (this.collection.some((record) => record.user_id === data.user_id && record.type === data.type)) {
+			throw new TokenUserTypeAlreadyExistsError({ path: 'TokensRepositoryInMemory.create' });
+		}
+
 		const record: Token = {
 			_id: new ObjectId(),
 			...data,
@@ -33,6 +41,21 @@ export class TokensRepositoryInMemory implements ITokensRepository {
 
 		let record = this.collection[recordIndex];
 		record = deepUpdate(data, record);
+		if (
+			this.collection.some(
+				(candidate, index) => index !== recordIndex && candidate.token_hash === record.token_hash,
+			)
+		) {
+			throw new TokenHashAlreadyExistsError({ path: 'TokensRepositoryInMemory.update' });
+		}
+		if (
+			this.collection.some(
+				(candidate, index) =>
+					index !== recordIndex && candidate.user_id === record.user_id && candidate.type === record.type,
+			)
+		) {
+			throw new TokenUserTypeAlreadyExistsError({ path: 'TokensRepositoryInMemory.update' });
+		}
 		record.updated_at = new Date();
 
 		this.collection[recordIndex] = record;

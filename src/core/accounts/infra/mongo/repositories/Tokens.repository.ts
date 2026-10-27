@@ -1,9 +1,10 @@
 import { NotFoundError } from '@/shared/error/error.lib';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
-import { TOKEN_UNIQUE_INDEXES, TokenModel } from '../entities/token.model';
+import { TOKEN_UNIQUE_INDEX, TOKEN_USER_TYPE_UNIQUE_INDEX, TokenModel } from '../entities/token.model';
 import { CreateToken, FindByUserIdAndType, UpdateToken } from '@/core/accounts/dtos/token.dtos';
 import { Token } from '@/core/accounts/entities/token.entity';
-import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
+import { TokenHashAlreadyExistsError, TokenUserTypeAlreadyExistsError } from '@/core/accounts/errors/token.errors';
+import { isDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
 import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
 
 export class TokensRepository implements ITokensRepository {
@@ -13,9 +14,13 @@ export class TokensRepository implements ITokensRepository {
 		try {
 			return await this.model.create(data);
 		} catch (error) {
-			throw mapDuplicateKeyError(error, TOKEN_UNIQUE_INDEXES, 'apiResponses.auth.tokenAlreadyExist', {
-				path: 'Tokens.repository',
-			});
+			if (isDuplicateKeyError(error, [TOKEN_UNIQUE_INDEX])) {
+				throw new TokenHashAlreadyExistsError({ path: 'Tokens.repository' });
+			}
+			if (isDuplicateKeyError(error, [TOKEN_USER_TYPE_UNIQUE_INDEX])) {
+				throw new TokenUserTypeAlreadyExistsError({ path: 'Tokens.repository' });
+			}
+			throw error;
 		}
 	}
 
@@ -24,9 +29,13 @@ export class TokensRepository implements ITokensRepository {
 		try {
 			record = await this.model.findByIdAndUpdate(id, data, { returnDocument: 'after' }).exec();
 		} catch (error) {
-			throw mapDuplicateKeyError(error, TOKEN_UNIQUE_INDEXES, 'apiResponses.auth.tokenAlreadyExist', {
-				path: 'Tokens.repository',
-			});
+			if (isDuplicateKeyError(error, [TOKEN_UNIQUE_INDEX])) {
+				throw new TokenHashAlreadyExistsError({ path: 'Tokens.repository' });
+			}
+			if (isDuplicateKeyError(error, [TOKEN_USER_TYPE_UNIQUE_INDEX])) {
+				throw new TokenUserTypeAlreadyExistsError({ path: 'Tokens.repository' });
+			}
+			throw error;
 		}
 		if (!record) {
 			throw new NotFoundError('apiResponses.auth.tokenNotFound', {

@@ -3,7 +3,8 @@ import { ObjectId } from 'mongodb';
 import { UsersRepository } from './Users.repository';
 import { UserModel } from '../entities/user.model';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
-import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
+import { UserEmailAlreadyExistsError } from '@/core/accounts/errors/user.errors';
+import { NotFoundError } from '@/shared/error/error.lib';
 
 let repository: UsersRepository;
 
@@ -60,13 +61,11 @@ describe('UsersRepository (integration)', () => {
 		expect(updated.name).toBe('Jane');
 	});
 
-	it('translates a duplicate-email create to a domain BadRequestError', async () => {
-		// create wraps the 11000 duplicate-key violation and translates it to a
-		// domain BadRequestError via the shared mapDuplicateKeyError.
+	it('translates a duplicate email on create to UserEmailAlreadyExistsError', async () => {
 		await repository.create(createUserFactory({ email: 'raceless@example.com' }));
 
 		const duplicate = repository.create(createUserFactory({ email: 'raceless@example.com' }));
-		await expect(duplicate).rejects.toBeInstanceOf(BadRequestError);
+		await expect(duplicate).rejects.toBeInstanceOf(UserEmailAlreadyExistsError);
 	});
 
 	it('resolves a concurrent duplicate-email create race to one persisted user and one rejection', async () => {
@@ -81,18 +80,18 @@ describe('UsersRepository (integration)', () => {
 		const rejected = results.filter((result) => result.status === 'rejected');
 		expect(fulfilled).toHaveLength(1);
 		expect(rejected).toHaveLength(1);
-		expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(BadRequestError);
+		expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(UserEmailAlreadyExistsError);
 
 		const persisted = await UserModel.countDocuments({ email });
 		expect(persisted).toBe(1);
 	});
 
-	it('translates an email-rename update collision to a domain BadRequestError', async () => {
+	it('translates an email-rename update collision to a domain UserEmailAlreadyExistsError', async () => {
 		const existing = await repository.create(createUserFactory({ email: 'taken@example.com' }));
 		const mover = await repository.create(createUserFactory({ email: 'mover@example.com' }));
 
 		await expect(repository.update({ id: mover._id.toString(), email: existing.email })).rejects.toBeInstanceOf(
-			BadRequestError,
+			UserEmailAlreadyExistsError,
 		);
 	});
 

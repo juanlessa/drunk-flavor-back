@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { Credential } from '@/core/accounts/entities/credential.entity';
 import { CreateCredential, UpdateCredential } from '@/core/accounts/dtos/credential.dtos';
-import { ConflictError } from '@/shared/error/error.lib';
+import { CredentialAlreadyExistsError } from '@/core/accounts/errors/credential.errors';
 import { ICredentialsRepository } from '../ICredentials.repository';
 
 export class CredentialsRepositoryInMemory implements ICredentialsRepository {
@@ -9,9 +9,7 @@ export class CredentialsRepositoryInMemory implements ICredentialsRepository {
 
 	async create({ user_id, password_hash }: CreateCredential): Promise<Credential> {
 		if (this.collection.some((record) => record.user_id === user_id)) {
-			throw new ConflictError('apiResponses.profile.passwordAlreadyConfigured', {
-				path: 'Credentials.repository.inMemory',
-			});
+			throw new CredentialAlreadyExistsError({ path: 'CredentialsRepositoryInMemory.create' });
 		}
 
 		const record: Credential = {

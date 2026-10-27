@@ -19,7 +19,7 @@ const adminUser = createUserFactory({ email: 'admin1@example.com', role: Roles.a
 const createUser1 = createUserFactory({ email: 'partner1@example.com', role: Roles.partner });
 const createUser2 = createUserFactory({ email: 'partner2@example.com', role: Roles.partner });
 const createUser3 = createUserFactory({ email: 'member1@example.com', role: Roles.member });
-const createUser4 = createUserFactory({ email: 'member1@example.com', role: Roles.member });
+const createUser4 = createUserFactory({ email: 'member2@example.com', role: Roles.member });
 
 describe('List Users', () => {
 	beforeEach(async () => {

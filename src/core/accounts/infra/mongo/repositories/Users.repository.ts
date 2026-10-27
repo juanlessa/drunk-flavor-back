@@ -1,9 +1,10 @@
 import { CreateUser, UpdateUser } from '@/core/accounts/dtos/user.dtos';
 import { User } from '@/core/accounts/entities/user.entity';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
-import { USER_UNIQUE_INDEXES, UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
+import { USER_EMAIL_UNIQUE_INDEX, UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
+import { UserEmailAlreadyExistsError } from '@/core/accounts/errors/user.errors';
+import { isDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
 import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
 import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
 import { QueryParams } from '@/shared/types/query.types';
@@ -13,9 +14,10 @@ export class UsersRepository implements IUsersRepository {
 		try {
 			return await UserModel.create(data);
 		} catch (error) {
-			throw mapDuplicateKeyError(error, USER_UNIQUE_INDEXES, 'apiResponses.users.alreadyExist', {
-				path: 'Users.repository',
-			});
+			if (isDuplicateKeyError(error, [USER_EMAIL_UNIQUE_INDEX])) {
+				throw new UserEmailAlreadyExistsError({ path: 'Users.repository' });
+			}
+			throw error;
 		}
 	}
 
@@ -24,9 +26,10 @@ export class UsersRepository implements IUsersRepository {
 		try {
 			user = await UserModel.findByIdAndUpdate(id, data, { returnDocument: 'after' }).exec();
 		} catch (error) {
-			throw mapDuplicateKeyError(error, USER_UNIQUE_INDEXES, 'apiResponses.users.alreadyExist', {
-				path: 'Users.repository',
-			});
+			if (isDuplicateKeyError(error, [USER_EMAIL_UNIQUE_INDEX])) {
+				throw new UserEmailAlreadyExistsError({ path: 'Users.repository' });
+			}
+			throw error;
 		}
 		if (!user) {
 			throw new NotFoundError('apiResponses.users.notFound', {

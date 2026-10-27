@@ -2,7 +2,10 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { ObjectId } from 'mongodb';
 import { IdentitiesRepository } from './Identities.repository';
 import { IdentityModel } from '../entities/identity.model';
-import { BadRequestError } from '@/shared/error/error.lib';
+import {
+	IdentityProviderSubjectAlreadyExistsError,
+	IdentityUserProviderAlreadyExistsError,
+} from '@/core/accounts/errors/identity.errors';
 
 const buildIdentity = (overrides?: { user_id?: string; provider_sub?: string }) => ({
 	user_id: overrides?.user_id ?? new ObjectId().toString(),
@@ -62,14 +65,18 @@ describe('IdentitiesRepository (integration)', () => {
 		const user_id = new ObjectId().toString();
 		await repository.create(buildIdentity({ user_id }));
 
-		await expect(repository.create(buildIdentity({ user_id }))).rejects.toBeInstanceOf(BadRequestError);
+		await expect(repository.create(buildIdentity({ user_id }))).rejects.toBeInstanceOf(
+			IdentityUserProviderAlreadyExistsError,
+		);
 	});
 
-	it('translates a duplicate (provider, provider_sub) create to a domain BadRequestError', async () => {
+	it('translates a duplicate provider subject to a semantic identity error', async () => {
 		const provider_sub = new ObjectId().toString();
 		await repository.create(buildIdentity({ provider_sub }));
 
-		await expect(repository.create(buildIdentity({ provider_sub }))).rejects.toBeInstanceOf(BadRequestError);
+		await expect(repository.create(buildIdentity({ provider_sub }))).rejects.toBeInstanceOf(
+			IdentityProviderSubjectAlreadyExistsError,
+		);
 	});
 
 	it('resolves a concurrent duplicate identity create race to one persisted record and one rejection', async () => {
@@ -84,7 +91,7 @@ describe('IdentitiesRepository (integration)', () => {
 		const rejected = results.filter((result) => result.status === 'rejected');
 		expect(fulfilled).toHaveLength(1);
 		expect(rejected).toHaveLength(1);
-		expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(BadRequestError);
+		expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(IdentityProviderSubjectAlreadyExistsError);
 
 		expect(await IdentityModel.countDocuments({ provider: 'google', provider_sub })).toBe(1);
 	});

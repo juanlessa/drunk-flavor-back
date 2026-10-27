@@ -1,9 +1,9 @@
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
 import { Credential } from '@/core/accounts/entities/credential.entity';
 import { CreateCredential, UpdateCredential } from '@/core/accounts/dtos/credential.dtos';
-import { CREDENTIAL_UNIQUE_INDEXES, CredentialModel } from '../entities/credential.model';
+import { CREDENTIAL_USER_ID_UNIQUE_INDEX, CredentialModel } from '../entities/credential.model';
 import { isDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
-import { ConflictError } from '@/shared/error/error.lib';
+import { CredentialAlreadyExistsError } from '@/core/accounts/errors/credential.errors';
 import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
 
 export class CredentialsRepository implements ICredentialsRepository {
@@ -13,11 +13,8 @@ export class CredentialsRepository implements ICredentialsRepository {
 		try {
 			return await this.model.create(data);
 		} catch (error) {
-			if (isDuplicateKeyError(error, CREDENTIAL_UNIQUE_INDEXES)) {
-				throw new ConflictError('apiResponses.profile.passwordAlreadyConfigured', {
-					path: 'Credentials.repository',
-					cause: 'Credential already exists for this user',
-				});
+			if (isDuplicateKeyError(error, [CREDENTIAL_USER_ID_UNIQUE_INDEX])) {
+				throw new CredentialAlreadyExistsError({ path: 'Credentials.repository' });
 			}
 			throw error;
 		}

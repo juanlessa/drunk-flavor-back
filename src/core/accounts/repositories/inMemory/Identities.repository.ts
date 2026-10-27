@@ -1,10 +1,10 @@
-import { MongoServerError, ObjectId } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { Identity, IdentityProvider } from '@/core/accounts/entities/identity.entity';
 import { CreateIdentity } from '@/core/accounts/dtos/identity.dtos';
 import {
-	IDENTITY_PROVIDER_SUB_UNIQUE_INDEX,
-	IDENTITY_USER_PROVIDER_UNIQUE_INDEX,
-} from '@/core/accounts/infra/mongo/entities/identity.model';
+	IdentityProviderSubjectAlreadyExistsError,
+	IdentityUserProviderAlreadyExistsError,
+} from '@/core/accounts/errors/identity.errors';
 import { IIdentitiesRepository } from '../IIdentities.repository';
 
 export class IdentitiesRepositoryInMemory implements IIdentitiesRepository {
@@ -17,15 +17,11 @@ export class IdentitiesRepositoryInMemory implements IIdentitiesRepository {
 		const duplicateUserProvider = this.collection.find(
 			(rec) => rec.user_id === data.user_id && rec.provider === data.provider,
 		);
-		if (duplicateProviderSub || duplicateUserProvider) {
-			const indexName = duplicateProviderSub
-				? IDENTITY_PROVIDER_SUB_UNIQUE_INDEX
-				: IDENTITY_USER_PROVIDER_UNIQUE_INDEX;
-			const error = new MongoServerError({
-				message: `E11000 duplicate key error collection: identities index: ${indexName}`,
-			});
-			error.code = 11000;
-			throw error;
+		if (duplicateProviderSub) {
+			throw new IdentityProviderSubjectAlreadyExistsError({ path: 'IdentitiesRepositoryInMemory.create' });
+		}
+		if (duplicateUserProvider) {
+			throw new IdentityUserProviderAlreadyExistsError({ path: 'IdentitiesRepositoryInMemory.create' });
 		}
 
 		const record: Identity = {

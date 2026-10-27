@@ -8,8 +8,7 @@ import { IdentityProviders } from '@/core/accounts/constants/identity.constants'
 import { User } from '@/core/accounts/entities/user.entity';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { Roles } from '@/shared/accessControl/roles';
-import { isDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
-import { IDENTITY_PROVIDER_SUB_UNIQUE_INDEX } from '@/core/accounts/infra/mongo/entities/identity.model';
+import { IdentityProviderSubjectAlreadyExistsError } from '@/core/accounts/errors/identity.errors';
 
 type GoogleAuthResult = {
 	user: {
@@ -110,7 +109,7 @@ export class GoogleAuthService {
 			// A concurrent request won the race to insert the same (provider,
 			// provider_sub). This is a recoverable concurrency outcome, not a client
 			// error: re-read the now-existing identity and continue as branch (a).
-			if (isDuplicateKeyError(error, [IDENTITY_PROVIDER_SUB_UNIQUE_INDEX])) {
+			if (error instanceof IdentityProviderSubjectAlreadyExistsError) {
 				const racedIdentity = await this.identitiesRepository.findByProviderSub(IdentityProviders.google, sub);
 				if (racedIdentity) {
 					const user = await this.usersRepository.findById(racedIdentity.user_id);

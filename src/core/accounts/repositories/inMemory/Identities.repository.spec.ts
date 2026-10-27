@@ -1,11 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { MongoServerError, ObjectId } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { IdentitiesRepositoryInMemory } from './Identities.repository';
-import { isDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
 import {
-	IDENTITY_PROVIDER_SUB_UNIQUE_INDEX,
-	IDENTITY_USER_PROVIDER_UNIQUE_INDEX,
-} from '@/core/accounts/infra/mongo/entities/identity.model';
+	IdentityProviderSubjectAlreadyExistsError,
+	IdentityUserProviderAlreadyExistsError,
+} from '@/core/accounts/errors/identity.errors';
 
 const buildIdentity = (overrides?: { user_id?: string; provider_sub?: string }) => ({
 	user_id: overrides?.user_id ?? new ObjectId().toString(),
@@ -61,18 +60,17 @@ describe('IdentitiesRepositoryInMemory', () => {
 		const user_id = new ObjectId().toString();
 		await repository.create(buildIdentity({ user_id }));
 
-		const error = await repository.create(buildIdentity({ user_id })).catch((caught: unknown) => caught);
-		expect(error).toBeInstanceOf(MongoServerError);
-		expect(isDuplicateKeyError(error, [IDENTITY_USER_PROVIDER_UNIQUE_INDEX])).toBe(true);
+		await expect(repository.create(buildIdentity({ user_id }))).rejects.toBeInstanceOf(
+			IdentityUserProviderAlreadyExistsError,
+		);
 	});
 
-	it('throws a duplicate-key MongoServerError that isDuplicateKeyError recognizes on a duplicate (provider, provider_sub)', async () => {
+	it('rejects a duplicate provider subject with a semantic identity error', async () => {
 		const provider_sub = new ObjectId().toString();
 		await repository.create(buildIdentity({ provider_sub }));
 
-		const error = await repository.create(buildIdentity({ provider_sub })).catch((caught: unknown) => caught);
-
-		expect(error).toBeInstanceOf(MongoServerError);
-		expect(isDuplicateKeyError(error, [IDENTITY_PROVIDER_SUB_UNIQUE_INDEX])).toBe(true);
+		await expect(repository.create(buildIdentity({ provider_sub }))).rejects.toBeInstanceOf(
+			IdentityProviderSubjectAlreadyExistsError,
+		);
 	});
 });

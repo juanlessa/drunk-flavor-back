@@ -2,7 +2,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { ObjectId } from 'mongodb';
 import { CredentialsRepository } from './Credentials.repository';
 import { CredentialModel } from '../entities/credential.model';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { CredentialAlreadyExistsError } from '@/core/accounts/errors/credential.errors';
 
 let repository: CredentialsRepository;
 
@@ -52,12 +52,12 @@ describe('CredentialsRepository (integration)', () => {
 		expect(await repository.findByUserId(user_id)).toBeNull();
 	});
 
-	it('translates a duplicate user_id create to a domain BadRequestError', async () => {
+	it('translates a duplicate user credential to CredentialAlreadyExistsError', async () => {
 		const user_id = new ObjectId().toString();
 		await repository.create({ user_id, password_hash: 'hashed-password' });
 
 		await expect(repository.create({ user_id, password_hash: 'other-hash' })).rejects.toBeInstanceOf(
-			BadRequestError,
+			CredentialAlreadyExistsError,
 		);
 	});
 
@@ -73,7 +73,7 @@ describe('CredentialsRepository (integration)', () => {
 		const rejected = results.filter((result) => result.status === 'rejected');
 		expect(fulfilled).toHaveLength(1);
 		expect(rejected).toHaveLength(1);
-		expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(BadRequestError);
+		expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(CredentialAlreadyExistsError);
 
 		expect(await CredentialModel.countDocuments({ user_id })).toBe(1);
 	});

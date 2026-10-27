@@ -3,7 +3,8 @@ import { ObjectId } from 'mongodb';
 import { TokensRepository } from './Tokens.repository';
 import { TokenModel } from '../entities/token.model';
 import { CreateToken } from '@/core/accounts/dtos/token.dtos';
-import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
+import { TokenHashAlreadyExistsError, TokenUserTypeAlreadyExistsError } from '@/core/accounts/errors/token.errors';
+import { NotFoundError } from '@/shared/error/error.lib';
 
 const buildToken = (overrides?: Partial<CreateToken>): CreateToken => ({
 	token_hash: overrides?.token_hash ?? new ObjectId().toString(),
@@ -102,23 +103,20 @@ describe('TokensRepository (integration)', () => {
 		await expect(repository.delete(new ObjectId().toString())).rejects.toBeInstanceOf(NotFoundError);
 	});
 
-	it('translates a duplicate token create to a domain BadRequestError', async () => {
-		// create wraps the 11000 violation on the token unique index and translates it
-		// to a domain BadRequestError via the shared mapDuplicateKeyError.
+	it('translates a duplicate token hash to a semantic token error', async () => {
 		const token_hash = new ObjectId().toString();
 		await repository.create(buildToken({ token_hash }));
 
 		const duplicate = repository.create(buildToken({ token_hash }));
-		await expect(duplicate).rejects.toBeInstanceOf(BadRequestError);
+		await expect(duplicate).rejects.toBeInstanceOf(TokenHashAlreadyExistsError);
 	});
 
-	it('translates a duplicate (user_id, type) create to a domain BadRequestError', async () => {
-		// The compound unique index violation is translated too.
+	it('translates a duplicate user and type pair to a semantic token error', async () => {
 		const user_id = new ObjectId().toString();
 		await repository.create(buildToken({ user_id, type: 'forgot-password' }));
 
 		const duplicate = repository.create(buildToken({ user_id, type: 'forgot-password' }));
-		await expect(duplicate).rejects.toBeInstanceOf(BadRequestError);
+		await expect(duplicate).rejects.toBeInstanceOf(TokenUserTypeAlreadyExistsError);
 	});
 
 	it('resolves a concurrent duplicate-token create race to one persisted record and one rejection', async () => {
@@ -133,7 +131,7 @@ describe('TokensRepository (integration)', () => {
 		const rejected = results.filter((result) => result.status === 'rejected');
 		expect(fulfilled).toHaveLength(1);
 		expect(rejected).toHaveLength(1);
-		expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(BadRequestError);
+		expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(TokenHashAlreadyExistsError);
 
 		expect(await TokenModel.countDocuments({ token_hash })).toBe(1);
 	});
@@ -150,7 +148,7 @@ describe('TokensRepository (integration)', () => {
 		const rejected = results.filter((result) => result.status === 'rejected');
 		expect(fulfilled).toHaveLength(1);
 		expect(rejected).toHaveLength(1);
-		expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(BadRequestError);
+		expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(TokenUserTypeAlreadyExistsError);
 
 		expect(await TokenModel.countDocuments({ user_id, type: 'forgot-password' })).toBe(1);
 	});

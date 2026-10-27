@@ -3,6 +3,7 @@ import { CreateUser, UpdateUser } from '@/core/accounts/dtos/user.dtos';
 import { ObjectId } from 'mongodb';
 import { CompleteUser, IncompleteProfileUser, User } from '@/core/accounts/entities/user.entity';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
+import { UserEmailAlreadyExistsError } from '@/core/accounts/errors/user.errors';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { QueryParams } from '@/shared/types/query.types';
@@ -13,6 +14,10 @@ export class UsersRepositoryInMemory implements IUsersRepository {
 	collection: User[] = [];
 
 	async create(data: CreateUser): Promise<User> {
+		if (this.collection.some((record) => record.email.toLowerCase() === data.email.toLowerCase())) {
+			throw new UserEmailAlreadyExistsError({ path: 'UsersRepositoryInMemory.create' });
+		}
+
 		const base = {
 			_id: new ObjectId(),
 			email: data.email,
@@ -60,10 +65,15 @@ export class UsersRepositoryInMemory implements IUsersRepository {
 		// record (e.g. name/surname on an incomplete_profile user being completed)
 		// must be added explicitly from the update payload.
 		const merged = { ...deepUpdate(data, current), ...data, updated_at: new Date() };
+		if (
+			data.email !== undefined &&
+			this.collection.some(
+				(record, index) => index !== recordIndex && record.email.toLowerCase() === data.email?.toLowerCase(),
+			)
+		) {
+			throw new UserEmailAlreadyExistsError({ path: 'UsersRepositoryInMemory.update' });
+		}
 
-		// Rebuild as the correct User variant so the discriminated union holds: an
-		// incomplete_profile user keeps optional name/surname; any other status
-		// requires them (completing a profile sends both in `data`).
 		let record: User;
 		if (merged.status === UserStatuses.incomplete_profile) {
 			record = { ...merged, status: UserStatuses.incomplete_profile };

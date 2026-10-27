@@ -1,8 +1,16 @@
 import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.repository';
 import { Identity, IdentityProvider } from '@/core/accounts/entities/identity.entity';
 import { CreateIdentity } from '@/core/accounts/dtos/identity.dtos';
-import { IDENTITY_UNIQUE_INDEXES, IdentityModel } from '../entities/identity.model';
-import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
+import {
+	IdentityProviderSubjectAlreadyExistsError,
+	IdentityUserProviderAlreadyExistsError,
+} from '@/core/accounts/errors/identity.errors';
+import {
+	IDENTITY_PROVIDER_SUB_UNIQUE_INDEX,
+	IDENTITY_USER_PROVIDER_UNIQUE_INDEX,
+	IdentityModel,
+} from '../entities/identity.model';
+import { isDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
 import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
 
 export class IdentitiesRepository implements IIdentitiesRepository {
@@ -12,9 +20,13 @@ export class IdentitiesRepository implements IIdentitiesRepository {
 		try {
 			return await this.model.create(data);
 		} catch (error) {
-			throw mapDuplicateKeyError(error, IDENTITY_UNIQUE_INDEXES, 'apiResponses.users.alreadyExist', {
-				path: 'Identities.repository',
-			});
+			if (isDuplicateKeyError(error, [IDENTITY_PROVIDER_SUB_UNIQUE_INDEX])) {
+				throw new IdentityProviderSubjectAlreadyExistsError({ path: 'Identities.repository' });
+			}
+			if (isDuplicateKeyError(error, [IDENTITY_USER_PROVIDER_UNIQUE_INDEX])) {
+				throw new IdentityUserProviderAlreadyExistsError({ path: 'Identities.repository' });
+			}
+			throw error;
 		}
 	}
 
