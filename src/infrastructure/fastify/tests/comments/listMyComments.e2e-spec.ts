@@ -35,8 +35,8 @@ describe('List My Comments', () => {
 
 	it('Should be able to list my comments including all own statuses', async () => {
 		const { cookies, user } = await createAndAuthenticateUser(app, { role: Roles.member });
-		await createCommentRecord({ user_id: user.id, content: 'visible one' });
-		await createCommentRecord({ user_id: user.id, content: 'hidden one', status: CommentStatuses.hidden });
+		await createCommentRecord({ userId: user.id, content: 'visible one' });
+		await createCommentRecord({ userId: user.id, content: 'hidden one', status: CommentStatuses.hidden });
 
 		const response = await request(app.server).get('/me/comments').set('Cookie', cookies).send();
 		expect(response.status).toBe(HTTP_STATUS.ok);

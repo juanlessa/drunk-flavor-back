@@ -1,15 +1,34 @@
 import { AbilityBuilder } from '@casl/ability';
 import { AppAbility } from './types';
-import { Role } from './roles';
+import { Role, Roles } from './roles';
 import { UserPermissionModel } from './entities/user';
+
+const ADMIN_MANAGED_ROLES = [Roles.partner, Roles.member];
 
 type PermissionsByRole = (user: UserPermissionModel, builder: AbilityBuilder<AppAbility>) => void;
 
 export const permissions: Record<Role, PermissionsByRole> = {
-	admin(user, { can, cannot }) {
+	owner(user, { can, cannot }) {
 		can('manage', 'all');
-		can('manage', 'User');
-		cannot('update', ['Comment', 'Rating'], { user_id: { $ne: user.id } });
+		cannot('update', ['Comment', 'Rating'], { userId: { $ne: user.id } });
+	},
+	admin(user, { can }) {
+		can('manage', ['Category', 'Unit', 'Ingredient', 'Drink']);
+		can(['create', 'list', 'get', 'delete'], ['Comment', 'Rating']);
+		can('moderate', 'Comment');
+		can('update', ['Comment', 'Rating'], { userId: { $eq: user.id } });
+
+		can(['list', 'get'], 'User');
+		can('create', 'User', { role: { $in: ADMIN_MANAGED_ROLES } });
+		can(['delete', 'suspend', 'reactivate', 'close'], 'User', {
+			id: { $ne: user.id },
+			role: { $in: ADMIN_MANAGED_ROLES },
+		});
+		can('changeRole', 'User', {
+			id: { $ne: user.id },
+			role: { $in: ADMIN_MANAGED_ROLES },
+			requestedRole: { $in: ADMIN_MANAGED_ROLES },
+		});
 	},
 	partner(user, { can }) {
 		can('manage', 'Category');
@@ -18,8 +37,8 @@ export const permissions: Record<Role, PermissionsByRole> = {
 		can('manage', 'Drink');
 		can(['create', 'list', 'get'], 'Comment');
 		can(['create', 'list', 'get'], 'Rating');
-		can(['update', 'delete'], 'Comment', { user_id: { $eq: user.id } });
-		can(['update', 'delete'], 'Rating', { user_id: { $eq: user.id } });
+		can(['update', 'delete'], 'Comment', { userId: { $eq: user.id } });
+		can(['update', 'delete'], 'Rating', { userId: { $eq: user.id } });
 	},
 	member(user, { can }) {
 		can(['list', 'get'], 'Category');
@@ -28,7 +47,7 @@ export const permissions: Record<Role, PermissionsByRole> = {
 		can(['list', 'get'], 'Drink');
 		can(['create', 'list', 'get'], 'Comment');
 		can(['create', 'list', 'get'], 'Rating');
-		can(['update', 'delete'], 'Comment', { user_id: { $eq: user.id } });
-		can(['update', 'delete'], 'Rating', { user_id: { $eq: user.id } });
+		can(['update', 'delete'], 'Comment', { userId: { $eq: user.id } });
+		can(['update', 'delete'], 'Rating', { userId: { $eq: user.id } });
 	},
 };

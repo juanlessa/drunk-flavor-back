@@ -14,10 +14,10 @@ describe('Create Unit', () => {
 	});
 
 	it('creates a unit with all fields and preserves false booleans', async () => {
-		const data = createUnitFactory({ symbol: 'mL', space_before_symbol: false, allow_decimal: false });
+		const data = createUnitFactory({ symbol: 'mL', spaceBeforeSymbol: false, allowDecimal: false });
 		await service.execute(data);
 		const unit = await repository.findByName(data.translations);
-		expect(unit).toMatchObject({ symbol: 'mL', space_before_symbol: false, allow_decimal: false, kind: 'volume' });
+		expect(unit).toMatchObject({ symbol: 'mL', spaceBeforeSymbol: false, allowDecimal: false, kind: 'volume' });
 	});
 
 	it('creates a unit with optional fields omitted', async () => {
@@ -25,7 +25,7 @@ describe('Create Unit', () => {
 		await service.execute(data);
 		const unit = await repository.findByName(data.translations);
 		expect(unit).not.toHaveProperty('symbol');
-		expect(unit).not.toHaveProperty('space_before_symbol');
+		expect(unit).not.toHaveProperty('spaceBeforeSymbol');
 	});
 
 	it.each([

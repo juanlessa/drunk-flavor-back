@@ -31,7 +31,7 @@ export const drinkThumbnailValidation = z
 export const drinkIngredientsValidation = z
 	.array(
 		z.object({
-			ingredient_id: getObjectIdSchema({
+			ingredientId: getObjectIdSchema({
 				required: 'apiResponses.drinks.requiredIngredientId',
 				invalid: 'apiResponses.drinks.invalidIngredientIdFormat',
 			}),

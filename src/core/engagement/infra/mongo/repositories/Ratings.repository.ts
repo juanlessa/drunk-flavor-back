@@ -1,21 +1,23 @@
 import { CreateRating, RatingListQuery, RatingSummary, UpdateRating } from '@/core/engagement/dtos/rating.dtos';
 import { Rating } from '@/core/engagement/entities/rating.entity';
-import { RATING_DRINK_USER_UNIQUE_INDEX, RatingModel } from '@/core/engagement/infra/mongo/entities/rating.model';
+import {
+	RATING_DRINK_USER_UNIQUE_INDEX,
+	RatingModel,
+	RatingPersistence,
+} from '@/core/engagement/infra/mongo/entities/rating.model';
+import { RatingMapper } from '@/core/engagement/infra/mongo/mappers/rating.mapper';
 import { IRatingsRepository } from '@/core/engagement/repositories/IRatings.repository';
-import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
+import { isDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
 import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 import { QueryFilter } from 'mongoose';
-import { MongoServerError } from 'mongodb';
-
-const isRatingPairDuplicate = (error: unknown): error is MongoServerError =>
-	error instanceof MongoServerError && error.code === 11000 && error.message.includes(RATING_DRINK_USER_UNIQUE_INDEX);
 
 export class RatingsRepository implements IRatingsRepository {
 	async create(data: CreateRating): Promise<Rating> {
 		try {
-			return await RatingModel.create(data);
+			const document = await RatingModel.create(RatingMapper.toPersistence(data));
+			return RatingMapper.toDomain(document);
 		} catch (error) {
-			if (isRatingPairDuplicate(error)) {
+			if (isDuplicateKeyError(error, [RATING_DRINK_USER_UNIQUE_INDEX])) {
 				throw new BadRequestError('apiResponses.ratings.alreadyExist', {
 					path: 'Ratings.repository',
 					cause: 'Unique (drink_id, user_id) index violation',
@@ -26,33 +28,32 @@ export class RatingsRepository implements IRatingsRepository {
 	}
 
 	async update({ id, value }: UpdateRating): Promise<Rating> {
-		const rating = await RatingModel.findByIdAndUpdate<Rating>(
-			id,
+		const objectId = RatingMapper.toObjectId(id);
+		if (!objectId) throw this.notFound('update');
+		const document = await RatingModel.findByIdAndUpdate(
+			objectId,
 			{ $set: { value } },
 			{ returnDocument: 'after', runValidators: true },
-		).exec();
-		if (!rating) {
-			throw new NotFoundError('apiResponses.ratings.notFound', {
-				path: 'Ratings.repository',
-				cause: 'Error on findByIdAndUpdate operation',
-			});
-		}
-		return rating;
+		)
+			.lean<RatingPersistence>()
+			.exec();
+		if (!document) throw this.notFound('update');
+		return RatingMapper.toDomain(document);
 	}
 
 	async delete(id: string): Promise<Rating> {
-		const rating = await RatingModel.findByIdAndDelete<Rating>(id).exec();
-		if (!rating) {
-			throw new NotFoundError('apiResponses.ratings.notFound', {
-				path: 'Ratings.repository',
-				cause: 'Error on findByIdAndDelete operation',
-			});
-		}
-		return rating;
+		const objectId = RatingMapper.toObjectId(id);
+		if (!objectId) throw this.notFound('delete');
+		const document = await RatingModel.findByIdAndDelete(objectId).lean<RatingPersistence>().exec();
+		if (!document) throw this.notFound('delete');
+		return RatingMapper.toDomain(document);
 	}
 
 	async findById(id: string): Promise<Rating | null> {
-		return RatingModel.findById<Rating>(id).lean<Rating>({ transform: removeLeanVersionKey }).exec();
+		const objectId = RatingMapper.toObjectId(id);
+		if (!objectId) return null;
+		const document = await RatingModel.findById(objectId).lean<RatingPersistence>().exec();
+		return document ? RatingMapper.toDomain(document) : null;
 	}
 
 	async findAll(query: RatingListQuery): Promise<Rating[]> {
@@ -68,9 +69,10 @@ export class RatingsRepository implements IRatingsRepository {
 	}
 
 	async findByDrinkAndUser(drinkId: string, userId: string): Promise<Rating | null> {
-		return RatingModel.findOne<Rating>({ drink_id: drinkId, user_id: userId })
-			.lean<Rating>({ transform: removeLeanVersionKey })
+		const document = await RatingModel.findOne({ drink_id: drinkId, user_id: userId })
+			.lean<RatingPersistence>()
 			.exec();
+		return document ? RatingMapper.toDomain(document) : null;
 	}
 
 	async summarizeByDrink(drinkId: string): Promise<RatingSummary> {
@@ -78,11 +80,7 @@ export class RatingsRepository implements IRatingsRepository {
 			{ $match: { drink_id: drinkId } },
 			{ $group: { _id: null, average: { $avg: '$value' }, count: { $sum: 1 } } },
 		]).exec();
-
-		return {
-			average: summary?.average ?? 0,
-			count: summary?.count ?? 0,
-		};
+		return { average: summary?.average ?? 0, count: summary?.count ?? 0 };
 	}
 
 	async deleteByUser(userId: string): Promise<number> {
@@ -95,13 +93,20 @@ export class RatingsRepository implements IRatingsRepository {
 		return result.deletedCount;
 	}
 
-	private runListQuery(filter: QueryFilter<Rating>, query: RatingListQuery): Promise<Rating[]> {
-		const skip = (query.page - 1) * query.limit;
-		return RatingModel.find(filter)
-			.sort(query.sort)
-			.skip(skip)
+	private async runListQuery(filter: QueryFilter<RatingPersistence>, query: RatingListQuery): Promise<Rating[]> {
+		const documents = await RatingModel.find(filter)
+			.sort(RatingMapper.toPersistenceSort(query.sort))
+			.skip((query.page - 1) * query.limit)
 			.limit(query.limit)
-			.lean<Rating[]>({ transform: removeLeanVersionKey })
+			.lean<RatingPersistence[]>()
 			.exec();
+		return documents.map(RatingMapper.toDomain);
+	}
+
+	private notFound(operation: string): NotFoundError {
+		return new NotFoundError('apiResponses.ratings.notFound', {
+			path: 'Ratings.repository',
+			cause: `Rating missing during ${operation}`,
+		});
 	}
 }

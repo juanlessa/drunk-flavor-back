@@ -16,12 +16,12 @@ describe('Get Rating', () => {
 
 	it('returns a stored rating', async () => {
 		const created = await ratingsRepository.create({
-			drink_id: new ObjectId().toString(),
-			user_id: new ObjectId().toString(),
+			drinkId: new ObjectId().toString(),
+			userId: new ObjectId().toString(),
 			value: 4,
 		});
-		const found = await service.execute({ id: created._id.toString() });
-		expect(found._id.toString()).toBe(created._id.toString());
+		const found = await service.execute({ id: created.id });
+		expect(found.id).toBe(created.id);
 	});
 
 	it('rejects a nonexistent rating', async () => {

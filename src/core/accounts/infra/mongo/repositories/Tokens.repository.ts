@@ -1,74 +1,107 @@
 import { NotFoundError } from '@/shared/error/error.lib';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
-import { TOKEN_UNIQUE_INDEXES, TokenModel } from '../entities/token.model';
+import {
+	TOKEN_UNIQUE_INDEX,
+	TOKEN_USER_TYPE_UNIQUE_INDEX,
+	TokenModel,
+	TokenPersistence,
+} from '../entities/token.model';
+import { TokenMapper } from '../mappers/token.mapper';
 import { CreateToken, FindByUserIdAndType, UpdateToken } from '@/core/accounts/dtos/token.dtos';
 import { Token } from '@/core/accounts/entities/token.entity';
-import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
-import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
+import { TokenHashAlreadyExistsError, TokenUserTypeAlreadyExistsError } from '@/core/accounts/errors/token.errors';
+import { isDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
 
 export class TokensRepository implements ITokensRepository {
 	private model = TokenModel;
 
 	async create(data: CreateToken): Promise<Token> {
 		try {
-			return await this.model.create(data);
+			const document = await this.model.create(TokenMapper.toPersistence(data));
+			return TokenMapper.toDomain(document);
 		} catch (error) {
-			throw mapDuplicateKeyError(error, TOKEN_UNIQUE_INDEXES, 'apiResponses.auth.tokenAlreadyExist', {
-				path: 'Tokens.repository',
-			});
+			if (isDuplicateKeyError(error, [TOKEN_UNIQUE_INDEX])) {
+				throw new TokenHashAlreadyExistsError({ path: 'Tokens.repository' });
+			}
+			if (isDuplicateKeyError(error, [TOKEN_USER_TYPE_UNIQUE_INDEX])) {
+				throw new TokenUserTypeAlreadyExistsError({ path: 'Tokens.repository' });
+			}
+			throw error;
 		}
 	}
 
 	async update({ id, ...data }: UpdateToken): Promise<Token> {
-		let record: Token | null;
+		const objectId = TokenMapper.toObjectId(id);
+		if (!objectId) {
+			throw this.tokenNotFound('Tokens.repository.update', 'Error on findOneAndUpdate operation');
+		}
+
+		let document: TokenPersistence | null;
 		try {
-			record = await this.model.findByIdAndUpdate(id, data, { returnDocument: 'after' }).exec();
+			document = await this.model
+				.findByIdAndUpdate(objectId, TokenMapper.toPersistence(data), {
+					returnDocument: 'after',
+					runValidators: true,
+				})
+				.lean<TokenPersistence>()
+				.exec();
 		} catch (error) {
-			throw mapDuplicateKeyError(error, TOKEN_UNIQUE_INDEXES, 'apiResponses.auth.tokenAlreadyExist', {
-				path: 'Tokens.repository',
-			});
+			if (isDuplicateKeyError(error, [TOKEN_UNIQUE_INDEX])) {
+				throw new TokenHashAlreadyExistsError({ path: 'Tokens.repository' });
+			}
+			if (isDuplicateKeyError(error, [TOKEN_USER_TYPE_UNIQUE_INDEX])) {
+				throw new TokenUserTypeAlreadyExistsError({ path: 'Tokens.repository' });
+			}
+			throw error;
 		}
-		if (!record) {
-			throw new NotFoundError('apiResponses.auth.tokenNotFound', {
-				path: 'Tokens.repository.update',
-				cause: 'Error on findOneAndUpdate operation',
-			});
+		if (!document) {
+			throw this.tokenNotFound('Tokens.repository.update', 'Error on findOneAndUpdate operation');
 		}
-		return record;
+		return TokenMapper.toDomain(document);
 	}
 
 	async delete(id: string): Promise<Token> {
-		const record = await this.model.findByIdAndDelete<Token>(id).exec();
-		if (!record) {
-			throw new NotFoundError('apiResponses.auth.tokenNotFound', {
-				path: 'Tokens.repository.delete',
-				cause: 'Error on findOneAndDelete operation',
-			});
+		const objectId = TokenMapper.toObjectId(id);
+		if (!objectId) {
+			throw this.tokenNotFound('Tokens.repository.delete', 'Error on findOneAndDelete operation');
 		}
-		return record;
+		const document = await this.model.findByIdAndDelete(objectId).lean<TokenPersistence>().exec();
+		if (!document) {
+			throw this.tokenNotFound('Tokens.repository.delete', 'Error on findOneAndDelete operation');
+		}
+		return TokenMapper.toDomain(document);
 	}
 
-	async deleteByUserId(user_id: string): Promise<number> {
-		const result = await this.model.deleteMany({ user_id }).exec();
+	async deleteByUserId(userId: string): Promise<number> {
+		const result = await this.model.deleteMany({ user_id: userId }).exec();
 		return result.deletedCount;
 	}
 
 	async findById(id: string): Promise<Token | null> {
-		return this.model.findById<Token>(id).lean<Token>({ transform: removeLeanVersionKey }).exec();
+		const objectId = TokenMapper.toObjectId(id);
+		if (!objectId) {
+			return null;
+		}
+		const document = await this.model.findById(objectId).lean<TokenPersistence>().exec();
+		return document ? TokenMapper.toDomain(document) : null;
 	}
 
 	async findByTokenHash(tokenHash: string): Promise<Token | null> {
-		return this.model
-			.findOne<Token>({ token_hash: tokenHash })
-			.lean<Token>({ transform: removeLeanVersionKey })
-			.exec();
+		const document = await this.model.findOne({ token_hash: tokenHash }).lean<TokenPersistence>().exec();
+		return document ? TokenMapper.toDomain(document) : null;
 	}
 
-	async findByUserIdAndType({ user_id, type }: FindByUserIdAndType): Promise<Token | null> {
-		return this.model.findOne<Token>({ user_id, type }).lean<Token>({ transform: removeLeanVersionKey }).exec();
+	async findByUserIdAndType({ userId, type }: FindByUserIdAndType): Promise<Token | null> {
+		const document = await this.model.findOne({ user_id: userId, type }).lean<TokenPersistence>().exec();
+		return document ? TokenMapper.toDomain(document) : null;
 	}
 
-	async findByUserId(user_id: string): Promise<Token[]> {
-		return this.model.find<Token>({ user_id }).lean<Token[]>({ transform: removeLeanVersionKey }).exec();
+	async findByUserId(userId: string): Promise<Token[]> {
+		const documents = await this.model.find({ user_id: userId }).lean<TokenPersistence[]>().exec();
+		return documents.map((document) => TokenMapper.toDomain(document));
+	}
+
+	private tokenNotFound(path: string, cause: string): NotFoundError {
+		return new NotFoundError('apiResponses.auth.tokenNotFound', { path, cause });
 	}
 }

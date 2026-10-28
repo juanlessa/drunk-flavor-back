@@ -2,6 +2,7 @@ import {
 	resolveUsersRepository,
 	resolveTokensRepository,
 	resolveCredentialsRepository,
+	resolveAdministrativeEventsRepository,
 } from '@/core/accounts/infra/mongo/container';
 import { CreateUserService } from './CreateUser.service';
 import { resolveTransactionManager } from '@/infrastructure/mongo/transactions';
@@ -19,6 +20,7 @@ const credentialsRepository = resolveCredentialsRepository();
 const transactionManager = resolveTransactionManager();
 const templateProvider = resolveTemplateProvider();
 const emailQueueProvider = resolveEmailQueueProvider();
+const administrativeEventsRepository = resolveAdministrativeEventsRepository();
 
 const createUserService = new CreateUserService(
 	usersRepository,
@@ -30,5 +32,6 @@ const createUserService = new CreateUserService(
 	cryptoProvider,
 	templateProvider,
 	emailQueueProvider,
+	administrativeEventsRepository,
 );
 export const resolveCreateUserService = () => createUserService;

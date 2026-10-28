@@ -34,7 +34,7 @@ describe('Delete Comment', () => {
 
 	it('Should be able to delete an own comment as a member', async () => {
 		const { cookies, user } = await createAndAuthenticateUser(app, { role: Roles.member });
-		const { id } = await createCommentRecord({ user_id: user.id, content: 'x' });
+		const { id } = await createCommentRecord({ userId: user.id, content: 'x' });
 		const response = await request(app.server).delete(`/comments/${id}`).set('Cookie', cookies).send();
 		expect(response.status).toBe(HTTP_STATUS.no_content);
 		expect(await CommentModel.findById(id).lean()).toBeNull();

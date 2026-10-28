@@ -1,23 +1,32 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
+import { UserAdministrationPolicy } from '@/core/accounts/policies/UserAdministration.policy';
+import { toUserView } from '@/core/accounts/mappers/user.mappers';
 import { GetUser } from './getUser.dtos';
-import { ForbiddenError, NotFoundError } from '@/shared/error/error.lib';
-import { defineAbilityFor } from '@/shared/accessControl';
-import { userPermissionSchema } from '@/shared/accessControl/entities/user';
+import { authorizeUserAdministration } from '../userAdministrationAudit.helpers';
+import { findRequiredAdministrationUser, toAdministrationActor } from '../userAdministration.helpers';
 
 export class GetUserService {
-	constructor(private usersRepository: IUsersRepository) {}
+	constructor(
+		private usersRepository: IUsersRepository,
+		private userAdministrationPolicy = new UserAdministrationPolicy(),
+	) {}
 
-	async execute({ id, actor }: GetUser) {
-		const permissionUser = userPermissionSchema.parse({ id: actor.id, role: actor.role });
-		const { cannot } = defineAbilityFor(permissionUser);
-		if (cannot('get', 'User')) {
-			throw new ForbiddenError('apiResponses.users.forbidden', { path: 'GetUser.service' });
-		}
+	async execute({ id, actor, administrativeContext }: GetUser) {
+		const [persistedActor, target] = await Promise.all([
+			findRequiredAdministrationUser(this.usersRepository, actor.id, 'GetUser.service.actor'),
+			findRequiredAdministrationUser(this.usersRepository, id, 'GetUser.service.target'),
+		]);
+		const currentActor = toAdministrationActor(persistedActor);
+		authorizeUserAdministration(
+			{
+				action: 'user.get',
+				actorId: currentActor.id,
+				targetUserId: target.id,
+				context: administrativeContext,
+			},
+			() => this.userAdministrationPolicy.assertCanGetUser(currentActor, target),
+		);
 
-		const user = await this.usersRepository.findById(id);
-		if (!user) {
-			throw new NotFoundError('apiResponses.users.notExist', { path: 'GetUser.service' });
-		}
-		return user;
+		return toUserView(target);
 	}
 }

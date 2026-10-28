@@ -6,14 +6,27 @@ import { createUserSchema } from '@/core/accounts/useCases/users/create/createUs
 import { createUserController } from '@/core/accounts/useCases/users/create/createUser.controller';
 import { getUserSchema } from '@/core/accounts/useCases/users/get/getUser.schema';
 import { getUserController } from '@/core/accounts/useCases/users/get/getUser.controller';
+import { getUserAdministrativeCapabilitiesController } from '@/core/accounts/useCases/users/getAdministrativeCapabilities/getUserAdministrativeCapabilities.controller';
+import { getUserAdministrativeCapabilitiesSchema } from '@/core/accounts/useCases/users/getAdministrativeCapabilities/getUserAdministrativeCapabilities.schema';
 import { listUsersQuerySchema } from '@/core/accounts/useCases/users/list/listUsers.schema';
 import { listUsersController } from '@/core/accounts/useCases/users/list/listUsers.controller';
 import { updateUserRoleSchema } from '@/core/accounts/useCases/users/updateRole/updateUserRole.schema';
 import { updateUserRoleController } from '@/core/accounts/useCases/users/updateRole/updateUserRole.controller';
-import { deleteUserSchema } from '@/core/accounts/useCases/users/delete/deleteUser.schema';
-import { deleteUserController } from '@/core/accounts/useCases/users/delete/deleteUser.controller';
 import { verifyPermissions } from '../middlewares/verifyPermissions';
 import { enforceCompleteProfile } from '../middlewares/enforceCompleteProfile';
+import { requireRecentAuthentication } from '../middlewares/requireRecentAuthentication';
+import { closeUserBodySchema, closeUserParamsSchema } from '@/core/accounts/useCases/users/close/closeUser.schema';
+import { closeUserController } from '@/core/accounts/useCases/users/close/closeUser.controller';
+import {
+	suspendUserBodySchema,
+	suspendUserParamsSchema,
+} from '@/core/accounts/useCases/users/suspend/suspendUser.schema';
+import { suspendUserController } from '@/core/accounts/useCases/users/suspend/suspendUser.controller';
+import {
+	reactivateUserBodySchema,
+	reactivateUserParamsSchema,
+} from '@/core/accounts/useCases/users/reactivate/reactivateUser.schema';
+import { reactivateUserController } from '@/core/accounts/useCases/users/reactivate/reactivateUser.controller';
 
 const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
@@ -23,9 +36,23 @@ const routes: Routes = (server) => {
 				tags: ['Users'],
 				body: createUserSchema,
 			},
-			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('create', 'User')],
+			preValidation: [
+				verifyAndRenewToken,
+				enforceCompleteProfile,
+				requireRecentAuthentication,
+				verifyPermissions('create', 'User'),
+			],
 		},
 		createUserController,
+	);
+
+	server.withTypeProvider<ZodTypeProvider>().get(
+		'/users/:id/administrative-capabilities',
+		{
+			schema: { tags: ['Users'], params: getUserAdministrativeCapabilitiesSchema },
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('get', 'User')],
+		},
+		getUserAdministrativeCapabilitiesController,
 	);
 
 	server.withTypeProvider<ZodTypeProvider>().get(
@@ -59,21 +86,68 @@ const routes: Routes = (server) => {
 				tags: ['Users'],
 				body: updateUserRoleSchema,
 			},
-			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('update', 'User')],
+			preValidation: [
+				verifyAndRenewToken,
+				enforceCompleteProfile,
+				requireRecentAuthentication,
+				verifyPermissions('changeRole', 'User'),
+			],
 		},
 		updateUserRoleController,
 	);
 
-	server.withTypeProvider<ZodTypeProvider>().delete(
-		'/users',
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/users/:id/closure',
 		{
 			schema: {
 				tags: ['Users'],
-				body: deleteUserSchema,
+				params: closeUserParamsSchema,
+				body: closeUserBodySchema,
 			},
-			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('delete', 'User')],
+			preValidation: [
+				verifyAndRenewToken,
+				enforceCompleteProfile,
+				requireRecentAuthentication,
+				verifyPermissions('close', 'User'),
+			],
 		},
-		deleteUserController,
+		closeUserController,
+	);
+
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/users/:id/suspension',
+		{
+			schema: {
+				tags: ['Users'],
+				params: suspendUserParamsSchema,
+				body: suspendUserBodySchema,
+			},
+			preValidation: [
+				verifyAndRenewToken,
+				enforceCompleteProfile,
+				requireRecentAuthentication,
+				verifyPermissions('suspend', 'User'),
+			],
+		},
+		suspendUserController,
+	);
+
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/users/:id/reactivation',
+		{
+			schema: {
+				tags: ['Users'],
+				params: reactivateUserParamsSchema,
+				body: reactivateUserBodySchema,
+			},
+			preValidation: [
+				verifyAndRenewToken,
+				enforceCompleteProfile,
+				requireRecentAuthentication,
+				verifyPermissions('reactivate', 'User'),
+			],
+		},
+		reactivateUserController,
 	);
 };
 

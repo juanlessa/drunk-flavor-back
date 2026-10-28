@@ -1,4 +1,4 @@
-import { DatabaseCommonInfo } from '@/infrastructure/mongo/types';
+import { EntityMetadata } from '@/shared/types/entity.types';
 
 export const CommentStatuses = {
 	visible: 'visible',
@@ -8,9 +8,9 @@ export const CommentStatuses = {
 
 export type CommentStatus = (typeof CommentStatuses)[keyof typeof CommentStatuses];
 
-export type Comment = DatabaseCommonInfo & {
-	drink_id: string;
-	user_id: string;
+export type Comment = EntityMetadata & {
+	drinkId: string;
+	userId: string;
 	content: string;
 	status: CommentStatus;
 };

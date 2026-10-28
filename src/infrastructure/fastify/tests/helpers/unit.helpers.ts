@@ -6,5 +6,5 @@ import { DeepPartial } from '@/shared/types/utility.types';
 export const createUnit = async (unitOptions?: DeepPartial<CreateUnit>) => {
 	const unitData = createUnitFactory(unitOptions);
 	const unit = await resolveUnitsRepository().create(unitData);
-	return { ...unitData, id: unit._id.toString(), unit };
+	return { ...unitData, id: unit.id, unit };
 };

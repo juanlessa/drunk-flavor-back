@@ -2,6 +2,7 @@ import { Credential } from '@/core/accounts/entities/credential.entity';
 import { CreateCredential, UpdateCredential } from '@/core/accounts/dtos/credential.dtos';
 
 export interface ICredentialsRepository {
+	existsByUserId(userId: string): Promise<boolean>;
 	findByUserId(userId: string): Promise<Credential | null>;
 	create(data: CreateCredential): Promise<Credential>;
 	update(data: UpdateCredential): Promise<void>;

@@ -9,5 +9,5 @@ import { z } from 'zod/v4';
 export const updateCategorySchema = z.object({
 	id: categoryIdValidation,
 	translations: generateTranslationsSchema(categoryTranslationSchema),
-	is_alcoholic: categoryIsAlcoholicValidation,
+	isAlcoholic: categoryIsAlcoholicValidation,
 });

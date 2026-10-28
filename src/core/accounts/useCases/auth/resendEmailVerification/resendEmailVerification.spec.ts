@@ -75,12 +75,12 @@ describe('ResendEmailVerification', () => {
 		await service.execute({ email });
 
 		const verifyToken = (await tokensRepository.findByUserIdAndType({
-			user_id: createdUser._id.toString(),
+			userId: createdUser.id,
 			type: TokenTypes['email-verification'],
 		})) as Token;
 
 		expect(verifyToken).not.toBeNull();
-		expect(verifyToken.token_hash).toBeTruthy();
+		expect(verifyToken.tokenHash).toBeTruthy();
 	});
 
 	it('Should queue the verification email when resend succeeds', async () => {
@@ -117,10 +117,10 @@ describe('ResendEmailVerification', () => {
 		const createdUser = await createPendingUser();
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
-			token_hash: cryptoProvider.hashToken(token),
-			user_id: createdUser._id.toString(),
+			tokenHash: cryptoProvider.hashToken(token),
+			userId: createdUser.id,
 			type: TokenTypes['email-verification'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+			expiresAt: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		await expect(service.execute({ email })).rejects.toBeInstanceOf(BadRequestError);
@@ -131,10 +131,10 @@ describe('ResendEmailVerification', () => {
 		const createdUser = await createPendingUser();
 		const initialToken = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
-			token_hash: cryptoProvider.hashToken(initialToken),
-			user_id: createdUser._id.toString(),
+			tokenHash: cryptoProvider.hashToken(initialToken),
+			userId: createdUser.id,
 			type: TokenTypes['email-verification'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+			expiresAt: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		vi.advanceTimersByTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);
@@ -142,13 +142,13 @@ describe('ResendEmailVerification', () => {
 		await service.execute({ email });
 
 		const verifyToken = (await tokensRepository.findByUserIdAndType({
-			user_id: createdUser._id.toString(),
+			userId: createdUser.id,
 			type: TokenTypes['email-verification'],
 		})) as Token;
 
 		expect(verifyToken).not.toBeNull();
-		expect(verifyToken.token_hash).toBeTruthy();
-		expect(verifyToken.token_hash).not.toBe(cryptoProvider.hashToken(initialToken));
+		expect(verifyToken.tokenHash).toBeTruthy();
+		expect(verifyToken.tokenHash).not.toBe(cryptoProvider.hashToken(initialToken));
 		expect(await tokensRepository.findByTokenHash(cryptoProvider.hashToken(initialToken))).toBeNull();
 
 		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);

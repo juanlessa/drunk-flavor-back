@@ -32,11 +32,11 @@ describe('List Comments By Drink', () => {
 	});
 
 	it('Should be able to list the comments by drink hiding non-visible ones from public reads', async () => {
-		const { id: drink_id } = await createDrink();
-		await createCommentRecord({ drink_id, content: 'visible one' });
-		await createCommentRecord({ drink_id, content: 'hidden one', status: CommentStatuses.hidden });
+		const { id: drinkId } = await createDrink();
+		await createCommentRecord({ drinkId, content: 'visible one' });
+		await createCommentRecord({ drinkId, content: 'hidden one', status: CommentStatuses.hidden });
 
-		const byDrink = await request(app.server).get(`/drinks/${drink_id}/comments`).send();
+		const byDrink = await request(app.server).get(`/drinks/${drinkId}/comments`).send();
 		expect((byDrink.body as unknown[]).length).toBe(1);
 	});
 });

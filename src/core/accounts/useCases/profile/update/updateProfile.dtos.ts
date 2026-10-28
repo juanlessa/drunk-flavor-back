@@ -16,5 +16,6 @@ export type UpdateProfileResult = {
 		id: string;
 		role: Role;
 		status: UserStatus;
+		sessionVersion: number;
 	};
 };

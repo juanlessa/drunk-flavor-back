@@ -6,6 +6,7 @@ import {
 import { ConfirmPasswordService } from './ConfirmPassword.service';
 import { resolveDateProvider } from '@/shared/providers/date';
 import { resolveCryptoProvider, resolveHashProvider } from '@/shared/providers/cryptography';
+import { resolveTransactionManager } from '@/infrastructure/mongo/transactions';
 
 const dateProvider = resolveDateProvider();
 const hashProvider = resolveHashProvider();
@@ -21,5 +22,6 @@ const confirmPasswordService = new ConfirmPasswordService(
 	dateProvider,
 	hashProvider,
 	cryptoProvider,
+	resolveTransactionManager(),
 );
 export const resolveConfirmPasswordService = () => confirmPasswordService;

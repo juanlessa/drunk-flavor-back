@@ -41,7 +41,7 @@
 		"test:template:output:watch": "NODE_ENV=testing STORE_TEMPLATES=true vitest -c vitest.config.ts 'src/shared/providers/template/implementations/views/'",
 		"generate-secret-key": "npx @fastify/secure-session > secret-key",
 		"seed:drinks": "tsx seed/drinks",
-		"seed:admin": "tsx seed/accounts/admin.ts",
+		"seed:owner": "tsx seed/accounts/owner.ts",
 		"reconcile:drink-ratings": "tsx scripts/reconcile-drink-ratings.ts"
 	},
 	"dependencies": {

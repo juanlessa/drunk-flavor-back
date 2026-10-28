@@ -1,6 +1,7 @@
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { ListDrinksDTO } from './listDrinks.dtos';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
+import { toDrinkView } from '@/core/drinks/mappers/drink.mappers';
 
 export class ListDrinksService {
 	constructor(
@@ -18,7 +19,7 @@ export class ListDrinksService {
 			if (d.thumbnail) {
 				d.thumbnail.url = this.storageProvider.getFileURL(d.thumbnail.name);
 			}
-			return d;
+			return toDrinkView(d);
 		});
 
 		return drinksWithImagesURL;

@@ -1,77 +1,94 @@
-import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
-import { Drink } from '@/core/drinks/entities/drink.entity';
 import { CreateDrink, FindDrinkByName, UpdateDrink } from '@/core/drinks/dtos/drink.dtos';
-import { ApplyRatingDelta, DrinkRatingSummary } from '@/shared/providers/moduleCommunication/drinks';
-import { DRINK_UNIQUE_INDEXES, DrinkModel } from '@/core/drinks/infra/mongo/entities/drink.model';
-import { getNameCompareQuery } from '../helpers/translations.helpers';
+import { Drink } from '@/core/drinks/entities/drink.entity';
+import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
+import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
+import { toMongoUpdateSet } from '@/infrastructure/mongo/helpers/mapper.helpers';
+import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
+import type { ApplyRatingDelta, DrinkRatingSummary } from '@/core/drinks/public/IDrinksModule';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
-import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
-import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
-import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
 import { QueryFilter } from 'mongoose';
+import { DRINK_UNIQUE_INDEXES, DrinkModel, DrinkPersistence } from '../entities/drink.model';
+import { getNameCompareQuery } from '../helpers/translations.helpers';
+import { DrinkMapper } from '../mappers/drink.mapper';
 
 export class DrinksRepository implements IDrinksRepository {
 	async create(data: CreateDrink): Promise<Drink> {
 		try {
-			return await DrinkModel.create(data);
+			const document = await DrinkModel.create(DrinkMapper.toPersistence(data));
+			return DrinkMapper.toDomain(document);
 		} catch (error) {
 			throw mapDuplicateKeyError(error, DRINK_UNIQUE_INDEXES, 'apiResponses.drinks.alreadyExist', {
-				path: 'drinks.repository',
+				path: 'Drinks.repository',
 			});
 		}
 	}
 
 	async update({ id, ...data }: UpdateDrink): Promise<Drink> {
-		let drink: Drink | null;
+		const objectId = DrinkMapper.toObjectId(id);
+		if (!objectId) throw this.notFound('update');
+		let document: DrinkPersistence | null;
 		try {
-			drink = await DrinkModel.findByIdAndUpdate<Drink>(id, data, { returnDocument: 'after' }).exec();
+			document = await DrinkModel.findByIdAndUpdate(
+				objectId,
+				{ $set: toMongoUpdateSet(DrinkMapper.toPersistence(data)) },
+				{
+					returnDocument: 'after',
+					runValidators: true,
+				},
+			)
+				.select('+ratings_sum')
+				.lean<DrinkPersistence>()
+				.exec();
 		} catch (error) {
 			throw mapDuplicateKeyError(error, DRINK_UNIQUE_INDEXES, 'apiResponses.drinks.alreadyExist', {
-				path: 'drinks.repository',
+				path: 'Drinks.repository',
 			});
 		}
-		if (!drink) {
-			throw new NotFoundError('apiResponses.drinks.notFound', {
-				path: 'drinks.repository',
-				cause: 'Error on findOneAndUpdate operation',
-			});
-		}
-		return drink;
+		if (!document) throw this.notFound('update');
+		return DrinkMapper.toDomain(document);
 	}
 
 	async delete(id: string): Promise<Drink> {
-		const drink = await DrinkModel.findByIdAndDelete<Drink>(id).exec();
-		if (!drink) {
-			throw new NotFoundError('apiResponses.drinks.notFound', {
-				path: 'drinks.repository',
-				cause: 'Error on findOneAndDelete operation',
-			});
-		}
-		return drink;
+		const objectId = DrinkMapper.toObjectId(id);
+		if (!objectId) throw this.notFound('delete');
+		const document = await DrinkModel.findByIdAndDelete(objectId)
+			.select('+ratings_sum')
+			.lean<DrinkPersistence>()
+			.exec();
+		if (!document) throw this.notFound('delete');
+		return DrinkMapper.toDomain(document);
 	}
 
 	async findByName(data: FindDrinkByName): Promise<Drink | null> {
-		return DrinkModel.findOne<Drink>({ $or: getNameCompareQuery(data) })
-			.lean<Drink>({ transform: removeLeanVersionKey })
+		const document = await DrinkModel.findOne({ $or: getNameCompareQuery(data) })
+			.select('+ratings_sum')
+			.lean<DrinkPersistence>()
 			.exec();
+		return document ? DrinkMapper.toDomain(document) : null;
 	}
 
 	async findById(id: string): Promise<Drink | null> {
-		return DrinkModel.findById<Drink>(id).lean<Drink>({ transform: removeLeanVersionKey }).exec();
+		const objectId = DrinkMapper.toObjectId(id);
+		if (!objectId) return null;
+		const document = await DrinkModel.findById(objectId).select('+ratings_sum').lean<DrinkPersistence>().exec();
+		return document ? DrinkMapper.toDomain(document) : null;
 	}
 
 	async findAll(query: QueryParams): Promise<Drink[]> {
-		const mongooseQuery = buildQuery<Drink>(query, DrinkModel);
-		return mongooseQuery.lean<Drink[]>({ transform: removeLeanVersionKey }).exec();
+		const documents = await buildQuery<DrinkPersistence>(DrinkMapper.toPersistenceQuery(query), DrinkModel)
+			.select('+ratings_sum')
+			.lean<DrinkPersistence[]>()
+			.exec();
+		return documents.map(DrinkMapper.toDomain);
 	}
 
 	async applyRatingDelta({ drinkId, countDelta, sumDelta }: ApplyRatingDelta): Promise<DrinkRatingSummary> {
-		const filter: QueryFilter<Drink> = { _id: drinkId };
+		const filter: QueryFilter<DrinkPersistence> = { _id: drinkId };
 		if (countDelta < 0) filter.ratings_count = { $gte: -countDelta };
 		if (sumDelta < 0) filter.ratings_sum = { $gte: -sumDelta };
 
-		const drink = await DrinkModel.findOneAndUpdate<Drink>(
+		const document = await DrinkModel.findOneAndUpdate(
 			filter,
 			[
 				{
@@ -91,16 +108,17 @@ export class DrinksRepository implements IDrinksRepository {
 			{ returnDocument: 'after', updatePipeline: true },
 		)
 			.select('+ratings_sum')
-			.lean<Drink>()
+			.lean<DrinkPersistence>()
 			.exec();
 
-		if (!drink) {
-			throw new NotFoundError('apiResponses.drinks.notFound', {
-				path: 'drinks.repository',
-				cause: 'Drink missing or rating projection invariant violated',
-			});
-		}
+		if (!document) throw this.notFound('rating projection update');
+		return { average: document.avg_rating, count: document.ratings_count };
+	}
 
-		return { average: drink.avg_rating, count: drink.ratings_count };
+	private notFound(operation: string): NotFoundError {
+		return new NotFoundError('apiResponses.drinks.notFound', {
+			path: 'Drinks.repository',
+			cause: `Drink missing during ${operation}`,
+		});
 	}
 }

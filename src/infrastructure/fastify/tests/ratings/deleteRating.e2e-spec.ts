@@ -35,8 +35,8 @@ describe('Delete Rating', () => {
 
 	it('Should be able to delete an own rating as a member', async () => {
 		const { cookies, user } = await createAndAuthenticateUser(app, { role: Roles.member });
-		const { id: drink_id } = await createDrink();
-		const { id } = await createRatingRecord({ drink_id, user_id: user.id, value: 4 });
+		const { id: drinkId } = await createDrink();
+		const { id } = await createRatingRecord({ drinkId, userId: user.id, value: 4 });
 		const response = await request(app.server).delete(`/ratings/${id}`).set('Cookie', cookies).send();
 		expect(response.status).toBe(HTTP_STATUS.ok);
 		expect(await RatingModel.findById(id).lean()).toBeNull();

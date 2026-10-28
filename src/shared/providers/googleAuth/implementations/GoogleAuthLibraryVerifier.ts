@@ -2,12 +2,12 @@ import { OAuth2Client } from 'google-auth-library';
 import { env } from '@/env';
 import { UnauthorizedError } from '@/shared/error/error.lib';
 import { IGoogleTokenVerifier } from '../IGoogleTokenVerifier';
-import { GoogleTokenPayload } from '../googleAuth.dtos';
+import { VerifiedGoogleIdentity } from '../googleAuth.dtos';
 
 export class GoogleAuthLibraryVerifier implements IGoogleTokenVerifier {
 	private client = new OAuth2Client(env.GOOGLE_CLIENT_ID);
 
-	async verify(idToken: string): Promise<GoogleTokenPayload> {
+	async verify(idToken: string): Promise<VerifiedGoogleIdentity> {
 		try {
 			const ticket = await this.client.verifyIdToken({ idToken, audience: env.GOOGLE_CLIENT_ID });
 			const payload = ticket.getPayload();
@@ -20,12 +20,13 @@ export class GoogleAuthLibraryVerifier implements IGoogleTokenVerifier {
 			}
 
 			return {
-				sub: payload.sub,
+				subject: payload.sub,
 				email: payload.email,
-				email_verified: payload.email_verified,
-				given_name: payload.given_name,
-				family_name: payload.family_name,
-				picture: payload.picture,
+				isEmailVerified: payload.email_verified === true,
+				givenName: payload.given_name,
+				familyName: payload.family_name,
+				pictureUrl: payload.picture,
+				issuedAt: typeof payload.iat === 'number' ? new Date(payload.iat * 1000) : undefined,
 			};
 		} catch (error) {
 			// Any verification failure (bad signature, wrong audience, expired token,

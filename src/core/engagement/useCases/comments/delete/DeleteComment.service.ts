@@ -10,22 +10,17 @@ export class DeleteCommentService {
 
 	async execute({ id, actor }: DeleteCommentCommand): Promise<void> {
 		const comment = await this.commentsRepository.findById(id);
-		if (!comment) {
-			throw new BadRequestError('apiResponses.comments.notExist', { path: 'DeleteComment.service' });
-		}
+		if (!comment) throw new BadRequestError('apiResponses.comments.notExist', { path: 'DeleteComment.service' });
 
 		const subject = commentPermissionSchema.parse({
-			id: comment._id.toString(),
-			user_id: comment.user_id,
-			drink_id: comment.drink_id,
+			id: comment.id,
+			userId: comment.userId,
+			drinkId: comment.drinkId,
 		});
 		const user = userPermissionSchema.parse({ id: actor.id, role: actor.role });
-
-		const { cannot } = defineAbilityFor(user);
-		if (cannot('delete', subject)) {
+		if (defineAbilityFor(user).cannot('delete', subject)) {
 			throw new ForbiddenError('apiResponses.comments.forbidden', { path: 'DeleteComment.service' });
 		}
-
 		await this.commentsRepository.delete(id);
 	}
 }

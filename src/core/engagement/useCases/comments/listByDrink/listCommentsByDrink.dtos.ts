@@ -7,6 +7,6 @@ export type ListCommentsByDrinkReqParam = z.infer<typeof listCommentsByDrinkSche
 export type ListCommentsByDrinkReqQuery = z.infer<typeof commentQuerySchema>;
 
 export type ListCommentsByDrinkCommand = {
-	drink_id: string;
+	drinkId: string;
 	query: CommentListQuery;
 };

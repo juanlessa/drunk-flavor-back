@@ -7,7 +7,7 @@ import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 
 const buildCategory = (name: { en: string; pt: string }): CreateCategory => ({
 	translations: { en: { name: name.en }, pt: { name: name.pt } },
-	is_alcoholic: false,
+	isAlcoholic: false,
 });
 
 let repository: CategoriesRepository;
@@ -28,7 +28,7 @@ describe('CategoriesRepository (integration)', () => {
 	it('returns lean documents without __v', async () => {
 		const created = await repository.create(buildCategory({ en: 'Citrus', pt: 'Cítrico' }));
 
-		const byId = await repository.findById(created._id.toString());
+		const byId = await repository.findById(created.id);
 		const byName = await repository.findByName({ en: { name: 'Citrus' } });
 		const [listed] = await repository.findAll({});
 
@@ -46,14 +46,14 @@ describe('CategoriesRepository (integration)', () => {
 	});
 
 	it('throws NotFoundError on update/delete of a missing id and returns the updated doc on success', async () => {
-		await expect(repository.update({ id: new ObjectId().toString(), is_alcoholic: true })).rejects.toBeInstanceOf(
+		await expect(repository.update({ id: new ObjectId().toString(), isAlcoholic: true })).rejects.toBeInstanceOf(
 			NotFoundError,
 		);
 		await expect(repository.delete(new ObjectId().toString())).rejects.toBeInstanceOf(NotFoundError);
 
 		const created = await repository.create(buildCategory({ en: 'Citrus', pt: 'Cítrico' }));
-		const updated = await repository.update({ id: created._id.toString(), is_alcoholic: true });
-		expect(updated.is_alcoholic).toBe(true);
+		const updated = await repository.update({ id: created.id, isAlcoholic: true });
+		expect(updated.isAlcoholic).toBe(true);
 	});
 
 	it('translates a sequential duplicate en/pt name create to BadRequestError', async () => {
@@ -86,7 +86,7 @@ describe('CategoriesRepository (integration)', () => {
 		const other = await repository.create(buildCategory({ en: 'Herbal', pt: 'Herbal' }));
 
 		await expect(
-			repository.update({ id: other._id.toString(), translations: { en: { name: 'Citrus' } } }),
+			repository.update({ id: other.id, translations: { en: { name: 'Citrus' } } }),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});
 
@@ -97,7 +97,7 @@ describe('CategoriesRepository (integration)', () => {
 			ids.map((id, index) => ({
 				_id: id,
 				translations: { en: { name: `Cat ${index}` }, pt: { name: `Cat PT ${index}` } },
-				is_alcoholic: false,
+				isAlcoholic: false,
 				created_at: sharedDate,
 				updated_at: sharedDate,
 			})),
@@ -108,8 +108,8 @@ describe('CategoriesRepository (integration)', () => {
 		const firstPage = await repository.findAll({ page: 1, limit: 2, sort: { created_at: -1 } });
 		const secondPage = await repository.findAll({ page: 2, limit: 2, sort: { created_at: -1 } });
 
-		expect(firstPage.map((item) => item._id.toString())).toEqual(expectedOrder.slice(0, 2));
-		expect(secondPage.map((item) => item._id.toString())).toEqual(expectedOrder.slice(2, 3));
+		expect(firstPage.map((item) => item.id)).toEqual(expectedOrder.slice(0, 2));
+		expect(secondPage.map((item) => item.id)).toEqual(expectedOrder.slice(2, 3));
 	});
 
 	it('succeeds with no sort supplied', async () => {

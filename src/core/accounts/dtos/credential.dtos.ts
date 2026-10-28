@@ -1,9 +1,9 @@
 export type CreateCredential = {
-	user_id: string;
-	password_hash: string;
+	userId: string;
+	passwordHash: string;
 };
 
 export type UpdateCredential = {
-	user_id: string;
-	password_hash: string;
+	userId: string;
+	passwordHash: string;
 };

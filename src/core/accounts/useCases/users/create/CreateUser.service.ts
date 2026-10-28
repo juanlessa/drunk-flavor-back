@@ -1,22 +1,25 @@
-import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
-import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
-import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
-import { CreateUserDTO } from './createUser.dtos';
-import { defineAbilityFor } from '@/shared/accessControl';
-import { userPermissionSchema } from '@/shared/accessControl/entities/user';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { TokenTypes } from '@/core/accounts/constants/token.constants';
-import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
-import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
-import { IDateProvider } from '@/shared/providers/date/IDateProvider';
-import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
+import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
+import { UserAdministrationPolicy } from '@/core/accounts/policies/UserAdministration.policy';
+import { IAdministrativeEventsRepository } from '@/core/accounts/repositories/IAdministrativeEvents.repository';
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
-import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
+import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
+import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
+import { env } from '@/env';
+import { CLIENT_PAGE_PATHS } from '@/shared/constants/client.constants';
+import { MAIL_SENDERS } from '@/shared/constants/mailer.constants';
+import { BadRequestError } from '@/shared/error/error.lib';
+import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
+import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
+import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { IEmailQueueProvider } from '@/shared/providers/queue/email/IEmailQueue.provider';
 import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
-import { MAIL_SENDERS } from '@/shared/constants/mailer.constants';
-import { CLIENT_PAGE_PATHS } from '@/shared/constants/client.constants';
-import { env } from '@/env';
+import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
+import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
+import { CreateUserDTO } from './createUser.dtos';
+import { authorizeUserAdministration, resolveAdministrativeEventContext } from '../userAdministrationAudit.helpers';
+import { findRequiredAdministrationUser, toAdministrationActor } from '../userAdministration.helpers';
 
 export class CreateUserService {
 	constructor(
@@ -29,60 +32,121 @@ export class CreateUserService {
 		private cryptoProvider: ICryptoProvider,
 		private templateProvider: ITemplateProvider,
 		private emailQueueProvider: IEmailQueueProvider,
+		private administrativeEventsRepository: IAdministrativeEventsRepository,
+		private userAdministrationPolicy = new UserAdministrationPolicy(),
 	) {}
 
-	async execute({ name, surname, email, password, role, actor }: CreateUserDTO): Promise<void> {
-		const permissionUser = userPermissionSchema.parse({ id: actor.id, role: actor.role });
-		const { cannot } = defineAbilityFor(permissionUser);
-		if (cannot('create', 'User')) {
-			throw new ForbiddenError('apiResponses.users.forbidden', {
-				path: 'CreateUser.service.authorization',
-			});
-		}
-
-		const existingUser = await this.usersRepository.findByEmail(email);
-		if (existingUser && existingUser.status === UserStatuses['active']) {
-			throw new BadRequestError('apiResponses.users.alreadyExist', {
-				path: 'CreateUser.service.ensureEmailIsAvailable.active',
-			});
-		}
-		if (existingUser && existingUser.status === UserStatuses['pending']) {
-			const existingToken = await this.tokensRepository.findByUserIdAndType({
-				user_id: existingUser._id.toString(),
-				type: TokenTypes['email-verification'],
-			});
-			if (!existingToken || this.dateProvider.isExpiredDate(existingToken.expires_at)) {
-				await this.usersRepository.delete(existingUser._id.toString());
-			} else {
-				throw new BadRequestError('apiResponses.auth.emailVerificationPending', {
-					path: 'CreateUser.service.ensureEmailIsAvailable.pending',
-				});
-			}
-		}
+	async execute({
+		name,
+		surname,
+		email,
+		password,
+		role,
+		actor,
+		administrativeContext,
+	}: CreateUserDTO): Promise<void> {
+		const eventContext = resolveAdministrativeEventContext(administrativeContext);
+		const initialActor = await findRequiredAdministrationUser(
+			this.usersRepository,
+			actor.id,
+			'CreateUser.service.actor',
+		);
+		const initialCurrentActor = toAdministrationActor(initialActor);
+		authorizeUserAdministration(
+			{
+				action: 'user.create',
+				actorId: initialCurrentActor.id,
+				requestedRole: role,
+				context: eventContext,
+			},
+			() => this.userAdministrationPolicy.assertCanCreateUser(initialCurrentActor, role),
+		);
 
 		const passwordHash = await this.hashProvider.hash(password);
 		const token = await this.cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 
 		const user = await this.transactionManager.withTransaction(async () => {
+			const persistedActor = await findRequiredAdministrationUser(
+				this.usersRepository,
+				actor.id,
+				'CreateUser.service.actor',
+			);
+			const currentActor = toAdministrationActor(persistedActor);
+			authorizeUserAdministration(
+				{
+					action: 'user.create',
+					actorId: currentActor.id,
+					requestedRole: role,
+					context: eventContext,
+				},
+				() => this.userAdministrationPolicy.assertCanCreateUser(currentActor, role),
+			);
+
+			const existingUser = await this.usersRepository.findByEmail(email);
+			if (existingUser && existingUser.status === UserStatuses.active) {
+				throw new BadRequestError('apiResponses.users.alreadyExist', {
+					path: 'CreateUser.service.ensureEmailIsAvailable.active',
+				});
+			}
+			if (existingUser && existingUser.status === UserStatuses.pending) {
+				const existingToken = await this.tokensRepository.findByUserIdAndType({
+					userId: existingUser.id,
+					type: TokenTypes['email-verification'],
+				});
+				if (existingToken && !this.dateProvider.isExpiredDate(existingToken.expiresAt)) {
+					throw new BadRequestError('apiResponses.auth.emailVerificationPending', {
+						path: 'CreateUser.service.ensureEmailIsAvailable.pending',
+					});
+				}
+
+				authorizeUserAdministration(
+					{
+						action: 'user.delete',
+						actorId: currentActor.id,
+						targetUserId: existingUser.id,
+						context: eventContext,
+					},
+					() => this.userAdministrationPolicy.assertCanDeleteUser(currentActor, existingUser),
+				);
+				await this.usersRepository.delete(existingUser.id);
+				await this.credentialsRepository.deleteByUserId(existingUser.id);
+				await this.tokensRepository.deleteByUserId(existingUser.id);
+				await this.administrativeEventsRepository.create({
+					actorId: currentActor.id,
+					targetUserId: existingUser.id,
+					action: AdministrativeEventActions.userDeleted,
+					before: { role: existingUser.role, status: existingUser.status },
+					...eventContext,
+				});
+			}
+
 			const createdUser = await this.usersRepository.create({
-				name: name,
-				surname: surname,
-				email: email,
-				email_verified: false,
-				role: role,
-				status: UserStatuses['pending'],
+				name,
+				surname,
+				email,
+				emailVerified: false,
+				role,
+				status: UserStatuses.pending,
 			});
 
 			await this.credentialsRepository.create({
-				user_id: createdUser._id.toString(),
-				password_hash: passwordHash,
+				userId: createdUser.id,
+				passwordHash,
 			});
 
 			await this.tokensRepository.create({
-				token_hash: this.cryptoProvider.hashToken(token),
+				tokenHash: this.cryptoProvider.hashToken(token),
 				type: TokenTypes['email-verification'],
-				user_id: createdUser._id.toString(),
-				expires_at: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+				userId: createdUser.id,
+				expiresAt: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+			});
+
+			await this.administrativeEventsRepository.create({
+				actorId: currentActor.id,
+				targetUserId: createdUser.id,
+				action: AdministrativeEventActions.userCreated,
+				after: { role: createdUser.role, status: createdUser.status },
+				...eventContext,
 			});
 
 			return createdUser;

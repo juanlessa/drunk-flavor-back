@@ -6,11 +6,6 @@ export const updatePasswordSchema = z
 	.object({
 		currentPassword: userPasswordValidation,
 		newPassword: userPasswordValidation,
-		confirmNewPassword: userPasswordValidation,
-	})
-	.refine((data) => data.newPassword === data.confirmNewPassword, {
-		message: 'apiResponses.users.passwordsDoNotMatchConfirm' satisfies LocaleKey,
-		path: ['confirmNewPassword'],
 	})
 	.refine((data) => data.currentPassword !== data.newPassword, {
 		message: 'apiResponses.users.newPasswordCannotMatchCurrent' satisfies LocaleKey,

@@ -1,21 +1,33 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
+import { UserAdministrationPolicy } from '@/core/accounts/policies/UserAdministration.policy';
+import { toUserView } from '@/core/accounts/mappers/user.mappers';
 import { ListUsers } from './listUsers.dtos';
-import { defineAbilityFor } from '@/shared/accessControl';
-import { userPermissionSchema } from '@/shared/accessControl/entities/user';
-import { ForbiddenError } from '@/shared/error/error.lib';
+import { authorizeUserAdministration } from '../userAdministrationAudit.helpers';
+import { findRequiredAdministrationUser, toAdministrationActor } from '../userAdministration.helpers';
 
 export class ListUsersService {
-	constructor(private usersRepository: IUsersRepository) {}
+	constructor(
+		private usersRepository: IUsersRepository,
+		private userAdministrationPolicy = new UserAdministrationPolicy(),
+	) {}
 
-	async execute({ query = {}, actor }: ListUsers) {
-		const user = userPermissionSchema.parse({ id: actor.id, role: actor.role });
-		const { cannot } = defineAbilityFor(user);
-		if (cannot('list', 'User')) {
-			throw new ForbiddenError('apiResponses.users.forbidden', { path: 'ListUsers.service' });
-		}
+	async execute({ query = {}, actor, administrativeContext }: ListUsers) {
+		const persistedActor = await findRequiredAdministrationUser(
+			this.usersRepository,
+			actor.id,
+			'ListUsers.service.actor',
+		);
+		const currentActor = toAdministrationActor(persistedActor);
+		authorizeUserAdministration(
+			{
+				action: 'user.list',
+				actorId: currentActor.id,
+				context: administrativeContext,
+			},
+			() => this.userAdministrationPolicy.assertCanListUsers(currentActor),
+		);
 
 		const users = await this.usersRepository.findAll(query);
-
-		return users;
+		return users.map(toUserView);
 	}
 }

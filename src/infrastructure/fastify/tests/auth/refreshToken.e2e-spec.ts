@@ -8,6 +8,8 @@ import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
 import { env } from '@/env';
 import { Roles } from '@/shared/accessControl/roles';
 
+type ErrorResponseBody = { localeKey: string };
+
 describe('Refresh Token', () => {
 	beforeAll(async () => {
 		await app.ready();
@@ -27,13 +29,18 @@ describe('Refresh Token', () => {
 		vi.useRealTimers();
 	});
 
-	it('Should be able to refresh an expired access token', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.partner });
+	it('refreshes a current session and rejects it after its version changes', async () => {
+		const { cookies, user } = await createAndAuthenticateUser(app, { role: Roles.partner });
 
 		vi.advanceTimersByTime(env.ACCESS_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);
 
-		const response = await request(app.server).post('/refresh-token').set('Cookie', cookies).send();
+		const currentResponse = await request(app.server).post('/refresh-token').set('Cookie', cookies).send();
+		expect(currentResponse.status).toBe(HTTP_STATUS.ok);
 
-		expect(response.status).toBe(HTTP_STATUS.ok);
+		await UserModel.findByIdAndUpdate(user.id, { $inc: { session_version: 1 } }).exec();
+
+		const revokedResponse = await request(app.server).post('/refresh-token').set('Cookie', cookies).send();
+		expect(revokedResponse.status).toBe(HTTP_STATUS.unauthorized);
+		expect((revokedResponse.body as ErrorResponseBody).localeKey).toBe('apiResponses.auth.sessionRevoked');
 	});
 });

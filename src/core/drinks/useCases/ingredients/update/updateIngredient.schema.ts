@@ -10,6 +10,6 @@ import { z } from 'zod/v4';
 export const updateIngredientSchema = z.object({
 	id: ingredientIdValidation,
 	translations: generateTranslationsSchema(ingredientTranslationSchema),
-	category_id: ingredientCategoryIdValidation,
-	unit_id: ingredientUnitIdValidation,
+	categoryId: ingredientCategoryIdValidation,
+	unitId: ingredientUnitIdValidation,
 });

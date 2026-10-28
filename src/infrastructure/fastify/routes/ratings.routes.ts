@@ -43,7 +43,7 @@ const routes: Routes = (server) => {
 	);
 
 	server.withTypeProvider<ZodTypeProvider>().get(
-		'/drinks/:drink_id/ratings/me',
+		'/drinks/:drinkId/ratings/me',
 		{
 			schema: { tags: ['Ratings'], params: listRatingsByDrinkSchema },
 			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('list', 'Rating')],
@@ -54,7 +54,7 @@ const routes: Routes = (server) => {
 	server
 		.withTypeProvider<ZodTypeProvider>()
 		.get(
-			'/drinks/:drink_id/ratings/summary',
+			'/drinks/:drinkId/ratings/summary',
 			{ schema: { tags: ['Ratings'], params: listRatingsByDrinkSchema } },
 			getSummaryByDrinkController,
 		);
@@ -62,7 +62,7 @@ const routes: Routes = (server) => {
 	server
 		.withTypeProvider<ZodTypeProvider>()
 		.get(
-			'/drinks/:drink_id/ratings',
+			'/drinks/:drinkId/ratings',
 			{ schema: { tags: ['Ratings'], params: listRatingsByDrinkSchema, querystring: ratingQuerySchema } },
 			listRatingsByDrinkController,
 		);

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { CreateUnit, FindUnitByName, UpdateUnit } from '@/core/drinks/dtos/unit.dtos';
 import { Unit } from '@/core/drinks/entities/unit.entity';
 import { compareTranslationsName } from '@/core/drinks/helpers/translations.helpers';
@@ -7,59 +8,40 @@ import { NotFoundError } from '@/shared/error/error.lib';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { filterItemsBySearchCriteria, paginateItems, sortItemsByFields } from '@/shared/helpers/query.helpers';
 import { QueryParams } from '@/shared/types/query.types';
-import { ObjectId } from 'mongodb';
 
 export class UnitsRepositoryInMemory implements IUnitsRepository {
 	collection: Unit[] = [];
 
 	async create(data: CreateUnit): Promise<Unit> {
-		const record: Unit = {
-			_id: new ObjectId(),
-			...data,
-			created_at: new Date(),
-			updated_at: new Date(),
-		};
+		const now = new Date();
+		const record: Unit = { id: randomUUID(), ...data, createdAt: now, updatedAt: now };
 		this.collection.push(record);
 		return record;
 	}
 
-	async update({ id, ...data }: UpdateUnit): Promise<Unit> {
-		const recordIndex = this.collection.findIndex((record) => record._id.toString() === id);
-		if (recordIndex === -1) {
-			throw new NotFoundError('apiResponses.units.notFound', {
-				path: 'UnitsInMemory.repository',
-				cause: 'Error on findByIdAndUpdate operation',
-			});
-		}
-		const { symbol, ...rest } = data;
-		let record = this.collection[recordIndex];
-		record = deepUpdate<Unit>(rest, record);
+	async update({ id, symbol, spaceBeforeSymbol, ...data }: UpdateUnit): Promise<Unit> {
+		const index = this.collection.findIndex((record) => record.id === id);
+		if (index < 0) throw this.notFound('update');
+		const record = { ...deepUpdate<Unit>(data, this.collection[index]), updatedAt: new Date() };
 		if (symbol === null) delete record.symbol;
 		else if (symbol !== undefined) record.symbol = symbol;
-		if (data.space_before_symbol !== undefined) record.space_before_symbol = data.space_before_symbol;
-		record.updated_at = new Date();
-		this.collection[recordIndex] = record;
+		if (spaceBeforeSymbol !== undefined) record.spaceBeforeSymbol = spaceBeforeSymbol;
+		this.collection[index] = record;
 		return record;
 	}
 
 	async delete(id: string): Promise<Unit> {
-		const recordIndex = this.collection.findIndex((record) => record._id.toString() === id);
-		if (recordIndex === -1) {
-			throw new NotFoundError('apiResponses.units.notFound', {
-				path: 'UnitsInMemory.repository',
-				cause: 'Error on findByIdAndDelete operation',
-			});
-		}
-		const [deletedRecord] = this.collection.splice(recordIndex, 1);
-		return deletedRecord;
+		const index = this.collection.findIndex((record) => record.id === id);
+		if (index < 0) throw this.notFound('delete');
+		return this.collection.splice(index, 1)[0];
 	}
 
 	async findByName(translations: FindUnitByName): Promise<Unit | null> {
-		return this.collection.find((record) => compareTranslationsName(record.translations, translations)) || null;
+		return this.collection.find((record) => compareTranslationsName(record.translations, translations)) ?? null;
 	}
 
 	async findById(id: string): Promise<Unit | null> {
-		return this.collection.find((record) => record._id.toString() === id) || null;
+		return this.collection.find((record) => record.id === id) ?? null;
 	}
 
 	async findAll(query: QueryParams): Promise<Unit[]> {
@@ -67,5 +49,12 @@ export class UnitsRepositoryInMemory implements IUnitsRepository {
 		if (query.search) found = filterItemsBySearchCriteria(found, query.search);
 		if (query.sort) found = sortItemsByFields(found, query.sort);
 		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
+	}
+
+	private notFound(operation: string): NotFoundError {
+		return new NotFoundError('apiResponses.units.notFound', {
+			path: 'UnitsInMemory.repository',
+			cause: `Unit missing during ${operation}`,
+		});
 	}
 }

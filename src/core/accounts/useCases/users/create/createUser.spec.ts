@@ -4,7 +4,6 @@ import { CreateUserService } from './CreateUser.service';
 import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
 import { Actor } from '@/shared/accessControl/actor.types';
 import { Roles } from '@/shared/accessControl/roles';
-import { ObjectId } from 'mongodb';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
@@ -23,6 +22,8 @@ import { Token } from '@/core/accounts/entities/token.entity';
 import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
 import { CredentialsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Credentials.repository';
+import { AdministrativeEventsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/AdministrativeEvents.repository';
+import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { MockEmailQueueProvider } from '@/shared/providers/queue/email/implementations/MockEmailQueue.provider';
 import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
@@ -31,6 +32,7 @@ import { env } from '@/env';
 let usersRepository: IUsersRepository;
 let tokensRepository: ITokensRepository;
 let credentialsRepository: ICredentialsRepository;
+let administrativeEventsRepository: AdministrativeEventsRepositoryInMemory;
 let dateProvider: IDateProvider;
 let hashProvider: IHashProvider;
 let cryptoProvider: ICryptoProvider;
@@ -41,9 +43,9 @@ let service: CreateUserService;
 const { name, surname, email, role } = createUserFactory();
 const password = 'Password-12345678';
 
-const admin: Actor = { id: new ObjectId().toString(), role: Roles.admin };
-const member: Actor = { id: new ObjectId().toString(), role: Roles.member };
-const partner: Actor = { id: new ObjectId().toString(), role: Roles.partner };
+let admin: Actor;
+let member: Actor;
+let partner: Actor;
 
 describe('Create User', () => {
 	beforeEach(async () => {
@@ -51,6 +53,18 @@ describe('Create User', () => {
 		vi.useFakeTimers();
 
 		usersRepository = new UsersRepositoryInMemory();
+		const persistedAdmin = await usersRepository.create(
+			createUserFactory({ email: 'admin-actor@example.com', role: Roles.admin }),
+		);
+		const persistedMember = await usersRepository.create(
+			createUserFactory({ email: 'member-actor@example.com', role: Roles.member }),
+		);
+		const persistedPartner = await usersRepository.create(
+			createUserFactory({ email: 'partner-actor@example.com', role: Roles.partner }),
+		);
+		admin = { id: persistedAdmin.id, role: persistedAdmin.role };
+		member = { id: persistedMember.id, role: persistedMember.role };
+		partner = { id: persistedPartner.id, role: persistedPartner.role };
 		tokensRepository = new TokensRepositoryInMemory();
 		credentialsRepository = new CredentialsRepositoryInMemory();
 		dateProvider = new DayjsProvider();
@@ -58,6 +72,7 @@ describe('Create User', () => {
 		cryptoProvider = new NodeCryptoProvider();
 		templateProvider = new MjmlProvider();
 		emailQueueProvider = new MockEmailQueueProvider();
+		administrativeEventsRepository = new AdministrativeEventsRepositoryInMemory();
 		service = new CreateUserService(
 			usersRepository,
 			tokensRepository,
@@ -68,6 +83,7 @@ describe('Create User', () => {
 			cryptoProvider,
 			templateProvider,
 			emailQueueProvider,
+			administrativeEventsRepository,
 		);
 	});
 
@@ -91,22 +107,30 @@ describe('Create User', () => {
 		expect(verifyUser.role).toEqual(role);
 
 		const verifyToken = (await tokensRepository.findByUserIdAndType({
-			user_id: verifyUser._id.toString(),
+			userId: verifyUser.id,
 			type: TokenTypes['email-verification'],
 		})) as Token;
 
 		expect(verifyToken).not.toBeNull();
-		expect(verifyToken.token_hash).toBeTruthy();
+		expect(verifyToken.tokenHash).toBeTruthy();
 
-		const verifyCredential = await credentialsRepository.findByUserId(verifyUser._id.toString());
+		const verifyCredential = await credentialsRepository.findByUserId(verifyUser.id);
 		expect(verifyCredential).not.toBeNull();
-		expect(await hashProvider.compare(password, verifyCredential!.password_hash)).toBe(true);
+		expect(await hashProvider.compare(password, verifyCredential!.passwordHash)).toBe(true);
 
 		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
 		expect(emailQueueProvider.addMock).toHaveBeenCalledWith(
 			EMAIL_JOB_NAMES.verification,
 			expect.objectContaining({ to: email }),
 		);
+		expect(administrativeEventsRepository.collection).toEqual([
+			expect.objectContaining({
+				actorId: admin.id,
+				targetUserId: verifyUser.id,
+				action: AdministrativeEventActions.userCreated,
+				after: { role: verifyUser.role, status: verifyUser.status },
+			}),
+		]);
 	});
 
 	it('should not be able to create an existing active user', async () => {
@@ -143,12 +167,12 @@ describe('Create User', () => {
 		expect(verifyUser.surname).toEqual(surname);
 
 		const verifyToken = (await tokensRepository.findByUserIdAndType({
-			user_id: verifyUser._id.toString(),
+			userId: verifyUser.id,
 			type: TokenTypes['email-verification'],
 		})) as Token;
 
 		expect(verifyToken).not.toBeNull();
-		expect(verifyToken.token_hash).toBeTruthy();
+		expect(verifyToken.tokenHash).toBeTruthy();
 
 		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
 		expect(emailQueueProvider.addMock).toHaveBeenCalledWith(
@@ -167,10 +191,10 @@ describe('Create User', () => {
 		});
 		const initialToken = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
-			token_hash: cryptoProvider.hashToken(initialToken),
-			user_id: createdUser._id.toString(),
+			tokenHash: cryptoProvider.hashToken(initialToken),
+			userId: createdUser.id,
 			type: TokenTypes['email-verification'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+			expiresAt: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		vi.advanceTimersByTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);
@@ -185,12 +209,12 @@ describe('Create User', () => {
 		expect(verifyUser?.surname).toEqual(surname);
 
 		const verifyToken = (await tokensRepository.findByUserIdAndType({
-			user_id: verifyUser._id.toString(),
+			userId: verifyUser.id,
 			type: TokenTypes['email-verification'],
 		})) as Token;
 
 		expect(verifyToken).not.toBeNull();
-		expect(verifyToken.token_hash).toBeTruthy();
+		expect(verifyToken.tokenHash).toBeTruthy();
 
 		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
 		expect(emailQueueProvider.addMock).toHaveBeenCalledWith(

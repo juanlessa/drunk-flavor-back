@@ -22,18 +22,23 @@ export class ConfirmEmailService {
 			throw new BadRequestError('apiResponses.auth.tokenNotFound', { path: 'ConfirmEmail.service.1' });
 		}
 
-		const isTokenExpired = this.dateProvider.isExpiredDate(tokenRecord.expires_at);
+		const isTokenExpired = this.dateProvider.isExpiredDate(tokenRecord.expiresAt);
 		if (tokenRecord && isTokenExpired) {
-			await this.tokensRepository.delete(tokenRecord._id.toString());
+			await this.tokensRepository.delete(tokenRecord.id);
 			throw new BadRequestError('apiResponses.auth.expiredToken', { path: 'ConfirmEmail.service.2' });
 		}
 
-		const user = await this.usersRepository.findById(tokenRecord.user_id);
+		const user = await this.usersRepository.findById(tokenRecord.userId);
 		if (!user) {
 			throw new BadRequestError('apiResponses.users.notExist', { path: 'ConfirmEmail.service.3' });
 		}
 
-		await this.usersRepository.update({ id: user._id.toString(), status: UserStatuses['active'] });
-		await this.tokensRepository.delete(tokenRecord._id.toString());
+		await this.usersRepository.update({
+			id: user.id,
+			emailVerified: true,
+			status: UserStatuses.active,
+			sessionVersion: user.sessionVersion + 1,
+		});
+		await this.tokensRepository.delete(tokenRecord.id);
 	}
 }

@@ -9,6 +9,8 @@ import { unhandledError } from '@/shared/error/unhandledError';
 import { ErrorResponse } from '@/shared/error/error.dtos';
 import { handleFastifyError, instanceOfFastifyError } from '@/infrastructure/fastify/errors/fastifyError';
 import { ErrorHandler } from '../types/fastify.types';
+import { SessionRevokedError } from '@/core/accounts/errors/session.errors';
+import { AUTH_COOKIE } from '../constants/cookie.constants';
 
 export const handleCustomError = (error: unknown) =>
 	match(error)
@@ -21,6 +23,11 @@ export const handleCustomError = (error: unknown) =>
 		.otherwise(unhandledError);
 
 export const errorHandler: ErrorHandler = async (error, request, reply) => {
+	if (error instanceof SessionRevokedError) {
+		request.session.delete();
+		reply.clearCookie(AUTH_COOKIE);
+	}
+
 	const { statusCode, localeKey }: ErrorResponse = handleCustomError(error);
 
 	const message = request.i18n.t(localeKey);

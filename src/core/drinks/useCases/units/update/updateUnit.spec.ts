@@ -16,35 +16,35 @@ describe('Update Unit', () => {
 	it('updates all unit fields and preserves false', async () => {
 		const created = await repository.create(createUnitFactory());
 		const update = createUnitFactory({
-			translations: { en: { name: 'gram', name_plural: 'grams' }, pt: { name: 'grama', name_plural: 'gramas' } },
+			translations: { en: { name: 'gram', namePlural: 'grams' }, pt: { name: 'grama', namePlural: 'gramas' } },
 			symbol: 'g',
-			space_before_symbol: false,
-			allow_decimal: false,
+			spaceBeforeSymbol: false,
+			allowDecimal: false,
 			kind: 'mass',
 		});
-		await service.execute({ id: created._id.toString(), ...update });
-		expect(await repository.findById(created._id.toString())).toMatchObject(update);
+		await service.execute({ id: created.id, ...update });
+		expect(await repository.findById(created.id)).toMatchObject(update);
 	});
 	it('updates with optional fields omitted without manufacturing them', async () => {
 		const created = await repository.create(createUnitFactory());
 		const update = createUnitFactory({ kind: 'count' });
-		await service.execute({ id: created._id.toString(), ...update });
-		const found = await repository.findById(created._id.toString());
+		await service.execute({ id: created.id, ...update });
+		const found = await repository.findById(created.id);
 		expect(found).not.toHaveProperty('symbol');
-		expect(found).not.toHaveProperty('space_before_symbol');
+		expect(found).not.toHaveProperty('spaceBeforeSymbol');
 	});
 	it('keeps the current symbol when symbol is omitted', async () => {
 		const created = await repository.create(createUnitFactory({ symbol: 'ml' }));
-		await service.execute({ id: created._id.toString(), ...createUnitFactory() });
+		await service.execute({ id: created.id, ...createUnitFactory() });
 
-		expect((await repository.findById(created._id.toString()))?.symbol).toBe('ml');
+		expect((await repository.findById(created.id))?.symbol).toBe('ml');
 	});
 
 	it('removes the symbol when symbol is null', async () => {
 		const created = await repository.create(createUnitFactory({ symbol: 'ml' }));
-		await service.execute({ id: created._id.toString(), ...createUnitFactory(), symbol: null });
+		await service.execute({ id: created.id, ...createUnitFactory(), symbol: null });
 
-		expect(await repository.findById(created._id.toString())).not.toHaveProperty('symbol');
+		expect(await repository.findById(created.id)).not.toHaveProperty('symbol');
 	});
 
 	it('rejects a nonexistent unit', async () => {
@@ -64,6 +64,6 @@ describe('Update Unit', () => {
 			}),
 		);
 		const update = createUnitFactory({ translations, kind: 'mass' });
-		await expect(service.execute({ id: first._id.toString(), ...update })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ id: first.id, ...update })).rejects.toBeInstanceOf(BadRequestError);
 	});
 });

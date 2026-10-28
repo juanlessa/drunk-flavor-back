@@ -34,14 +34,14 @@ describe('Create Rating', () => {
 
 	it('Should be able to create a rating', async () => {
 		const { cookies, user } = await createAndAuthenticateUser(app, { role: Roles.member });
-		const { id: drink_id } = await createDrink();
+		const { id: drinkId } = await createDrink();
 
-		const response = await request(app.server).post('/ratings').set('Cookie', cookies).send({ drink_id, value: 4 });
+		const response = await request(app.server).post('/ratings').set('Cookie', cookies).send({ drinkId, value: 4 });
 
 		expect(response.status).toBe(HTTP_STATUS.created);
 		const body = response.body as { id: string };
 		const stored = await RatingModel.findById(body.id).lean();
 		expect(stored?.user_id).toBe(user.id);
-		expect(stored?.drink_id).toBe(drink_id);
+		expect(stored?.drink_id).toBe(drinkId);
 	});
 });

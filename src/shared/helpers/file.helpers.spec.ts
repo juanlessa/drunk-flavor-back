@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { assertSafeFileName, generateStoredFileName } from './file.helpers';
+import { assertSafeFileName, generateStoredFileName, getManagedStoredFileName } from './file.helpers';
 
 describe('file.helpers security', () => {
 	describe('generateStoredFileName', () => {
@@ -43,5 +43,33 @@ describe('file.helpers security', () => {
 				expect(() => assertSafeFileName(name)).not.toThrow();
 			},
 		);
+	});
+
+	describe('getManagedStoredFileName', () => {
+		const ownerId = '6ad380bdb3f25398e6d87a44';
+		const managedName = `0123456789abcdef0123456789abcdef-${ownerId}-avatar.png`;
+
+		it('extracts a matching managed name from an absolute URL', () => {
+			expect(getManagedStoredFileName(`https://cdn.example.com/${managedName}?v=2`, ownerId, 'avatar')).toBe(
+				managedName,
+			);
+		});
+
+		it('extracts a matching managed name from a relative URL', () => {
+			expect(getManagedStoredFileName(`/static/${managedName}`, ownerId, 'avatar')).toBe(managedName);
+		});
+
+		it('ignores external and differently owned files', () => {
+			expect(
+				getManagedStoredFileName('https://accounts.example.com/avatar.png', ownerId, 'avatar'),
+			).toBeUndefined();
+			expect(
+				getManagedStoredFileName(
+					'https://cdn.example.com/0123456789abcdef0123456789abcdef-other-avatar.png',
+					ownerId,
+					'avatar',
+				),
+			).toBeUndefined();
+		});
 	});
 });

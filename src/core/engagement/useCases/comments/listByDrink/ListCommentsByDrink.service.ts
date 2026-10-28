@@ -6,8 +6,8 @@ import { ListCommentsByDrinkCommand } from './listCommentsByDrink.dtos';
 export class ListCommentsByDrinkService {
 	constructor(private commentsRepository: ICommentsRepository) {}
 
-	async execute({ drink_id, query }: ListCommentsByDrinkCommand): Promise<Comment[]> {
-		return this.commentsRepository.findByDrink(drink_id, query, {
+	async execute({ drinkId, query }: ListCommentsByDrinkCommand): Promise<Comment[]> {
+		return this.commentsRepository.findByDrink(drinkId, query, {
 			status: CommentStatuses.visible,
 		});
 	}

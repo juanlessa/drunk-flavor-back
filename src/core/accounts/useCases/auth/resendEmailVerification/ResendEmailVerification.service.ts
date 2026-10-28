@@ -38,27 +38,27 @@ export class ResendEmailVerificationService {
 		}
 
 		const existingToken = await this.tokensRepository.findByUserIdAndType({
-			user_id: user._id.toString(),
+			userId: user.id,
 			type: TokenTypes['email-verification'],
 		});
 
-		if (existingToken && !this.dateProvider.isExpiredDate(existingToken.expires_at)) {
+		if (existingToken && !this.dateProvider.isExpiredDate(existingToken.expiresAt)) {
 			throw new BadRequestError('apiResponses.auth.actionAlreadyRequested', {
 				path: 'ResendEmailVerification.service.resendNotAllowed',
 			});
 		}
 
 		if (existingToken) {
-			await this.tokensRepository.delete(existingToken._id.toString());
+			await this.tokensRepository.delete(existingToken.id);
 		}
 
 		const token = await this.cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 
 		await this.tokensRepository.create({
-			token_hash: this.cryptoProvider.hashToken(token),
+			tokenHash: this.cryptoProvider.hashToken(token),
 			type: TokenTypes['email-verification'],
-			user_id: user._id.toString(),
-			expires_at: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+			userId: user.id,
+			expiresAt: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		const html = await this.templateProvider.emailVerification({

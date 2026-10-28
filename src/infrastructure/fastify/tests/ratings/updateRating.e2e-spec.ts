@@ -36,8 +36,8 @@ describe('Update Rating', () => {
 
 	it('Should be able to update a rating', async () => {
 		const { cookies, user } = await createAndAuthenticateUser(app, { role: Roles.member });
-		const { id: drink_id } = await createDrink();
-		const { id } = await createRatingRecord({ drink_id, user_id: user.id, value: 4 });
+		const { id: drinkId } = await createDrink();
+		const { id } = await createRatingRecord({ drinkId, userId: user.id, value: 4 });
 		const stored = await RatingModel.findById(id).lean();
 
 		const response = await request(app.server).patch(`/ratings/${id}`).set('Cookie', cookies).send({ value: 1 });
@@ -45,7 +45,7 @@ describe('Update Rating', () => {
 
 		const after = await RatingModel.findById(id).lean();
 		expect(after?.value).toBe(1);
-		expect(after?.drink_id).toBe(drink_id);
+		expect(after?.drink_id).toBe(drinkId);
 		expect(after?.user_id).toBe(user.id);
 		expect(after?.created_at).toEqual(stored?.created_at);
 	});

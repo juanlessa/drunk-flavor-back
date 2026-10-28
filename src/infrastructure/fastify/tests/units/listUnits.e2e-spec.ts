@@ -12,16 +12,16 @@ describe('List Units', () => {
 	beforeEach(async () => {
 		await MongoConnection.Instance.emptyCollection(UnitModel);
 		await createUnit({
-			translations: { en: { name: 'cup', name_plural: 'cups' }, pt: { name: 'xícara', name_plural: 'xícaras' } },
+			translations: { en: { name: 'cup', namePlural: 'cups' }, pt: { name: 'xícara', namePlural: 'xícaras' } },
 		});
 		await createUnit({
-			translations: { en: { name: 'gram', name_plural: 'grams' }, pt: { name: 'grama', name_plural: 'gramas' } },
+			translations: { en: { name: 'gram', namePlural: 'grams' }, pt: { name: 'grama', namePlural: 'gramas' } },
 			kind: 'mass',
 		});
 		await createUnit({
 			translations: {
-				en: { name: 'piece', name_plural: 'pieces' },
-				pt: { name: 'unidade', name_plural: 'unidades' },
+				en: { name: 'piece', namePlural: 'pieces' },
+				pt: { name: 'unidade', namePlural: 'unidades' },
 			},
 			kind: 'count',
 		});

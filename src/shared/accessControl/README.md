@@ -2,12 +2,26 @@
 
 Roles & permissions.
 
+> This README describes the currently implemented access-control behavior. The approved target design for administrative
+> user management is defined in [USER_ADMINISTRATION_POLICY.md](./USER_ADMINISTRATION_POLICY.md) and will be enforced
+> incrementally in subsequent implementation stages.
+
 ### Roles
 
+- Owner
 - Admin
 - Partner
 - Member
 - Anonymous (not logged-in users)
+
+Owner is the single governance authority and retains the broad `manage all` CASL baseline. Admin permissions are
+explicit: content operations are enumerated, and user mutations are conditional on the concrete target and requested
+role. Generic user creation and role-update requests cannot assign Owner; ownership will be changed only by the
+dedicated transfer flow introduced in a later stage.
+
+User routes use subject-type checks only as an early fail-fast gate. Every user administration service reloads the actor
+from persistence, and target mutations are authorized against concrete User subjects. The resource tables retain their
+legacy columns; where Owner is omitted, Owner follows the Admin column unless the section states otherwise.
 
 ### Permissions Table
 
@@ -17,29 +31,42 @@ Roles & permissions.
 
 #### Users
 
-User management is admin-only. Partner and Member have no abilities over the `User` subject, so any `/users` operation
-returns `403 Forbidden` for them.
+User management is Owner/Admin-only. Partner and Member have no abilities over the `User` subject, so any `/users`
+operation returns `403 Forbidden` for them. Generic create and role-update payloads reject the Owner role.
 
-|                  | Admin | Partner | Member | Anonymous |
-| ---------------- | :---: | :-----: | :----: | :-------: |
-| Create user      |  ✅   |   ❌    |   ❌   |    ❌     |
-| Get user         |  ✅   |   ❌    |   ❌   |    ❌     |
-| List users       |  ✅   |   ❌    |   ❌   |    ❌     |
-| Update user role |  ✅   |   ❌    |   ❌   |    ❌     |
-| Delete user      |  ✅   |   ❌    |   ❌   |    ❌     |
+| Capability                                   | Owner | Admin | Partner | Member | Anonymous |
+| -------------------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
+| Create member or partner                     |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Create admin                                 |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Get or list users                            |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Change member ↔ partner                      |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Promote member/partner to admin              |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Demote admin to member/partner               |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Close member or partner                      |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Close admin                                  |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Suspend/reactivate member or partner         |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Suspend/reactivate admin                     |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Suspend/reactivate owner                     |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Create, change, close, or suspend owner      |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Change role or close self through `/users`   |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Repeat an authorized current-role assignment | No-op | No-op |   ❌    |   ❌   |    ❌     |
+
+Role-change and closure decisions use the actor and target records loaded from persistence in the same transaction as
+the mutation. A valid access token carrying a stale role cannot override the actor's current persisted role.
 
 #### Profile (self-service)
 
 Profile operations act only on the authenticated user. They are gated by authentication (`verifyAndRenewToken`) and are
-not enforced by CASL: there is no `Profile` subject. Any authenticated role may manage its own profile; Anonymous
-cannot.
+not enforced by CASL: there is no `Profile` subject. Authenticated roles may manage their own profile, except that Owner
+cannot close the owner account before transferring ownership. Account closure through `DELETE /me` requires recent
+authentication.
 
-|                            | Admin | Partner | Member | Anonymous |
-| -------------------------- | :---: | :-----: | :----: | :-------: |
-| Get own profile (`/me`)    |  ✅   |   ✅    |   ✅   |    ❌     |
-| Update own profile (`/me`) |  ✅   |   ✅    |   ✅   |    ❌     |
-| Delete own profile (`/me`) |  ✅   |   ✅    |   ✅   |    ❌     |
-| Update own password        |  ✅   |   ✅    |   ✅   |    ❌     |
+|                                  | Owner | Admin | Partner | Member | Anonymous |
+| -------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
+| Get own profile (`/me`)          |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Update own profile (`/me`)       |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Close own profile (`DELETE /me`) |  ❌   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Update own password              |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
 
 #### Categories
 
@@ -107,9 +134,9 @@ Moderation (`PATCH /comments/:id/status`) is Admin-only.
 
 ##### Conditions
 
-- Only owner may update comment
-- Only owner or admins may delete comment
-- Only admins may moderate comment status
+- Only the resource owner may update a comment.
+- The resource owner or an Owner/Admin actor may delete a comment.
+- Only Owner/Admin actors may moderate comment status.
 
 #### Ratings
 
@@ -128,8 +155,8 @@ always scopes to the caller. Ownership for update and delete is evaluated agains
 
 ##### Conditions
 
-- Only owner may update rating
-- Only owner or admins may delete rating
+- Only the resource owner may update a rating.
+- The resource owner or an Owner/Admin actor may delete a rating.
 
 #### Auth (public)
 
@@ -155,3 +182,129 @@ liveness and readiness.
 | --------------------------------- | :---: | :-----: | :----: | :-------: |
 | Liveness probe (`/health/live`)   |  ✅   |   ✅    |   ✅   |    ✅     |
 | Readiness probe (`/health/ready`) |  ✅   |   ✅    |   ✅   |    ✅     |
+
+### Session freshness
+
+Every user has an internal monotonic `sessionVersion`. It is included in access tokens, refresh tokens, and the
+encrypted refresh session, but omitted from profile and user-administration responses.
+
+A role change increments the target user's version in the same transaction. An authorized assignment of the current role
+is a no-op and does not increment it.
+
+Tokens claiming `owner` or `admin` are compared with the persisted version on every authenticated request. A stale
+privileged token is rejected immediately. Tokens claiming `partner` or `member` do not add a database lookup to ordinary
+requests; they may retain their old access-token permissions after a role change or suspension until expiration, but an
+outdated refresh token cannot renew the session. A suspended account cannot sign in. Revocation returns `401` with
+`apiResponses.auth.sessionRevoked` and clears both authentication cookies.
+
+### Administrative audit
+
+Successful administrative user creation, role change, suspension, reactivation, and closure write an append-only
+`administrative_events` record in the same MongoDB transaction as the mutation. Internal expired-pending cleanup retains
+its separate `user.deleted` event. If the audit write fails, the mutation is rolled back. Authorized no-op role/status
+assignments and read operations do not create events.
+
+Events contain only actor and target IDs, action, minimal before/after role or status state, origin, optional request
+ID, optional reason, and occurrence time. They do not contain names, emails, credentials, tokens, session versions,
+request bodies, IP addresses, or user agents.
+
+Authorization denials are emitted as structured security logs and are not persisted in the audit collection. The
+application exposes no audit read/update/delete repository operations or HTTP endpoints. MongoDB removes events after
+730 days through the `administrative_event_occurred_at_ttl` index.
+
+### Suspension lifecycle
+
+Only an `active` account can transition to `suspended`, and only a `suspended` account can transition back to `active`.
+An authorized request for the current state is an idempotent no-op: it does not write the user, increment
+`sessionVersion`, or create an audit event. Pending and incomplete-profile accounts cannot use these transitions.
+
+Suspension uses `POST /users/:id/suspension`; reactivation uses `POST /users/:id/reactivation`. Both require a trimmed
+administrative reason between 10 and 500 characters. The reason is retained only in the audit event. Account content and
+relationships remain unchanged, and this stage sends no email notification.
+
+### Account closure
+
+Administrative closure uses `POST /users/:id/closure` with a required 10-500 character reason and accepts only a
+suspended target. Active users must be suspended first. Self-service closure uses `DELETE /me` and remains available to
+active, suspended, and incomplete-profile users. Both require recent authentication. Owner cannot be closed, admin
+cannot close a peer admin, and generic self-administration remains forbidden.
+
+Closure physically removes the user, credentials, identities, verification/reset tokens, and comments in one MongoDB
+transaction, then removes a managed avatar after commit. Ratings and their original `user_id` are intentionally
+retained; drink aggregates are unchanged. The surviving `user.closed` audit event stores IDs and the previous
+role/status for 730 days without names or email. A repeated request resolves as `404` after deletion (or `401` after the
+client applies the self-service cookie cleanup).
+
+By explicit bounded-staleness policy, an access token claiming `member` or `partner` may remain usable until expiration
+even after hard delete; refresh and new sign-in cannot succeed. The current self-service response clears its own access
+and refresh cookies, but other devices remain bounded by access-token lifetime.
+
+#### Future immediate revocation with Redis
+
+To remove bounded staleness later, apply a Redis watermark check inside `verifyAndRenewToken` for every authenticated
+route. This automatically covers profile routes, user administration, and authenticated category/unit/ingredient/drink,
+comment, and rating mutations without maintaining a separate route list; public unauthenticated reads need no check.
+
+Before committing closure, write `auth:min-session-version:<userId> = <currentVersion + 1>` with a TTL of
+`ACCESS_TOKEN_EXPIRES_IN_SECONDS` plus a small clock-skew allowance. Fail the closure if Redis cannot accept the
+watermark. On each authenticated request, reject and clear cookies when the token version is below the stored minimum.
+The key can expire after every access token issued before closure is guaranteed to have expired; refresh already checks
+MongoDB and fails because the user no longer exists.
+
+### Critical-operation reauthentication
+
+A password sign-in or Google sign-in starts a five-minute recent-authentication window. An authenticated user can renew
+that window with `POST /me/reauthentication/password` or `POST /me/reauthentication/google`; a hybrid account may use
+either linked method. The proof applies to all critical operations during the window.
+
+All user-administration mutations require recent authentication: create user, change role, close account, suspend, and
+reactivate. Profile closure, password creation, and Google identity linking also require it. Password update validates
+the current password inline. User/profile reads, comment moderation, catalog management, and ordinary profile/avatar
+updates do not require step-up authentication.
+
+Password and Google reauthentication failures return the opaque `apiResponses.profile.invalidReauthentication` response.
+Attempts are rate-limited and logged with user ID, method, request ID, and outcome; credentials and provider tokens are
+never logged or persisted as administrative events.
+
+Creating/updating a password, linking Google, and password reset increment `sessionVersion`. The current interactive
+session receives new access and refresh tokens after credential creation/update/linking; all other sessions become
+stale. Password reset emits no session. Credential changes consume recent authentication by removing both the original
+login timestamp and any reauthentication timestamp from the rotated session. The legacy `PATCH /update-password` alias
+is no longer exposed.
+
+Google reauthentication validates that the provider subject belongs to the current usable account. When the verified ID
+token includes `iat`, it must be within the five-minute window plus one minute of clock-skew tolerance.
+
+### Ownership transfer invitation
+
+Ownership changes use a singleton invitation workflow. `POST /administration/ownership-transfer` creates a 24-hour
+invitation for an active, email-verified admin with at least one authentication method. Only one invitation may exist;
+`POST /administration/ownership-transfer/resend` rotates its one-time token and restarts the expiry window, while
+`DELETE /administration/ownership-transfer` cancels it. All owner commands require recent authentication.
+
+The invitation token is sent only by email and stored only as a hash. The invited admin must sign in, authenticate
+recently, and call `POST /administration/ownership-transfer/accept` with the token. Owner and target session-version
+snapshots must still match. Acceptance atomically demotes the current owner to admin, promotes the target to owner,
+increments both session versions, consumes the invitation, and writes `ownership.transferred` plus `user.role_changed`
+audit events. Both users must sign in again.
+
+The `ownership_transfer_invitations` collection contains zero or one document, enforced by the
+`ownership_transfer_scope_unique` index. It also has a unique token-hash index and an `expires_at` TTL index. Expired
+records are treated as absent even before MongoDB's TTL monitor removes them. Request, resend, cancellation, and
+completion are audited; re-send uses `ownership.transfer_resent`.
+
+Invitation delivery is enqueued after the creation transaction. A queue failure is returned to the caller while the
+invitation remains available for re-send. Completion notifications to the previous and new owners are best-effort after
+commit and never roll back ownership.
+
+### On-demand administrative capabilities
+
+`GET /users/:id/administrative-capabilities` returns the actions that the current owner/admin can perform against one
+persisted target. It is read-only, requires no recent-authentication step, emits no audit event, and never replaces
+authorization in mutation endpoints.
+
+The response contains `actions` (`changeRole`, `suspend`, `reactivate`, `close`, or `requestOwnershipTransfer`) and
+`roleTransitions`. Self-targets and admin/owner targets viewed by an admin return empty arrays. Role changes are
+available only for active or suspended targets. Closure appears only for suspended targets. Ownership transfer appears
+only for an eligible admin when no valid invitation is pending; credential, identity, and invitation checks are
+performed only for that selected target. `GET /users` remains unchanged and does not calculate capabilities.

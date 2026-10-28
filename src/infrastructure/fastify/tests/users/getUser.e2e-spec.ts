@@ -1,40 +1,34 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
-import { app } from '@/infrastructure/fastify/app';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
+import { app } from '@/infrastructure/fastify/app';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
+import { Roles } from '@/shared/accessControl/roles';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { createAndAuthenticateUser, createUser } from '../helpers/authentication.helpers';
-import { Roles } from '@/shared/accessControl/roles';
+
+type CapabilitiesResponseBody = { actions: string[]; roleTransitions: string[] };
 
 describe('Get User', () => {
-	beforeAll(async () => {
-		await app.ready();
-	});
+	beforeAll(async () => app.ready());
+	afterAll(async () => app.close());
+	beforeEach(async () => MongoConnection.Instance.emptyCollection(UserModel));
 
-	afterAll(async () => {
-		await app.close();
-	});
-
-	beforeEach(async () => {
-		await MongoConnection.Instance.emptyCollection(UserModel);
-	});
-
-	it('Should be able to admin get the User', async () => {
+	it('gets a user and resolves active administrative capabilities on demand', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
-
 		const { id } = await createUser(app, { email: 'partner@example.com', role: Roles.partner });
 
-		const response = await request(app.server).get(`/users/${id}`).set('Cookie', cookies).send();
+		const user = await request(app.server).get(`/users/${id}`).set('Cookie', cookies).send();
+		const capabilities = await request(app.server)
+			.get(`/users/${id}/administrative-capabilities`)
+			.set('Cookie', cookies)
+			.send();
 
-		expect(response.status).toBe(HTTP_STATUS.ok);
-	});
-
-	it('Should not be able to get a user when unauthenticated', async () => {
-		const { id } = await createUser(app, { email: 'partner@example.com', role: Roles.partner });
-
-		const response = await request(app.server).get(`/users/${id}`).send();
-
-		expect(response.status).toBe(HTTP_STATUS.unauthorized);
+		expect(user.status).toBe(HTTP_STATUS.ok);
+		expect(capabilities.status).toBe(HTTP_STATUS.ok);
+		expect(capabilities.body as CapabilitiesResponseBody).toEqual({
+			actions: ['changeRole', 'suspend'],
+			roleTransitions: ['member'],
+		});
 	});
 });

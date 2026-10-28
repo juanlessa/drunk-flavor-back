@@ -18,21 +18,21 @@ const makeUser = (role: UserPermissionModel['role'], id = ownerId): UserPermissi
 const ownRating: RatingPermissionModel = {
 	__typename: 'Rating',
 	id: new ObjectId().toString(),
-	user_id: ownerId,
-	drink_id: new ObjectId().toString(),
+	userId: ownerId,
+	drinkId: new ObjectId().toString(),
 };
-const foreignRating: RatingPermissionModel = { ...ownRating, user_id: foreignId };
+const foreignRating: RatingPermissionModel = { ...ownRating, userId: foreignId };
 
 const ownComment: CommentPermissionModel = {
 	__typename: 'Comment',
 	id: new ObjectId().toString(),
-	user_id: ownerId,
-	drink_id: new ObjectId().toString(),
+	userId: ownerId,
+	drinkId: new ObjectId().toString(),
 };
-const foreignComment: CommentPermissionModel = { ...ownComment, user_id: foreignId };
+const foreignComment: CommentPermissionModel = { ...ownComment, userId: foreignId };
 
 describe('Engagement permissions', () => {
-	describe.each([Roles.admin, Roles.partner, Roles.member])('%s role', (role) => {
+	describe.each([Roles.owner, Roles.admin, Roles.partner, Roles.member])('%s role', (role) => {
 		const ability = () => defineAbilityFor(makeUser(role));
 
 		it('may update its own rating and comment', () => {
@@ -55,8 +55,8 @@ describe('Engagement permissions', () => {
 		});
 	});
 
-	it('allows Admin to delete any rating or comment', () => {
-		const { can } = defineAbilityFor(makeUser(Roles.admin));
+	it.each([Roles.owner, Roles.admin])('allows %s to delete any rating or comment', (role) => {
+		const { can } = defineAbilityFor(makeUser(role));
 		expect(can('delete', foreignRating)).toBe(true);
 		expect(can('delete', foreignComment)).toBe(true);
 	});
@@ -69,9 +69,11 @@ describe('Engagement permissions', () => {
 		expect(can('delete', foreignComment)).toBe(false);
 	});
 
-	it('allows only Admin to moderate comments', () => {
-		expect(defineAbilityFor(makeUser(Roles.admin)).can('moderate', ownComment)).toBe(true);
-		expect(defineAbilityFor(makeUser(Roles.partner)).can('moderate', ownComment)).toBe(false);
-		expect(defineAbilityFor(makeUser(Roles.member)).can('moderate', ownComment)).toBe(false);
+	it.each([Roles.owner, Roles.admin])('allows %s to moderate comments', (role) => {
+		expect(defineAbilityFor(makeUser(role)).can('moderate', ownComment)).toBe(true);
+	});
+
+	it.each([Roles.partner, Roles.member])('prevents %s from moderating comments', (role) => {
+		expect(defineAbilityFor(makeUser(role)).can('moderate', ownComment)).toBe(false);
 	});
 });

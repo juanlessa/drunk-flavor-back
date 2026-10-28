@@ -121,7 +121,7 @@ describe('List Drinks', () => {
 
 	it('should be able to add the cover and thumbnail url to the found drinks', async () => {
 		await drinksRepository.update({
-			id: createdDrink1._id.toString(),
+			id: createdDrink1.id,
 			cover: { name: 'coverFile.png', mimetype: 'image/png', url: '' },
 			thumbnail: { name: 'thumbnailFile.jpeg', mimetype: 'image/jpeg', url: '' },
 		});

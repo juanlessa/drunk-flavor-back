@@ -7,6 +7,6 @@ export type ListRatingsByDrinkReqParam = z.infer<typeof listRatingsByDrinkSchema
 export type ListRatingsByDrinkReqQuery = z.infer<typeof ratingQuerySchema>;
 
 export type ListRatingsByDrinkCommand = {
-	drink_id: string;
+	drinkId: string;
 	query: RatingListQuery;
 };

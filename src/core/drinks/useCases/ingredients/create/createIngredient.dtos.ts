@@ -1,12 +1,11 @@
 import { z } from 'zod/v4';
-import { createIngredientSchema } from './createIngredient.schema';
 import { IngredientTranslation } from '@/core/drinks/entities/ingredient.entity';
 import { Translations } from '@/core/drinks/types/translations';
+import { createIngredientSchema } from './createIngredient.schema';
 
 export type CreateIngredientReqBody = z.infer<typeof createIngredientSchema>;
-
 export type CreateIngredientDTO = {
 	translations: Translations<IngredientTranslation>;
-	category_id: string;
-	unit_id: string;
+	categoryId: string;
+	unitId: string;
 };

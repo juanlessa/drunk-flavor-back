@@ -32,11 +32,29 @@ describe('List Comments', () => {
 	});
 
 	it('Should be able to list the comments hiding non-visible ones from public reads', async () => {
-		const { id: drink_id } = await createDrink();
-		await createCommentRecord({ drink_id, content: 'visible one' });
-		await createCommentRecord({ drink_id, content: 'hidden one', status: CommentStatuses.hidden });
+		const { id: drinkId } = await createDrink();
+		await createCommentRecord({ drinkId, content: 'visible one' });
+		await createCommentRecord({ drinkId, content: 'hidden one', status: CommentStatuses.hidden });
 
-		const list = await request(app.server).get('/comments').send();
-		expect((list.body as unknown[]).length).toBe(1);
+		const list = await request(app.server)
+			.get('/comments')
+			.query({ sort: JSON.stringify({ createdAt: -1 }) })
+			.send();
+		const body = list.body as {
+			id: string;
+			drinkId: string;
+			userId: string;
+			createdAt: string;
+			updatedAt: string;
+		}[];
+
+		expect(body).toHaveLength(1);
+		expect(body[0]).toMatchObject({ drinkId });
+		expect(typeof body[0].id).toBe('string');
+		expect(typeof body[0].userId).toBe('string');
+		expect(typeof body[0].createdAt).toBe('string');
+		expect(typeof body[0].updatedAt).toBe('string');
+		expect(body[0]).not.toHaveProperty('_id');
+		expect(body[0]).not.toHaveProperty('drink_id');
 	});
 });

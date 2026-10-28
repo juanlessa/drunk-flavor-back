@@ -12,23 +12,22 @@ export class UpdateProfileService {
 			throw new BadRequestError('apiResponses.users.notExist', { path: 'UpdateProfile.service' });
 		}
 
-		// Completing an `incomplete_profile` account (e.g. a Google sign-in whose
-		// token omitted a name part) with valid name + surname promotes it to active.
-		// An already-complete account keeps its status and only updates the names.
-		const shouldComplete = user.status === UserStatuses.incomplete_profile;
+		const hasCompleteProfile = name.trim().length > 0 && surname.trim().length > 0;
+		const shouldComplete = user.status === UserStatuses.incomplete_profile && hasCompleteProfile;
 
 		const updated = await this.usersRepository.update({
 			id,
 			name,
 			surname,
-			...(shouldComplete ? { status: UserStatuses.active } : {}),
+			...(shouldComplete ? { status: UserStatuses.active, sessionVersion: user.sessionVersion + 1 } : {}),
 		});
 
 		return {
 			user: {
-				id: updated._id.toString(),
+				id: updated.id,
 				role: updated.role,
 				status: updated.status,
+				sessionVersion: updated.sessionVersion,
 			},
 		};
 	}

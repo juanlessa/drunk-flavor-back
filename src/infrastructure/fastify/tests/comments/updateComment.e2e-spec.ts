@@ -36,7 +36,7 @@ describe('Update Comment', () => {
 
 	it('Should be able to update a comment', async () => {
 		const { cookies, user } = await createAndAuthenticateUser(app, { role: Roles.member });
-		const { id } = await createCommentRecord({ user_id: user.id, content: 'first' });
+		const { id } = await createCommentRecord({ userId: user.id, content: 'first' });
 		const response = await request(app.server)
 			.patch(`/comments/${id}`)
 			.set('Cookie', cookies)

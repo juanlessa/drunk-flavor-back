@@ -3,7 +3,8 @@ import { ObjectId } from 'mongodb';
 import { UsersRepository } from './Users.repository';
 import { UserModel } from '../entities/user.model';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
-import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
+import { UserEmailAlreadyExistsError } from '@/core/accounts/errors/user.errors';
+import { NotFoundError } from '@/shared/error/error.lib';
 
 let repository: UsersRepository;
 
@@ -23,7 +24,7 @@ describe('UsersRepository (integration)', () => {
 	it('returns lean documents without __v on findById and findAll', async () => {
 		const created = await repository.create(createUserFactory({ email: 'lean@example.com' }));
 
-		const byId = await repository.findById(created._id.toString());
+		const byId = await repository.findById(created.id);
 		const [listed] = await repository.findAll({});
 
 		expect(byId as Record<string, unknown>).not.toHaveProperty('__v');
@@ -37,6 +38,13 @@ describe('UsersRepository (integration)', () => {
 		expect(found?.email).toBe('find@example.com');
 
 		expect(await repository.findByEmail('missing@example.com')).toBeNull();
+	});
+
+	it('findByRole returns the current owner and null when the role is absent', async () => {
+		const owner = await repository.create(createUserFactory({ email: 'owner@example.com', role: 'owner' }));
+
+		expect((await repository.findByRole('owner'))?.id).toBe(owner.id);
+		expect(await repository.findByRole('admin')).toBeNull();
 	});
 
 	it('findByEmail is effectively case-insensitive via the schema lowercase setter', async () => {
@@ -56,17 +64,22 @@ describe('UsersRepository (integration)', () => {
 		await expect(repository.delete(new ObjectId().toString())).rejects.toBeInstanceOf(NotFoundError);
 
 		const created = await repository.create(createUserFactory({ email: 'update@example.com' }));
-		const updated = await repository.update({ id: created._id.toString(), name: 'Jane' });
+		const updated = await repository.update({ id: created.id, name: 'Jane' });
 		expect(updated.name).toBe('Jane');
 	});
 
-	it('translates a duplicate-email create to a domain BadRequestError', async () => {
-		// create wraps the 11000 duplicate-key violation and translates it to a
-		// domain BadRequestError via the shared mapDuplicateKeyError.
+	it('runs schema validators on updates', async () => {
+		const created = await repository.create(createUserFactory({ email: 'validated-update@example.com' }));
+
+		await expect(repository.update({ id: created.id, role: 'superuser' as never })).rejects.toThrow();
+		await expect(repository.update({ id: created.id, status: 'frozen' as never })).rejects.toThrow();
+	});
+
+	it('translates a duplicate email on create to UserEmailAlreadyExistsError', async () => {
 		await repository.create(createUserFactory({ email: 'raceless@example.com' }));
 
 		const duplicate = repository.create(createUserFactory({ email: 'raceless@example.com' }));
-		await expect(duplicate).rejects.toBeInstanceOf(BadRequestError);
+		await expect(duplicate).rejects.toBeInstanceOf(UserEmailAlreadyExistsError);
 	});
 
 	it('resolves a concurrent duplicate-email create race to one persisted user and one rejection', async () => {
@@ -81,18 +94,18 @@ describe('UsersRepository (integration)', () => {
 		const rejected = results.filter((result) => result.status === 'rejected');
 		expect(fulfilled).toHaveLength(1);
 		expect(rejected).toHaveLength(1);
-		expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(BadRequestError);
+		expect((rejected[0] as PromiseRejectedResult).reason).toBeInstanceOf(UserEmailAlreadyExistsError);
 
 		const persisted = await UserModel.countDocuments({ email });
 		expect(persisted).toBe(1);
 	});
 
-	it('translates an email-rename update collision to a domain BadRequestError', async () => {
+	it('translates an email-rename update collision to a domain UserEmailAlreadyExistsError', async () => {
 		const existing = await repository.create(createUserFactory({ email: 'taken@example.com' }));
 		const mover = await repository.create(createUserFactory({ email: 'mover@example.com' }));
 
-		await expect(repository.update({ id: mover._id.toString(), email: existing.email })).rejects.toBeInstanceOf(
-			BadRequestError,
+		await expect(repository.update({ id: mover.id, email: existing.email })).rejects.toBeInstanceOf(
+			UserEmailAlreadyExistsError,
 		);
 	});
 
@@ -115,11 +128,11 @@ describe('UsersRepository (integration)', () => {
 
 		const expectedOrder = [...ids].map((id) => id.toString()).sort((a, b) => (a > b ? -1 : 1));
 
-		const firstPage = await repository.findAll({ page: 1, limit: 2, sort: { created_at: -1 } });
-		const secondPage = await repository.findAll({ page: 2, limit: 2, sort: { created_at: -1 } });
+		const firstPage = await repository.findAll({ page: 1, limit: 2, sort: { createdAt: -1 } });
+		const secondPage = await repository.findAll({ page: 2, limit: 2, sort: { createdAt: -1 } });
 
-		expect(firstPage.map((item) => item._id.toString())).toEqual(expectedOrder.slice(0, 2));
-		expect(secondPage.map((item) => item._id.toString())).toEqual(expectedOrder.slice(2, 3));
+		expect(firstPage.map((item) => item.id)).toEqual(expectedOrder.slice(0, 2));
+		expect(secondPage.map((item) => item.id)).toEqual(expectedOrder.slice(2, 3));
 	});
 
 	it('succeeds with no sort supplied', async () => {

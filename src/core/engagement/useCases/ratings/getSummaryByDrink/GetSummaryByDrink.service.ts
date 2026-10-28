@@ -5,7 +5,7 @@ import { GetSummaryByDrinkCommand } from './getSummaryByDrink.dtos';
 export class GetSummaryByDrinkService {
 	constructor(private ratingsRepository: IRatingsRepository) {}
 
-	async execute({ drink_id }: GetSummaryByDrinkCommand): Promise<RatingSummary> {
-		return this.ratingsRepository.summarizeByDrink(drink_id);
+	async execute({ drinkId }: GetSummaryByDrinkCommand): Promise<RatingSummary> {
+		return this.ratingsRepository.summarizeByDrink(drinkId);
 	}
 }

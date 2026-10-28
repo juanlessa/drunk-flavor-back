@@ -5,7 +5,7 @@ import { createCommentSchema } from './createComment.schema';
 export type CreateCommentReqBody = z.infer<typeof createCommentSchema>;
 
 export type CreateCommentCommand = {
-	drink_id: string;
+	drinkId: string;
 	content: string;
 	actor: Actor;
 };

@@ -1,15 +1,17 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { MongoServerError, ObjectId } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { IdentitiesRepositoryInMemory } from './Identities.repository';
-import { isDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
-import { IDENTITY_PROVIDER_SUB_UNIQUE_INDEX } from '@/core/accounts/infra/mongo/entities/identity.model';
+import {
+	IdentityProviderSubjectAlreadyExistsError,
+	IdentityUserProviderAlreadyExistsError,
+} from '@/core/accounts/errors/identity.errors';
 
-const buildIdentity = (overrides?: { user_id?: string; provider_sub?: string }) => ({
-	user_id: overrides?.user_id ?? new ObjectId().toString(),
+const buildIdentity = (overrides?: { userId?: string; providerSubject?: string }) => ({
+	userId: overrides?.userId ?? new ObjectId().toString(),
 	provider: 'google' as const,
-	provider_sub: overrides?.provider_sub ?? new ObjectId().toString(),
+	providerSubject: overrides?.providerSubject ?? new ObjectId().toString(),
 	email: 'johndoe@example.com',
-	email_verified: true,
+	isEmailVerified: true,
 });
 
 let repository: IdentitiesRepositoryInMemory;
@@ -19,49 +21,56 @@ describe('IdentitiesRepositoryInMemory', () => {
 		repository = new IdentitiesRepositoryInMemory();
 	});
 
-	it('assigns _id and timestamps on create', async () => {
+	it('assigns id and timestamps on create', async () => {
 		const created = await repository.create(buildIdentity());
 
-		expect(created._id).toBeInstanceOf(ObjectId);
-		expect(created.created_at).toBeInstanceOf(Date);
-		expect(created.updated_at).toBeInstanceOf(Date);
+		expect(created.id).toEqual(expect.any(String));
+		expect(created.createdAt).toBeInstanceOf(Date);
+		expect(created.updatedAt).toBeInstanceOf(Date);
 	});
 
 	it('findByProviderSub returns the match or null', async () => {
-		const provider_sub = new ObjectId().toString();
-		await repository.create(buildIdentity({ provider_sub }));
+		const providerSubject = new ObjectId().toString();
+		await repository.create(buildIdentity({ providerSubject }));
 
-		expect((await repository.findByProviderSub('google', provider_sub))?.provider_sub).toBe(provider_sub);
+		expect((await repository.findByProviderSub('google', providerSubject))?.providerSubject).toBe(providerSubject);
 		expect(await repository.findByProviderSub('google', new ObjectId().toString())).toBeNull();
 	});
 
-	it('touchLastLogin updates last_login_at', async () => {
+	it('touchLastLogin updates lastLoginAt', async () => {
 		const created = await repository.create(buildIdentity());
 		const date = new Date('2030-01-01T00:00:00.000Z');
 
-		await repository.touchLastLogin(created._id.toString(), date);
+		await repository.touchLastLogin(created.id, date);
 
-		expect((await repository.findByProviderSub('google', created.provider_sub))?.last_login_at?.getTime()).toBe(
+		expect((await repository.findByProviderSub('google', created.providerSubject))?.lastLoginAt?.getTime()).toBe(
 			date.getTime(),
 		);
 	});
 
-	it('findByUserId returns all identities of a user', async () => {
-		const user_id = new ObjectId().toString();
-		await repository.create(buildIdentity({ user_id }));
-		await repository.create(buildIdentity({ user_id }));
+	it('findByUserId returns the identity of a user', async () => {
+		const userId = new ObjectId().toString();
+		await repository.create(buildIdentity({ userId }));
 		await repository.create(buildIdentity());
 
-		expect(await repository.findByUserId(user_id)).toHaveLength(2);
+		expect(await repository.findByUserId(userId)).toHaveLength(1);
 	});
 
-	it('throws a duplicate-key MongoServerError that isDuplicateKeyError recognizes on a duplicate (provider, provider_sub)', async () => {
-		const provider_sub = new ObjectId().toString();
-		await repository.create(buildIdentity({ provider_sub }));
+	it('rejects a second identity for the same user and provider', async () => {
+		const userId = new ObjectId().toString();
+		await repository.create(buildIdentity({ userId }));
 
-		const error = await repository.create(buildIdentity({ provider_sub })).catch((caught: unknown) => caught);
+		await expect(repository.create(buildIdentity({ userId }))).rejects.toBeInstanceOf(
+			IdentityUserProviderAlreadyExistsError,
+		);
+	});
 
-		expect(error).toBeInstanceOf(MongoServerError);
-		expect(isDuplicateKeyError(error, [IDENTITY_PROVIDER_SUB_UNIQUE_INDEX])).toBe(true);
+	it('rejects a duplicate provider subject with a semantic identity error', async () => {
+		const providerSubject = new ObjectId().toString();
+		await repository.create(buildIdentity({ providerSubject }));
+
+		await expect(repository.create(buildIdentity({ providerSubject }))).rejects.toBeInstanceOf(
+			IdentityProviderSubjectAlreadyExistsError,
+		);
 	});
 });

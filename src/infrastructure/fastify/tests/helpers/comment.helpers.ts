@@ -3,19 +3,17 @@ import { resolveCommentsRepository } from '@/core/engagement/infra/mongo/contain
 import { ObjectId } from 'mongodb';
 
 export const createCommentRecord = async (options?: {
-	drink_id?: string;
-	user_id?: string;
+	drinkId?: string;
+	userId?: string;
 	content?: string;
 	status?: CommentStatus;
 }) => {
 	const commentsRepository = resolveCommentsRepository();
 	const comment = await commentsRepository.create({
-		drink_id: options?.drink_id ?? new ObjectId().toString(),
-		user_id: options?.user_id ?? new ObjectId().toString(),
+		drinkId: options?.drinkId ?? new ObjectId().toString(),
+		userId: options?.userId ?? new ObjectId().toString(),
 		content: options?.content ?? 'A sample comment',
 	});
-	if (options?.status) {
-		await commentsRepository.updateStatus({ id: comment._id.toString(), status: options.status });
-	}
-	return { comment, id: comment._id.toString() };
+	if (options?.status) await commentsRepository.updateStatus({ id: comment.id, status: options.status });
+	return { comment, id: comment.id };
 };

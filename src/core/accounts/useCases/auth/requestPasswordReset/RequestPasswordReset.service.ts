@@ -29,27 +29,27 @@ export class RequestPasswordResetService {
 		}
 
 		const tokenAlreadyExists = await this.tokensRepository.findByUserIdAndType({
-			user_id: user._id.toString(),
+			userId: user.id,
 			type: TokenTypes['forgot-password'],
 		});
 
-		if (tokenAlreadyExists && !this.dateProvider.isExpiredDate(tokenAlreadyExists.expires_at)) {
+		if (tokenAlreadyExists && !this.dateProvider.isExpiredDate(tokenAlreadyExists.expiresAt)) {
 			throw new BadRequestError('apiResponses.auth.actionAlreadyRequested', {
 				path: 'RequestPasswordReset.service.2',
 			});
 		}
 
-		if (tokenAlreadyExists && this.dateProvider.isExpiredDate(tokenAlreadyExists.expires_at)) {
-			await this.tokensRepository.delete(tokenAlreadyExists._id.toString());
+		if (tokenAlreadyExists && this.dateProvider.isExpiredDate(tokenAlreadyExists.expiresAt)) {
+			await this.tokensRepository.delete(tokenAlreadyExists.id);
 		}
 
 		const token = await this.cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 
 		await this.tokensRepository.create({
-			token_hash: this.cryptoProvider.hashToken(token),
+			tokenHash: this.cryptoProvider.hashToken(token),
 			type: TokenTypes['forgot-password'],
-			user_id: user._id.toString(),
-			expires_at: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+			userId: user.id,
+			expiresAt: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		const template = await this.templateProvider.forgotPassword({

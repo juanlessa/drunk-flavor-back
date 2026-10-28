@@ -33,9 +33,9 @@ describe('List Ratings By Drink', () => {
 	});
 
 	it('Should be able to list the ratings by drink', async () => {
-		const { id: drink_id } = await createDrink();
-		await createRatingRecord({ drink_id, value: 4 });
-		const byDrink = await request(app.server).get(`/drinks/${drink_id}/ratings`).send();
+		const { id: drinkId } = await createDrink();
+		await createRatingRecord({ drinkId, value: 4 });
+		const byDrink = await request(app.server).get(`/drinks/${drinkId}/ratings`).send();
 		expect(byDrink.status).toBe(HTTP_STATUS.ok);
 		expect((byDrink.body as unknown[]).length).toBe(1);
 	});

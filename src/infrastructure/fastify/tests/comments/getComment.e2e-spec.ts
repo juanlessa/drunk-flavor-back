@@ -1,28 +1,23 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
-import { app } from '@/infrastructure/fastify/app';
-import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
-import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { CategoryModel } from '@/core/drinks/infra/mongo/entities/category.model';
 import { DrinkModel } from '@/core/drinks/infra/mongo/entities/drink.model';
 import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.model';
 import { UnitModel } from '@/core/drinks/infra/mongo/entities/unit.model';
 import { CommentModel } from '@/core/engagement/infra/mongo/entities/comment.model';
-import { CommentStatuses } from '@/core/engagement/entities/comment.entity';
-import { createDrink } from '../helpers/drink.helpers';
+import { app } from '@/infrastructure/fastify/app';
+import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
+import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { createCommentRecord } from '../helpers/comment.helpers';
+import { createDrink } from '../helpers/drink.helpers';
 
 describe('Get Comment', () => {
 	beforeAll(async () => {
 		await app.ready();
 		await CommentModel.init();
 	});
-
-	afterAll(async () => {
-		await app.close();
-	});
-
+	afterAll(async () => app.close());
 	beforeEach(async () => {
 		await MongoConnection.Instance.emptyCollection(CategoryModel);
 		await MongoConnection.Instance.emptyCollection(IngredientModel);
@@ -32,16 +27,13 @@ describe('Get Comment', () => {
 		await MongoConnection.Instance.emptyCollection(CommentModel);
 	});
 
-	it('Should not be able to get a non-visible comment on public reads', async () => {
-		const { id: drink_id } = await createDrink();
-		await createCommentRecord({ drink_id, content: 'visible one' });
-		const { id: hiddenId } = await createCommentRecord({
-			drink_id,
-			content: 'hidden one',
-			status: CommentStatuses.hidden,
-		});
+	it('Should be able to get a visible comment', async () => {
+		const { id: drinkId } = await createDrink();
+		const { id } = await createCommentRecord({ drinkId, content: 'visible comment' });
 
-		const get = await request(app.server).get(`/comments/${hiddenId}`).send();
-		expect(get.status).toBe(HTTP_STATUS.bad_request);
+		const response = await request(app.server).get(`/comments/${id}`).send();
+
+		expect(response.status).toBe(HTTP_STATUS.ok);
+		expect(response.body).toMatchObject({ id, drinkId, content: 'visible comment', status: 'visible' });
 	});
 });

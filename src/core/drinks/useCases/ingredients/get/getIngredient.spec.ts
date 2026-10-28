@@ -33,7 +33,7 @@ describe('Get Ingredient', () => {
 
 		createdCategory = await categoriesRepository.create({
 			translations: categoryTranslations,
-			is_alcoholic: false,
+			isAlcoholic: false,
 		});
 		createdUnit = await unitsRepository.create(createUnitFactory());
 	});
@@ -44,9 +44,9 @@ describe('Get Ingredient', () => {
 			unit: createdUnit,
 		});
 
-		const ingredientFound = await service.execute({ id: createdIngredient._id.toString() });
+		const ingredientFound = await service.execute({ id: createdIngredient.id });
 
-		expect(ingredientFound._id).toEqual(createdIngredient._id);
+		expect(ingredientFound.id).toEqual(createdIngredient.id);
 		expect(ingredientFound.translations).toEqual(createdIngredient.translations);
 		expect(ingredientFound.category).toEqual(createdCategory);
 		expect(ingredientFound.unit).toEqual(createdUnit);

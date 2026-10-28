@@ -1,6 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { Category } from '@/core/drinks/entities/category.entity';
-import { CategoryModel } from '@/core/drinks/infra/mongo/entities/category.model';
+import { CategoryModel, CategoryPersistence } from '@/core/drinks/infra/mongo/entities/category.model';
 import { logger } from '@/shared/providers/logger';
 
 const categories = [
@@ -214,12 +213,12 @@ const categories = [
 		created_at: new Date(),
 		updated_at: new Date(),
 	},
-] as const satisfies readonly Category[];
+] as const satisfies readonly CategoryPersistence[];
 
 type CategoryEnName = (typeof categories)[number]['translations']['en']['name'];
 
-export const categoriesMap = new Map<CategoryEnName, Category>(
-	categories.map<[CategoryEnName, Category]>((category) => [category.translations.en.name, category]),
+export const categoriesMap = new Map<CategoryEnName, CategoryPersistence>(
+	categories.map<[CategoryEnName, CategoryPersistence]>((category) => [category.translations.en.name, category]),
 );
 
 export async function insertCategories() {

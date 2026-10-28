@@ -37,10 +37,10 @@ describe('Confirm Password', () => {
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 
 		await tokensRepository.create({
-			token_hash: cryptoProvider.hashToken(token),
+			tokenHash: cryptoProvider.hashToken(token),
 			type: TokenTypes['forgot-password'],
-			user_id: id,
-			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+			userId: id,
+			expiresAt: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		const newPassword = 'New-password-87654321';

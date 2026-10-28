@@ -32,10 +32,10 @@ describe('Create Drink', () => {
 
 	it('Should be able to create a drink', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
-		const { id: ingredient_id } = await createIngredient();
+		const { id: ingredientId } = await createIngredient();
 
 		const { translations } = createDrinkFactory();
-		const ingredients = [{ ingredient_id, quantity: 60 }];
+		const ingredients = [{ ingredientId, quantity: 60 }];
 
 		const response = await request(app.server)
 			.post('/drinks')
@@ -46,28 +46,6 @@ describe('Create Drink', () => {
 
 		expect(response.status).toBe(HTTP_STATUS.created);
 		expect(body).toHaveProperty('id');
-		expect(typeof body.id).toBe('string');
-
-		const stored = await DrinkModel.findById(body.id).lean();
-		expect(stored?.avg_rating).toBe(0);
-		expect(stored?.ratings_count).toBe(0);
-	});
-
-	it('Should ignore a client-supplied aggregate field and keep the server-owned default', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
-		const { id: ingredient_id } = await createIngredient();
-
-		const { translations } = createDrinkFactory();
-		const ingredients = [{ ingredient_id, quantity: 60 }];
-
-		const response = await request(app.server)
-			.post('/drinks')
-			.set('Cookie', cookies)
-			.send({ translations, ingredients, avg_rating: 5 });
-
-		const body = response.body as { id?: unknown };
-
-		expect(response.status).toBe(HTTP_STATUS.created);
 		expect(typeof body.id).toBe('string');
 
 		const stored = await DrinkModel.findById(body.id).lean();

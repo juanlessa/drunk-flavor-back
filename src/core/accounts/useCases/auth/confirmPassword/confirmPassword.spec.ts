@@ -8,6 +8,7 @@ import { BcryptHashProvider } from '@/shared/providers/cryptography/implementati
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { ConfirmPasswordService } from './ConfirmPassword.service';
+import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
 import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.provider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
@@ -48,6 +49,7 @@ describe('Confirm Password', () => {
 			dateProvider,
 			hashProvider,
 			cryptoProvider,
+			new FakeTransactionManager(),
 		);
 	});
 
@@ -65,15 +67,15 @@ describe('Confirm Password', () => {
 			status,
 		});
 		await credentialsRepository.create({
-			user_id: createdUser._id.toString(),
-			password_hash: hashedPassword,
+			userId: createdUser.id,
+			passwordHash: hashedPassword,
 		});
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
-			token_hash: cryptoProvider.hashToken(token),
-			user_id: createdUser._id.toString(),
+			tokenHash: cryptoProvider.hashToken(token),
+			userId: createdUser.id,
 			type: TokenTypes['forgot-password'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+			expiresAt: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		await service.execute({
@@ -81,13 +83,14 @@ describe('Confirm Password', () => {
 			password: updatedPassword,
 		});
 
-		const verifyUser = (await usersRepository.findById(createdUser._id.toString())) as User;
+		const verifyUser = (await usersRepository.findById(createdUser.id)) as User;
 		expect(verifyUser).toBeDefined();
+		expect(verifyUser.sessionVersion).toBe(createdUser.sessionVersion + 1);
 
-		const verifyCredential = await credentialsRepository.findByUserId(createdUser._id.toString());
+		const verifyCredential = await credentialsRepository.findByUserId(createdUser.id);
 		expect(verifyCredential).not.toBeNull();
-		expect(verifyCredential?.password_hash).not.toEqual(hashedPassword);
-		expect(await hashProvider.compare(updatedPassword, verifyCredential!.password_hash)).toBe(true);
+		expect(verifyCredential?.passwordHash).not.toEqual(hashedPassword);
+		expect(await hashProvider.compare(updatedPassword, verifyCredential!.passwordHash)).toBe(true);
 	});
 
 	it('should not be able to confirm the password using a nonexisting token', async () => {
@@ -103,10 +106,10 @@ describe('Confirm Password', () => {
 		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
-			token_hash: cryptoProvider.hashToken(token),
-			user_id: createdUser._id.toString(),
+			tokenHash: cryptoProvider.hashToken(token),
+			userId: createdUser.id,
 			type: TokenTypes['forgot-password'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+			expiresAt: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		vi.advanceTimersByTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);
@@ -127,10 +130,10 @@ describe('Confirm Password', () => {
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		const nonexistentUserId = new ObjectId().toString();
 		await tokensRepository.create({
-			token_hash: cryptoProvider.hashToken(token),
-			user_id: nonexistentUserId,
+			tokenHash: cryptoProvider.hashToken(token),
+			userId: nonexistentUserId,
 			type: TokenTypes['forgot-password'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+			expiresAt: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		await expect(

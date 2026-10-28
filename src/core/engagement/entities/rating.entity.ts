@@ -1,7 +1,7 @@
-import { DatabaseCommonInfo } from '@/infrastructure/mongo/types';
+import { EntityMetadata } from '@/shared/types/entity.types';
 
-export type Rating = DatabaseCommonInfo & {
-	drink_id: string;
-	user_id: string;
+export type Rating = EntityMetadata & {
+	drinkId: string;
+	userId: string;
 	value: number;
 };

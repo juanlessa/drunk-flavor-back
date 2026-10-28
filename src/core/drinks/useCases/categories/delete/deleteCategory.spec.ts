@@ -9,7 +9,7 @@ import { createCategoryFactory } from '@/core/drinks/factories/category.factorie
 let categoriesRepository: ICategoriesRepository;
 let service: DeleteCategoryService;
 
-const { translations, is_alcoholic } = createCategoryFactory();
+const { translations, isAlcoholic } = createCategoryFactory();
 
 describe('Delete category', () => {
 	beforeEach(() => {
@@ -18,11 +18,11 @@ describe('Delete category', () => {
 	});
 
 	it('should be able to delete a Category', async () => {
-		const createdCategory = await categoriesRepository.create({ translations, is_alcoholic });
+		const createdCategory = await categoriesRepository.create({ translations, isAlcoholic });
 
-		await service.execute({ id: createdCategory._id.toString() });
+		await service.execute({ id: createdCategory.id });
 
-		const findDeledCategory = await categoriesRepository.findById(createdCategory._id.toString());
+		const findDeledCategory = await categoriesRepository.findById(createdCategory.id);
 
 		expect(findDeledCategory).toBeNull();
 	});

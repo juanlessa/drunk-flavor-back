@@ -1,45 +1,46 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { BadRequestError, UnauthorizedError } from '@/shared/error/error.lib';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
-import { UpdatePassword } from './updatePassword.dtos';
+import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
+import { UpdatePassword, UpdatePasswordResult } from './updatePassword.dtos';
 
 export class UpdatePasswordService {
 	constructor(
 		private usersRepository: IUsersRepository,
 		private credentialsRepository: ICredentialsRepository,
 		private hashProvider: IHashProvider,
+		private transactionManager: ITransactionManager,
 	) {}
 
-	async execute({ id, currentPassword, newPassword }: UpdatePassword) {
-		const user = await this.usersRepository.findById(id);
-		if (!user) {
-			throw new BadRequestError('apiResponses.users.notExist', { path: 'UpdatePassword.service.1' });
-		}
+	async execute({ id, currentPassword, newPassword }: UpdatePassword): Promise<UpdatePasswordResult> {
+		return this.transactionManager.withTransaction(async () => {
+			const user = await this.usersRepository.findById(id);
+			const credential = user ? await this.credentialsRepository.findByUserId(user.id) : null;
+			const passwordHash = credential?.passwordHash ?? (await this.hashProvider.getDummyHash());
+			const currentPasswordMatch = await this.hashProvider.compare(currentPassword, passwordHash);
 
-		const credential = await this.credentialsRepository.findByUserId(user._id.toString());
-		if (!credential) {
-			throw new BadRequestError('apiResponses.users.invalidCurrentPassword', {
-				path: 'UpdatePassword.service.credential',
+			if (!user || !credential || !currentPasswordMatch) {
+				throw new UnauthorizedError('apiResponses.profile.invalidReauthentication', {
+					path: 'UpdatePassword.service.authentication',
+					cause: !user ? 'User does not exist' : 'Password credential is missing or invalid',
+				});
+			}
+
+			const isNewPasswordSameAsCurrent = await this.hashProvider.compare(newPassword, credential.passwordHash);
+			if (isNewPasswordSameAsCurrent) {
+				throw new BadRequestError('apiResponses.users.newPasswordCannotMatchCurrent', {
+					path: 'UpdatePassword.service.passwordReuse',
+				});
+			}
+
+			const hashedPassword = await this.hashProvider.hash(newPassword);
+			await this.credentialsRepository.update({ userId: user.id, passwordHash: hashedPassword });
+			const updatedUser = await this.usersRepository.update({
+				id: user.id,
+				sessionVersion: user.sessionVersion + 1,
 			});
-		}
-
-		const currentPasswordMatch = await this.hashProvider.compare(currentPassword, credential.password_hash);
-		if (!currentPasswordMatch) {
-			throw new BadRequestError('apiResponses.users.invalidCurrentPassword', {
-				path: 'UpdatePassword.service.2',
-			});
-		}
-
-		const isNewPasswordSameAsCurrent = await this.hashProvider.compare(newPassword, credential.password_hash);
-		if (isNewPasswordSameAsCurrent) {
-			throw new BadRequestError('apiResponses.users.newPasswordCannotMatchCurrent', {
-				path: 'UpdatePassword.service.3',
-			});
-		}
-
-		const hashedPassword = await this.hashProvider.hash(newPassword);
-
-		await this.credentialsRepository.update({ user_id: user._id.toString(), password_hash: hashedPassword });
+			return { user: updatedUser };
+		});
 	}
 }

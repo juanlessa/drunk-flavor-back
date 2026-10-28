@@ -9,7 +9,7 @@ import { createCategoryFactory } from '@/core/drinks/factories/category.factorie
 let categoriesRepository: ICategoriesRepository;
 let service: GetCategoryService;
 
-const { translations, is_alcoholic } = createCategoryFactory({ is_alcoholic: true });
+const { translations, isAlcoholic } = createCategoryFactory({ isAlcoholic: true });
 
 describe('Get Ingredient', () => {
 	beforeEach(async () => {
@@ -17,13 +17,13 @@ describe('Get Ingredient', () => {
 		service = new GetCategoryService(categoriesRepository);
 	});
 	it('should be able to find a Category', async () => {
-		const createdCategory = await categoriesRepository.create({ translations, is_alcoholic });
+		const createdCategory = await categoriesRepository.create({ translations, isAlcoholic });
 
-		const categoryFound = await service.execute({ id: createdCategory._id.toString() });
+		const categoryFound = await service.execute({ id: createdCategory.id });
 
-		expect(categoryFound._id).toEqual(createdCategory._id);
+		expect(categoryFound.id).toEqual(createdCategory.id);
 		expect(categoryFound.translations).toEqual(createdCategory.translations);
-		expect(categoryFound.is_alcoholic).toEqual(is_alcoholic);
+		expect(categoryFound.isAlcoholic).toEqual(isAlcoholic);
 	});
 
 	it('should not be able to find a nonexistent category', async () => {

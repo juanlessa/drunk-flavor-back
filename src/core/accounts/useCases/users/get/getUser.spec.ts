@@ -13,25 +13,34 @@ let service: GetUserService;
 
 const { name, surname, email, role, status } = createUserFactory();
 
-const admin: Actor = { id: new ObjectId().toString(), role: Roles.admin };
-const member: Actor = { id: new ObjectId().toString(), role: Roles.member };
+let admin: Actor;
+let member: Actor;
 
 describe('Get User', () => {
-	beforeEach(() => {
+	beforeEach(async () => {
 		usersRepository = new UsersRepositoryInMemory();
+		const persistedAdmin = await usersRepository.create(
+			createUserFactory({ email: 'admin-actor@example.com', role: Roles.admin }),
+		);
+		const persistedMember = await usersRepository.create(
+			createUserFactory({ email: 'member-actor@example.com', role: Roles.member }),
+		);
+		admin = { id: persistedAdmin.id, role: persistedAdmin.role };
+		member = { id: persistedMember.id, role: persistedMember.role };
 		service = new GetUserService(usersRepository);
 	});
 
 	it('should be able to get a user when the actor is an admin', async () => {
 		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 
-		const result = await service.execute({ id: createdUser._id.toString(), actor: admin });
+		const result = await service.execute({ id: createdUser.id, actor: admin });
 
-		expect(result._id).toEqual(createdUser._id);
+		expect(result.id).toEqual(createdUser.id);
 		expect(result.email).toEqual(createdUser.email);
 		expect(result.name).toEqual(createdUser.name);
 		expect(result.surname).toEqual(createdUser.surname);
 		expect(result.role).toEqual(createdUser.role);
+		expect(result).not.toHaveProperty('sessionVersion');
 	});
 
 	it('Should not be able to find a nonexistent user', async () => {
@@ -42,8 +51,6 @@ describe('Get User', () => {
 	it('should not be able to get a user when the actor is a member', async () => {
 		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 
-		await expect(service.execute({ id: createdUser._id.toString(), actor: member })).rejects.toBeInstanceOf(
-			ForbiddenError,
-		);
+		await expect(service.execute({ id: createdUser.id, actor: member })).rejects.toBeInstanceOf(ForbiddenError);
 	});
 });

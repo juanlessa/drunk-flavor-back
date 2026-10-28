@@ -1,10 +1,10 @@
 import { DrinkIngredient } from '@/core/drinks/entities/drink.entity';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
+import { mapToTranslationsName } from '@/core/drinks/mappers/translations.mappers';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { CreateDrinkDTO } from './createDrink.dtos';
-import { mapToTranslationsName } from '@/core/drinks/mappers/translations.mappers';
 
 export class CreateDrinkService {
 	constructor(
@@ -12,33 +12,25 @@ export class CreateDrinkService {
 		private ingredientsRepository: IIngredientsRepository,
 	) {}
 
-	async execute({ translations, ingredients }: CreateDrinkDTO) {
-		const translationsName = mapToTranslationsName(translations);
-		const drinkALreadyExists = await this.drinksRepository.findByName(translationsName);
-		if (drinkALreadyExists) {
+	async execute({ translations, ingredients }: CreateDrinkDTO): Promise<string> {
+		if (await this.drinksRepository.findByName(mapToTranslationsName(translations))) {
 			throw new BadRequestError('apiResponses.drinks.alreadyExist', { path: 'CreateDrink.service' });
 		}
-
-		const ingredientsExists = await this.ingredientsRepository.findByIdList(
-			ingredients.map((ing) => ing.ingredient_id),
+		const existingIngredients = await this.ingredientsRepository.findByIdList(
+			ingredients.map(({ ingredientId }) => ingredientId),
 		);
-		if (ingredientsExists.length !== ingredients.length) {
+		if (existingIngredients.length !== ingredients.length) {
 			throw new BadRequestError('apiResponses.drinks.someIngredientsNotExist', { path: 'CreateDrink.service' });
 		}
-
-		const ingredientsMap = ingredientsExists.reduce(
-			(accumulator, ing) => ({ ...accumulator, [ing._id.toString()]: ing }),
-			{} as { [key: string]: Ingredient },
+		const ingredientsById = existingIngredients.reduce<Record<string, Ingredient>>(
+			(accumulator, ingredient) => ({ ...accumulator, [ingredient.id]: ingredient }),
+			{},
 		);
-		const ingredientsFormatted: DrinkIngredient[] = ingredients.map((ing) => {
-			return {
-				ingredient: ingredientsMap[ing.ingredient_id],
-				quantity: ing.quantity,
-			};
-		});
-
-		const drink = await this.drinksRepository.create({ translations, ingredients: ingredientsFormatted });
-
-		return drink._id.toString();
+		const formattedIngredients: DrinkIngredient[] = ingredients.map(({ ingredientId, quantity }) => ({
+			ingredient: ingredientsById[ingredientId],
+			quantity,
+		}));
+		const drink = await this.drinksRepository.create({ translations, ingredients: formattedIngredients });
+		return drink.id;
 	}
 }

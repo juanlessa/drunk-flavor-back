@@ -9,43 +9,43 @@ describe('CredentialsRepositoryInMemory', () => {
 		repository = new CredentialsRepositoryInMemory();
 	});
 
-	it('assigns _id and timestamps on create', async () => {
-		const user_id = new ObjectId().toString();
-		const created = await repository.create({ user_id, password_hash: 'hashed-password' });
+	it('assigns id and timestamps on create', async () => {
+		const userId = new ObjectId().toString();
+		const created = await repository.create({ userId, passwordHash: 'hashed-password' });
 
-		expect(created._id).toBeInstanceOf(ObjectId);
-		expect(created.user_id).toBe(user_id);
-		expect(created.password_hash).toBe('hashed-password');
-		expect(created.created_at).toBeInstanceOf(Date);
-		expect(created.updated_at).toBeInstanceOf(Date);
+		expect(created.id).toEqual(expect.any(String));
+		expect(created.userId).toBe(userId);
+		expect(created.passwordHash).toBe('hashed-password');
+		expect(created.createdAt).toBeInstanceOf(Date);
+		expect(created.updatedAt).toBeInstanceOf(Date);
 	});
 
 	it('findByUserId returns the single credential or null', async () => {
-		const user_id = new ObjectId().toString();
-		await repository.create({ user_id, password_hash: 'hashed-password' });
+		const userId = new ObjectId().toString();
+		await repository.create({ userId, passwordHash: 'hashed-password' });
 
-		expect((await repository.findByUserId(user_id))?.password_hash).toBe('hashed-password');
+		expect((await repository.findByUserId(userId))?.passwordHash).toBe('hashed-password');
 		expect(await repository.findByUserId(new ObjectId().toString())).toBeNull();
 	});
 
-	it('update replaces the password_hash of an existing credential', async () => {
-		const user_id = new ObjectId().toString();
-		await repository.create({ user_id, password_hash: 'hashed-password' });
+	it('update replaces the passwordHash of an existing credential', async () => {
+		const userId = new ObjectId().toString();
+		await repository.create({ userId, passwordHash: 'hashed-password' });
 
-		await repository.update({ user_id, password_hash: 'new-hash' });
+		await repository.update({ userId, passwordHash: 'new-hash' });
 
-		expect((await repository.findByUserId(user_id))?.password_hash).toBe('new-hash');
+		expect((await repository.findByUserId(userId))?.passwordHash).toBe('new-hash');
 	});
 
 	it('deleteByUserId removes only the matching credential', async () => {
-		const user_id = new ObjectId().toString();
+		const userId = new ObjectId().toString();
 		const otherUser = new ObjectId().toString();
-		await repository.create({ user_id, password_hash: 'a' });
-		await repository.create({ user_id: otherUser, password_hash: 'b' });
+		await repository.create({ userId, passwordHash: 'a' });
+		await repository.create({ userId: otherUser, passwordHash: 'b' });
 
-		await repository.deleteByUserId(user_id);
+		await repository.deleteByUserId(userId);
 
-		expect(await repository.findByUserId(user_id)).toBeNull();
+		expect(await repository.findByUserId(userId)).toBeNull();
 		expect(await repository.findByUserId(otherUser)).not.toBeNull();
 	});
 });

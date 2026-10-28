@@ -12,14 +12,14 @@ export class CreateIngredientService {
 		private unitsRepository: IUnitsRepository,
 	) {}
 
-	async execute({ translations, category_id, unit_id }: CreateIngredientDTO) {
+	async execute({ translations, categoryId, unitId }: CreateIngredientDTO) {
 		const translationsName = mapToTranslationsName(translations);
 		const ingredientALreadyExists = await this.ingredientsRepository.findByName(translationsName);
 		if (ingredientALreadyExists) {
 			throw new BadRequestError('apiResponses.ingredients.alreadyExist', { path: 'CreateIngredient.service.1' });
 		}
 
-		const categoryExists = await this.categoriesRepository.findById(category_id);
+		const categoryExists = await this.categoriesRepository.findById(categoryId);
 
 		if (!categoryExists) {
 			throw new BadRequestError('apiResponses.ingredients.invalidCategoryFormat', {
@@ -27,7 +27,7 @@ export class CreateIngredientService {
 			});
 		}
 
-		const unitExists = await this.unitsRepository.findById(unit_id);
+		const unitExists = await this.unitsRepository.findById(unitId);
 
 		if (!unitExists) {
 			throw new BadRequestError('apiResponses.ingredients.invalidUnitFormat', {
