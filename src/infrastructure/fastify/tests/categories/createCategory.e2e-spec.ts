@@ -26,12 +26,12 @@ describe('Create Category', () => {
 	it('Should be able to create a category', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 
-		const { translations, is_alcoholic } = createCategoryFactory({ is_alcoholic: true });
+		const { translations, isAlcoholic } = createCategoryFactory({ isAlcoholic: true });
 
 		const response = await request(app.server)
 			.post('/categories')
 			.set('Cookie', cookies)
-			.send({ translations, is_alcoholic });
+			.send({ translations, isAlcoholic });
 
 		expect(response.status).toBe(HTTP_STATUS.created);
 	});

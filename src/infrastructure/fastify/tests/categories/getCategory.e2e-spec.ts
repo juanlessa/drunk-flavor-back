@@ -20,11 +20,11 @@ describe('Get Category', () => {
 	});
 
 	it('Should be able to get a category', async () => {
-		const { id, is_alcoholic } = await createCategory({ is_alcoholic: true });
+		const { id, isAlcoholic } = await createCategory({ isAlcoholic: true });
 
 		const response = await request(app.server).get(`/categories/${id}`).send();
 
 		expect(response.status).toBe(HTTP_STATUS.ok);
-		expect(response.body).toMatchObject({ is_alcoholic });
+		expect(response.body).toMatchObject({ isAlcoholic });
 	});
 });

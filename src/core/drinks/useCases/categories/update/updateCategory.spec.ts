@@ -10,10 +10,10 @@ import { createCategoryFactory } from '@/core/drinks/factories/category.factorie
 let categoriesRepository: ICategoriesRepository;
 let service: UpdateCategoryService;
 
-const { translations, is_alcoholic } = createCategoryFactory({ is_alcoholic: true });
-const { translations: updatedTranslations, is_alcoholic: updatedIsAlcoholic } = createCategoryFactory({
+const { translations, isAlcoholic } = createCategoryFactory({ isAlcoholic: true });
+const { translations: updatedTranslations, isAlcoholic: updatedIsAlcoholic } = createCategoryFactory({
 	translations: { en: { name: 'Juice' }, pt: { name: 'Suco' } },
-	is_alcoholic: false,
+	isAlcoholic: false,
 });
 
 describe('Update Category', () => {
@@ -23,19 +23,19 @@ describe('Update Category', () => {
 	});
 
 	it('should be able to update a category', async () => {
-		const createdCategory = await categoriesRepository.create({ translations, is_alcoholic });
+		const createdCategory = await categoriesRepository.create({ translations, isAlcoholic });
 
 		await service.execute({
-			id: createdCategory._id.toString(),
+			id: createdCategory.id,
 			translations: updatedTranslations,
-			is_alcoholic: updatedIsAlcoholic,
+			isAlcoholic: updatedIsAlcoholic,
 		});
 
-		const findUpdatedCategory = (await categoriesRepository.findById(createdCategory._id.toString())) as Category;
+		const findUpdatedCategory = (await categoriesRepository.findById(createdCategory.id)) as Category;
 
-		expect(findUpdatedCategory._id).toEqual(createdCategory._id);
+		expect(findUpdatedCategory.id).toEqual(createdCategory.id);
 		expect(findUpdatedCategory.translations).toEqual(updatedTranslations);
-		expect(findUpdatedCategory.is_alcoholic).toEqual(updatedIsAlcoholic);
+		expect(findUpdatedCategory.isAlcoholic).toEqual(updatedIsAlcoholic);
 	});
 
 	it('should not be able to update a nonexistent category', async () => {
@@ -43,21 +43,21 @@ describe('Update Category', () => {
 			service.execute({
 				id: new ObjectId().toString(),
 				translations: updatedTranslations,
-				is_alcoholic: updatedIsAlcoholic,
+				isAlcoholic: updatedIsAlcoholic,
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});
 
 	it('should not be able to update an ingredient name to an existing name', async () => {
-		const createdCategory = await categoriesRepository.create({ translations, is_alcoholic });
+		const createdCategory = await categoriesRepository.create({ translations, isAlcoholic });
 
-		await categoriesRepository.create({ translations: updatedTranslations, is_alcoholic: updatedIsAlcoholic });
+		await categoriesRepository.create({ translations: updatedTranslations, isAlcoholic: updatedIsAlcoholic });
 
 		await expect(
 			service.execute({
-				id: createdCategory._id.toString(),
+				id: createdCategory.id,
 				translations: updatedTranslations,
-				is_alcoholic: updatedIsAlcoholic,
+				isAlcoholic: updatedIsAlcoholic,
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});

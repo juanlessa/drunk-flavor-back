@@ -8,17 +8,17 @@ let repository: UnitsRepositoryInMemory;
 let service: ListUnitsService;
 const units = [
 	createUnitFactory({
-		translations: { en: { name: 'cup', name_plural: 'cups' }, pt: { name: 'xícara', name_plural: 'xícaras' } },
+		translations: { en: { name: 'cup', namePlural: 'cups' }, pt: { name: 'xícara', namePlural: 'xícaras' } },
 		kind: 'volume',
 	}),
 	createUnitFactory({
-		translations: { en: { name: 'gram', name_plural: 'grams' }, pt: { name: 'grama', name_plural: 'gramas' } },
+		translations: { en: { name: 'gram', namePlural: 'grams' }, pt: { name: 'grama', namePlural: 'gramas' } },
 		kind: 'mass',
 	}),
 	createUnitFactory({
 		translations: {
-			en: { name: 'piece', name_plural: 'pieces' },
-			pt: { name: 'unidade', name_plural: 'unidades' },
+			en: { name: 'piece', namePlural: 'pieces' },
+			pt: { name: 'unidade', namePlural: 'unidades' },
 		},
 		kind: 'count',
 	}),
@@ -36,11 +36,11 @@ describe('List Units', () => {
 	it('searches translated singular names', async () =>
 		expect(await service.execute({ query: { search: { 'translations.en.name': 'gram' } } })).toHaveLength(1));
 	it('searches translated plural names', async () =>
-		expect(await service.execute({ query: { search: { 'translations.en.name_plural': 'pieces' } } })).toHaveLength(
+		expect(await service.execute({ query: { search: { 'translations.en.namePlural': 'pieces' } } })).toHaveLength(
 			1,
 		));
 	it('sorts translated plural names', async () => {
-		const found = await service.execute({ query: { sort: { 'translations.en.name_plural': -1 } } });
+		const found = await service.execute({ query: { sort: { 'translations.en.namePlural': -1 } } });
 		expect(found.map((unit) => unit.translations.en.name)).toEqual(['piece', 'gram', 'cup']);
 	});
 });

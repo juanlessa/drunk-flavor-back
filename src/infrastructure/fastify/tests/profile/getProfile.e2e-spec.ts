@@ -10,7 +10,7 @@ import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
 import { Roles } from '@/shared/accessControl/roles';
 
 type ProfileResponseBody = {
-	authentication_methods: {
+	authenticationMethods: {
 		password: { enabled: boolean };
 		providers: string[];
 	};
@@ -37,7 +37,7 @@ describe('Get Profile', () => {
 		const response = await request(app.server).get('/me').set('Cookie', cookies).send();
 
 		expect(response.status).toBe(HTTP_STATUS.ok);
-		expect((response.body as ProfileResponseBody).authentication_methods).toEqual({
+		expect((response.body as ProfileResponseBody).authenticationMethods).toEqual({
 			password: { enabled: true },
 			providers: [],
 		});

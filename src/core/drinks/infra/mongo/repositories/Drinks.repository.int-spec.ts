@@ -9,32 +9,32 @@ import { Unit } from '@/core/drinks/entities/unit.entity';
 import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 
 const buildCategory = (): Category => ({
-	_id: new ObjectId(),
+	id: new ObjectId().toString(),
 	translations: { en: { name: 'Syrup' }, pt: { name: 'Xarope' } },
-	is_alcoholic: false,
-	created_at: new Date(),
-	updated_at: new Date(),
+	isAlcoholic: false,
+	createdAt: new Date(),
+	updatedAt: new Date(),
 });
 
 const buildUnit = (): Unit => ({
-	_id: new ObjectId(),
+	id: new ObjectId().toString(),
 	translations: {
-		en: { name: 'milliliter', name_plural: 'milliliters' },
-		pt: { name: 'mililitro', name_plural: 'mililitros' },
+		en: { name: 'milliliter', namePlural: 'milliliters' },
+		pt: { name: 'mililitro', namePlural: 'mililitros' },
 	},
-	allow_decimal: true,
+	allowDecimal: true,
 	kind: 'volume',
-	created_at: new Date(),
-	updated_at: new Date(),
+	createdAt: new Date(),
+	updatedAt: new Date(),
 });
 
 const buildIngredient = (): Ingredient => ({
-	_id: new ObjectId(),
+	id: new ObjectId().toString(),
 	translations: { en: { name: 'Lime' }, pt: { name: 'Limão' } },
 	category: buildCategory(),
 	unit: buildUnit(),
-	created_at: new Date(),
-	updated_at: new Date(),
+	createdAt: new Date(),
+	updatedAt: new Date(),
 });
 
 const buildDrink = (name: { en: string; pt: string }): CreateDrink => ({
@@ -63,7 +63,7 @@ describe('DrinksRepository (integration)', () => {
 	it('returns lean documents without __v', async () => {
 		const created = await repository.create(buildDrink({ en: 'Caipirinha', pt: 'Caipirinha BR' }));
 
-		const byId = await repository.findById(created._id.toString());
+		const byId = await repository.findById(created.id);
 		const byName = await repository.findByName({ en: { name: 'Caipirinha' } });
 		const [listed] = await repository.findAll({});
 
@@ -74,7 +74,7 @@ describe('DrinksRepository (integration)', () => {
 
 	it('round-trips a drink with nested ingredient embedding category and unit', async () => {
 		const created = await repository.create(buildDrink({ en: 'Mojito', pt: 'Mojito BR' }));
-		const byId = await repository.findById(created._id.toString());
+		const byId = await repository.findById(created.id);
 
 		expect(byId?.ingredients).toHaveLength(1);
 		expect(byId?.ingredients[0].quantity).toBe(60);
@@ -99,7 +99,7 @@ describe('DrinksRepository (integration)', () => {
 
 		const created = await repository.create(buildDrink({ en: 'Daiquiri', pt: 'Daiquiri BR' }));
 		const updated = await repository.update({
-			id: created._id.toString(),
+			id: created.id,
 			translations: { en: { name: 'Daiquiri Reserve' } },
 		});
 		expect(updated.translations.en.name).toBe('Daiquiri Reserve');
@@ -135,7 +135,7 @@ describe('DrinksRepository (integration)', () => {
 		const other = await repository.create(buildDrink({ en: 'Paloma', pt: 'Paloma BR' }));
 
 		await expect(
-			repository.update({ id: other._id.toString(), translations: { en: { name: 'Margarita' } } }),
+			repository.update({ id: other.id, translations: { en: { name: 'Margarita' } } }),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});
 
@@ -152,18 +152,18 @@ describe('DrinksRepository (integration)', () => {
 				ingredients: [],
 				avg_rating: 0,
 				ratings_count: 0,
-				created_at: sharedDate,
-				updated_at: sharedDate,
+				createdAt: sharedDate,
+				updatedAt: sharedDate,
 			})),
 		);
 
 		const expectedOrder = [...ids].map((id) => id.toString()).sort((a, b) => (a > b ? -1 : 1));
 
-		const firstPage = await repository.findAll({ page: 1, limit: 2, sort: { created_at: -1 } });
-		const secondPage = await repository.findAll({ page: 2, limit: 2, sort: { created_at: -1 } });
+		const firstPage = await repository.findAll({ page: 1, limit: 2, sort: { createdAt: -1 } });
+		const secondPage = await repository.findAll({ page: 2, limit: 2, sort: { createdAt: -1 } });
 
-		expect(firstPage.map((item) => item._id.toString())).toEqual(expectedOrder.slice(0, 2));
-		expect(secondPage.map((item) => item._id.toString())).toEqual(expectedOrder.slice(2, 3));
+		expect(firstPage.map((item) => item.id)).toEqual(expectedOrder.slice(0, 2));
+		expect(secondPage.map((item) => item.id)).toEqual(expectedOrder.slice(2, 3));
 	});
 
 	it('succeeds with no sort supplied', async () => {

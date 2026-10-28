@@ -36,7 +36,7 @@ describe('Get Profile', () => {
 
 		const result = await service.execute({ id: user.id });
 
-		expect(result.authentication_methods).toEqual({
+		expect(result.authenticationMethods).toEqual({
 			password: { enabled: false },
 			providers: [IdentityProviders.google],
 		});
@@ -56,7 +56,7 @@ describe('Get Profile', () => {
 
 		const result = await service.execute({ id: user.id });
 
-		expect(result.authentication_methods).toEqual({
+		expect(result.authenticationMethods).toEqual({
 			password: { enabled: true },
 			providers: [IdentityProviders.google],
 		});

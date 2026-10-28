@@ -10,6 +10,20 @@ export const isPlainObject = (value: unknown): value is Record<string, unknown> 
 	return prototype === Object.prototype || prototype === null;
 };
 
+export const toMongoUpdateSet = (source: Record<string, unknown>, prefix = ''): Record<string, unknown> =>
+	Object.entries(source).reduce<Record<string, unknown>>((update, [key, value]) => {
+		if (value === undefined) {
+			return update;
+		}
+
+		const path = prefix ? `${prefix}.${key}` : key;
+		if (isPlainObject(value)) {
+			return { ...update, ...toMongoUpdateSet(value, path) };
+		}
+
+		return { ...update, [path]: value };
+	}, {});
+
 const normalizeNull = (value: unknown, nullHandling: NullHandling): unknown =>
 	value === null && nullHandling !== 'preserve' ? undefined : value;
 

@@ -25,7 +25,7 @@ export class GetProfileService {
 
 		return {
 			...toUserView(user),
-			authentication_methods: {
+			authenticationMethods: {
 				password: { enabled: passwordEnabled },
 				providers,
 			},

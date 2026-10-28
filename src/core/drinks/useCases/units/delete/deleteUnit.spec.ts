@@ -15,8 +15,8 @@ describe('Delete Unit', () => {
 	});
 	it('deletes an existing unit', async () => {
 		const created = await repository.create(createUnitFactory());
-		await service.execute({ id: created._id.toString() });
-		expect(await repository.findById(created._id.toString())).toBeNull();
+		await service.execute({ id: created.id });
+		expect(await repository.findById(created.id)).toBeNull();
 	});
 	it('rejects a nonexistent unit', async () => {
 		await expect(service.execute({ id: new ObjectId().toString() })).rejects.toBeInstanceOf(BadRequestError);

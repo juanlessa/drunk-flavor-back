@@ -33,7 +33,7 @@ describe('Delete Ingredient', () => {
 
 		createdCategory = await categoriesRepository.create({
 			translations: categoryTranslations,
-			is_alcoholic: false,
+			isAlcoholic: false,
 		});
 		createdUnit = await unitsRepository.create(createUnitFactory());
 	});
@@ -44,9 +44,9 @@ describe('Delete Ingredient', () => {
 			unit: createdUnit,
 		});
 
-		await service.execute({ id: createdIngredient._id.toString() });
+		await service.execute({ id: createdIngredient.id });
 
-		const findDeledIngredient = await ingredientsRepository.findById(createdIngredient._id.toString());
+		const findDeledIngredient = await ingredientsRepository.findById(createdIngredient.id);
 
 		expect(findDeledIngredient).toBeNull();
 	});

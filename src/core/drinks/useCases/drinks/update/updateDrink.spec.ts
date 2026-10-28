@@ -46,7 +46,7 @@ describe('Update Drink', () => {
 		drinksRepository = new DrinksRepositoryInMemory();
 		service = new UpdateDrinkService(drinksRepository, ingredientsRepository);
 
-		const category = await categoriesRepository.create({ translations: categoryTranslations, is_alcoholic: false });
+		const category = await categoriesRepository.create({ translations: categoryTranslations, isAlcoholic: false });
 		const unit = await unitsRepository.create(createUnitFactory());
 		ingredient = await ingredientsRepository.create({
 			translations: translationsIngredient,
@@ -61,12 +61,12 @@ describe('Update Drink', () => {
 
 	it('should be able to update a drink', async () => {
 		await service.execute({
-			id: createdDrink._id.toString(),
+			id: createdDrink.id,
 			translations: updatedTranslations,
-			ingredients: [{ quantity: 60, ingredient_id: ingredient._id.toString() }],
+			ingredients: [{ quantity: 60, ingredientId: ingredient.id }],
 		});
 
-		const findUpdatedDrink = (await drinksRepository.findById(createdDrink._id.toString())) as Drink;
+		const findUpdatedDrink = (await drinksRepository.findById(createdDrink.id)) as Drink;
 
 		expect(findUpdatedDrink.translations).toEqual(updatedTranslations);
 		expect(findUpdatedDrink.ingredients.length).toEqual(1);
@@ -78,7 +78,7 @@ describe('Update Drink', () => {
 			service.execute({
 				id: new ObjectId().toString(),
 				translations: updatedTranslations,
-				ingredients: [{ quantity: 60, ingredient_id: ingredient._id.toString() }],
+				ingredients: [{ quantity: 60, ingredientId: ingredient.id }],
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});
@@ -91,9 +91,9 @@ describe('Update Drink', () => {
 
 		await expect(
 			service.execute({
-				id: createdDrink._id.toString(),
+				id: createdDrink.id,
 				translations: updatedTranslations,
-				ingredients: [{ quantity: 60, ingredient_id: ingredient._id.toString() }],
+				ingredients: [{ quantity: 60, ingredientId: ingredient.id }],
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});
@@ -101,9 +101,9 @@ describe('Update Drink', () => {
 	it('should not be able to update a drink with a nonexistent ingredient', async () => {
 		await expect(
 			service.execute({
-				id: createdDrink._id.toString(),
+				id: createdDrink.id,
 				translations: updatedTranslations,
-				ingredients: [{ quantity: 60, ingredient_id: new ObjectId().toString() }],
+				ingredients: [{ quantity: 60, ingredientId: new ObjectId().toString() }],
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});

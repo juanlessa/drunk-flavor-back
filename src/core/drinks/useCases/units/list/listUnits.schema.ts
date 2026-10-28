@@ -5,10 +5,10 @@ import { stringifiedJSONSchema } from '@/shared/schemas/stringified.schemas';
 import { z } from 'zod/v4';
 
 const searchSchema = z.object({
-	...generateTranslationsFieldSchema(unitTranslationSchema, ['name', 'name_plural'], searchTermSchema).shape,
+	...generateTranslationsFieldSchema(unitTranslationSchema, ['name', 'namePlural'], searchTermSchema).shape,
 });
 const sortSchema = z.object({
-	...generateTranslationsFieldSchema(unitTranslationSchema, ['name', 'name_plural'], sortOrderSchema).shape,
+	...generateTranslationsFieldSchema(unitTranslationSchema, ['name', 'namePlural'], sortOrderSchema).shape,
 });
 
 export const listUnitsQuerySchema = z.object({

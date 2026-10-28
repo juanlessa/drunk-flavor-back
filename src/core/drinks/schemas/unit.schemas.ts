@@ -38,5 +38,5 @@ export const unitKindValidation = z.enum(['volume', 'mass', 'count', 'informal']
 
 export const unitTranslationSchema = z.object({
 	name: unitNameValidation,
-	name_plural: unitNamePluralValidation,
+	namePlural: unitNamePluralValidation,
 });

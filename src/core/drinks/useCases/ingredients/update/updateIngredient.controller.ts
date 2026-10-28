@@ -1,14 +1,9 @@
-import { UpdateIngredientReqBody } from './updateIngredient.dtos';
 import { Controller } from '@/infrastructure/fastify/types/fastify.types';
-import { resolveUpdateIngredientService } from './updateIngredient.container';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
+import { resolveUpdateIngredientService } from './updateIngredient.container';
+import { UpdateIngredientReqBody } from './updateIngredient.dtos';
 
 export const updateIngredientController: Controller<{ Body: UpdateIngredientReqBody }> = async (request, reply) => {
-	const { id, translations, category_id, unit_id } = request.body;
-
-	const service = resolveUpdateIngredientService();
-
-	await service.execute({ id, translations, category_id, unit_id });
-
+	await resolveUpdateIngredientService().execute(request.body);
 	return reply.status(HTTP_STATUS.no_content).send();
 };

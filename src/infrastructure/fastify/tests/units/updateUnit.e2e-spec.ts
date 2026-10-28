@@ -5,7 +5,6 @@ import { app } from '@/infrastructure/fastify/app';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { Roles } from '@/shared/accessControl/roles';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
-import { ObjectId } from 'mongodb';
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
@@ -23,12 +22,12 @@ describe('Update Unit', () => {
 		const { id } = await createUnit();
 		const data = createUnitFactory({
 			translations: {
-				en: { name: ' GRAM ', name_plural: ' GRAMS ' },
-				pt: { name: ' GRAMA ', name_plural: ' GRAMAS ' },
+				en: { name: ' GRAM ', namePlural: ' GRAMS ' },
+				pt: { name: ' GRAMA ', namePlural: ' GRAMAS ' },
 			},
 			symbol: ' g ',
-			space_before_symbol: false,
-			allow_decimal: false,
+			spaceBeforeSymbol: false,
+			allowDecimal: false,
 			kind: 'mass',
 		});
 		expect(

@@ -1,4 +1,4 @@
-import { IDrinksModule } from '@/shared/providers/moduleCommunication/drinks';
+import { IDrinksModule } from '@/core/drinks/public';
 import { IRatingsRepository } from '@/core/engagement/repositories/IRatings.repository';
 import { BadRequestError } from '@/shared/error/error.lib';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';

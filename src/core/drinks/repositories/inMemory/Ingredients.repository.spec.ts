@@ -7,23 +7,23 @@ import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { NotFoundError } from '@/shared/error/error.lib';
 
 const buildCategory = (): Category => ({
-	_id: new ObjectId(),
+	id: new ObjectId().toString(),
 	translations: { en: { name: 'Syrup' }, pt: { name: 'Xarope' } },
-	is_alcoholic: false,
-	created_at: new Date(),
-	updated_at: new Date(),
+	isAlcoholic: false,
+	createdAt: new Date(),
+	updatedAt: new Date(),
 });
 
 const buildUnit = (): Unit => ({
-	_id: new ObjectId(),
+	id: new ObjectId().toString(),
 	translations: {
-		en: { name: 'milliliter', name_plural: 'milliliters' },
-		pt: { name: 'mililitro', name_plural: 'mililitros' },
+		en: { name: 'milliliter', namePlural: 'milliliters' },
+		pt: { name: 'mililitro', namePlural: 'mililitros' },
 	},
-	allow_decimal: true,
+	allowDecimal: true,
 	kind: 'volume',
-	created_at: new Date(),
-	updated_at: new Date(),
+	createdAt: new Date(),
+	updatedAt: new Date(),
 });
 
 const createIngredient = (
@@ -47,15 +47,9 @@ describe('IngredientsRepositoryInMemory', () => {
 		const first = await createIngredient(repository, { en: 'Lime', pt: 'Limão' });
 		const second = await createIngredient(repository, { en: 'Mint', pt: 'Hortelã' });
 
-		const result = await repository.findByIdList([
-			first._id.toString(),
-			second._id.toString(),
-			new ObjectId().toString(),
-		]);
+		const result = await repository.findByIdList([first.id, second.id, new ObjectId().toString()]);
 
-		expect(result.map((ingredient) => ingredient._id.toString()).sort()).toEqual(
-			[first._id.toString(), second._id.toString()].sort(),
-		);
+		expect(result.map((ingredient) => ingredient.id).sort()).toEqual([first.id, second.id].sort());
 	});
 
 	it('findByIdList returns an empty array for an empty or no-match id list', async () => {
@@ -71,12 +65,12 @@ describe('IngredientsRepositoryInMemory', () => {
 		).rejects.toBeInstanceOf(NotFoundError);
 	});
 
-	it('deep-merges on update and refreshes updated_at', async () => {
+	it('deep-merges on update and refreshes updatedAt', async () => {
 		const created = await createIngredient(repository, { en: 'Lime', pt: 'Limão' });
-		const originalUpdatedAt = created.updated_at.getTime();
+		const originalUpdatedAt = created.updatedAt.getTime();
 
 		const updated = await repository.update({
-			id: created._id.toString(),
+			id: created.id,
 			translations: { en: { name: 'Lemon' } },
 		});
 
@@ -84,7 +78,7 @@ describe('IngredientsRepositoryInMemory', () => {
 		// pt name and the embedded category survive the deep merge.
 		expect(updated.translations.pt.name).toBe('Limão');
 		expect(updated.category.translations.en.name).toBe('Syrup');
-		expect(updated.updated_at.getTime()).toBeGreaterThanOrEqual(originalUpdatedAt);
+		expect(updated.updatedAt.getTime()).toBeGreaterThanOrEqual(originalUpdatedAt);
 	});
 
 	it('throws NotFoundError when deleting a missing id', async () => {

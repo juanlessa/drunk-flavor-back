@@ -6,13 +6,10 @@ import { CreateCategoryDTO } from './createCategory.dtos';
 export class CreateCategoryService {
 	constructor(private categoriesRepository: ICategoriesRepository) {}
 
-	async execute({ translations, is_alcoholic }: CreateCategoryDTO) {
-		const translationsName = mapToTranslationsName(translations);
-		const categoryALreadyExists = await this.categoriesRepository.findByName(translationsName);
-		if (categoryALreadyExists) {
+	async execute({ translations, isAlcoholic }: CreateCategoryDTO): Promise<void> {
+		if (await this.categoriesRepository.findByName(mapToTranslationsName(translations))) {
 			throw new BadRequestError('apiResponses.categories.alreadyExist', { path: 'CreateCategory.service' });
 		}
-
-		await this.categoriesRepository.create({ translations, is_alcoholic });
+		await this.categoriesRepository.create({ translations, isAlcoholic });
 	}
 }

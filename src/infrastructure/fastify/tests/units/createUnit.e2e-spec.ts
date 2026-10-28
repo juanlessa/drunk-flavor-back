@@ -21,12 +21,12 @@ describe('Create Unit', () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 		const data = createUnitFactory({
 			translations: {
-				en: { name: '  MILLILITER ', name_plural: ' MILLILITERS ' },
-				pt: { name: ' MILILITRO ', name_plural: ' MILILITROS ' },
+				en: { name: '  MILLILITER ', namePlural: ' MILLILITERS ' },
+				pt: { name: ' MILILITRO ', namePlural: ' MILILITROS ' },
 			},
 			symbol: ' mL ',
-			space_before_symbol: false,
-			allow_decimal: false,
+			spaceBeforeSymbol: false,
+			allowDecimal: false,
 		});
 		const response = await request(app.server).post('/units').set('Cookie', cookies).send(data);
 		expect(response.status).toBe(HTTP_STATUS.created);

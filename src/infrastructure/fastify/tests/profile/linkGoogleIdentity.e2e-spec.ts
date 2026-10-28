@@ -21,7 +21,7 @@ const googleIdentity = {
 };
 
 type ProfileResponseBody = {
-	authentication_methods: {
+	authenticationMethods: {
 		password: { enabled: boolean };
 		providers: string[];
 	};
@@ -60,7 +60,7 @@ describe('Link Google identity', () => {
 		expect(linked.status).toBe(HTTP_STATUS.no_content);
 
 		const profile = await request(app.server).get('/me').set('Cookie', cookies);
-		expect((profile.body as ProfileResponseBody).authentication_methods).toEqual({
+		expect((profile.body as ProfileResponseBody).authenticationMethods).toEqual({
 			password: { enabled: true },
 			providers: ['google'],
 		});

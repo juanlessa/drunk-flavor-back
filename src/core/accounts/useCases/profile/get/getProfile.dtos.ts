@@ -13,5 +13,5 @@ export type ProfileAuthenticationMethods = {
 };
 
 export type ProfileView = UserView & {
-	authentication_methods: ProfileAuthenticationMethods;
+	authenticationMethods: ProfileAuthenticationMethods;
 };

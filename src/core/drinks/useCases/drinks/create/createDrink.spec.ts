@@ -42,7 +42,7 @@ describe('Create Drink', () => {
 
 		createdCategory = await categoriesRepository.create({
 			translations: categoryTranslations,
-			is_alcoholic: false,
+			isAlcoholic: false,
 		});
 		createdUnit = await unitsRepository.create(createUnitFactory());
 		createdIngredient = await ingredientsRepository.create({
@@ -55,27 +55,27 @@ describe('Create Drink', () => {
 	it('should be able to create a new Drink', async () => {
 		const id = await service.execute({
 			translations,
-			ingredients: [{ ingredient_id: createdIngredient._id.toString(), quantity: 60 }],
+			ingredients: [{ ingredientId: createdIngredient.id, quantity: 60 }],
 		});
 
 		const created = (await drinksRepository.findByName(translations)) as Drink;
 
-		expect(created).toHaveProperty('_id');
+		expect(created).toHaveProperty('id');
 		expect(created.translations).toEqual(translations);
 		expect(created.ingredients.length).toEqual(1);
-		expect(id).toEqual(created._id.toString());
+		expect(id).toEqual(created.id);
 	});
 
 	it('should initialize the Drink aggregate fields to zero', async () => {
 		await service.execute({
 			translations,
-			ingredients: [{ ingredient_id: createdIngredient._id.toString(), quantity: 60 }],
+			ingredients: [{ ingredientId: createdIngredient.id, quantity: 60 }],
 		});
 
 		const created = (await drinksRepository.findByName(translations)) as Drink;
 
-		expect(created.avg_rating).toBe(0);
-		expect(created.ratings_count).toBe(0);
+		expect(created.avgRating).toBe(0);
+		expect(created.ratingsCount).toBe(0);
 	});
 
 	it('should not be able to create a drink with an existing name', async () => {
@@ -87,7 +87,7 @@ describe('Create Drink', () => {
 		await expect(
 			service.execute({
 				translations,
-				ingredients: [{ ingredient_id: createdIngredient._id.toString(), quantity: 60 }],
+				ingredients: [{ ingredientId: createdIngredient.id, quantity: 60 }],
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});
@@ -96,7 +96,7 @@ describe('Create Drink', () => {
 		await expect(
 			service.execute({
 				translations,
-				ingredients: [{ ingredient_id: new ObjectId().toString(), quantity: 60 }],
+				ingredients: [{ ingredientId: new ObjectId().toString(), quantity: 60 }],
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});

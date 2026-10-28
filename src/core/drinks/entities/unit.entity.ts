@@ -1,5 +1,5 @@
-import { DatabaseCommonInfo } from '@/infrastructure/mongo/types';
 import { Translations } from '@/core/drinks/types/translations';
+import { EntityMetadata } from '@/shared/types/entity.types';
 
 export const UnitKinds = {
 	volume: 'volume',
@@ -12,13 +12,13 @@ export type UnitKind = (typeof UnitKinds)[keyof typeof UnitKinds];
 
 export type UnitTranslation = {
 	name: string;
-	name_plural: string;
+	namePlural: string;
 };
 
-export type Unit = DatabaseCommonInfo & {
+export type Unit = EntityMetadata & {
 	translations: Translations<UnitTranslation>;
 	symbol?: string;
-	space_before_symbol?: boolean;
-	allow_decimal: boolean;
+	spaceBeforeSymbol?: boolean;
+	allowDecimal: boolean;
 	kind: UnitKind;
 };

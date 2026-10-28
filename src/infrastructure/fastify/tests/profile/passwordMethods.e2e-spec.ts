@@ -20,7 +20,7 @@ const googleIdentity = {
 };
 
 type ProfileResponseBody = {
-	authentication_methods: {
+	authenticationMethods: {
 		password: { enabled: boolean };
 		providers: string[];
 	};
@@ -52,7 +52,7 @@ describe('Profile password methods', () => {
 		const cookies = googleLogin.headers['set-cookie'];
 
 		const before = await request(app.server).get('/me').set('Cookie', cookies);
-		expect((before.body as ProfileResponseBody).authentication_methods).toEqual({
+		expect((before.body as ProfileResponseBody).authenticationMethods).toEqual({
 			password: { enabled: false },
 			providers: ['google'],
 		});
@@ -68,7 +68,7 @@ describe('Profile password methods', () => {
 		expect(created.status).toBe(HTTP_STATUS.no_content);
 
 		const after = await request(app.server).get('/me').set('Cookie', cookies);
-		expect((after.body as ProfileResponseBody).authentication_methods).toEqual({
+		expect((after.body as ProfileResponseBody).authenticationMethods).toEqual({
 			password: { enabled: true },
 			providers: ['google'],
 		});

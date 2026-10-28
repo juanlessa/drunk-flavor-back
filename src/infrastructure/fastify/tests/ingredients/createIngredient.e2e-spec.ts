@@ -31,25 +31,25 @@ describe('Create Ingredient', () => {
 
 	it('Should be able to create an ingredient', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
-		const { id: category_id } = await createCategory();
-		const { id: unit_id } = await createUnit();
+		const { id: categoryId } = await createCategory();
+		const { id: unitId } = await createUnit();
 
 		const { translations } = createIngredientFactory();
 
 		const response = await request(app.server)
 			.post('/ingredients')
 			.set('Cookie', cookies)
-			.send({ translations, category_id, unit_id });
+			.send({ translations, categoryId, unitId });
 
 		expect(response.status).toBe(HTTP_STATUS.created);
 	});
 
 	it('Should not be able to create an ingredient when unauthenticated', async () => {
-		const { id: category_id } = await createCategory();
-		const { id: unit_id } = await createUnit();
+		const { id: categoryId } = await createCategory();
+		const { id: unitId } = await createUnit();
 		const { translations } = createIngredientFactory();
 
-		const response = await request(app.server).post('/ingredients').send({ translations, category_id, unit_id });
+		const response = await request(app.server).post('/ingredients').send({ translations, categoryId, unitId });
 
 		expect(response.status).toBe(HTTP_STATUS.unauthorized);
 	});
@@ -59,14 +59,14 @@ describe('Create Ingredient', () => {
 			email: 'member@example.com',
 			role: Roles.member,
 		});
-		const { id: category_id } = await createCategory();
-		const { id: unit_id } = await createUnit();
+		const { id: categoryId } = await createCategory();
+		const { id: unitId } = await createUnit();
 		const { translations } = createIngredientFactory();
 
 		const response = await request(app.server)
 			.post('/ingredients')
 			.set('Cookie', cookies)
-			.send({ translations, category_id, unit_id });
+			.send({ translations, categoryId, unitId });
 
 		expect(response.status).toBe(HTTP_STATUS.forbidden);
 	});
@@ -76,14 +76,14 @@ describe('Create Ingredient', () => {
 			email: 'partner@example.com',
 			role: Roles.partner,
 		});
-		const { id: category_id } = await createCategory();
-		const { id: unit_id } = await createUnit();
+		const { id: categoryId } = await createCategory();
+		const { id: unitId } = await createUnit();
 		const { translations } = createIngredientFactory();
 
 		const response = await request(app.server)
 			.post('/ingredients')
 			.set('Cookie', cookies)
-			.send({ translations, category_id, unit_id });
+			.send({ translations, categoryId, unitId });
 
 		expect(response.status).not.toBe(HTTP_STATUS.forbidden);
 	});

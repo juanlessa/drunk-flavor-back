@@ -36,7 +36,7 @@ describe('Update User Role', () => {
 		const userToUpdate = await createUser(app, { email: 'partner@example.com', role: Roles.member });
 
 		const adminResponse = await request(app.server).patch('/users/role').set('Cookie', adminCookies).send({
-			user_id: userToUpdate.id,
+			userId: userToUpdate.id,
 			role: Roles.partner,
 		});
 		expect(adminResponse.status).toBe(HTTP_STATUS.no_content);
@@ -122,7 +122,7 @@ describe('Update User Role', () => {
 			role: Roles.owner,
 		});
 		const ownerResponse = await request(app.server).patch('/users/role').set('Cookie', ownerCookies).send({
-			user_id: adminUser.id,
+			userId: adminUser.id,
 			role: Roles.partner,
 		});
 		expect(ownerResponse.status).toBe(HTTP_STATUS.no_content);
@@ -162,7 +162,7 @@ describe('Update User Role', () => {
 		const userToUpdate = await createUser(app, { email: 'member@example.com', role: Roles.member });
 
 		const response = await request(app.server).patch('/users/role').send({
-			user_id: userToUpdate.id,
+			userId: userToUpdate.id,
 			role: Roles.partner,
 		});
 

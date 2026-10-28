@@ -30,7 +30,7 @@ describe('Update Ingredient', () => {
 
 	it('Should be able to update an ingredient', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
-		const { id, category_id, unit_id } = await createIngredient();
+		const { id, categoryId, unitId } = await createIngredient();
 
 		const { translations } = createIngredientFactory({
 			translations: {
@@ -42,18 +42,16 @@ describe('Update Ingredient', () => {
 		const response = await request(app.server)
 			.patch('/ingredients')
 			.set('Cookie', cookies)
-			.send({ id, translations, category_id, unit_id });
+			.send({ id, translations, categoryId, unitId });
 
 		expect(response.status).toBe(HTTP_STATUS.no_content);
 	});
 
 	it('Should not be able to update an ingredient when unauthenticated', async () => {
-		const { id, category_id, unit_id } = await createIngredient();
+		const { id, categoryId, unitId } = await createIngredient();
 		const { translations } = createIngredientFactory();
 
-		const response = await request(app.server)
-			.patch('/ingredients')
-			.send({ id, translations, category_id, unit_id });
+		const response = await request(app.server).patch('/ingredients').send({ id, translations, categoryId, unitId });
 
 		expect(response.status).toBe(HTTP_STATUS.unauthorized);
 	});
@@ -63,13 +61,13 @@ describe('Update Ingredient', () => {
 			email: 'member@example.com',
 			role: Roles.member,
 		});
-		const { id, category_id, unit_id } = await createIngredient();
+		const { id, categoryId, unitId } = await createIngredient();
 		const { translations } = createIngredientFactory();
 
 		const response = await request(app.server)
 			.patch('/ingredients')
 			.set('Cookie', cookies)
-			.send({ id, translations, category_id, unit_id });
+			.send({ id, translations, categoryId, unitId });
 
 		expect(response.status).toBe(HTTP_STATUS.forbidden);
 	});

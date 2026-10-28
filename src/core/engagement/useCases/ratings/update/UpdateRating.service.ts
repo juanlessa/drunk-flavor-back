@@ -1,4 +1,4 @@
-import { IDrinksModule } from '@/shared/providers/moduleCommunication/drinks';
+import { IDrinksModule } from '@/core/drinks/public';
 import { IRatingsRepository } from '@/core/engagement/repositories/IRatings.repository';
 import { defineAbilityFor } from '@/shared/accessControl';
 import { ratingPermissionSchema } from '@/shared/accessControl/entities/rating';

@@ -1,4 +1,4 @@
-import { IDrinksModule } from '@/shared/providers/moduleCommunication/drinks';
+import { IDrinksModule } from '@/core/drinks/public';
 import { Actor } from '@/shared/accessControl/actor.types';
 import { IRatingsRepository } from '@/core/engagement/repositories/IRatings.repository';
 import { RatingsRepositoryInMemory } from '@/core/engagement/repositories/inMemory/Ratings.repository';
@@ -18,6 +18,7 @@ const drinkId = new ObjectId().toString();
 const owner: Actor = { id: ownerId, role: Roles.member };
 const foreign: Actor = { id: new ObjectId().toString(), role: Roles.member };
 const drinksModule: IDrinksModule = {
+	findDrinkById: vi.fn().mockResolvedValue(null),
 	applyRatingDelta: vi.fn().mockResolvedValue({ average: 2, count: 1 }),
 };
 const transactionManager = new FakeTransactionManager();

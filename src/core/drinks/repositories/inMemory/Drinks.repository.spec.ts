@@ -7,32 +7,32 @@ import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { NotFoundError } from '@/shared/error/error.lib';
 
 const buildCategory = (): Category => ({
-	_id: new ObjectId(),
+	id: new ObjectId().toString(),
 	translations: { en: { name: 'Syrup' }, pt: { name: 'Xarope' } },
-	is_alcoholic: false,
-	created_at: new Date(),
-	updated_at: new Date(),
+	isAlcoholic: false,
+	createdAt: new Date(),
+	updatedAt: new Date(),
 });
 
 const buildUnit = (): Unit => ({
-	_id: new ObjectId(),
+	id: new ObjectId().toString(),
 	translations: {
-		en: { name: 'milliliter', name_plural: 'milliliters' },
-		pt: { name: 'mililitro', name_plural: 'mililitros' },
+		en: { name: 'milliliter', namePlural: 'milliliters' },
+		pt: { name: 'mililitro', namePlural: 'mililitros' },
 	},
-	allow_decimal: true,
+	allowDecimal: true,
 	kind: 'volume',
-	created_at: new Date(),
-	updated_at: new Date(),
+	createdAt: new Date(),
+	updatedAt: new Date(),
 });
 
 const buildIngredient = (): Ingredient => ({
-	_id: new ObjectId(),
+	id: new ObjectId().toString(),
 	translations: { en: { name: 'Lime' }, pt: { name: 'Limão' } },
 	category: buildCategory(),
 	unit: buildUnit(),
-	created_at: new Date(),
-	updated_at: new Date(),
+	createdAt: new Date(),
+	updatedAt: new Date(),
 });
 
 let repository: DrinksRepositoryInMemory;
@@ -42,7 +42,7 @@ describe('DrinksRepositoryInMemory', () => {
 		repository = new DrinksRepositoryInMemory();
 	});
 
-	it('forces cover/thumbnail to undefined and aggregate fields to zero, assigning _id and timestamps', async () => {
+	it('forces cover/thumbnail to undefined and aggregate fields to zero, assigning id and timestamps', async () => {
 		const created = await repository.create({
 			translations: {
 				en: { name: 'Caipirinha', method: 'Muddle and stir' },
@@ -53,11 +53,12 @@ describe('DrinksRepositoryInMemory', () => {
 
 		expect(created.cover).toBeUndefined();
 		expect(created.thumbnail).toBeUndefined();
-		expect(created.avg_rating).toBe(0);
-		expect(created.ratings_count).toBe(0);
-		expect(created._id).toBeInstanceOf(ObjectId);
-		expect(created.created_at).toBeInstanceOf(Date);
-		expect(created.updated_at).toBeInstanceOf(Date);
+		expect(created.avgRating).toBe(0);
+		expect(created.ratingsCount).toBe(0);
+		expect(created.id).toEqual(expect.any(String));
+		expect(created.id).not.toHaveLength(0);
+		expect(created.createdAt).toBeInstanceOf(Date);
+		expect(created.updatedAt).toBeInstanceOf(Date);
 	});
 
 	it('finds a drink by name across languages', async () => {
@@ -80,7 +81,7 @@ describe('DrinksRepositoryInMemory', () => {
 		).rejects.toBeInstanceOf(NotFoundError);
 	});
 
-	it('deep-merges on update and refreshes updated_at', async () => {
+	it('deep-merges on update and refreshes updatedAt', async () => {
 		const created = await repository.create({
 			translations: {
 				en: { name: 'Negroni', method: 'Stir' },
@@ -88,10 +89,10 @@ describe('DrinksRepositoryInMemory', () => {
 			},
 			ingredients: [],
 		});
-		const originalUpdatedAt = created.updated_at.getTime();
+		const originalUpdatedAt = created.updatedAt.getTime();
 
 		const updated = await repository.update({
-			id: created._id.toString(),
+			id: created.id,
 			translations: { en: { name: 'Negroni Sbagliato' } },
 		});
 
@@ -99,7 +100,7 @@ describe('DrinksRepositoryInMemory', () => {
 		// Untouched fields are preserved by the deep merge.
 		expect(updated.translations.en.method).toBe('Stir');
 		expect(updated.translations.pt.name).toBe('Negroni');
-		expect(updated.updated_at.getTime()).toBeGreaterThanOrEqual(originalUpdatedAt);
+		expect(updated.updatedAt.getTime()).toBeGreaterThanOrEqual(originalUpdatedAt);
 	});
 
 	it('throws NotFoundError when deleting a missing id', async () => {

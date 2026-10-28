@@ -5,15 +5,15 @@ import {
 	DRINK_TRANSLATIONS_PT_NAME_UNIQUE_INDEX,
 	DrinkModel,
 } from './drink.model';
-import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
-import { Category } from '@/core/drinks/entities/category.entity';
-import { Unit } from '@/core/drinks/entities/unit.entity';
+import { IngredientPersistence } from './ingredient.model';
+import { CategoryPersistence } from './category.model';
+import { UnitPersistence } from './unit.model';
 
 type IndexInfo = { name: string; key: Record<string, number>; unique?: boolean };
 
 const getIndexes = async (): Promise<IndexInfo[]> => (await DrinkModel.collection.indexes()) as unknown as IndexInfo[];
 
-const buildCategory = (): Category => ({
+const buildCategory = (): CategoryPersistence => ({
 	_id: new ObjectId(),
 	translations: { en: { name: 'Syrup' }, pt: { name: 'Xarope' } },
 	is_alcoholic: false,
@@ -21,7 +21,7 @@ const buildCategory = (): Category => ({
 	updated_at: new Date(),
 });
 
-const buildUnit = (): Unit => ({
+const buildUnit = (): UnitPersistence => ({
 	_id: new ObjectId(),
 	translations: {
 		en: { name: 'milliliter', name_plural: 'milliliters' },
@@ -33,7 +33,7 @@ const buildUnit = (): Unit => ({
 	updated_at: new Date(),
 });
 
-const buildIngredient = (): Ingredient => ({
+const buildIngredient = (): IngredientPersistence => ({
 	_id: new ObjectId(),
 	translations: { en: { name: 'Lime' }, pt: { name: 'Limão' } },
 	category: buildCategory(),

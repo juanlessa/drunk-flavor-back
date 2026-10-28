@@ -7,6 +7,7 @@ import {
 	requireObjectId,
 	toCamelCase,
 	toDomainEntry,
+	toMongoUpdateSet,
 	toObjectId,
 	toPersistenceEntry,
 	toSnakeCase,
@@ -99,6 +100,30 @@ describe('Mongo mapper helpers', () => {
 			_id: -1,
 			created_at: 1,
 			email_verified: 'desc',
+		});
+	});
+
+	it('flattens nested update fields while preserving arrays and non-plain values', () => {
+		const updatedAt = new Date();
+		const ownerId = new Types.ObjectId();
+		const buffer = Buffer.from('image');
+		const ingredients = [{ quantity: 30 }];
+
+		expect(
+			toMongoUpdateSet({
+				translations: { en: { name: 'Updated' } },
+				ingredients,
+				updated_at: updatedAt,
+				owner_id: ownerId,
+				buffer,
+				ignored: undefined,
+			}),
+		).toEqual({
+			'translations.en.name': 'Updated',
+			ingredients,
+			updated_at: updatedAt,
+			owner_id: ownerId,
+			buffer,
 		});
 	});
 });
