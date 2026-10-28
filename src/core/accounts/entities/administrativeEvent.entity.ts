@@ -4,6 +4,8 @@ import { UserStatus } from './user.entity';
 export const AdministrativeEventActions = {
 	userCreated: 'user.created',
 	userRoleChanged: 'user.role_changed',
+	userSuspended: 'user.suspended',
+	userReactivated: 'user.reactivated',
 	userDeleted: 'user.deleted',
 } as const;
 

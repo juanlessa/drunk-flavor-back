@@ -44,6 +44,9 @@ operation returns `403 Forbidden` for them. Generic create and role-update paylo
 | Demote admin to member/partner               |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
 | Delete member or partner                     |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
 | Delete admin                                 |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Suspend/reactivate member or partner         |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Suspend/reactivate admin                     |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Suspend/reactivate owner                     |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
 | Create, change, or delete owner generically  |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
 | Change role or delete self through `/users`  |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
 | Repeat an authorized current-role assignment | No-op | No-op |   ❌    |   ❌   |    ❌     |
@@ -189,15 +192,16 @@ is a no-op and does not increment it.
 
 Tokens claiming `owner` or `admin` are compared with the persisted version on every authenticated request. A stale
 privileged token is rejected immediately. Tokens claiming `partner` or `member` do not add a database lookup to ordinary
-requests; they may retain their old access-token permissions until expiration, but an outdated refresh token cannot
-renew the session. Revocation returns `401` with `apiResponses.auth.sessionRevoked` and clears both authentication
-cookies.
+requests; they may retain their old access-token permissions after a role change or suspension until expiration, but an
+outdated refresh token cannot renew the session. A suspended account cannot sign in. Revocation returns `401` with
+`apiResponses.auth.sessionRevoked` and clears both authentication cookies.
 
 ### Administrative audit
 
-Successful administrative user creation, role change, and deletion write an append-only `administrative_events` record
-in the same MongoDB transaction as the mutation. If the audit write fails, the administrative mutation is rolled back.
-Authorized no-op role assignments and read operations do not create events.
+Successful administrative user creation, role change, suspension, reactivation, and deletion write an append-only
+`administrative_events` record in the same MongoDB transaction as the mutation. If the audit write fails, the
+administrative mutation is rolled back. Authorized no-op role/status assignments and read operations do not create
+events.
 
 Events contain only actor and target IDs, action, minimal before/after role or status state, origin, optional request
 ID, optional reason, and occurrence time. They do not contain names, emails, credentials, tokens, session versions,
@@ -206,3 +210,13 @@ request bodies, IP addresses, or user agents.
 Authorization denials are emitted as structured security logs and are not persisted in the audit collection. The
 application exposes no audit read/update/delete repository operations or HTTP endpoints. MongoDB removes events after
 730 days through the `administrative_event_occurred_at_ttl` index.
+
+### Suspension lifecycle
+
+Only an `active` account can transition to `suspended`, and only a `suspended` account can transition back to `active`.
+An authorized request for the current state is an idempotent no-op: it does not write the user, increment
+`sessionVersion`, or create an audit event. Pending and incomplete-profile accounts cannot use these transitions.
+
+Suspension uses `POST /users/:id/suspension`; reactivation uses `POST /users/:id/reactivation`. Both require a trimmed
+administrative reason between 10 and 500 characters. The reason is retained only in the audit event. Account content and
+relationships remain unchanged, and this stage sends no email notification.

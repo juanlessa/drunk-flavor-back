@@ -36,3 +36,8 @@ export const userPasswordValidation = z
 
 export const userRoleValidation = roleSchema;
 export const userAdministrationRoleValidation = nonOwnerRoleSchema;
+export const userAdministrationReasonValidation = z
+	.string({ error: 'apiResponses.users.requiredAdministrationReason' satisfies LocaleKey })
+	.trim()
+	.min(10, { error: 'apiResponses.users.invalidAdministrationReasonMin' satisfies LocaleKey })
+	.max(500, { error: 'apiResponses.users.invalidAdministrationReasonMax' satisfies LocaleKey });

@@ -4,7 +4,7 @@
 
 **Scope:** `drunk-flavor-back` user administration
 
-**Version:** 1.3
+**Version:** 1.4
 
 ## Purpose
 
@@ -329,14 +329,20 @@ Implemented:
     instead of database events.
 16. Administrative events expire through a 730-day MongoDB TTL index and have no application update/delete repository
     operations.
+17. Suspension permits only `active -> suspended`; reactivation permits only `suspended -> active`.
+18. Authorized requests for an already-suspended/already-active target are no-ops with no version increment or audit
+    event.
+19. Suspension and reactivation require a normalized reason of 10-500 characters, stored only in the audit event.
+20. Suspended member/partner access tokens may remain usable until expiration by explicit bounded-staleness policy;
+    refresh and new sign-in are rejected. Privileged admin tokens remain subject to immediate freshness validation.
 
 Pending:
 
-1. Add suspension, reauthentication, and ownership transfer in their dedicated stages.
-2. Reuse `sessionVersion` for password changes, account recovery, suspension, and explicit administrative revocation as
-   those flows are implemented.
-3. Extend the audit action set for suspension, reactivation, ownership transfer, and emergency recovery when those flows
+1. Add reauthentication and ownership transfer in their dedicated stages.
+2. Reuse `sessionVersion` for password changes, account recovery, and explicit administrative revocation as those flows
    are implemented.
+3. Extend the audit action set for ownership transfer and emergency recovery when those flows are implemented.
+4. Replace bounded suspension staleness with an immediate revocation store if stricter enforcement becomes necessary.
 
 ## Review checklist
 

@@ -55,3 +55,10 @@ export class UserRoleTransitionInvalidError extends ConflictError {
 		this.name = 'UserRoleTransitionInvalidError';
 	}
 }
+
+export class UserStatusTransitionInvalidError extends ConflictError {
+	constructor(options: AppErrorOptions = {}) {
+		super('apiResponses.users.invalidStatusTransition', options);
+		this.name = 'UserStatusTransitionInvalidError';
+	}
+}

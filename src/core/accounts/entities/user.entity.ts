@@ -9,7 +9,7 @@ export type UserStatus = (typeof UserStatuses)[keyof typeof UserStatuses];
  *     id: string
  *     name?: string
  *     surname?: string
- *     status: UserStatus ("idle" | "pending" | "active" | "incomplete_profile")
+ *     status: UserStatus ("idle" | "pending" | "active" | "suspended" | "incomplete_profile")
  *     email: string
  *     emailVerified: boolean
  *     avatarUrl?: string

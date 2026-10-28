@@ -6,7 +6,8 @@ import { Role } from '@/shared/accessControl/roles';
 import { ForbiddenError } from '@/shared/error/error.lib';
 import { logger } from '@/shared/providers/logger';
 
-export type UserAdministrationLogAction = 'user.create' | 'user.get' | 'user.list' | 'user.change_role' | 'user.delete';
+export type UserAdministrationLogAction =
+	'user.create' | 'user.get' | 'user.list' | 'user.change_role' | 'user.suspend' | 'user.reactivate' | 'user.delete';
 
 type DeniedAdministrationDetails = {
 	action: UserAdministrationLogAction;

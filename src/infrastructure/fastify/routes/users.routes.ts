@@ -14,6 +14,16 @@ import { deleteUserSchema } from '@/core/accounts/useCases/users/delete/deleteUs
 import { deleteUserController } from '@/core/accounts/useCases/users/delete/deleteUser.controller';
 import { verifyPermissions } from '../middlewares/verifyPermissions';
 import { enforceCompleteProfile } from '../middlewares/enforceCompleteProfile';
+import {
+	suspendUserBodySchema,
+	suspendUserParamsSchema,
+} from '@/core/accounts/useCases/users/suspend/suspendUser.schema';
+import { suspendUserController } from '@/core/accounts/useCases/users/suspend/suspendUser.controller';
+import {
+	reactivateUserBodySchema,
+	reactivateUserParamsSchema,
+} from '@/core/accounts/useCases/users/reactivate/reactivateUser.schema';
+import { reactivateUserController } from '@/core/accounts/useCases/users/reactivate/reactivateUser.controller';
 
 const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
@@ -74,6 +84,31 @@ const routes: Routes = (server) => {
 			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('delete', 'User')],
 		},
 		deleteUserController,
+	);
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/users/:id/suspension',
+		{
+			schema: {
+				tags: ['Users'],
+				params: suspendUserParamsSchema,
+				body: suspendUserBodySchema,
+			},
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('suspend', 'User')],
+		},
+		suspendUserController,
+	);
+
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/users/:id/reactivation',
+		{
+			schema: {
+				tags: ['Users'],
+				params: reactivateUserParamsSchema,
+				body: reactivateUserBodySchema,
+			},
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('reactivate', 'User')],
+		},
+		reactivateUserController,
 	);
 };
 

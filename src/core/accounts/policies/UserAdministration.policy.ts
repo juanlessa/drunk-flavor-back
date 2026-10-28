@@ -1,10 +1,12 @@
 import { User } from '@/core/accounts/entities/user.entity';
+import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import {
 	AdminPeerManagementForbiddenError,
 	OwnerManagementRequiresTransferError,
 	UserAdministrationForbiddenError,
 	UserRoleTransitionInvalidError,
 	UserSelfAdministrationForbiddenError,
+	UserStatusTransitionInvalidError,
 } from '@/core/accounts/errors/user.errors';
 import { defineAbilityFor } from '@/shared/accessControl';
 import { Actor } from '@/shared/accessControl/actor.types';
@@ -24,8 +26,15 @@ export const UserRoleChangeOutcomes = {
 	noop: 'noop',
 } as const;
 
+export const UserStatusChangeOutcomes = {
+	apply: 'apply',
+	noop: 'noop',
+} as const;
+
+export type UserStatusChangeOutcome = (typeof UserStatusChangeOutcomes)[keyof typeof UserStatusChangeOutcomes];
 export type UserRoleChangeOutcome = (typeof UserRoleChangeOutcomes)[keyof typeof UserRoleChangeOutcomes];
 export type UserAdministrationTarget = Pick<User, 'id' | 'role'>;
+export type UserStatusAdministrationTarget = Pick<User, 'id' | 'role' | 'status'>;
 
 export class UserAdministrationPolicy {
 	assertCanListUsers(actor: Actor): void {
@@ -78,12 +87,26 @@ export class UserAdministrationPolicy {
 		this.assertCanMutateTarget('delete', actor, target);
 	}
 
-	assertCanSuspendUser(actor: Actor, target: UserAdministrationTarget): void {
+	assertCanSuspendUser(actor: Actor, target: UserStatusAdministrationTarget): UserStatusChangeOutcome {
 		this.assertCanMutateTarget('suspend', actor, target);
+		if (target.status === UserStatuses.suspended) {
+			return UserStatusChangeOutcomes.noop;
+		}
+		if (target.status !== UserStatuses.active) {
+			throw new UserStatusTransitionInvalidError({ path: 'UserAdministrationPolicy.suspend' });
+		}
+		return UserStatusChangeOutcomes.apply;
 	}
 
-	assertCanReactivateUser(actor: Actor, target: UserAdministrationTarget): void {
+	assertCanReactivateUser(actor: Actor, target: UserStatusAdministrationTarget): UserStatusChangeOutcome {
 		this.assertCanMutateTarget('reactivate', actor, target);
+		if (target.status === UserStatuses.active) {
+			return UserStatusChangeOutcomes.noop;
+		}
+		if (target.status !== UserStatuses.suspended) {
+			throw new UserStatusTransitionInvalidError({ path: 'UserAdministrationPolicy.reactivate' });
+		}
+		return UserStatusChangeOutcomes.apply;
 	}
 
 	assertCanTransferOwnership(actor: Actor, target: UserAdministrationTarget): void {
