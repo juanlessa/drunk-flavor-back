@@ -42,6 +42,7 @@ describe('Get Profile', () => {
 		});
 		expect(result).not.toHaveProperty('passwordHash');
 		expect(result).not.toHaveProperty('providerSubject');
+		expect(result).not.toHaveProperty('sessionVersion');
 	});
 
 	it('reports both password and Google for a hybrid account', async () => {

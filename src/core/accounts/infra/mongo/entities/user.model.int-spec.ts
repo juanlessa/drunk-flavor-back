@@ -64,7 +64,7 @@ describe('UserModel (integration)', () => {
 		});
 	});
 
-	it('applies role, status and email_verified defaults when omitted', async () => {
+	it('applies role, status, email_verified and session_version defaults when omitted', async () => {
 		// Insert through the model without role/status/email_verified so the schema defaults apply.
 		const created = await UserModel.create({
 			name: 'John',
@@ -75,6 +75,7 @@ describe('UserModel (integration)', () => {
 		expect(created.role).toBe('member');
 		expect(created.status).toBe('idle');
 		expect(created.email_verified).toBe(false);
+		expect(created.session_version).toBe(1);
 		expect(created.avatar_url).toBeUndefined();
 	});
 

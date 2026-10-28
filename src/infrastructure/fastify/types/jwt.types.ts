@@ -26,4 +26,5 @@ export type DecodedToken = {
 	sub: string;
 	role: Role;
 	status: UserStatus;
+	sessionVersion: number;
 };

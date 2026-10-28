@@ -178,3 +178,17 @@ liveness and readiness.
 | --------------------------------- | :---: | :-----: | :----: | :-------: |
 | Liveness probe (`/health/live`)   |  ✅   |   ✅    |   ✅   |    ✅     |
 | Readiness probe (`/health/ready`) |  ✅   |   ✅    |   ✅   |    ✅     |
+
+### Session freshness
+
+Every user has an internal monotonic `sessionVersion`. It is included in access tokens, refresh tokens, and the
+encrypted refresh session, but omitted from profile and user-administration responses.
+
+A role change increments the target user's version in the same transaction. An authorized assignment of the current role
+is a no-op and does not increment it.
+
+Tokens claiming `owner` or `admin` are compared with the persisted version on every authenticated request. A stale
+privileged token is rejected immediately. Tokens claiming `partner` or `member` do not add a database lookup to ordinary
+requests; they may retain their old access-token permissions until expiration, but an outdated refresh token cannot
+renew the session. Revocation returns `401` with `apiResponses.auth.sessionRevoked` and clears both authentication
+cookies.

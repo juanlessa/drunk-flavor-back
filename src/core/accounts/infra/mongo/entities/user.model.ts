@@ -40,6 +40,13 @@ const userSchemaDefinition = {
 		default: UserStatuses.idle,
 		enum: Object.values(UserStatuses),
 	},
+	session_version: {
+		type: Number,
+		required: true,
+		default: 1,
+		min: 1,
+		validate: Number.isInteger,
+	},
 } as const;
 
 /**

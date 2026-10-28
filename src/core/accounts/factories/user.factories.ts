@@ -9,4 +9,5 @@ export const createUserFactory = (user?: DeepPartial<CreateUser>): CreateUser & 
 	avatarUrl: user?.avatarUrl,
 	role: user?.role || 'member',
 	status: user?.status || 'active',
+	sessionVersion: user?.sessionVersion ?? 1,
 });

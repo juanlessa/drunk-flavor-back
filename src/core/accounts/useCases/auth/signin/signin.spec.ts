@@ -45,6 +45,7 @@ describe('Signin', () => {
 
 		expect(result).toHaveProperty('user');
 		expect(result.user.status).toBe(UserStatuses.active);
+		expect(result.user.sessionVersion).toBe(1);
 	});
 
 	it('should reject a nonexistent account with a generic unauthorized error', async () => {

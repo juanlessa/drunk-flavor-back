@@ -4,7 +4,7 @@
 
 **Scope:** `drunk-flavor-back` user administration
 
-**Version:** 1.1
+**Version:** 1.2
 
 ## Purpose
 
@@ -175,13 +175,15 @@ These rules apply even when a broad CASL rule would otherwise allow an action.
 11. A partner, member, or anonymous requester cannot use generic user-administration operations.
 12. Authorization must use the actor's current persisted role and status for security-sensitive operations. A stale
     token claim is insufficient.
-13. Role and status changes must eventually invalidate stale authorization sessions as defined by the session-versioning
-    implementation stage.
-14. Ownership transfer and privileged role changes must eventually require recent authentication as defined by the
+13. Every user has a monotonic `sessionVersion`. Role and authorization-relevant status changes increment it atomically.
+14. Tokens claiming `owner` or `admin` must match the persisted `sessionVersion` on every authenticated request.
+15. Tokens claiming `partner` or `member` may remain usable on non-sensitive routes until access-token expiration, but
+    an outdated refresh token must never renew the session.
+16. Ownership transfer and privileged role changes must eventually require recent authentication as defined by the
     reauthentication implementation stage.
-15. Administrative mutations must eventually produce immutable audit events as defined by the audit implementation
+17. Administrative mutations must eventually produce immutable audit events as defined by the audit implementation
     stage.
-16. UI visibility and client-side CASL checks are advisory only; the backend is authoritative.
+18. UI visibility and client-side CASL checks are advisory only; the backend is authoritative.
 
 ## CASL modeling rules
 
@@ -273,6 +275,7 @@ introduced later without changing the policy semantics.
 | Situation                                                 | HTTP status | Current error identifier                               |
 | --------------------------------------------------------- | :---------: | ------------------------------------------------------ |
 | Missing or invalid authentication                         |     401     | Authentication-specific `apiResponses.auth.*` key      |
+| Session version is stale or its user is no longer usable  |     401     | `apiResponses.auth.sessionRevoked`                     |
 | Recent authentication is required                         |     401     | `apiResponses.profile.recentAuthenticationRequired`    |
 | Actor lacks the requested capability                      |     403     | `apiResponses.users.administrationForbidden`           |
 | Generic administration targets the actor                  |     403     | `apiResponses.users.selfAdministrationForbidden`       |
@@ -314,11 +317,18 @@ Implemented:
 7. Role changes use `changeRole` exclusively and resolve an authorized same-role request without persistence.
 8. Create, role-change, and delete authorization is rechecked in the same transaction as the mutation.
 9. Profile self-deletion rejects the owner inside the account-deletion transaction; ownership must be transferred first.
+10. `sessionVersion` is persisted internally, included in access and refresh tokens, and omitted from user-facing views.
+11. Role changes increment `sessionVersion` atomically; authorized no-op assignments do not increment it.
+12. Tokens claiming `owner` or `admin` are checked against persistence on every request. Other roles are checked when
+    refreshing, preserving the approved bounded-staleness behavior.
+13. A revoked session returns the opaque `apiResponses.auth.sessionRevoked` response and clears both authentication
+    cookies.
 
 Pending:
 
-1. Add authorization-version invalidation, audit events, suspension, reauthentication, and ownership transfer in their
-   dedicated stages.
+1. Add audit events, suspension, reauthentication, and ownership transfer in their dedicated stages.
+2. Reuse `sessionVersion` for password changes, account recovery, suspension, and explicit administrative revocation as
+   those flows are implemented.
 
 ## Review checklist
 

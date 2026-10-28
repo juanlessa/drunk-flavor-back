@@ -33,7 +33,11 @@ export class UpdateUserRoleService {
 				return;
 			}
 
-			await this.usersRepository.update({ id: userId, role });
+			await this.usersRepository.update({
+				id: userId,
+				role,
+				sessionVersion: target.sessionVersion + 1,
+			});
 		});
 	}
 }

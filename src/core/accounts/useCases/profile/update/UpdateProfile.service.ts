@@ -19,7 +19,7 @@ export class UpdateProfileService {
 			id,
 			name,
 			surname,
-			...(shouldComplete ? { status: UserStatuses.active } : {}),
+			...(shouldComplete ? { status: UserStatuses.active, sessionVersion: user.sessionVersion + 1 } : {}),
 		});
 
 		return {
@@ -27,6 +27,7 @@ export class UpdateProfileService {
 				id: updated.id,
 				role: updated.role,
 				status: updated.status,
+				sessionVersion: updated.sessionVersion,
 			},
 		};
 	}

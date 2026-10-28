@@ -57,6 +57,7 @@ describe('Update User Role', () => {
 		const verifyUser = (await usersRepository.findById(createdPartnerUser.id)) as User;
 
 		expect(verifyUser.role).toEqual(Roles.admin);
+		expect(verifyUser.sessionVersion).toBe(createdPartnerUser.sessionVersion + 1);
 	});
 
 	it('Should not be able to update the role of a nonexistent user', async () => {
@@ -140,5 +141,6 @@ describe('Update User Role', () => {
 
 		expect(updateSpy).not.toHaveBeenCalled();
 		expect((await usersRepository.findById(target.id))?.role).toBe(Roles.member);
+		expect((await usersRepository.findById(target.id))?.sessionVersion).toBe(target.sessionVersion);
 	});
 });

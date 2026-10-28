@@ -10,6 +10,7 @@ export type CreateUser = {
 	avatarUrl?: string;
 	role: Role;
 	status: UserStatus;
+	sessionVersion?: number;
 };
 
 export type UpdateUser = { id: string } & Partial<{
@@ -20,6 +21,7 @@ export type UpdateUser = { id: string } & Partial<{
 	avatarUrl: string;
 	role: Role;
 	status: UserStatus;
+	sessionVersion: number;
 }>;
 
 export type UpdateUserRole = {

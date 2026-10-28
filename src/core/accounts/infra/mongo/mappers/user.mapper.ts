@@ -12,9 +12,11 @@ import {
 
 export const UserMapper = {
 	toDomain(document: UserPersistence): User {
-		return mapObjectEntriesDeep(toPlainObject(document), toDomainEntry, {
+		const user = mapObjectEntriesDeep(toPlainObject(document), toDomainEntry, {
 			nullHandling: 'toUndefined',
 		}) as User;
+
+		return { ...user, sessionVersion: user.sessionVersion ?? 1 };
 	},
 	toPersistence(data: Partial<User>): Partial<UserPersistence> {
 		return mapObjectEntriesDeep(data as Record<string, unknown>, toPersistenceEntry, {

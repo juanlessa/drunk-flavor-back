@@ -33,7 +33,11 @@ export class ConfirmEmailService {
 			throw new BadRequestError('apiResponses.users.notExist', { path: 'ConfirmEmail.service.3' });
 		}
 
-		await this.usersRepository.update({ id: user.id, status: UserStatuses['active'] });
+		await this.usersRepository.update({
+			id: user.id,
+			status: UserStatuses.active,
+			sessionVersion: user.sessionVersion + 1,
+		});
 		await this.tokensRepository.delete(tokenRecord.id);
 	}
 }

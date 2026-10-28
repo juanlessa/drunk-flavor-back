@@ -32,6 +32,7 @@ export class UsersRepositoryInMemory implements IUsersRepository {
 			avatarUrl: data.avatarUrl,
 			role: data.role,
 			status: data.status,
+			sessionVersion: data.sessionVersion ?? 1,
 			createdAt: now,
 			updatedAt: now,
 		};

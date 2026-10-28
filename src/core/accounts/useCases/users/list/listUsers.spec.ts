@@ -42,6 +42,7 @@ describe('List Users', () => {
 
 		expect(usersFound.length).greaterThan(0);
 		expect(usersFound.length).lessThanOrEqual(DEFAULT_QUERY_PARAMS.limit);
+		expect(usersFound.every((user) => !('sessionVersion' in user))).toBe(true);
 	});
 
 	it('should be able to list users using pagination', async () => {

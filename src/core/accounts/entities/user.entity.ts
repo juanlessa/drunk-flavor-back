@@ -14,6 +14,7 @@ export type UserStatus = (typeof UserStatuses)[keyof typeof UserStatuses];
  *     emailVerified: boolean
  *     avatarUrl?: string
  *     role: Role ("owner" | "admin" | "partner" | "member")
+ *     sessionVersion: number
  *     createdAt: Date
  *     updatedAt: Date
  */
@@ -25,4 +26,5 @@ export type User = EntityMetadata & {
 	avatarUrl?: string;
 	role: Role;
 	status: UserStatus;
+	sessionVersion: number;
 };

@@ -12,6 +12,7 @@ const buildUserPersistence = (overrides: Partial<UserPersistence> = {}): UserPer
 	avatar_url: 'https://example.com/avatar.png',
 	role: 'member',
 	status: 'active',
+	session_version: 1,
 	created_at: new Date('2024-01-01T00:00:00.000Z'),
 	updated_at: new Date('2024-01-02T00:00:00.000Z'),
 	...overrides,
@@ -31,6 +32,7 @@ describe('UserMapper', () => {
 			avatarUrl: undefined,
 			role: 'member',
 			status: 'active',
+			sessionVersion: 1,
 			createdAt: persistence.created_at,
 			updatedAt: persistence.updated_at,
 		});

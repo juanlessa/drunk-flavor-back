@@ -16,6 +16,7 @@ type GoogleAuthResult = {
 		id: string;
 		role: User['role'];
 		status: User['status'];
+		sessionVersion: User['sessionVersion'];
 	};
 };
 
@@ -65,7 +66,14 @@ export class GoogleAuthService {
 
 		await this.identitiesRepository.touchLastLogin(identity.id, authenticatedAt);
 
-		return { user: { id: user.id, role: user.role, status: user.status } };
+		return {
+			user: {
+				id: user.id,
+				role: user.role,
+				status: user.status,
+				sessionVersion: user.sessionVersion,
+			},
+		};
 	}
 
 	private requireVerifiedEmailForGoogleSignup(googleProfile: VerifiedGoogleIdentity): string {
@@ -126,7 +134,14 @@ export class GoogleAuthService {
 				lastLoginAt: authenticatedAt,
 			});
 
-			return { user: { id: user.id, role: user.role, status: user.status } };
+			return {
+				user: {
+					id: user.id,
+					role: user.role,
+					status: user.status,
+					sessionVersion: user.sessionVersion,
+				},
+			};
 		});
 	}
 
@@ -148,6 +163,13 @@ export class GoogleAuthService {
 			throw error;
 		}
 
-		return { user: { id: user.id, role: user.role, status: user.status } };
+		return {
+			user: {
+				id: user.id,
+				role: user.role,
+				status: user.status,
+				sessionVersion: user.sessionVersion,
+			},
+		};
 	}
 }

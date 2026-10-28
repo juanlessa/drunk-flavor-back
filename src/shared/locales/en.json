@@ -12,6 +12,7 @@
 	"apiResponses.auth.authorizationTokenUnsigned": "Unsigned authorization token",
 	"apiResponses.auth.authorizationTokenInvalid": "Authorization token is invalid ",
 	"apiResponses.auth.invalidCredentials": "Email or password incorrect",
+	"apiResponses.auth.sessionRevoked": "Your session is no longer valid. Please sign in again.",
 	"apiResponses.auth.actionAlreadyRequested": "A request has already been made recently. Please check your email or try again later.",
 	"apiResponses.auth.tokenNotFound": "Token not found",
 	"apiResponses.auth.tokenAlreadyExist": "Token already exists",

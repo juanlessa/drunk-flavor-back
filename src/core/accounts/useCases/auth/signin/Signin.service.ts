@@ -49,6 +49,7 @@ export class SigninService {
 				id: user.id,
 				role: user.role,
 				status: user.status,
+				sessionVersion: user.sessionVersion,
 			},
 		};
 	}

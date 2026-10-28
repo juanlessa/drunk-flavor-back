@@ -3,6 +3,7 @@ import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { GetProfile, ProfileView } from './getProfile.dtos';
+import { toUserView } from '@/core/accounts/mappers/user.mappers';
 
 export class GetProfileService {
 	constructor(
@@ -23,7 +24,7 @@ export class GetProfileService {
 		]);
 
 		return {
-			...user,
+			...toUserView(user),
 			authentication_methods: {
 				password: { enabled: passwordEnabled },
 				providers,

@@ -1,5 +1,5 @@
 import { IdentityProvider } from '@/core/accounts/entities/identity.entity';
-import { User } from '@/core/accounts/entities/user.entity';
+import { UserView } from '@/core/accounts/mappers/user.mappers';
 
 export type GetProfile = {
 	id: string;
@@ -12,6 +12,6 @@ export type ProfileAuthenticationMethods = {
 	providers: IdentityProvider[];
 };
 
-export type ProfileView = User & {
+export type ProfileView = UserView & {
 	authentication_methods: ProfileAuthenticationMethods;
 };

@@ -55,9 +55,11 @@ describe('Update Profile', () => {
 		});
 
 		expect(result.user.status).toBe(UserStatuses.active);
+		expect(result.user.sessionVersion).toBe(createdUser.sessionVersion + 1);
 
 		const verifyUser = (await usersRepository.findById(createdUser.id)) as User;
 		expect(verifyUser.status).toBe(UserStatuses.active);
+		expect(verifyUser.sessionVersion).toBe(createdUser.sessionVersion + 1);
 		expect(verifyUser.name).toEqual(updatedName);
 		expect(verifyUser.surname).toEqual(updatedSurname);
 	});
@@ -78,9 +80,11 @@ describe('Update Profile', () => {
 		});
 
 		expect(result.user.status).toBe(UserStatuses.active);
+		expect(result.user.sessionVersion).toBe(createdUser.sessionVersion);
 
 		const verifyUser = (await usersRepository.findById(createdUser.id)) as User;
 		expect(verifyUser.status).toBe(UserStatuses.active);
+		expect(verifyUser.sessionVersion).toBe(createdUser.sessionVersion);
 		expect(verifyUser.name).toEqual(updatedName);
 		expect(verifyUser.surname).toEqual(updatedSurname);
 	});
