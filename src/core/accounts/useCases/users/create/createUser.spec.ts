@@ -22,6 +22,8 @@ import { Token } from '@/core/accounts/entities/token.entity';
 import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
 import { CredentialsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Credentials.repository';
+import { AdministrativeEventsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/AdministrativeEvents.repository';
+import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { MockEmailQueueProvider } from '@/shared/providers/queue/email/implementations/MockEmailQueue.provider';
 import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
@@ -30,6 +32,7 @@ import { env } from '@/env';
 let usersRepository: IUsersRepository;
 let tokensRepository: ITokensRepository;
 let credentialsRepository: ICredentialsRepository;
+let administrativeEventsRepository: AdministrativeEventsRepositoryInMemory;
 let dateProvider: IDateProvider;
 let hashProvider: IHashProvider;
 let cryptoProvider: ICryptoProvider;
@@ -69,6 +72,7 @@ describe('Create User', () => {
 		cryptoProvider = new NodeCryptoProvider();
 		templateProvider = new MjmlProvider();
 		emailQueueProvider = new MockEmailQueueProvider();
+		administrativeEventsRepository = new AdministrativeEventsRepositoryInMemory();
 		service = new CreateUserService(
 			usersRepository,
 			tokensRepository,
@@ -79,6 +83,7 @@ describe('Create User', () => {
 			cryptoProvider,
 			templateProvider,
 			emailQueueProvider,
+			administrativeEventsRepository,
 		);
 	});
 
@@ -118,6 +123,14 @@ describe('Create User', () => {
 			EMAIL_JOB_NAMES.verification,
 			expect.objectContaining({ to: email }),
 		);
+		expect(administrativeEventsRepository.collection).toEqual([
+			expect.objectContaining({
+				actorId: admin.id,
+				targetUserId: verifyUser.id,
+				action: AdministrativeEventActions.userCreated,
+				after: { role: verifyUser.role, status: verifyUser.status },
+			}),
+		]);
 	});
 
 	it('should not be able to create an existing active user', async () => {

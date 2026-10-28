@@ -1,5 +1,4 @@
 import { UserStatus } from '@/core/accounts/entities/user.entity';
-import { Actor } from '@/shared/accessControl/actor.types';
 import { Role } from '@/shared/accessControl/roles';
 
 export type CreateUser = {
@@ -23,9 +22,3 @@ export type UpdateUser = { id: string } & Partial<{
 	status: UserStatus;
 	sessionVersion: number;
 }>;
-
-export type UpdateUserRole = {
-	userId: string;
-	role: Role;
-	actor: Actor;
-};

@@ -4,7 +4,7 @@
 
 **Scope:** `drunk-flavor-back` user administration
 
-**Version:** 1.2
+**Version:** 1.3
 
 ## Purpose
 
@@ -323,12 +323,20 @@ Implemented:
     refreshing, preserving the approved bounded-staleness behavior.
 13. A revoked session returns the opaque `apiResponses.auth.sessionRevoked` response and clears both authentication
     cookies.
+14. Successful administrative mutations write a minimal append-only event in the same transaction; audit failure rolls
+    back the mutation.
+15. Administrative no-ops and reads do not create audit events. Authorization denials produce structured security logs
+    instead of database events.
+16. Administrative events expire through a 730-day MongoDB TTL index and have no application update/delete repository
+    operations.
 
 Pending:
 
-1. Add audit events, suspension, reauthentication, and ownership transfer in their dedicated stages.
+1. Add suspension, reauthentication, and ownership transfer in their dedicated stages.
 2. Reuse `sessionVersion` for password changes, account recovery, suspension, and explicit administrative revocation as
    those flows are implemented.
+3. Extend the audit action set for suspension, reactivation, ownership transfer, and emergency recovery when those flows
+   are implemented.
 
 ## Review checklist
 

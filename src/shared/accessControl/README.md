@@ -192,3 +192,17 @@ privileged token is rejected immediately. Tokens claiming `partner` or `member` 
 requests; they may retain their old access-token permissions until expiration, but an outdated refresh token cannot
 renew the session. Revocation returns `401` with `apiResponses.auth.sessionRevoked` and clears both authentication
 cookies.
+
+### Administrative audit
+
+Successful administrative user creation, role change, and deletion write an append-only `administrative_events` record
+in the same MongoDB transaction as the mutation. If the audit write fails, the administrative mutation is rolled back.
+Authorized no-op role assignments and read operations do not create events.
+
+Events contain only actor and target IDs, action, minimal before/after role or status state, origin, optional request
+ID, optional reason, and occurrence time. They do not contain names, emails, credentials, tokens, session versions,
+request bodies, IP addresses, or user agents.
+
+Authorization denials are emitted as structured security logs and are not persisted in the audit collection. The
+application exposes no audit read/update/delete repository operations or HTTP endpoints. MongoDB removes events after
+730 days through the `administrative_event_occurred_at_ttl` index.

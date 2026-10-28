@@ -15,9 +15,12 @@ import {
 } from '@/core/accounts/errors/user.errors';
 import { UpdateUserRoleService } from './UpdateUserRole.service';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
+import { AdministrativeEventsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/AdministrativeEvents.repository';
+import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
 
 let usersRepository: IUsersRepository;
 let service: UpdateUserRoleService;
+let administrativeEventsRepository: AdministrativeEventsRepositoryInMemory;
 
 const { name, surname, email, role, status } = createUserFactory({ role: Roles.partner });
 
@@ -40,7 +43,12 @@ describe('Update User Role', () => {
 		owner = { id: persistedOwner.id, role: persistedOwner.role };
 		admin = { id: persistedAdmin.id, role: persistedAdmin.role };
 		member = { id: persistedMember.id, role: persistedMember.role };
-		service = new UpdateUserRoleService(usersRepository, new FakeTransactionManager());
+		administrativeEventsRepository = new AdministrativeEventsRepositoryInMemory();
+		service = new UpdateUserRoleService(
+			usersRepository,
+			new FakeTransactionManager(),
+			administrativeEventsRepository,
+		);
 	});
 
 	it('Should be able to update the role of a user', async () => {
@@ -58,6 +66,15 @@ describe('Update User Role', () => {
 
 		expect(verifyUser.role).toEqual(Roles.admin);
 		expect(verifyUser.sessionVersion).toBe(createdPartnerUser.sessionVersion + 1);
+		expect(administrativeEventsRepository.collection).toEqual([
+			expect.objectContaining({
+				actorId: owner.id,
+				targetUserId: createdPartnerUser.id,
+				action: AdministrativeEventActions.userRoleChanged,
+				before: { role: Roles.partner },
+				after: { role: Roles.admin },
+			}),
+		]);
 	});
 
 	it('Should not be able to update the role of a nonexistent user', async () => {
@@ -140,6 +157,7 @@ describe('Update User Role', () => {
 		await service.execute({ userId: target.id, role: Roles.member, actor: admin });
 
 		expect(updateSpy).not.toHaveBeenCalled();
+		expect(administrativeEventsRepository.collection).toHaveLength(0);
 		expect((await usersRepository.findById(target.id))?.role).toBe(Roles.member);
 		expect((await usersRepository.findById(target.id))?.sessionVersion).toBe(target.sessionVersion);
 	});

@@ -6,6 +6,8 @@ import { ICredentialsRepository } from '../../../repositories/ICredentials.repos
 import { CredentialsRepository } from '../repositories/Credentials.repository';
 import { IIdentitiesRepository } from '../../../repositories/IIdentities.repository';
 import { IdentitiesRepository } from '../repositories/Identities.repository';
+import { IAdministrativeEventsRepository } from '../../../repositories/IAdministrativeEvents.repository';
+import { AdministrativeEventsRepository } from '../repositories/AdministrativeEvents.repository';
 
 const usersRepository: IUsersRepository = new UsersRepository();
 export const resolveUsersRepository = () => usersRepository;
@@ -18,3 +20,6 @@ export const resolveCredentialsRepository = () => credentialsRepository;
 
 const identitiesRepository: IIdentitiesRepository = new IdentitiesRepository();
 export const resolveIdentitiesRepository = () => identitiesRepository;
+
+const administrativeEventsRepository: IAdministrativeEventsRepository = new AdministrativeEventsRepository();
+export const resolveAdministrativeEventsRepository = () => administrativeEventsRepository;

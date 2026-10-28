@@ -8,6 +8,8 @@ import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { Roles } from '@/shared/accessControl/roles';
 import { AUTH_COOKIE } from '@/infrastructure/fastify/constants/cookie.constants';
 import { AUTH_SESSION_COOKIE } from '@/infrastructure/fastify/constants/session.constants';
+import { AdministrativeEventModel } from '@/core/accounts/infra/mongo/entities/administrativeEvent.model';
+import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
 
 type ErrorResponseBody = { localeKey: string };
 
@@ -22,6 +24,7 @@ describe('Update User Role', () => {
 
 	beforeEach(async () => {
 		await MongoConnection.Instance.emptyCollection(UserModel);
+		await MongoConnection.Instance.emptyCollection(AdministrativeEventModel);
 	});
 
 	it('updates a role and immediately revokes a downgraded admin session', async () => {
@@ -57,6 +60,25 @@ describe('Update User Role', () => {
 				expect.stringContaining(`${AUTH_SESSION_COOKIE}=;`),
 			]),
 		);
+
+		const events = await AdministrativeEventModel.find({
+			action: AdministrativeEventActions.userRoleChanged,
+		})
+			.sort({ occurred_at: 1 })
+			.lean();
+		expect(events).toHaveLength(2);
+		expect(events[0]).toMatchObject({
+			target_user_id: userToUpdate.id,
+			before: { role: Roles.member },
+			after: { role: Roles.partner },
+			origin: 'api',
+		});
+		expect(events[1]).toMatchObject({
+			target_user_id: adminUser.id,
+			before: { role: Roles.admin },
+			after: { role: Roles.partner },
+			origin: 'api',
+		});
 	});
 
 	it('Should not be able to update a user role when unauthenticated', async () => {

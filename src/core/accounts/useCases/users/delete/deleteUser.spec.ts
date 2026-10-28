@@ -8,6 +8,8 @@ import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { TokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Tokens.repository';
 import { CredentialsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Credentials.repository';
 import { IdentitiesRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Identities.repository';
+import { AdministrativeEventsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/AdministrativeEvents.repository';
+import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
@@ -29,6 +31,7 @@ let usersRepository: IUsersRepository;
 let tokensRepository: ITokensRepository;
 let credentialsRepository: ICredentialsRepository;
 let identitiesRepository: IIdentitiesRepository;
+let administrativeEventsRepository: AdministrativeEventsRepositoryInMemory;
 let service: DeleteUserService;
 
 const userData = createUserFactory();
@@ -56,12 +59,14 @@ describe('Delete User', () => {
 		tokensRepository = new TokensRepositoryInMemory();
 		credentialsRepository = new CredentialsRepositoryInMemory();
 		identitiesRepository = new IdentitiesRepositoryInMemory();
+		administrativeEventsRepository = new AdministrativeEventsRepositoryInMemory();
 		service = new DeleteUserService(
 			usersRepository,
 			tokensRepository,
 			credentialsRepository,
 			identitiesRepository,
 			new FakeTransactionManager(),
+			administrativeEventsRepository,
 		);
 	});
 
@@ -73,6 +78,14 @@ describe('Delete User', () => {
 		const findDeledUser = await usersRepository.findById(createdUser.id);
 
 		expect(findDeledUser).toBeNull();
+		expect(administrativeEventsRepository.collection).toEqual([
+			expect.objectContaining({
+				actorId: admin.id,
+				targetUserId: createdUser.id,
+				action: AdministrativeEventActions.userDeleted,
+				before: { role: createdUser.role, status: createdUser.status },
+			}),
+		]);
 	});
 
 	it('should not be able to delete a nonexistent user', async () => {
