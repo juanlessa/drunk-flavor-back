@@ -17,29 +17,23 @@ export class DeleteRatingService {
 	async execute({ id, actor }: DeleteRatingCommand): Promise<DeleteRatingResult> {
 		return this.transactionManager.withTransaction(async () => {
 			const rating = await this.ratingsRepository.findById(id);
-			if (!rating) {
-				throw new BadRequestError('apiResponses.ratings.notExist', { path: 'DeleteRating.service' });
-			}
+			if (!rating) throw new BadRequestError('apiResponses.ratings.notExist', { path: 'DeleteRating.service' });
 
 			const subject = ratingPermissionSchema.parse({
-				id: rating._id.toString(),
-				user_id: rating.user_id,
-				drink_id: rating.drink_id,
+				id: rating.id,
+				userId: rating.userId,
+				drinkId: rating.drinkId,
 			});
 			const user = userPermissionSchema.parse({ id: actor.id, role: actor.role });
-
-			const { cannot } = defineAbilityFor(user);
-			if (cannot('delete', subject)) {
+			if (defineAbilityFor(user).cannot('delete', subject)) {
 				throw new ForbiddenError('apiResponses.ratings.forbidden', { path: 'DeleteRating.service' });
 			}
-
 			const deletedRating = await this.ratingsRepository.delete(id);
 			const summary = await this.drinksModule.applyRatingDelta({
-				drinkId: deletedRating.drink_id,
+				drinkId: deletedRating.drinkId,
 				countDelta: -1,
 				sumDelta: -deletedRating.value,
 			});
-
 			return { summary };
 		});
 	}

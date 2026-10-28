@@ -24,8 +24,8 @@ export const ratingValueValidation = z
 
 const ratingSortSchema = z
 	.object({
-		created_at: sortOrderSchema,
-		updated_at: sortOrderSchema,
+		createdAt: sortOrderSchema,
+		updatedAt: sortOrderSchema,
 		value: sortOrderSchema,
 	})
 	.strict();

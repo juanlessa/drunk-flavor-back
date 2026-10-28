@@ -65,13 +65,13 @@ describe('enforceCompleteProfile gate', () => {
 		expect(authResponse.status).toBe(200);
 		const cookies = authResponse.headers['set-cookie'];
 
-		const { id: drink_id } = await createDrink();
+		const { id: drinkId } = await createDrink();
 
 		// The incomplete-profile user is gated out of the business route.
 		const blocked = await request(app.server)
 			.post('/comments')
 			.set('Cookie', cookies)
-			.send({ drink_id, content: 'before completion' });
+			.send({ drinkId, content: 'before completion' });
 
 		expect(blocked.status).toBe(HTTP_STATUS.forbidden);
 		expect((blocked.body as ErrorBody).localeKey).toBe('apiResponses.auth.profileIncomplete');
@@ -93,7 +93,7 @@ describe('enforceCompleteProfile gate', () => {
 		const allowed = await request(app.server)
 			.post('/comments')
 			.set('Cookie', refreshedCookies)
-			.send({ drink_id, content: 'after completion' });
+			.send({ drinkId, content: 'after completion' });
 
 		expect(allowed.status).toBe(HTTP_STATUS.created);
 	});

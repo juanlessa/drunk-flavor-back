@@ -2,18 +2,17 @@ import { RatingListQuery } from '@/core/engagement/dtos/rating.dtos';
 import { normalizeSortOrder } from '@/shared/helpers/sort.helpers';
 import { SortOrder } from '@/shared/types/query.types';
 
-type RatingClientSort = Partial<Record<'created_at' | 'updated_at' | 'value', SortOrder | undefined>>;
+type RatingClientSort = Partial<Record<'createdAt' | 'updatedAt' | 'value', SortOrder | undefined>>;
 
 /**
- * Converts the client Rating sort aliases into explicit `1 | -1` directions, defaults to
- * newest-first when no client sort is present, and always appends the server-owned `_id: -1`
- * tie-breaker last so Mongo and in-memory ordering stay deterministic.
+ * Converts client sort aliases into domain field names, defaults to newest-first, and appends
+ * the server-owned `id: -1` tie-breaker so Mongo and in-memory ordering stay deterministic.
  */
 export const normalizeRatingSort = (sort?: RatingClientSort): RatingListQuery['sort'] => {
-	const normalized: Record<string, 1 | -1> = {};
+	const normalized: Partial<Record<'createdAt' | 'updatedAt' | 'value' | 'id', 1 | -1>> = {};
 
 	if (sort) {
-		for (const [field, order] of Object.entries(sort)) {
+		for (const [field, order] of Object.entries(sort) as [keyof RatingClientSort, SortOrder | undefined][]) {
 			if (order !== undefined) {
 				normalized[field] = normalizeSortOrder(order);
 			}
@@ -21,10 +20,9 @@ export const normalizeRatingSort = (sort?: RatingClientSort): RatingListQuery['s
 	}
 
 	if (Object.keys(normalized).length === 0) {
-		normalized.created_at = -1;
+		normalized.createdAt = -1;
 	}
 
-	normalized._id = -1;
-
+	normalized.id = -1;
 	return normalized;
 };

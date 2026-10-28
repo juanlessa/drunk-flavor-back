@@ -10,22 +10,17 @@ export class ModerateCommentService {
 
 	async execute({ id, status, actor }: ModerateCommentCommand): Promise<void> {
 		const comment = await this.commentsRepository.findById(id);
-		if (!comment) {
-			throw new BadRequestError('apiResponses.comments.notExist', { path: 'ModerateComment.service' });
-		}
+		if (!comment) throw new BadRequestError('apiResponses.comments.notExist', { path: 'ModerateComment.service' });
 
 		const subject = commentPermissionSchema.parse({
-			id: comment._id.toString(),
-			user_id: comment.user_id,
-			drink_id: comment.drink_id,
+			id: comment.id,
+			userId: comment.userId,
+			drinkId: comment.drinkId,
 		});
 		const user = userPermissionSchema.parse({ id: actor.id, role: actor.role });
-
-		const { cannot } = defineAbilityFor(user);
-		if (cannot('moderate', subject)) {
+		if (defineAbilityFor(user).cannot('moderate', subject)) {
 			throw new ForbiddenError('apiResponses.comments.forbidden', { path: 'ModerateComment.service' });
 		}
-
 		await this.commentsRepository.updateStatus({ id, status });
 	}
 }

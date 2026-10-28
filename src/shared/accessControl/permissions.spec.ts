@@ -18,18 +18,18 @@ const makeUser = (role: UserPermissionModel['role'], id = ownerId): UserPermissi
 const ownRating: RatingPermissionModel = {
 	__typename: 'Rating',
 	id: new ObjectId().toString(),
-	user_id: ownerId,
-	drink_id: new ObjectId().toString(),
+	userId: ownerId,
+	drinkId: new ObjectId().toString(),
 };
-const foreignRating: RatingPermissionModel = { ...ownRating, user_id: foreignId };
+const foreignRating: RatingPermissionModel = { ...ownRating, userId: foreignId };
 
 const ownComment: CommentPermissionModel = {
 	__typename: 'Comment',
 	id: new ObjectId().toString(),
-	user_id: ownerId,
-	drink_id: new ObjectId().toString(),
+	userId: ownerId,
+	drinkId: new ObjectId().toString(),
 };
-const foreignComment: CommentPermissionModel = { ...ownComment, user_id: foreignId };
+const foreignComment: CommentPermissionModel = { ...ownComment, userId: foreignId };
 
 describe('Engagement permissions', () => {
 	describe.each([Roles.owner, Roles.admin, Roles.partner, Roles.member])('%s role', (role) => {

@@ -17,30 +17,23 @@ export class UpdateRatingService {
 	async execute({ id, value, actor }: UpdateRatingCommand): Promise<UpdateRatingResult> {
 		return this.transactionManager.withTransaction(async () => {
 			const rating = await this.ratingsRepository.findById(id);
-			if (!rating) {
-				throw new BadRequestError('apiResponses.ratings.notExist', { path: 'UpdateRating.service' });
-			}
+			if (!rating) throw new BadRequestError('apiResponses.ratings.notExist', { path: 'UpdateRating.service' });
 
 			const subject = ratingPermissionSchema.parse({
-				id: rating._id.toString(),
-				user_id: rating.user_id,
-				drink_id: rating.drink_id,
+				id: rating.id,
+				userId: rating.userId,
+				drinkId: rating.drinkId,
 			});
 			const user = userPermissionSchema.parse({ id: actor.id, role: actor.role });
-
-			const { cannot } = defineAbilityFor(user);
-			if (cannot('update', subject)) {
+			if (defineAbilityFor(user).cannot('update', subject)) {
 				throw new ForbiddenError('apiResponses.ratings.forbidden', { path: 'UpdateRating.service' });
 			}
-
-			const previousValue = rating.value;
 			await this.ratingsRepository.update({ id, value });
 			const summary = await this.drinksModule.applyRatingDelta({
-				drinkId: rating.drink_id,
+				drinkId: rating.drinkId,
 				countDelta: 0,
-				sumDelta: value - previousValue,
+				sumDelta: value - rating.value,
 			});
-
 			return { summary };
 		});
 	}

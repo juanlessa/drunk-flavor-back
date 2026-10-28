@@ -4,5 +4,5 @@ import { z } from 'zod/v4';
 export type GetSummaryByDrinkReqParam = z.infer<typeof listRatingsByDrinkSchema>;
 
 export type GetSummaryByDrinkCommand = {
-	drink_id: string;
+	drinkId: string;
 };

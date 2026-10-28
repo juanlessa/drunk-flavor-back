@@ -11,25 +11,14 @@ export class CreateRatingService {
 		private transactionManager: ITransactionManager,
 	) {}
 
-	async execute({ drink_id, value, actor }: CreateRatingCommand): Promise<CreateRatingResult> {
+	async execute({ drinkId, value, actor }: CreateRatingCommand): Promise<CreateRatingResult> {
 		return this.transactionManager.withTransaction(async () => {
-			const existing = await this.ratingsRepository.findByDrinkAndUser(drink_id, actor.id);
-			if (existing) {
+			if (await this.ratingsRepository.findByDrinkAndUser(drinkId, actor.id)) {
 				throw new BadRequestError('apiResponses.ratings.alreadyExist', { path: 'CreateRating.service' });
 			}
-
-			const rating = await this.ratingsRepository.create({
-				drink_id,
-				user_id: actor.id,
-				value,
-			});
-			const summary = await this.drinksModule.applyRatingDelta({
-				drinkId: drink_id,
-				countDelta: 1,
-				sumDelta: value,
-			});
-
-			return { id: rating._id.toString(), summary };
+			const rating = await this.ratingsRepository.create({ drinkId, userId: actor.id, value });
+			const summary = await this.drinksModule.applyRatingDelta({ drinkId, countDelta: 1, sumDelta: value });
+			return { id: rating.id, summary };
 		});
 	}
 }

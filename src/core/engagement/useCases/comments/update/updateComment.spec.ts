@@ -10,7 +10,6 @@ import { UpdateCommentService } from './UpdateComment.service';
 
 let commentsRepository: ICommentsRepository;
 let service: UpdateCommentService;
-
 const ownerId = new ObjectId().toString();
 const drinkId = new ObjectId().toString();
 const owner: Actor = { id: ownerId, role: Roles.member };
@@ -23,9 +22,9 @@ describe('Update Comment', () => {
 	});
 
 	it('updates only content and preserves status', async () => {
-		const created = await commentsRepository.create({ drink_id: drinkId, user_id: ownerId, content: 'first' });
-		await service.execute({ id: created._id.toString(), content: 'edited', actor: owner });
-		const updated = await commentsRepository.findById(created._id.toString());
+		const created = await commentsRepository.create({ drinkId, userId: ownerId, content: 'first' });
+		await service.execute({ id: created.id, content: 'edited', actor: owner });
+		const updated = await commentsRepository.findById(created.id);
 		expect(updated?.content).toBe('edited');
 		expect(updated?.status).toBe(CommentStatuses.visible);
 	});
@@ -37,9 +36,9 @@ describe('Update Comment', () => {
 	});
 
 	it('forbids updating a foreign comment', async () => {
-		const created = await commentsRepository.create({ drink_id: drinkId, user_id: ownerId, content: 'first' });
-		await expect(
-			service.execute({ id: created._id.toString(), content: 'x', actor: foreign }),
-		).rejects.toBeInstanceOf(ForbiddenError);
+		const created = await commentsRepository.create({ drinkId, userId: ownerId, content: 'first' });
+		await expect(service.execute({ id: created.id, content: 'x', actor: foreign })).rejects.toBeInstanceOf(
+			ForbiddenError,
+		);
 	});
 });

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import {
 	CreateRating,
 	RatingListQuery,
@@ -8,32 +9,18 @@ import {
 import { Rating } from '@/core/engagement/entities/rating.entity';
 import { IRatingsRepository } from '@/core/engagement/repositories/IRatings.repository';
 import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
-import { ObjectId } from 'mongodb';
 
 const compareValues = (a: unknown, b: unknown): number => {
-	if (a instanceof Date && b instanceof Date) {
-		return a.getTime() - b.getTime();
-	}
-	if (typeof a === 'number' && typeof b === 'number') {
-		return a - b;
-	}
-	const aStr = String(a);
-	const bStr = String(b);
-	if (aStr < bStr) return -1;
-	if (aStr > bStr) return 1;
-	return 0;
-};
-
-const getSortableValue = (record: Rating, field: RatingSortField): unknown => {
-	if (field === '_id') return record._id.toString();
-	return record[field];
+	if (a instanceof Date && b instanceof Date) return a.getTime() - b.getTime();
+	if (typeof a === 'number' && typeof b === 'number') return a - b;
+	return String(a).localeCompare(String(b));
 };
 
 const sortRatings = (records: Rating[], sort: RatingListQuery['sort']): Rating[] => {
 	const entries = Object.entries(sort) as [RatingSortField, 1 | -1][];
 	return [...records].sort((a, b) => {
 		for (const [field, direction] of entries) {
-			const comparison = compareValues(getSortableValue(a, field), getSortableValue(b, field));
+			const comparison = compareValues(a[field], b[field]);
 			if (comparison !== 0) return comparison * direction;
 		}
 		return 0;
@@ -49,57 +36,34 @@ export class RatingsRepositoryInMemory implements IRatingsRepository {
 	collection: Rating[] = [];
 
 	async create(data: CreateRating): Promise<Rating> {
-		const duplicate = this.collection.find(
-			(record) => record.drink_id === data.drink_id && record.user_id === data.user_id,
-		);
-		if (duplicate) {
+		if (this.collection.some((record) => record.drinkId === data.drinkId && record.userId === data.userId)) {
 			throw new BadRequestError('apiResponses.ratings.alreadyExist', {
 				path: 'RatingsInMemory.repository',
-				cause: 'Duplicate (drink_id, user_id) pair',
+				cause: 'Duplicate (drinkId, userId) pair',
 			});
 		}
-
-		const record: Rating = {
-			_id: new ObjectId(),
-			drink_id: data.drink_id,
-			user_id: data.user_id,
-			value: data.value,
-			created_at: new Date(),
-			updated_at: new Date(),
-		};
+		const now = new Date();
+		const record: Rating = { id: randomUUID(), ...data, createdAt: now, updatedAt: now };
 		this.collection.push(record);
 		return record;
 	}
 
 	async update({ id, value }: UpdateRating): Promise<Rating> {
-		const recordIndex = this.collection.findIndex((record) => record._id.toString() === id);
-		if (recordIndex === -1) {
-			throw new NotFoundError('apiResponses.ratings.notFound', {
-				path: 'RatingsInMemory.repository',
-				cause: 'Error on findByIdAndUpdate operation',
-			});
-		}
-		const record = this.collection[recordIndex];
+		const record = this.collection.find((candidate) => candidate.id === id);
+		if (!record) throw this.notFound('update');
 		record.value = value;
-		record.updated_at = new Date();
-		this.collection[recordIndex] = record;
+		record.updatedAt = new Date();
 		return record;
 	}
 
 	async delete(id: string): Promise<Rating> {
-		const recordIndex = this.collection.findIndex((record) => record._id.toString() === id);
-		if (recordIndex === -1) {
-			throw new NotFoundError('apiResponses.ratings.notFound', {
-				path: 'RatingsInMemory.repository',
-				cause: 'Error on findByIdAndDelete operation',
-			});
-		}
-		const [deletedRecord] = this.collection.splice(recordIndex, 1);
-		return deletedRecord;
+		const index = this.collection.findIndex((record) => record.id === id);
+		if (index < 0) throw this.notFound('delete');
+		return this.collection.splice(index, 1)[0];
 	}
 
 	async findById(id: string): Promise<Rating | null> {
-		return this.collection.find((record) => record._id.toString() === id) ?? null;
+		return this.collection.find((record) => record.id === id) ?? null;
 	}
 
 	async findAll(query: RatingListQuery): Promise<Rating[]> {
@@ -107,36 +71,56 @@ export class RatingsRepositoryInMemory implements IRatingsRepository {
 	}
 
 	async findByUser(userId: string, query: RatingListQuery): Promise<Rating[]> {
-		const found = this.collection.filter((record) => record.user_id === userId);
-		return paginate(sortRatings(found, query.sort), query);
+		return paginate(
+			sortRatings(
+				this.collection.filter((record) => record.userId === userId),
+				query.sort,
+			),
+			query,
+		);
 	}
 
 	async findByDrink(drinkId: string, query: RatingListQuery): Promise<Rating[]> {
-		const found = this.collection.filter((record) => record.drink_id === drinkId);
-		return paginate(sortRatings(found, query.sort), query);
+		return paginate(
+			sortRatings(
+				this.collection.filter((record) => record.drinkId === drinkId),
+				query.sort,
+			),
+			query,
+		);
 	}
 
 	async findByDrinkAndUser(drinkId: string, userId: string): Promise<Rating | null> {
-		return this.collection.find((record) => record.drink_id === drinkId && record.user_id === userId) ?? null;
+		return this.collection.find((record) => record.drinkId === drinkId && record.userId === userId) ?? null;
 	}
 
 	async summarizeByDrink(drinkId: string): Promise<RatingSummary> {
-		const ratings = this.collection.filter((record) => record.drink_id === drinkId);
+		const ratings = this.collection.filter((record) => record.drinkId === drinkId);
 		if (ratings.length === 0) return { average: 0, count: 0 };
-
-		const total = ratings.reduce((sum, rating) => sum + rating.value, 0);
-		return { average: total / ratings.length, count: ratings.length };
+		return {
+			average: ratings.reduce((sum, rating) => sum + rating.value, 0) / ratings.length,
+			count: ratings.length,
+		};
 	}
 
 	async deleteByUser(userId: string): Promise<number> {
-		const initialLength = this.collection.length;
-		this.collection = this.collection.filter((record) => record.user_id !== userId);
-		return initialLength - this.collection.length;
+		return this.deleteMatching((record) => record.userId === userId);
 	}
 
 	async deleteByDrink(drinkId: string): Promise<number> {
+		return this.deleteMatching((record) => record.drinkId === drinkId);
+	}
+
+	private deleteMatching(predicate: (record: Rating) => boolean): number {
 		const initialLength = this.collection.length;
-		this.collection = this.collection.filter((record) => record.drink_id !== drinkId);
+		this.collection = this.collection.filter((record) => !predicate(record));
 		return initialLength - this.collection.length;
+	}
+
+	private notFound(operation: string): NotFoundError {
+		return new NotFoundError('apiResponses.ratings.notFound', {
+			path: 'RatingsInMemory.repository',
+			cause: `Rating missing during ${operation}`,
+		});
 	}
 }

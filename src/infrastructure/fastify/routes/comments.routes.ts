@@ -48,7 +48,7 @@ const routes: Routes = (server) => {
 	server
 		.withTypeProvider<ZodTypeProvider>()
 		.get(
-			'/drinks/:drink_id/comments',
+			'/drinks/:drinkId/comments',
 			{ schema: { tags: ['Comments'], params: listCommentsByDrinkSchema, querystring: commentQuerySchema } },
 			listCommentsByDrinkController,
 		);

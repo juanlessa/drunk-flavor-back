@@ -8,7 +8,6 @@ import { GetCommentService } from './GetComment.service';
 
 let commentsRepository: ICommentsRepository;
 let service: GetCommentService;
-
 const drinkId = new ObjectId().toString();
 const userId = new ObjectId().toString();
 
@@ -19,15 +18,15 @@ describe('Get Comment', () => {
 	});
 
 	it('returns a visible comment', async () => {
-		const created = await commentsRepository.create({ drink_id: drinkId, user_id: userId, content: 'hi' });
-		const found = await service.execute({ id: created._id.toString() });
-		expect(found._id.toString()).toBe(created._id.toString());
+		const created = await commentsRepository.create({ drinkId, userId, content: 'hi' });
+		const found = await service.execute({ id: created.id });
+		expect(found.id).toBe(created.id);
 	});
 
 	it.each([CommentStatuses.hidden, CommentStatuses.flagged])('treats a %s comment as missing', async (status) => {
-		const created = await commentsRepository.create({ drink_id: drinkId, user_id: userId, content: 'hi' });
-		await commentsRepository.updateStatus({ id: created._id.toString(), status });
-		await expect(service.execute({ id: created._id.toString() })).rejects.toBeInstanceOf(BadRequestError);
+		const created = await commentsRepository.create({ drinkId, userId, content: 'hi' });
+		await commentsRepository.updateStatus({ id: created.id, status });
+		await expect(service.execute({ id: created.id })).rejects.toBeInstanceOf(BadRequestError);
 	});
 
 	it('rejects a nonexistent comment', async () => {

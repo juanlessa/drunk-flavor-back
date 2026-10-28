@@ -32,9 +32,28 @@ describe('List Ratings', () => {
 	});
 
 	it('Should be able to list the ratings', async () => {
-		const { id: drink_id } = await createDrink();
-		await createRatingRecord({ drink_id, value: 4 });
-		const list = await request(app.server).get('/ratings').send();
+		const { id: drinkId } = await createDrink();
+		await createRatingRecord({ drinkId, value: 4 });
+		const list = await request(app.server)
+			.get('/ratings')
+			.query({ sort: JSON.stringify({ updatedAt: -1 }) })
+			.send();
+		const body = list.body as {
+			id: string;
+			drinkId: string;
+			userId: string;
+			createdAt: string;
+			updatedAt: string;
+		}[];
+
 		expect(list.status).toBe(HTTP_STATUS.ok);
+		expect(body).toHaveLength(1);
+		expect(body[0]).toMatchObject({ drinkId });
+		expect(typeof body[0].id).toBe('string');
+		expect(typeof body[0].userId).toBe('string');
+		expect(typeof body[0].createdAt).toBe('string');
+		expect(typeof body[0].updatedAt).toBe('string');
+		expect(body[0]).not.toHaveProperty('_id');
+		expect(body[0]).not.toHaveProperty('user_id');
 	});
 });

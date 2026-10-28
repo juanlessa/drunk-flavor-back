@@ -6,7 +6,7 @@ import { createRatingSchema } from './createRating.schema';
 export type CreateRatingReqBody = z.infer<typeof createRatingSchema>;
 
 export type CreateRatingCommand = {
-	drink_id: string;
+	drinkId: string;
 	value: number;
 	actor: Actor;
 };

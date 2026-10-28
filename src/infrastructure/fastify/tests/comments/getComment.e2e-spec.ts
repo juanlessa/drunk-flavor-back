@@ -33,10 +33,10 @@ describe('Get Comment', () => {
 	});
 
 	it('Should not be able to get a non-visible comment on public reads', async () => {
-		const { id: drink_id } = await createDrink();
-		await createCommentRecord({ drink_id, content: 'visible one' });
+		const { id: drinkId } = await createDrink();
+		await createCommentRecord({ drinkId, content: 'visible one' });
 		const { id: hiddenId } = await createCommentRecord({
-			drink_id,
+			drinkId,
 			content: 'hidden one',
 			status: CommentStatuses.hidden,
 		});

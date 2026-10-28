@@ -9,7 +9,6 @@ import { DeleteCommentService } from './DeleteComment.service';
 
 let commentsRepository: ICommentsRepository;
 let service: DeleteCommentService;
-
 const ownerId = new ObjectId().toString();
 const drinkId = new ObjectId().toString();
 const owner: Actor = { id: ownerId, role: Roles.member };
@@ -23,22 +22,20 @@ describe('Delete Comment', () => {
 	});
 
 	it('allows an owner to delete its comment', async () => {
-		const created = await commentsRepository.create({ drink_id: drinkId, user_id: ownerId, content: 'a' });
-		await service.execute({ id: created._id.toString(), actor: owner });
-		expect(await commentsRepository.findById(created._id.toString())).toBeNull();
+		const created = await commentsRepository.create({ drinkId, userId: ownerId, content: 'a' });
+		await service.execute({ id: created.id, actor: owner });
+		expect(await commentsRepository.findById(created.id)).toBeNull();
 	});
 
 	it('allows an Admin to delete a foreign comment', async () => {
-		const created = await commentsRepository.create({ drink_id: drinkId, user_id: ownerId, content: 'a' });
-		await service.execute({ id: created._id.toString(), actor: admin });
-		expect(await commentsRepository.findById(created._id.toString())).toBeNull();
+		const created = await commentsRepository.create({ drinkId, userId: ownerId, content: 'a' });
+		await service.execute({ id: created.id, actor: admin });
+		expect(await commentsRepository.findById(created.id)).toBeNull();
 	});
 
 	it('forbids a non-owner from deleting a foreign comment', async () => {
-		const created = await commentsRepository.create({ drink_id: drinkId, user_id: ownerId, content: 'a' });
-		await expect(service.execute({ id: created._id.toString(), actor: foreignMember })).rejects.toBeInstanceOf(
-			ForbiddenError,
-		);
+		const created = await commentsRepository.create({ drinkId, userId: ownerId, content: 'a' });
+		await expect(service.execute({ id: created.id, actor: foreignMember })).rejects.toBeInstanceOf(ForbiddenError);
 	});
 
 	it('rejects a nonexistent comment', async () => {

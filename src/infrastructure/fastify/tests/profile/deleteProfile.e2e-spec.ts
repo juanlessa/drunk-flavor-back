@@ -38,13 +38,13 @@ describe('Delete Profile', () => {
 		const commentsRepository = resolveCommentsRepository();
 		const ratingsRepository = resolveRatingsRepository();
 		const comment = await commentsRepository.create({
-			drink_id: new ObjectId().toString(),
-			user_id: user.id,
+			drinkId: new ObjectId().toString(),
+			userId: user.id,
 			content: 'Comment that must be erased with the account',
 		});
 		const rating = await ratingsRepository.create({
-			drink_id: new ObjectId().toString(),
-			user_id: user.id,
+			drinkId: new ObjectId().toString(),
+			userId: user.id,
 			value: 5,
 		});
 
@@ -59,8 +59,8 @@ describe('Delete Profile', () => {
 			]),
 		);
 		expect(await UserModel.findById(user.id).lean()).toBeNull();
-		expect(await commentsRepository.findById(comment._id.toString())).toBeNull();
-		expect(await ratingsRepository.findById(rating._id.toString())).toMatchObject({ user_id: user.id, value: 5 });
+		expect(await commentsRepository.findById(comment.id)).toBeNull();
+		expect(await ratingsRepository.findById(rating.id)).toMatchObject({ userId: user.id, value: 5 });
 		expect(
 			await AdministrativeEventModel.findOne({ action: AdministrativeEventActions.userClosed }).lean(),
 		).toMatchObject({

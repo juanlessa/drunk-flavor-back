@@ -10,7 +10,6 @@ import { ModerateCommentService } from './ModerateComment.service';
 
 let commentsRepository: ICommentsRepository;
 let service: ModerateCommentService;
-
 const ownerId = new ObjectId().toString();
 const drinkId = new ObjectId().toString();
 const admin: Actor = { id: new ObjectId().toString(), role: Roles.admin };
@@ -23,17 +22,17 @@ describe('Moderate Comment', () => {
 	});
 
 	it('allows an Admin to change only status', async () => {
-		const created = await commentsRepository.create({ drink_id: drinkId, user_id: ownerId, content: 'a' });
-		await service.execute({ id: created._id.toString(), status: CommentStatuses.hidden, actor: admin });
-		const updated = await commentsRepository.findById(created._id.toString());
+		const created = await commentsRepository.create({ drinkId, userId: ownerId, content: 'a' });
+		await service.execute({ id: created.id, status: CommentStatuses.hidden, actor: admin });
+		const updated = await commentsRepository.findById(created.id);
 		expect(updated?.status).toBe(CommentStatuses.hidden);
 		expect(updated?.content).toBe('a');
 	});
 
 	it('forbids a non-admin from moderating', async () => {
-		const created = await commentsRepository.create({ drink_id: drinkId, user_id: member.id, content: 'a' });
+		const created = await commentsRepository.create({ drinkId, userId: member.id, content: 'a' });
 		await expect(
-			service.execute({ id: created._id.toString(), status: CommentStatuses.hidden, actor: member }),
+			service.execute({ id: created.id, status: CommentStatuses.hidden, actor: member }),
 		).rejects.toBeInstanceOf(ForbiddenError);
 	});
 

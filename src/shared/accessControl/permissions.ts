@@ -10,13 +10,13 @@ type PermissionsByRole = (user: UserPermissionModel, builder: AbilityBuilder<App
 export const permissions: Record<Role, PermissionsByRole> = {
 	owner(user, { can, cannot }) {
 		can('manage', 'all');
-		cannot('update', ['Comment', 'Rating'], { user_id: { $ne: user.id } });
+		cannot('update', ['Comment', 'Rating'], { userId: { $ne: user.id } });
 	},
 	admin(user, { can }) {
 		can('manage', ['Category', 'Unit', 'Ingredient', 'Drink']);
 		can(['create', 'list', 'get', 'delete'], ['Comment', 'Rating']);
 		can('moderate', 'Comment');
-		can('update', ['Comment', 'Rating'], { user_id: { $eq: user.id } });
+		can('update', ['Comment', 'Rating'], { userId: { $eq: user.id } });
 
 		can(['list', 'get'], 'User');
 		can('create', 'User', { role: { $in: ADMIN_MANAGED_ROLES } });
@@ -37,8 +37,8 @@ export const permissions: Record<Role, PermissionsByRole> = {
 		can('manage', 'Drink');
 		can(['create', 'list', 'get'], 'Comment');
 		can(['create', 'list', 'get'], 'Rating');
-		can(['update', 'delete'], 'Comment', { user_id: { $eq: user.id } });
-		can(['update', 'delete'], 'Rating', { user_id: { $eq: user.id } });
+		can(['update', 'delete'], 'Comment', { userId: { $eq: user.id } });
+		can(['update', 'delete'], 'Rating', { userId: { $eq: user.id } });
 	},
 	member(user, { can }) {
 		can(['list', 'get'], 'Category');
@@ -47,7 +47,7 @@ export const permissions: Record<Role, PermissionsByRole> = {
 		can(['list', 'get'], 'Drink');
 		can(['create', 'list', 'get'], 'Comment');
 		can(['create', 'list', 'get'], 'Rating');
-		can(['update', 'delete'], 'Comment', { user_id: { $eq: user.id } });
-		can(['update', 'delete'], 'Rating', { user_id: { $eq: user.id } });
+		can(['update', 'delete'], 'Comment', { userId: { $eq: user.id } });
+		can(['update', 'delete'], 'Rating', { userId: { $eq: user.id } });
 	},
 };

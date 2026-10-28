@@ -1,8 +1,8 @@
 import { Comment, CommentStatus } from '@/core/engagement/entities/comment.entity';
 
 export type CreateComment = {
-	drink_id: string;
-	user_id: string;
+	drinkId: string;
+	userId: string;
 	content: string;
 };
 
@@ -16,7 +16,7 @@ export type UpdateCommentStatus = {
 	status: CommentStatus;
 };
 
-export type CommentSortField = 'created_at' | 'updated_at' | '_id';
+export type CommentSortField = 'createdAt' | 'updatedAt' | 'id';
 
 export type CommentListQuery = {
 	page: number;

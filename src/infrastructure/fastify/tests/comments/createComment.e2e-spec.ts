@@ -36,12 +36,12 @@ describe('Create Comment', () => {
 
 	it('Should be able to create a comment', async () => {
 		const { cookies, user } = await createAndAuthenticateUser(app, { role: Roles.member });
-		const { id: drink_id } = await createDrink();
+		const { id: drinkId } = await createDrink();
 
 		const response = await request(app.server)
 			.post('/comments')
 			.set('Cookie', cookies)
-			.send({ drink_id, content: '  Mixed CASE  ' });
+			.send({ drinkId, content: '  Mixed CASE  ' });
 
 		expect(response.status).toBe(HTTP_STATUS.created);
 		const body = response.body as { id: string };

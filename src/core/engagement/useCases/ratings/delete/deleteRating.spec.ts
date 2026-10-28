@@ -12,7 +12,6 @@ import { DeleteRatingService } from './DeleteRating.service';
 
 let ratingsRepository: IRatingsRepository;
 let service: DeleteRatingService;
-
 const ownerId = new ObjectId().toString();
 const drinkId = new ObjectId().toString();
 const owner: Actor = { id: ownerId, role: Roles.member };
@@ -22,31 +21,28 @@ const drinksModule: IDrinksModule = {
 	findDrinkById: vi.fn().mockResolvedValue(null),
 	applyRatingDelta: vi.fn().mockResolvedValue({ average: 0, count: 0 }),
 };
-const transactionManager = new FakeTransactionManager();
 
 describe('Delete Rating', () => {
 	beforeEach(() => {
 		ratingsRepository = new RatingsRepositoryInMemory();
-		service = new DeleteRatingService(ratingsRepository, drinksModule, transactionManager);
+		service = new DeleteRatingService(ratingsRepository, drinksModule, new FakeTransactionManager());
 	});
 
 	it('allows an owner to delete its rating', async () => {
-		const created = await ratingsRepository.create({ drink_id: drinkId, user_id: ownerId, value: 4 });
-		await service.execute({ id: created._id.toString(), actor: owner });
-		expect(await ratingsRepository.findById(created._id.toString())).toBeNull();
+		const created = await ratingsRepository.create({ drinkId, userId: ownerId, value: 4 });
+		await service.execute({ id: created.id, actor: owner });
+		expect(await ratingsRepository.findById(created.id)).toBeNull();
 	});
 
 	it('allows an Admin to delete a foreign rating', async () => {
-		const created = await ratingsRepository.create({ drink_id: drinkId, user_id: ownerId, value: 4 });
-		await service.execute({ id: created._id.toString(), actor: admin });
-		expect(await ratingsRepository.findById(created._id.toString())).toBeNull();
+		const created = await ratingsRepository.create({ drinkId, userId: ownerId, value: 4 });
+		await service.execute({ id: created.id, actor: admin });
+		expect(await ratingsRepository.findById(created.id)).toBeNull();
 	});
 
 	it('forbids a non-owner member from deleting a foreign rating', async () => {
-		const created = await ratingsRepository.create({ drink_id: drinkId, user_id: ownerId, value: 4 });
-		await expect(service.execute({ id: created._id.toString(), actor: foreignMember })).rejects.toBeInstanceOf(
-			ForbiddenError,
-		);
+		const created = await ratingsRepository.create({ drinkId, userId: ownerId, value: 4 });
+		await expect(service.execute({ id: created.id, actor: foreignMember })).rejects.toBeInstanceOf(ForbiddenError);
 	});
 
 	it('rejects a nonexistent rating', async () => {

@@ -40,13 +40,13 @@ describe('Close User', () => {
 		const commentsRepository = resolveCommentsRepository();
 		const ratingsRepository = resolveRatingsRepository();
 		const comment = await commentsRepository.create({
-			drink_id: new ObjectId().toString(),
-			user_id: target.id,
+			drinkId: new ObjectId().toString(),
+			userId: target.id,
 			content: 'Comment that must be erased with the account',
 		});
 		const rating = await ratingsRepository.create({
-			drink_id: new ObjectId().toString(),
-			user_id: target.id,
+			drinkId: new ObjectId().toString(),
+			userId: target.id,
 			value: 4,
 		});
 
@@ -63,8 +63,8 @@ describe('Close User', () => {
 
 		expect(response.status).toBe(HTTP_STATUS.no_content);
 		expect(await UserModel.findById(target.id).lean()).toBeNull();
-		expect(await commentsRepository.findById(comment._id.toString())).toBeNull();
-		expect(await ratingsRepository.findById(rating._id.toString())).toMatchObject({ user_id: target.id, value: 4 });
+		expect(await commentsRepository.findById(comment.id)).toBeNull();
+		expect(await ratingsRepository.findById(rating.id)).toMatchObject({ userId: target.id, value: 4 });
 
 		const event = await AdministrativeEventModel.findOne({ action: AdministrativeEventActions.userClosed }).lean();
 		expect(event).toMatchObject({
