@@ -31,6 +31,15 @@ describe('CredentialsRepository (integration)', () => {
 		expect(await repository.findByUserId(new ObjectId().toString())).toBeNull();
 	});
 
+	it('reports whether a user has a password credential', async () => {
+		const userId = new ObjectId().toString();
+		expect(await repository.existsByUserId(userId)).toBe(false);
+
+		await repository.create({ userId, passwordHash: 'hashed-password' });
+
+		expect(await repository.existsByUserId(userId)).toBe(true);
+	});
+
 	it('updates the passwordHash of an existing credential', async () => {
 		const userId = new ObjectId().toString();
 		await repository.create({ userId, passwordHash: 'hashed-password' });

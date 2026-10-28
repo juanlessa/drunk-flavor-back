@@ -88,11 +88,28 @@ describe('TokensRepository (integration)', () => {
 		expect(await repository.findByUserId(otherUser)).toHaveLength(1);
 	});
 
-	it('throws NotFoundError on update/delete of a missing id', async () => {
+	it('updates a token and supports valid and invalid id lookups', async () => {
+		const created = await repository.create(buildToken());
+		const nextExpiration = new Date('2030-01-01T00:00:00.000Z');
+
+		const updated = await repository.update({
+			id: created.id,
+			tokenHash: 'updated-token-hash',
+			expiresAt: nextExpiration,
+		});
+
+		expect(updated).toMatchObject({ tokenHash: 'updated-token-hash', expiresAt: nextExpiration });
+		expect((await repository.findById(created.id))?.id).toBe(created.id);
+		expect(await repository.findById('invalid-id')).toBeNull();
+	});
+
+	it('throws NotFoundError on update/delete of a missing or invalid id', async () => {
 		await expect(repository.update({ id: new ObjectId().toString(), tokenHash: 'x' })).rejects.toBeInstanceOf(
 			NotFoundError,
 		);
 		await expect(repository.delete(new ObjectId().toString())).rejects.toBeInstanceOf(NotFoundError);
+		await expect(repository.update({ id: 'invalid-id', tokenHash: 'x' })).rejects.toBeInstanceOf(NotFoundError);
+		await expect(repository.delete('invalid-id')).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('translates a duplicate token hash to a semantic token error', async () => {

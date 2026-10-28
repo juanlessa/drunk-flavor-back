@@ -40,6 +40,13 @@ describe('UsersRepository (integration)', () => {
 		expect(await repository.findByEmail('missing@example.com')).toBeNull();
 	});
 
+	it('findByRole returns the current owner and null when the role is absent', async () => {
+		const owner = await repository.create(createUserFactory({ email: 'owner@example.com', role: 'owner' }));
+
+		expect((await repository.findByRole('owner'))?.id).toBe(owner.id);
+		expect(await repository.findByRole('admin')).toBeNull();
+	});
+
 	it('findByEmail is effectively case-insensitive via the schema lowercase setter', async () => {
 		// The schema `lowercase: true` setter is applied to the query filter too, so
 		// Mongoose lowercases the lookup value before matching. The stored email is

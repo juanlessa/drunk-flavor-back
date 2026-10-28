@@ -57,6 +57,30 @@ describe('IdentitiesRepository (integration)', () => {
 		expect(await repository.findByUserId(userId)).toHaveLength(1);
 	});
 
+	it('lists providers by user and excludes identities owned by other users', async () => {
+		const userId = new ObjectId().toString();
+		await repository.create(buildIdentity({ userId }));
+		await repository.create(buildIdentity());
+
+		expect(await repository.listProvidersByUserId(userId)).toEqual(['google']);
+		expect(await repository.listProvidersByUserId('missing-user')).toEqual([]);
+	});
+
+	it('deletes all identities owned by a user without deleting other identities', async () => {
+		const userId = new ObjectId().toString();
+		await repository.create(buildIdentity({ userId }));
+		const other = await repository.create(buildIdentity());
+
+		await repository.deleteByUserId(userId);
+
+		expect(await repository.findByUserId(userId)).toEqual([]);
+		expect(await repository.findByUserId(other.userId)).toHaveLength(1);
+	});
+
+	it('ignores an invalid identity id when touching last login', async () => {
+		await expect(repository.touchLastLogin('invalid-id', new Date())).resolves.toBeUndefined();
+	});
+
 	it('rejects a second identity for the same user and provider', async () => {
 		const userId = new ObjectId().toString();
 		await repository.create(buildIdentity({ userId }));

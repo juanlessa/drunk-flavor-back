@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
 import { IdentitiesRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Identities.repository';
 import { FakeGoogleTokenVerifier } from '@/shared/providers/googleAuth/fakes/FakeGoogleTokenVerifier';
@@ -10,6 +10,7 @@ import { VerifiedGoogleIdentity } from '@/shared/providers/googleAuth/googleAuth
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { IdentityProviders } from '@/core/accounts/constants/identity.constants';
 import { Roles } from '@/shared/accessControl/roles';
+import { IdentityProviderSubjectAlreadyExistsError } from '@/core/accounts/errors/identity.errors';
 import { GoogleAuthService } from './GoogleAuth.service';
 
 let usersRepository: IUsersRepository;
@@ -148,37 +149,69 @@ describe('GoogleAuth', () => {
 		expect(result.user.status).toBe(UserStatuses.incomplete_profile);
 	});
 
-	it('does not auto-link when an identity lookup races with an existing account', async () => {
-		// Pre-seed the identity + its user so the in-memory identities repo throws a
-		// duplicate-key error on the branch (c) create, exercising the recovery path.
-		const racedUser = await usersRepository.create({
-			name: 'Jane',
-			surname: 'Doe',
-			email: 'janedoe@example.com',
-			emailVerified: true,
-			role: Roles.member,
-			status: UserStatuses.active,
+	it('rejects a verified Google token without an email', async () => {
+		const { email: _omitted, ...withoutEmail } = verifiedIdentity;
+		verifier.setNextIdentity(withoutEmail);
+
+		await expect(service.execute({ idToken })).rejects.toBeInstanceOf(UnauthorizedError);
+		await expect(service.execute({ idToken })).rejects.toThrow('apiResponses.auth.invalidCredentials');
+	});
+
+	it('recovers when another request creates the Google identity concurrently', async () => {
+		const realCreate = identitiesRepository.create.bind(identitiesRepository);
+		identitiesRepository.create = async (data) => {
+			await realCreate(data);
+			throw new IdentityProviderSubjectAlreadyExistsError();
+		};
+		verifier.setNextIdentity(verifiedIdentity);
+
+		const result = await service.execute({ idToken });
+
+		const identity = await identitiesRepository.findByProviderSub(
+			IdentityProviders.google,
+			verifiedIdentity.subject,
+		);
+		expect(identity).not.toBeNull();
+		expect(result.user.id).toBe(identity?.userId);
+	});
+
+	it('rethrows a concurrent-identity error when the identity cannot be re-read', async () => {
+		const raceError = new IdentityProviderSubjectAlreadyExistsError();
+		identitiesRepository.create = vi.fn(async () => {
+			throw raceError;
 		});
+		verifier.setNextIdentity(verifiedIdentity);
+
+		await expect(service.execute({ idToken })).rejects.toBe(raceError);
+	});
+
+	it('rethrows a concurrent-identity error when the recovered identity is orphaned', async () => {
 		await identitiesRepository.create({
-			userId: racedUser.id,
+			userId: 'missing-user',
 			provider: IdentityProviders.google,
 			providerSubject: verifiedIdentity.subject,
 		});
-
-		// Force the service to skip branch (a) by making findByProviderSub return
-		// null on the first lookup but the real identity on the recovery re-read.
-		let firstLookup = true;
 		const realFind = identitiesRepository.findByProviderSub.bind(identitiesRepository);
-		identitiesRepository.findByProviderSub = async (provider, providerSub) => {
+		let firstLookup = true;
+		identitiesRepository.findByProviderSub = async (provider, providerSubject) => {
 			if (firstLookup) {
 				firstLookup = false;
 				return null;
 			}
-			return realFind(provider, providerSub);
+			return realFind(provider, providerSubject);
 		};
-
 		verifier.setNextIdentity(verifiedIdentity);
 
-		await expect(service.execute({ idToken })).rejects.toBeInstanceOf(ConflictError);
+		await expect(service.execute({ idToken })).rejects.toBeInstanceOf(IdentityProviderSubjectAlreadyExistsError);
+	});
+
+	it('does not swallow non-concurrency errors while creating a Google account', async () => {
+		const expectedError = new Error('Database unavailable');
+		identitiesRepository.create = vi.fn(async () => {
+			throw expectedError;
+		});
+		verifier.setNextIdentity(verifiedIdentity);
+
+		await expect(service.execute({ idToken })).rejects.toBe(expectedError);
 	});
 });
