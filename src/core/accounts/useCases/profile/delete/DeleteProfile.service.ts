@@ -6,7 +6,7 @@ import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import {
-	assertAccountCanBeClosed,
+	assertAccountCanBeSelfClosed,
 	deleteAccountAvatar,
 	deleteAccountData,
 } from '@/core/accounts/useCases/accountClosure/accountClosure.helpers';
@@ -39,7 +39,7 @@ export class DeleteProfileService {
 			if (user.role === Roles.owner) {
 				throw new OwnerManagementRequiresTransferError({ path: 'DeleteProfile.service' });
 			}
-			assertAccountCanBeClosed(user, 'DeleteProfile.service.status');
+			assertAccountCanBeSelfClosed(user, 'DeleteProfile.service.status');
 
 			await deleteAccountData({
 				user,

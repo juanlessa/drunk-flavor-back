@@ -61,10 +61,17 @@ export class UserAdministrationPolicy {
 		}
 	}
 
-	assertCanChangeRole(actor: Actor, target: UserAdministrationTarget, requestedRole: Role): UserRoleChangeOutcome {
+	assertCanChangeRole(
+		actor: Actor,
+		target: UserStatusAdministrationTarget,
+		requestedRole: Role,
+	): UserRoleChangeOutcome {
 		this.assertNotSelf(actor, target, 'UserAdministrationPolicy.changeRole');
 		this.assertNonOwnerTarget(target, 'UserAdministrationPolicy.changeRole');
 		this.assertNonOwnerRole(requestedRole, 'UserAdministrationPolicy.changeRole');
+		if (target.status !== UserStatuses.active && target.status !== UserStatuses.suspended) {
+			throw new UserStatusTransitionInvalidError({ path: 'UserAdministrationPolicy.changeRole' });
+		}
 
 		const ability = this.defineAbility(actor);
 		const subject = this.toSubject({ ...target, requestedRole });
@@ -87,8 +94,11 @@ export class UserAdministrationPolicy {
 		this.assertCanMutateTarget('delete', actor, target);
 	}
 
-	assertCanCloseUser(actor: Actor, target: UserAdministrationTarget): void {
+	assertCanCloseUser(actor: Actor, target: UserStatusAdministrationTarget): void {
 		this.assertCanMutateTarget('close', actor, target);
+		if (target.status !== UserStatuses.suspended) {
+			throw new UserStatusTransitionInvalidError({ path: 'UserAdministrationPolicy.close' });
+		}
 	}
 
 	assertCanSuspendUser(actor: Actor, target: UserStatusAdministrationTarget): UserStatusChangeOutcome {

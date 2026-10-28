@@ -21,7 +21,7 @@ const closableStatuses: readonly User['status'][] = [
 	UserStatuses.incomplete_profile,
 ];
 
-export const assertAccountCanBeClosed = (user: User, path: string): void => {
+export const assertAccountCanBeSelfClosed = (user: User, path: string): void => {
 	if (!closableStatuses.includes(user.status)) {
 		throw new UserStatusTransitionInvalidError({ path });
 	}

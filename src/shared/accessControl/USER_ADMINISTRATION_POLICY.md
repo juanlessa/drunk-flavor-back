@@ -4,7 +4,7 @@
 
 **Scope:** `drunk-flavor-back` user administration
 
-**Version:** 1.7
+**Version:** 1.8
 
 ## Purpose
 
@@ -331,33 +331,37 @@ Implemented:
 16. Administrative events expire through a 730-day MongoDB TTL index and have no application update/delete repository
     operations.
 17. Suspension permits only `active -> suspended`; reactivation permits only `suspended -> active`.
-18. Authorized requests for an already-suspended/already-active target are no-ops with no version increment or audit
+18. Generic role changes are allowed only for active or suspended targets.
+19. Authorized requests for an already-suspended/already-active target are no-ops with no version increment or audit
     event.
-19. Suspension and reactivation require a normalized reason of 10-500 characters, stored only in the audit event.
-20. Suspended member/partner access tokens may remain usable until expiration by explicit bounded-staleness policy;
+20. Suspension and reactivation require a normalized reason of 10-500 characters, stored only in the audit event.
+21. Suspended member/partner access tokens may remain usable until expiration by explicit bounded-staleness policy;
     refresh and new sign-in are rejected. Privileged admin tokens remain subject to immediate freshness validation.
-21. Account closure physically removes the user, authentication records, and comments while intentionally retaining
+22. Account closure physically removes the user, authentication records, and comments while intentionally retaining
     ratings with their original orphaned `user_id`; drink aggregates are unchanged.
-22. Administrative closure uses `POST /users/:id/closure`, self-service uses `DELETE /me`, and both require recent
-    authentication. Closure is irreversible and repeated requests resolve as missing/unauthenticated rather than no-op.
-23. A successful self-service closure clears the current client cookies. Other member/partner access tokens remain
+23. Administrative closure accepts only suspended targets through `POST /users/:id/closure`; self-service uses
+    `DELETE /me` for active, suspended, or incomplete-profile users. Both require recent authentication. Closure is
+    irreversible and repeated requests resolve as missing/unauthenticated rather than no-op.
+24. A successful self-service closure clears the current client cookies. Other member/partner access tokens remain
     usable until expiration by explicit bounded-staleness policy; immediate Redis watermark revocation is deferred.
-24. Password and Google reauthentication establish a session-bound five-minute window shared by critical operations.
-25. Every user-administration mutation, profile closure, password creation, and Google identity linking requires recent
+25. Password and Google reauthentication establish a session-bound five-minute window shared by critical operations.
+26. Every user-administration mutation, profile closure, password creation, and Google identity linking requires recent
     authentication; password update verifies the current password inline.
-26. Credential creation/update/linking increments `sessionVersion`, rotates the current session, invalidates other
+27. Credential creation/update/linking increments `sessionVersion`, rotates the current session, invalidates other
     sessions, and consumes the recent-authentication proof. Password reset increments the version without issuing a
     session.
-27. Reauthentication attempts use opaque client errors and structured security logs; secrets and provider tokens are
+28. Reauthentication attempts use opaque client errors and structured security logs; secrets and provider tokens are
     never logged or stored as administrative audit events.
-28. Ownership transfer uses one global 24-hour invitation for an active, verified admin with a usable authentication
+29. Ownership transfer uses one global 24-hour invitation for an active, verified admin with a usable authentication
     method. The token is delivered by email and persisted only as a hash.
-29. Acceptance requires the invited admin's authenticated, recently authenticated session and unchanged owner/target
+30. Acceptance requires the invited admin's authenticated, recently authenticated session and unchanged owner/target
     session-version snapshots.
-30. Acceptance atomically demotes the previous owner to admin, promotes the target to owner, increments both session
+31. Acceptance atomically demotes the previous owner to admin, promotes the target to owner, increments both session
     versions, consumes the invitation, and writes both ownership and role-change audit events.
-31. Request, resend, cancellation, and completion are audited. Invitation delivery is retryable after queue failure;
+32. Request, resend, cancellation, and completion are audited. Invitation delivery is retryable after queue failure;
     completion notifications are best-effort and cannot roll back ownership.
+33. `GET /users/:id/administrative-capabilities` computes target-specific actions on demand without changing the user
+    list response. It is advisory, read-only, fail-closed, and never replaces mutation authorization.
 
 Pending:
 

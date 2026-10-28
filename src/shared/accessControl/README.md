@@ -224,9 +224,10 @@ relationships remain unchanged, and this stage sends no email notification.
 
 ### Account closure
 
-Administrative closure uses `POST /users/:id/closure` with a required 10-500 character reason. Self-service closure uses
-`DELETE /me`. Both require recent authentication. Owner cannot be closed, admin cannot close a peer admin, and generic
-self-administration remains forbidden.
+Administrative closure uses `POST /users/:id/closure` with a required 10-500 character reason and accepts only a
+suspended target. Active users must be suspended first. Self-service closure uses `DELETE /me` and remains available to
+active, suspended, and incomplete-profile users. Both require recent authentication. Owner cannot be closed, admin
+cannot close a peer admin, and generic self-administration remains forbidden.
 
 Closure physically removes the user, credentials, identities, verification/reset tokens, and comments in one MongoDB
 transaction, then removes a managed avatar after commit. Ratings and their original `user_id` are intentionally
@@ -295,3 +296,15 @@ completion are audited; re-send uses `ownership.transfer_resent`.
 Invitation delivery is enqueued after the creation transaction. A queue failure is returned to the caller while the
 invitation remains available for re-send. Completion notifications to the previous and new owners are best-effort after
 commit and never roll back ownership.
+
+### On-demand administrative capabilities
+
+`GET /users/:id/administrative-capabilities` returns the actions that the current owner/admin can perform against one
+persisted target. It is read-only, requires no recent-authentication step, emits no audit event, and never replaces
+authorization in mutation endpoints.
+
+The response contains `actions` (`changeRole`, `suspend`, `reactivate`, `close`, or `requestOwnershipTransfer`) and
+`roleTransitions`. Self-targets and admin/owner targets viewed by an admin return empty arrays. Role changes are
+available only for active or suspended targets. Closure appears only for suspended targets. Ownership transfer appears
+only for an eligible admin when no valid invitation is pending; credential, identity, and invitation checks are
+performed only for that selected target. `GET /users` remains unchanged and does not calculate capabilities.

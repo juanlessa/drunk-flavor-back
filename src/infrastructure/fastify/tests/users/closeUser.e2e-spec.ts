@@ -50,6 +50,12 @@ describe('Close User', () => {
 			value: 4,
 		});
 
+		const suspensionResponse = await request(app.server)
+			.post(`/users/${target.id}/suspension`)
+			.set('Cookie', cookies)
+			.send({ reason: 'Suspend account before permanent closure' });
+		expect(suspensionResponse.status).toBe(HTTP_STATUS.no_content);
+
 		const response = await request(app.server)
 			.post(`/users/${target.id}/closure`)
 			.set('Cookie', cookies)
@@ -65,7 +71,7 @@ describe('Close User', () => {
 			actor_id: actor.id,
 			target_user_id: target.id,
 			action: AdministrativeEventActions.userClosed,
-			before: { role: Roles.partner, status: 'active' },
+			before: { role: Roles.partner, status: 'suspended' },
 			origin: 'api',
 			reason,
 		});

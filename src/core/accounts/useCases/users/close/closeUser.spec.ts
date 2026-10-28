@@ -39,7 +39,7 @@ let service: CloseUserService;
 
 const cryptoProvider = new NodeCryptoProvider();
 const reason = 'Account closure requested after privacy review';
-const userData = createUserFactory();
+const userData = createUserFactory({ status: 'suspended' });
 
 let owner: Actor;
 let admin: Actor;
@@ -161,7 +161,8 @@ describe('Close User', () => {
 		expect(await usersRepository.findById(otherAdmin.id)).not.toBeNull();
 	});
 
-	it('lets the owner close an admin', async () => {
+	it('lets the owner close a suspended admin', async () => {
+		await usersRepository.update({ id: admin.id, status: 'suspended' });
 		await service.execute({ id: admin.id, actor: owner, reason });
 
 		expect(await usersRepository.findById(admin.id)).toBeNull();

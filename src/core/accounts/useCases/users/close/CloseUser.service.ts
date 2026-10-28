@@ -8,11 +8,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { IEngagementModule } from '@/core/engagement/public';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
-import {
-	assertAccountCanBeClosed,
-	deleteAccountAvatar,
-	deleteAccountData,
-} from '@/core/accounts/useCases/accountClosure/accountClosure.helpers';
+import { deleteAccountAvatar, deleteAccountData } from '@/core/accounts/useCases/accountClosure/accountClosure.helpers';
 import { authorizeUserAdministration } from '../userAdministrationAudit.helpers';
 import { findRequiredAdministrationUser, toAdministrationActor } from '../userAdministration.helpers';
 import { CloseUser } from './closeUser.dtos';
@@ -49,7 +45,6 @@ export class CloseUserService {
 				},
 				() => this.userAdministrationPolicy.assertCanCloseUser(currentActor, target),
 			);
-			assertAccountCanBeClosed(target, 'CloseUser.service.status');
 
 			await deleteAccountData({
 				user: target,

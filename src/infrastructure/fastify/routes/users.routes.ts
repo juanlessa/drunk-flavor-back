@@ -6,6 +6,8 @@ import { createUserSchema } from '@/core/accounts/useCases/users/create/createUs
 import { createUserController } from '@/core/accounts/useCases/users/create/createUser.controller';
 import { getUserSchema } from '@/core/accounts/useCases/users/get/getUser.schema';
 import { getUserController } from '@/core/accounts/useCases/users/get/getUser.controller';
+import { getUserAdministrativeCapabilitiesController } from '@/core/accounts/useCases/users/getAdministrativeCapabilities/getUserAdministrativeCapabilities.controller';
+import { getUserAdministrativeCapabilitiesSchema } from '@/core/accounts/useCases/users/getAdministrativeCapabilities/getUserAdministrativeCapabilities.schema';
 import { listUsersQuerySchema } from '@/core/accounts/useCases/users/list/listUsers.schema';
 import { listUsersController } from '@/core/accounts/useCases/users/list/listUsers.controller';
 import { updateUserRoleSchema } from '@/core/accounts/useCases/users/updateRole/updateUserRole.schema';
@@ -42,6 +44,15 @@ const routes: Routes = (server) => {
 			],
 		},
 		createUserController,
+	);
+
+	server.withTypeProvider<ZodTypeProvider>().get(
+		'/users/:id/administrative-capabilities',
+		{
+			schema: { tags: ['Users'], params: getUserAdministrativeCapabilitiesSchema },
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('get', 'User')],
+		},
+		getUserAdministrativeCapabilitiesController,
 	);
 
 	server.withTypeProvider<ZodTypeProvider>().get(
