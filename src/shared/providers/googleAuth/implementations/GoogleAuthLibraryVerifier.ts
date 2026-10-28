@@ -26,6 +26,7 @@ export class GoogleAuthLibraryVerifier implements IGoogleTokenVerifier {
 				givenName: payload.given_name,
 				familyName: payload.family_name,
 				pictureUrl: payload.picture,
+				issuedAt: typeof payload.iat === 'number' ? new Date(payload.iat * 1000) : undefined,
 			};
 		} catch (error) {
 			// Any verification failure (bad signature, wrong audience, expired token,

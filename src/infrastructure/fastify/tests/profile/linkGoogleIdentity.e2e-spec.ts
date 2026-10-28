@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import request from 'supertest';
 import { CredentialModel } from '@/core/accounts/infra/mongo/entities/credential.model';
 import { IdentityModel } from '@/core/accounts/infra/mongo/entities/identity.model';
@@ -9,6 +9,7 @@ import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { resetFakeGoogleTokenVerifier, setNextVerifiedGoogleIdentity } from '@/shared/providers/googleAuth';
 import { resolveRateLimitStore } from '@/infrastructure/fastify/rateLimitStore';
 import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
+import { RECENT_AUTHENTICATION_WINDOW_MS } from '@/core/accounts/constants/reauthentication.constants';
 
 const idToken = 'google-link-token';
 const googleIdentity = {
@@ -37,6 +38,7 @@ describe('Link Google identity', () => {
 	});
 
 	beforeEach(async () => {
+		vi.useFakeTimers({ toFake: ['Date'] });
 		await MongoConnection.Instance.emptyCollection(UserModel);
 		await MongoConnection.Instance.emptyCollection(CredentialModel);
 		await MongoConnection.Instance.emptyCollection(IdentityModel);
@@ -44,16 +46,17 @@ describe('Link Google identity', () => {
 		resetFakeGoogleTokenVerifier();
 	});
 
-	it('connects Google after verifying the current password and enables both login methods', async () => {
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it('connects Google after recent authentication and enables both login methods', async () => {
 		const { cookies, user } = await createAndAuthenticateUser(app, {
 			email: 'primary-local@example.com',
 		});
 		setNextVerifiedGoogleIdentity(googleIdentity);
 
-		const linked = await request(app.server)
-			.post('/me/identities/google')
-			.set('Cookie', cookies)
-			.send({ currentPassword: user.password, idToken });
+		const linked = await request(app.server).post('/me/identities/google').set('Cookie', cookies).send({ idToken });
 		expect(linked.status).toBe(HTTP_STATUS.no_content);
 
 		const profile = await request(app.server).get('/me').set('Cookie', cookies);
@@ -69,14 +72,15 @@ describe('Link Google identity', () => {
 		).toBe(HTTP_STATUS.ok);
 	});
 
-	it('rejects linking when the current password is invalid', async () => {
+	it('rejects linking when recent authentication has expired', async () => {
 		const { cookies } = await createAndAuthenticateUser(app);
 		setNextVerifiedGoogleIdentity(googleIdentity);
+		vi.advanceTimersByTime(RECENT_AUTHENTICATION_WINDOW_MS + 1);
 
 		const response = await request(app.server)
 			.post('/me/identities/google')
 			.set('Cookie', cookies)
-			.send({ currentPassword: 'Wrong-password-123', idToken });
+			.send({ idToken });
 
 		expect(response.status).toBe(HTTP_STATUS.unauthorized);
 		expect(await IdentityModel.countDocuments()).toBe(0);

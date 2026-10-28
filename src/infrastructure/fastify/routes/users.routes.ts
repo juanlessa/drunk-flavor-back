@@ -34,7 +34,12 @@ const routes: Routes = (server) => {
 				tags: ['Users'],
 				body: createUserSchema,
 			},
-			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('create', 'User')],
+			preValidation: [
+				verifyAndRenewToken,
+				enforceCompleteProfile,
+				requireRecentAuthentication,
+				verifyPermissions('create', 'User'),
+			],
 		},
 		createUserController,
 	);
@@ -70,7 +75,12 @@ const routes: Routes = (server) => {
 				tags: ['Users'],
 				body: updateUserRoleSchema,
 			},
-			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('changeRole', 'User')],
+			preValidation: [
+				verifyAndRenewToken,
+				enforceCompleteProfile,
+				requireRecentAuthentication,
+				verifyPermissions('changeRole', 'User'),
+			],
 		},
 		updateUserRoleController,
 	);
@@ -101,7 +111,12 @@ const routes: Routes = (server) => {
 				params: suspendUserParamsSchema,
 				body: suspendUserBodySchema,
 			},
-			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('suspend', 'User')],
+			preValidation: [
+				verifyAndRenewToken,
+				enforceCompleteProfile,
+				requireRecentAuthentication,
+				verifyPermissions('suspend', 'User'),
+			],
 		},
 		suspendUserController,
 	);
@@ -114,7 +129,12 @@ const routes: Routes = (server) => {
 				params: reactivateUserParamsSchema,
 				body: reactivateUserBodySchema,
 			},
-			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('reactivate', 'User')],
+			preValidation: [
+				verifyAndRenewToken,
+				enforceCompleteProfile,
+				requireRecentAuthentication,
+				verifyPermissions('reactivate', 'User'),
+			],
 		},
 		reactivateUserController,
 	);

@@ -1,20 +1,15 @@
-import { AUTH_SESSION } from '@/infrastructure/fastify/constants/session.constants';
 import { Controller } from '@/infrastructure/fastify/types/fastify.types';
+import { rotateAuthenticationSession } from '@/infrastructure/fastify/helpers/authSession.helpers';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { resolveCreatePasswordService } from './createPassword.container';
 import { CreatePasswordReqBody } from './createPassword.dtos';
 
 export const createPasswordController: Controller<{ Body: CreatePasswordReqBody }> = async (request, reply) => {
-	await resolveCreatePasswordService().execute({
+	const { user } = await resolveCreatePasswordService().execute({
 		userId: request.user.id,
 		password: request.body.password,
 	});
-
-	const session = request.session.get(AUTH_SESSION);
-	if (session) {
-		const { reauthenticatedAt: _at, reauthenticationMethod: _method, ...remainingSession } = session;
-		request.session.set(AUTH_SESSION, remainingSession);
-	}
+	await rotateAuthenticationSession(request, reply, user);
 
 	return reply.status(HTTP_STATUS.no_content).send();
 };

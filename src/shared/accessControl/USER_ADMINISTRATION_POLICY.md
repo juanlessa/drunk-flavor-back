@@ -4,7 +4,7 @@
 
 **Scope:** `drunk-flavor-back` user administration
 
-**Version:** 1.5
+**Version:** 1.6
 
 ## Purpose
 
@@ -180,8 +180,7 @@ These rules apply even when a broad CASL rule would otherwise allow an action.
 14. Tokens claiming `owner` or `admin` must match the persisted `sessionVersion` on every authenticated request.
 15. Tokens claiming `partner` or `member` may remain usable on non-sensitive routes until access-token expiration, but
     an outdated refresh token must never renew the session.
-16. Ownership transfer and privileged role changes must eventually require recent authentication as defined by the
-    reauthentication implementation stage.
+16. Ownership transfer and privileged role changes require recent authentication through password or Google step-up.
 17. Administrative mutations must eventually produce immutable audit events as defined by the audit implementation
     stage.
 18. UI visibility and client-side CASL checks are advisory only; the backend is authoritative.
@@ -343,12 +342,19 @@ Implemented:
     authentication. Closure is irreversible and repeated requests resolve as missing/unauthenticated rather than no-op.
 23. A successful self-service closure clears the current client cookies. Other member/partner access tokens remain
     usable until expiration by explicit bounded-staleness policy; immediate Redis watermark revocation is deferred.
+24. Password and Google reauthentication establish a session-bound five-minute window shared by critical operations.
+25. Every user-administration mutation, profile closure, password creation, and Google identity linking requires recent
+    authentication; password update verifies the current password inline.
+26. Credential creation/update/linking increments `sessionVersion`, rotates the current session, invalidates other
+    sessions, and consumes the recent-authentication proof. Password reset increments the version without issuing a
+    session.
+27. Reauthentication attempts use opaque client errors and structured security logs; secrets and provider tokens are
+    never logged or stored as administrative audit events.
 
 Pending:
 
-1. Add generalized reauthentication and ownership transfer in their dedicated stages.
-2. Reuse `sessionVersion` for password changes, account recovery, and explicit administrative revocation as those flows
-   are implemented.
+1. Add ownership transfer in its dedicated stage.
+2. Reuse `sessionVersion` for explicit administrative revocation when that flow is implemented.
 3. Extend the audit action set for ownership transfer and emergency recovery when those flows are implemented.
 4. Replace bounded suspension/closure staleness with a Redis minimum-session-version watermark if stricter enforcement
    becomes necessary.

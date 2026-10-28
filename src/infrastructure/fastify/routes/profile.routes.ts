@@ -11,6 +11,8 @@ import { linkGoogleIdentityController } from '@/core/accounts/useCases/profile/l
 import { linkGoogleIdentitySchema } from '@/core/accounts/useCases/profile/linkGoogleIdentity/linkGoogleIdentity.schema';
 import { reauthenticateGoogleController } from '@/core/accounts/useCases/profile/reauthenticateGoogle/reauthenticateGoogle.controller';
 import { reauthenticateGoogleSchema } from '@/core/accounts/useCases/profile/reauthenticateGoogle/reauthenticateGoogle.schema';
+import { reauthenticatePasswordController } from '@/core/accounts/useCases/profile/reauthenticatePassword/reauthenticatePassword.controller';
+import { reauthenticatePasswordSchema } from '@/core/accounts/useCases/profile/reauthenticatePassword/reauthenticatePassword.schema';
 import { updateProfileController } from '@/core/accounts/useCases/profile/update/updateProfile.controller';
 import { updateProfileSchema } from '@/core/accounts/useCases/profile/update/updateProfile.schema';
 import { updateAvatarController } from '@/core/accounts/useCases/profile/updateAvatar/updateAvatar.controller';
@@ -53,7 +55,7 @@ const routes: Routes = (server) => {
 		{
 			config: { rateLimit: { max: 5, timeWindow: ONE_MINUTE, ban: BAN_THRESHOLD } },
 			schema: { tags: ['Profile'], body: linkGoogleIdentitySchema },
-			preValidation: [verifyAndRenewToken],
+			preValidation: [verifyAndRenewToken, requireRecentAuthentication],
 		},
 		linkGoogleIdentityController,
 	);
@@ -66,6 +68,16 @@ const routes: Routes = (server) => {
 			preValidation: [verifyAndRenewToken],
 		},
 		reauthenticateGoogleController,
+	);
+
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/me/reauthentication/password',
+		{
+			config: { rateLimit: { max: 5, timeWindow: ONE_MINUTE, ban: BAN_THRESHOLD } },
+			schema: { tags: ['Profile'], body: reauthenticatePasswordSchema },
+			preValidation: [verifyAndRenewToken],
+		},
+		reauthenticatePasswordController,
 	);
 
 	server.withTypeProvider<ZodTypeProvider>().post(
@@ -82,16 +94,6 @@ const routes: Routes = (server) => {
 		'/me/password',
 		{
 			config: { rateLimit: { max: 5, timeWindow: ONE_MINUTE, ban: BAN_THRESHOLD } },
-			schema: { tags: ['Profile'], body: updatePasswordSchema },
-			preValidation: [verifyAndRenewToken],
-		},
-		updatePasswordController,
-	);
-
-	// Temporary compatibility alias. New clients must use PATCH /me/password.
-	server.withTypeProvider<ZodTypeProvider>().patch(
-		'/update-password',
-		{
 			schema: { tags: ['Profile'], body: updatePasswordSchema },
 			preValidation: [verifyAndRenewToken],
 		},

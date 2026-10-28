@@ -8,6 +8,7 @@ import { ConflictError, NotFoundError } from '@/shared/error/error.lib';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
 import { CreatePasswordService } from './CreatePassword.service';
+import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 
 let usersRepository: IUsersRepository;
 let credentialsRepository: ICredentialsRepository;
@@ -21,7 +22,12 @@ describe('CreatePasswordService', () => {
 		usersRepository = new UsersRepositoryInMemory();
 		credentialsRepository = new CredentialsRepositoryInMemory();
 		hashProvider = new BcryptHashProvider();
-		service = new CreatePasswordService(usersRepository, credentialsRepository, hashProvider);
+		service = new CreatePasswordService(
+			usersRepository,
+			credentialsRepository,
+			hashProvider,
+			new FakeTransactionManager(),
+		);
 	});
 
 	it('creates the first credential with a hashed password', async () => {
@@ -33,6 +39,7 @@ describe('CreatePasswordService', () => {
 		expect(credential).not.toBeNull();
 		expect(credential?.passwordHash).not.toBe(password);
 		expect(await hashProvider.compare(password, credential!.passwordHash)).toBe(true);
+		expect((await usersRepository.findById(user.id))?.sessionVersion).toBe(user.sessionVersion + 1);
 	});
 
 	it('rejects an account that already has a password', async () => {

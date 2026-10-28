@@ -5,4 +5,5 @@ export type VerifiedGoogleIdentity = {
 	givenName?: string;
 	familyName?: string;
 	pictureUrl?: string;
+	issuedAt?: Date;
 };

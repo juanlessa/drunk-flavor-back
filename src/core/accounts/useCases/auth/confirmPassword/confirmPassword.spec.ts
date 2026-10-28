@@ -8,6 +8,7 @@ import { BcryptHashProvider } from '@/shared/providers/cryptography/implementati
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { ConfirmPasswordService } from './ConfirmPassword.service';
+import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
 import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.provider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
@@ -48,6 +49,7 @@ describe('Confirm Password', () => {
 			dateProvider,
 			hashProvider,
 			cryptoProvider,
+			new FakeTransactionManager(),
 		);
 	});
 
@@ -83,6 +85,7 @@ describe('Confirm Password', () => {
 
 		const verifyUser = (await usersRepository.findById(createdUser.id)) as User;
 		expect(verifyUser).toBeDefined();
+		expect(verifyUser.sessionVersion).toBe(createdUser.sessionVersion + 1);
 
 		const verifyCredential = await credentialsRepository.findByUserId(createdUser.id);
 		expect(verifyCredential).not.toBeNull();

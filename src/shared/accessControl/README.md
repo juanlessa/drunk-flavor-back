@@ -249,3 +249,27 @@ Before committing closure, write `auth:min-session-version:<userId> = <currentVe
 watermark. On each authenticated request, reject and clear cookies when the token version is below the stored minimum.
 The key can expire after every access token issued before closure is guaranteed to have expired; refresh already checks
 MongoDB and fails because the user no longer exists.
+
+### Critical-operation reauthentication
+
+A password sign-in or Google sign-in starts a five-minute recent-authentication window. An authenticated user can renew
+that window with `POST /me/reauthentication/password` or `POST /me/reauthentication/google`; a hybrid account may use
+either linked method. The proof applies to all critical operations during the window.
+
+All user-administration mutations require recent authentication: create user, change role, close account, suspend, and
+reactivate. Profile closure, password creation, and Google identity linking also require it. Password update validates
+the current password inline. User/profile reads, comment moderation, catalog management, and ordinary profile/avatar
+updates do not require step-up authentication.
+
+Password and Google reauthentication failures return the opaque `apiResponses.profile.invalidReauthentication` response.
+Attempts are rate-limited and logged with user ID, method, request ID, and outcome; credentials and provider tokens are
+never logged or persisted as administrative events.
+
+Creating/updating a password, linking Google, and password reset increment `sessionVersion`. The current interactive
+session receives new access and refresh tokens after credential creation/update/linking; all other sessions become
+stale. Password reset emits no session. Credential changes consume recent authentication by removing both the original
+login timestamp and any reauthentication timestamp from the rotated session. The legacy `PATCH /update-password` alias
+is no longer exposed.
+
+Google reauthentication validates that the provider subject belongs to the current usable account. When the verified ID
+token includes `iat`, it must be within the five-minute window plus one minute of clock-skew tolerance.
