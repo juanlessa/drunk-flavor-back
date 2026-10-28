@@ -37,7 +37,7 @@ describe('GoogleAuth', () => {
 		service = new GoogleAuthService(verifier, usersRepository, identitiesRepository, new FakeTransactionManager());
 	});
 
-	it('branch (a): signs in an existing identity', async () => {
+	it('signs in an existing linked identity', async () => {
 		const user = await usersRepository.create({
 			name: 'Jane',
 			surname: 'Doe',
@@ -64,7 +64,7 @@ describe('GoogleAuth', () => {
 		expect(usersRepository).toBeDefined();
 	});
 
-	it('branch (a) orphan: rejects an identity whose user is gone', async () => {
+	it('rejects an identity whose user no longer exists', async () => {
 		await identitiesRepository.create({
 			userId: '000000000000000000000000',
 			provider: IdentityProviders.google,
@@ -101,7 +101,7 @@ describe('GoogleAuth', () => {
 		expect((await usersRepository.findById(existing.id))?.status).toBe(UserStatuses.active);
 	});
 
-	it('branch (c): creates a new active, verified member user + identity', async () => {
+	it('creates a new active verified member and Google identity', async () => {
 		verifier.setNextIdentity(verifiedIdentity);
 
 		const result = await service.execute({ idToken });
@@ -123,7 +123,7 @@ describe('GoogleAuth', () => {
 		expect(identity?.userId).toBe(created?.id);
 	});
 
-	it('branch (c): creates an incomplete_profile user without a surname when familyName is absent', async () => {
+	it('creates an incomplete profile without a surname when familyName is absent', async () => {
 		const { familyName: _omitted, ...withoutFamily } = verifiedIdentity;
 		verifier.setNextIdentity(withoutFamily);
 
@@ -136,7 +136,7 @@ describe('GoogleAuth', () => {
 		expect(result.user.status).toBe(UserStatuses.incomplete_profile);
 	});
 
-	it('branch (c): creates an incomplete_profile user without a name when givenName is absent', async () => {
+	it('creates an incomplete profile without a name when givenName is absent', async () => {
 		const { givenName: _omitted, ...withoutGiven } = verifiedIdentity;
 		verifier.setNextIdentity(withoutGiven);
 

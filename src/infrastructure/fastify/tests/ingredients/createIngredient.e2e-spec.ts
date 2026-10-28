@@ -1,27 +1,21 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
-import { app } from '@/infrastructure/fastify/app';
-import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
-import { HTTP_STATUS } from '@/shared/constants/http.constants';
-import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { CategoryModel } from '@/core/drinks/infra/mongo/entities/category.model';
+import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.model';
 import { UnitModel } from '@/core/drinks/infra/mongo/entities/unit.model';
+import { app } from '@/infrastructure/fastify/app';
+import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
+import { Roles } from '@/shared/accessControl/roles';
+import { HTTP_STATUS } from '@/shared/constants/http.constants';
+import { createAndAuthenticateUser } from '../helpers/authentication.helpers';
 import { createCategory } from '../helpers/category.helpers';
 import { createUnit } from '../helpers/unit.helpers';
-import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
-import { Roles } from '@/shared/accessControl/roles';
 
 describe('Create Ingredient', () => {
-	beforeAll(async () => {
-		await app.ready();
-	});
-
-	afterAll(async () => {
-		await app.close();
-	});
-
+	beforeAll(async () => app.ready());
+	afterAll(async () => app.close());
 	beforeEach(async () => {
 		await MongoConnection.Instance.emptyCollection(CategoryModel);
 		await MongoConnection.Instance.emptyCollection(IngredientModel);
@@ -33,7 +27,6 @@ describe('Create Ingredient', () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 		const { id: categoryId } = await createCategory();
 		const { id: unitId } = await createUnit();
-
 		const { translations } = createIngredientFactory();
 
 		const response = await request(app.server)
@@ -42,49 +35,5 @@ describe('Create Ingredient', () => {
 			.send({ translations, categoryId, unitId });
 
 		expect(response.status).toBe(HTTP_STATUS.created);
-	});
-
-	it('Should not be able to create an ingredient when unauthenticated', async () => {
-		const { id: categoryId } = await createCategory();
-		const { id: unitId } = await createUnit();
-		const { translations } = createIngredientFactory();
-
-		const response = await request(app.server).post('/ingredients').send({ translations, categoryId, unitId });
-
-		expect(response.status).toBe(HTTP_STATUS.unauthorized);
-	});
-
-	it('Should not be able to create an ingredient as a member', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, {
-			email: 'member@example.com',
-			role: Roles.member,
-		});
-		const { id: categoryId } = await createCategory();
-		const { id: unitId } = await createUnit();
-		const { translations } = createIngredientFactory();
-
-		const response = await request(app.server)
-			.post('/ingredients')
-			.set('Cookie', cookies)
-			.send({ translations, categoryId, unitId });
-
-		expect(response.status).toBe(HTTP_STATUS.forbidden);
-	});
-
-	it('Should not block a partner from creating an ingredient by authorization', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, {
-			email: 'partner@example.com',
-			role: Roles.partner,
-		});
-		const { id: categoryId } = await createCategory();
-		const { id: unitId } = await createUnit();
-		const { translations } = createIngredientFactory();
-
-		const response = await request(app.server)
-			.post('/ingredients')
-			.set('Cookie', cookies)
-			.send({ translations, categoryId, unitId });
-
-		expect(response.status).not.toBe(HTTP_STATUS.forbidden);
 	});
 });

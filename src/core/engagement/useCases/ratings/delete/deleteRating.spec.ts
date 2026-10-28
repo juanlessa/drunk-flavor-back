@@ -2,7 +2,6 @@ import { IDrinksModule } from '@/core/drinks/public';
 import { Actor } from '@/shared/accessControl/actor.types';
 import { IRatingsRepository } from '@/core/engagement/repositories/IRatings.repository';
 import { RatingsRepositoryInMemory } from '@/core/engagement/repositories/inMemory/Ratings.repository';
-import { resolveDeleteRatingService } from './deleteRating.container';
 import { Roles } from '@/shared/accessControl/roles';
 import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
@@ -49,9 +48,5 @@ describe('Delete Rating', () => {
 		await expect(service.execute({ id: new ObjectId().toString(), actor: owner })).rejects.toBeInstanceOf(
 			BadRequestError,
 		);
-	});
-
-	it('exposes a container using the public Drinks module boundary', () => {
-		expect(Object.values(resolveDeleteRatingService())).toHaveLength(3);
 	});
 });

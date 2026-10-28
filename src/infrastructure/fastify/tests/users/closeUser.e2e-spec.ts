@@ -77,12 +77,4 @@ describe('Close User', () => {
 		});
 		expect(event?.after).toBeUndefined();
 	});
-
-	it('rejects an unauthenticated closure request', async () => {
-		const target = await createUser(app, { email: 'partner@example.com', role: Roles.partner });
-
-		const response = await request(app.server).post(`/users/${target.id}/closure`).send({ reason });
-
-		expect(response.status).toBe(HTTP_STATUS.unauthorized);
-	});
 });

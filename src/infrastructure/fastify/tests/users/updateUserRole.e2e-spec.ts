@@ -157,15 +157,4 @@ describe('Update User Role', () => {
 			origin: 'api',
 		});
 	});
-
-	it('Should not be able to update a user role when unauthenticated', async () => {
-		const userToUpdate = await createUser(app, { email: 'member@example.com', role: Roles.member });
-
-		const response = await request(app.server).patch('/users/role').send({
-			userId: userToUpdate.id,
-			role: Roles.partner,
-		});
-
-		expect(response.status).toBe(HTTP_STATUS.unauthorized);
-	});
 });

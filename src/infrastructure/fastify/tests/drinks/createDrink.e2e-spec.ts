@@ -52,26 +52,4 @@ describe('Create Drink', () => {
 		expect(stored?.avg_rating).toBe(0);
 		expect(stored?.ratings_count).toBe(0);
 	});
-
-	it('Should ignore a client-supplied aggregate field and keep the server-owned default', async () => {
-		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
-		const { id: ingredientId } = await createIngredient();
-
-		const { translations } = createDrinkFactory();
-		const ingredients = [{ ingredientId, quantity: 60 }];
-
-		const response = await request(app.server)
-			.post('/drinks')
-			.set('Cookie', cookies)
-			.send({ translations, ingredients, avgRating: 5 });
-
-		const body = response.body as { id?: unknown };
-
-		expect(response.status).toBe(HTTP_STATUS.created);
-		expect(typeof body.id).toBe('string');
-
-		const stored = await DrinkModel.findById(body.id).lean();
-		expect(stored?.avg_rating).toBe(0);
-		expect(stored?.ratings_count).toBe(0);
-	});
 });

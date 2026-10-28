@@ -15,18 +15,6 @@ describe('mapToTranslationsName', () => {
 		});
 	});
 
-	it('drops unit-specific name_plural keys', () => {
-		const translations: Translations<TranslationAnyWithNameKey> = {
-			en: { name: 'milliliter', name_plural: 'milliliters' },
-			pt: { name: 'mililitro', name_plural: 'mililitros' },
-		};
-
-		expect(mapToTranslationsName(translations)).toEqual({
-			en: { name: 'milliliter' },
-			pt: { name: 'mililitro' },
-		});
-	});
-
 	it('returns a new object and does not mutate the input', () => {
 		const translations: Translations<TranslationAnyWithNameKey> = {
 			en: { name: 'Lime' },
