@@ -4,7 +4,7 @@
 
 **Scope:** `drunk-flavor-back` user administration
 
-**Version:** 1.4
+**Version:** 1.5
 
 ## Purpose
 
@@ -59,8 +59,8 @@ administration. Ownership is not assigned through generic user creation or role-
 ### Admin
 
 An operational administrator. An admin can manage members and partners and can read administrative user information as
-permitted by data-projection rules. An admin cannot create, promote, demote, suspend, reactivate, or delete another
-admin or the owner.
+permitted by data-projection rules. An admin cannot create, promote, demote, suspend, reactivate, or close another admin
+or the owner.
 
 ### Partner
 
@@ -97,7 +97,8 @@ User administration uses specific actions instead of treating every mutation as 
 - `changeRole`
 - `suspend`
 - `reactivate`
-- `delete`
+- `close`
+- `delete` (internal expired-pending cleanup only)
 - `transferOwnership`
 
 `manage` remains CASL's action alias for all actions, but it must not be granted broadly to `admin` on `User`. Specific
@@ -125,9 +126,9 @@ by default.
 | Reactivate member or partner             |  Yes  |  Yes  |    —    |   —    |     —     |
 | Suspend or reactivate admin              |  Yes  |   —   |    —    |   —    |     —     |
 | Suspend or reactivate owner              |   —   |   —   |    —    |   —    |     —     |
-| Delete member or partner                 |  Yes  |  Yes  |    —    |   —    |     —     |
-| Delete admin                             |  Yes  |   —   |    —    |   —    |     —     |
-| Delete owner                             |   —   |   —   |    —    |   —    |     —     |
+| Close member or partner                  |  Yes  |  Yes  |    —    |   —    |     —     |
+| Close admin                              |  Yes  |   —   |    —    |   —    |     —     |
+| Close owner                              |   —   |   —   |    —    |   —    |     —     |
 | Transfer ownership                       |  Yes  |   —   |    —    |   —    |     —     |
 
 Reading a user does not imply access to every stored field. Password hashes, token data, authentication secrets,
@@ -165,11 +166,11 @@ These rules apply even when a broad CASL rule would otherwise allow an action.
 1. Exactly one active owner must exist after every committed administrative operation.
 2. At most one owner must be enforced by a database constraint, not only by an application-level count.
 3. The owner cannot be created by a generic user-creation endpoint.
-4. The owner cannot be changed, suspended, reactivated, or deleted by generic administration.
-5. The owner cannot delete the owner account through self-service; ownership must be transferred first.
+4. The owner cannot be changed, suspended, reactivated, closed, or deleted by generic administration.
+5. The owner cannot close the owner account through self-service; ownership must be transferred first.
 6. Ownership can change only through the dedicated ownership-transfer use case.
 7. An actor cannot change their own role through generic administration.
-8. An actor cannot suspend, reactivate, or delete their own account through generic administration.
+8. An actor cannot suspend, reactivate, close, or delete their own account through generic administration.
 9. An admin cannot mutate an admin or owner account.
 10. An admin cannot create or promote an admin.
 11. A partner, member, or anonymous requester cannot use generic user-administration operations.
@@ -209,7 +210,8 @@ CASL distinguishes between a subject type and a subject instance:
 
 Conditions such as target ID, current role, requested role, and future status attributes can be evaluated only against a
 concrete subject. Services must load the persisted target and pass a `UserPermissionModel` to CASL before a target
-mutation. Checking only `'User'` is insufficient for `changeRole`, `suspend`, `reactivate`, and `delete`.
+mutation. Checking only `'User'` is insufficient for `changeRole`, `suspend`, `reactivate`, `close`, and internal
+`delete`.
 
 For creation, construct a prospective user permission subject from validated server-side input so CASL can evaluate the
 requested role. Do not authorize conditional creation using only the `'User'` subject type.
@@ -315,8 +317,8 @@ Implemented:
 6. Every user administration use case reloads the actor from persistence and delegates authorization to the policy;
    target mutations use concrete subjects.
 7. Role changes use `changeRole` exclusively and resolve an authorized same-role request without persistence.
-8. Create, role-change, and delete authorization is rechecked in the same transaction as the mutation.
-9. Profile self-deletion rejects the owner inside the account-deletion transaction; ownership must be transferred first.
+8. Create, role-change, close, and internal delete authorization is rechecked in the same transaction as the mutation.
+9. Profile self-closure rejects the owner inside the account-closure transaction; ownership must be transferred first.
 10. `sessionVersion` is persisted internally, included in access and refresh tokens, and omitted from user-facing views.
 11. Role changes increment `sessionVersion` atomically; authorized no-op assignments do not increment it.
 12. Tokens claiming `owner` or `admin` are checked against persistence on every request. Other roles are checked when
@@ -335,14 +337,21 @@ Implemented:
 19. Suspension and reactivation require a normalized reason of 10-500 characters, stored only in the audit event.
 20. Suspended member/partner access tokens may remain usable until expiration by explicit bounded-staleness policy;
     refresh and new sign-in are rejected. Privileged admin tokens remain subject to immediate freshness validation.
+21. Account closure physically removes the user, authentication records, and comments while intentionally retaining
+    ratings with their original orphaned `user_id`; drink aggregates are unchanged.
+22. Administrative closure uses `POST /users/:id/closure`, self-service uses `DELETE /me`, and both require recent
+    authentication. Closure is irreversible and repeated requests resolve as missing/unauthenticated rather than no-op.
+23. A successful self-service closure clears the current client cookies. Other member/partner access tokens remain
+    usable until expiration by explicit bounded-staleness policy; immediate Redis watermark revocation is deferred.
 
 Pending:
 
-1. Add reauthentication and ownership transfer in their dedicated stages.
+1. Add generalized reauthentication and ownership transfer in their dedicated stages.
 2. Reuse `sessionVersion` for password changes, account recovery, and explicit administrative revocation as those flows
    are implemented.
 3. Extend the audit action set for ownership transfer and emergency recovery when those flows are implemented.
-4. Replace bounded suspension staleness with an immediate revocation store if stricter enforcement becomes necessary.
+4. Replace bounded suspension/closure staleness with a Redis minimum-session-version watermark if stricter enforcement
+   becomes necessary.
 
 ## Review checklist
 

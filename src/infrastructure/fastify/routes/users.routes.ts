@@ -10,10 +10,11 @@ import { listUsersQuerySchema } from '@/core/accounts/useCases/users/list/listUs
 import { listUsersController } from '@/core/accounts/useCases/users/list/listUsers.controller';
 import { updateUserRoleSchema } from '@/core/accounts/useCases/users/updateRole/updateUserRole.schema';
 import { updateUserRoleController } from '@/core/accounts/useCases/users/updateRole/updateUserRole.controller';
-import { deleteUserSchema } from '@/core/accounts/useCases/users/delete/deleteUser.schema';
-import { deleteUserController } from '@/core/accounts/useCases/users/delete/deleteUser.controller';
 import { verifyPermissions } from '../middlewares/verifyPermissions';
 import { enforceCompleteProfile } from '../middlewares/enforceCompleteProfile';
+import { requireRecentAuthentication } from '../middlewares/requireRecentAuthentication';
+import { closeUserBodySchema, closeUserParamsSchema } from '@/core/accounts/useCases/users/close/closeUser.schema';
+import { closeUserController } from '@/core/accounts/useCases/users/close/closeUser.controller';
 import {
 	suspendUserBodySchema,
 	suspendUserParamsSchema,
@@ -74,17 +75,24 @@ const routes: Routes = (server) => {
 		updateUserRoleController,
 	);
 
-	server.withTypeProvider<ZodTypeProvider>().delete(
-		'/users',
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/users/:id/closure',
 		{
 			schema: {
 				tags: ['Users'],
-				body: deleteUserSchema,
+				params: closeUserParamsSchema,
+				body: closeUserBodySchema,
 			},
-			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('delete', 'User')],
+			preValidation: [
+				verifyAndRenewToken,
+				enforceCompleteProfile,
+				requireRecentAuthentication,
+				verifyPermissions('close', 'User'),
+			],
 		},
-		deleteUserController,
+		closeUserController,
 	);
+
 	server.withTypeProvider<ZodTypeProvider>().post(
 		'/users/:id/suspension',
 		{

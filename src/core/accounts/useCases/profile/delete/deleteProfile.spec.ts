@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
 import { ObjectId } from 'mongodb';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
@@ -20,6 +20,9 @@ import { OwnerManagementRequiresTransferError } from '@/core/accounts/errors/use
 import { Roles } from '@/shared/accessControl/roles';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { MockStorageProvider } from '@/shared/providers/storage/implementations/MockStorage.provider';
+import { AdministrativeEventsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/AdministrativeEvents.repository';
+import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
+import { IEngagementModule } from '@/core/engagement/public';
 
 let cryptoProvider: NodeCryptoProvider;
 let usersRepository: IUsersRepository;
@@ -27,6 +30,8 @@ let tokensRepository: ITokensRepository;
 let credentialsRepository: ICredentialsRepository;
 let identitiesRepository: IIdentitiesRepository;
 let storageProvider: IStorageProvider;
+let administrativeEventsRepository: AdministrativeEventsRepositoryInMemory;
+let engagementModule: IEngagementModule;
 let service: DeleteProfileService;
 
 const userData = createUserFactory();
@@ -39,6 +44,8 @@ describe('Delete Profile', () => {
 		credentialsRepository = new CredentialsRepositoryInMemory();
 		identitiesRepository = new IdentitiesRepositoryInMemory();
 		storageProvider = new MockStorageProvider();
+		administrativeEventsRepository = new AdministrativeEventsRepositoryInMemory();
+		engagementModule = { deleteCommentsByUser: vi.fn().mockResolvedValue(0) };
 		service = new DeleteProfileService(
 			usersRepository,
 			tokensRepository,
@@ -46,6 +53,8 @@ describe('Delete Profile', () => {
 			identitiesRepository,
 			new FakeTransactionManager(),
 			storageProvider,
+			administrativeEventsRepository,
+			engagementModule,
 		);
 	});
 
@@ -57,11 +66,20 @@ describe('Delete Profile', () => {
 		const findDeledProfile = await usersRepository.findById(createdUser.id);
 
 		expect(findDeledProfile).toBeNull();
+		expect(engagementModule.deleteCommentsByUser).toHaveBeenCalledWith(createdUser.id);
+		expect(administrativeEventsRepository.collection).toEqual([
+			expect.objectContaining({
+				actorId: createdUser.id,
+				targetUserId: createdUser.id,
+				action: AdministrativeEventActions.userClosed,
+				before: { role: createdUser.role, status: createdUser.status },
+			}),
+		]);
 	});
 
 	it('should not be able to delete a nonexistent profile', async () => {
 		const nonexistentId = new ObjectId().toString();
-		await expect(service.execute({ id: nonexistentId })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ id: nonexistentId })).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('should delete the profile together with its tokens, credential and identities', async () => {

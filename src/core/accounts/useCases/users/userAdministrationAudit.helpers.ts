@@ -7,7 +7,14 @@ import { ForbiddenError } from '@/shared/error/error.lib';
 import { logger } from '@/shared/providers/logger';
 
 export type UserAdministrationLogAction =
-	'user.create' | 'user.get' | 'user.list' | 'user.change_role' | 'user.suspend' | 'user.reactivate' | 'user.delete';
+	| 'user.create'
+	| 'user.get'
+	| 'user.list'
+	| 'user.change_role'
+	| 'user.suspend'
+	| 'user.reactivate'
+	| 'user.close'
+	| 'user.delete';
 
 type DeniedAdministrationDetails = {
 	action: UserAdministrationLogAction;

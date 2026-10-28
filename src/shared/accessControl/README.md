@@ -42,30 +42,31 @@ operation returns `403 Forbidden` for them. Generic create and role-update paylo
 | Change member ↔ partner                      |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
 | Promote member/partner to admin              |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
 | Demote admin to member/partner               |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
-| Delete member or partner                     |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
-| Delete admin                                 |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Close member or partner                      |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Close admin                                  |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
 | Suspend/reactivate member or partner         |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
 | Suspend/reactivate admin                     |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
 | Suspend/reactivate owner                     |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
-| Create, change, or delete owner generically  |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
-| Change role or delete self through `/users`  |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Create, change, close, or suspend owner      |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Change role or close self through `/users`   |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
 | Repeat an authorized current-role assignment | No-op | No-op |   ❌    |   ❌   |    ❌     |
 
-Role-change and delete decisions use the actor and target records loaded from persistence in the same transaction as the
-mutation. A valid access token carrying a stale role cannot override the actor's current persisted role.
+Role-change and closure decisions use the actor and target records loaded from persistence in the same transaction as
+the mutation. A valid access token carrying a stale role cannot override the actor's current persisted role.
 
 #### Profile (self-service)
 
 Profile operations act only on the authenticated user. They are gated by authentication (`verifyAndRenewToken`) and are
 not enforced by CASL: there is no `Profile` subject. Authenticated roles may manage their own profile, except that Owner
-cannot delete the owner account before transferring ownership.
+cannot close the owner account before transferring ownership. Account closure through `DELETE /me` requires recent
+authentication.
 
-|                            | Owner | Admin | Partner | Member | Anonymous |
-| -------------------------- | :---: | :---: | :-----: | :----: | :-------: |
-| Get own profile (`/me`)    |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
-| Update own profile (`/me`) |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
-| Delete own profile (`/me`) |  ❌   |  ✅   |   ✅    |   ✅   |    ❌     |
-| Update own password        |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+|                                  | Owner | Admin | Partner | Member | Anonymous |
+| -------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
+| Get own profile (`/me`)          |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Update own profile (`/me`)       |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Close own profile (`DELETE /me`) |  ❌   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Update own password              |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
 
 #### Categories
 
@@ -198,10 +199,10 @@ outdated refresh token cannot renew the session. A suspended account cannot sign
 
 ### Administrative audit
 
-Successful administrative user creation, role change, suspension, reactivation, and deletion write an append-only
-`administrative_events` record in the same MongoDB transaction as the mutation. If the audit write fails, the
-administrative mutation is rolled back. Authorized no-op role/status assignments and read operations do not create
-events.
+Successful administrative user creation, role change, suspension, reactivation, and closure write an append-only
+`administrative_events` record in the same MongoDB transaction as the mutation. Internal expired-pending cleanup retains
+its separate `user.deleted` event. If the audit write fails, the mutation is rolled back. Authorized no-op role/status
+assignments and read operations do not create events.
 
 Events contain only actor and target IDs, action, minimal before/after role or status state, origin, optional request
 ID, optional reason, and occurrence time. They do not contain names, emails, credentials, tokens, session versions,
@@ -220,3 +221,31 @@ An authorized request for the current state is an idempotent no-op: it does not 
 Suspension uses `POST /users/:id/suspension`; reactivation uses `POST /users/:id/reactivation`. Both require a trimmed
 administrative reason between 10 and 500 characters. The reason is retained only in the audit event. Account content and
 relationships remain unchanged, and this stage sends no email notification.
+
+### Account closure
+
+Administrative closure uses `POST /users/:id/closure` with a required 10-500 character reason. Self-service closure uses
+`DELETE /me`. Both require recent authentication. Owner cannot be closed, admin cannot close a peer admin, and generic
+self-administration remains forbidden.
+
+Closure physically removes the user, credentials, identities, verification/reset tokens, and comments in one MongoDB
+transaction, then removes a managed avatar after commit. Ratings and their original `user_id` are intentionally
+retained; drink aggregates are unchanged. The surviving `user.closed` audit event stores IDs and the previous
+role/status for 730 days without names or email. A repeated request resolves as `404` after deletion (or `401` after the
+client applies the self-service cookie cleanup).
+
+By explicit bounded-staleness policy, an access token claiming `member` or `partner` may remain usable until expiration
+even after hard delete; refresh and new sign-in cannot succeed. The current self-service response clears its own access
+and refresh cookies, but other devices remain bounded by access-token lifetime.
+
+#### Future immediate revocation with Redis
+
+To remove bounded staleness later, apply a Redis watermark check inside `verifyAndRenewToken` for every authenticated
+route. This automatically covers profile routes, user administration, and authenticated category/unit/ingredient/drink,
+comment, and rating mutations without maintaining a separate route list; public unauthenticated reads need no check.
+
+Before committing closure, write `auth:min-session-version:<userId> = <currentVersion + 1>` with a TTL of
+`ACCESS_TOKEN_EXPIRES_IN_SECONDS` plus a small clock-skew allowance. Fail the closure if Redis cannot accept the
+watermark. On each authenticated request, reject and clear cookies when the token version is below the stored minimum.
+The key can expire after every access token issued before closure is guaranteed to have expired; refresh already checks
+MongoDB and fails because the user no longer exists.

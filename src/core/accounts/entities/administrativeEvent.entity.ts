@@ -6,6 +6,7 @@ export const AdministrativeEventActions = {
 	userRoleChanged: 'user.role_changed',
 	userSuspended: 'user.suspended',
 	userReactivated: 'user.reactivated',
+	userClosed: 'user.closed',
 	userDeleted: 'user.deleted',
 } as const;
 

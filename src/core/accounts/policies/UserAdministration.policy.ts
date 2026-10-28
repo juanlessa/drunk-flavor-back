@@ -87,6 +87,10 @@ export class UserAdministrationPolicy {
 		this.assertCanMutateTarget('delete', actor, target);
 	}
 
+	assertCanCloseUser(actor: Actor, target: UserAdministrationTarget): void {
+		this.assertCanMutateTarget('close', actor, target);
+	}
+
 	assertCanSuspendUser(actor: Actor, target: UserStatusAdministrationTarget): UserStatusChangeOutcome {
 		this.assertCanMutateTarget('suspend', actor, target);
 		if (target.status === UserStatuses.suspended) {
@@ -120,7 +124,7 @@ export class UserAdministrationPolicy {
 	}
 
 	private assertCanMutateTarget(
-		action: 'delete' | 'suspend' | 'reactivate',
+		action: 'delete' | 'suspend' | 'reactivate' | 'close',
 		actor: Actor,
 		target: UserAdministrationTarget,
 	): void {

@@ -1,25 +1,24 @@
 import {
-	resolveUsersRepository,
-	resolveTokensRepository,
+	resolveAdministrativeEventsRepository,
 	resolveCredentialsRepository,
 	resolveIdentitiesRepository,
+	resolveTokensRepository,
+	resolveUsersRepository,
 } from '@/core/accounts/infra/mongo/container';
+import { resolveEngagementModule } from '@/core/engagement/public';
 import { resolveTransactionManager } from '@/infrastructure/mongo/transactions';
-import { DeleteProfileService } from './DeleteProfile.service';
 import { resolveStorageProvider } from '@/shared/providers/storage';
-
-const usersRepository = resolveUsersRepository();
-const tokensRepository = resolveTokensRepository();
-const credentialsRepository = resolveCredentialsRepository();
-const identitiesRepository = resolveIdentitiesRepository();
-const transactionManager = resolveTransactionManager();
+import { DeleteProfileService } from './DeleteProfile.service';
 
 const deleteProfileService = new DeleteProfileService(
-	usersRepository,
-	tokensRepository,
-	credentialsRepository,
-	identitiesRepository,
-	transactionManager,
+	resolveUsersRepository(),
+	resolveTokensRepository(),
+	resolveCredentialsRepository(),
+	resolveIdentitiesRepository(),
+	resolveTransactionManager(),
 	resolveStorageProvider(),
+	resolveAdministrativeEventsRepository(),
+	resolveEngagementModule(),
 );
+
 export const resolveDeleteProfileService = () => deleteProfileService;
