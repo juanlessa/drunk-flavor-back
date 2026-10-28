@@ -2,6 +2,10 @@ import { Role } from '@/shared/accessControl/roles';
 import { UserStatus } from './user.entity';
 
 export const AdministrativeEventActions = {
+	ownershipTransferRequested: 'ownership.transfer_requested',
+	ownershipTransferResent: 'ownership.transfer_resent',
+	ownershipTransferCancelled: 'ownership.transfer_cancelled',
+	ownershipTransferred: 'ownership.transferred',
 	userCreated: 'user.created',
 	userRoleChanged: 'user.role_changed',
 	userSuspended: 'user.suspended',

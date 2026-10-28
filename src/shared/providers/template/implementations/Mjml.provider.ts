@@ -1,10 +1,17 @@
 import mjml2html from 'mjml';
 import { ITemplateProvider } from '../ITemplate.provider';
-import { EmailVerificationProps, ForgotPasswordProps } from '../template.dtos';
+import {
+	EmailVerificationProps,
+	ForgotPasswordProps,
+	OwnershipTransferChangedProps,
+	OwnershipTransferInvitationProps,
+} from '../template.dtos';
 import { ServerError } from '@/shared/error/error.lib';
 import { emailVerificationTemplate } from './views/emailVerification.template';
 import { MJMLJsonObject } from './mjml.types';
 import { forgotPasswordTemplate } from './views/forgotPassword.template';
+import { ownershipTransferChangedTemplate } from './views/ownershipTransferChanged.template';
+import { ownershipTransferInvitationTemplate } from './views/ownershipTransferInvitation.template';
 import { logger } from '@/shared/providers/logger';
 
 export class MjmlProvider implements ITemplateProvider {
@@ -19,12 +26,21 @@ export class MjmlProvider implements ITemplateProvider {
 
 	async emailVerification(data: EmailVerificationProps): Promise<string> {
 		const [id, template] = emailVerificationTemplate(data);
-		const html = await this.parseToHtml(id, template);
-		return html;
+		return this.parseToHtml(id, template);
 	}
+
 	async forgotPassword(data: ForgotPasswordProps): Promise<string> {
 		const [id, template] = forgotPasswordTemplate(data);
-		const html = await this.parseToHtml(id, template);
-		return html;
+		return this.parseToHtml(id, template);
+	}
+
+	async ownershipTransferInvitation(data: OwnershipTransferInvitationProps): Promise<string> {
+		const [id, template] = ownershipTransferInvitationTemplate(data);
+		return this.parseToHtml(id, template);
+	}
+
+	async ownershipTransferChanged(data: OwnershipTransferChangedProps): Promise<string> {
+		const [id, template] = ownershipTransferChangedTemplate(data);
+		return this.parseToHtml(id, template);
 	}
 }

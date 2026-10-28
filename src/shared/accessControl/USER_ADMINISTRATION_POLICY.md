@@ -4,7 +4,7 @@
 
 **Scope:** `drunk-flavor-back` user administration
 
-**Version:** 1.6
+**Version:** 1.7
 
 ## Purpose
 
@@ -350,14 +350,22 @@ Implemented:
     session.
 27. Reauthentication attempts use opaque client errors and structured security logs; secrets and provider tokens are
     never logged or stored as administrative audit events.
+28. Ownership transfer uses one global 24-hour invitation for an active, verified admin with a usable authentication
+    method. The token is delivered by email and persisted only as a hash.
+29. Acceptance requires the invited admin's authenticated, recently authenticated session and unchanged owner/target
+    session-version snapshots.
+30. Acceptance atomically demotes the previous owner to admin, promotes the target to owner, increments both session
+    versions, consumes the invitation, and writes both ownership and role-change audit events.
+31. Request, resend, cancellation, and completion are audited. Invitation delivery is retryable after queue failure;
+    completion notifications are best-effort and cannot roll back ownership.
 
 Pending:
 
-1. Add ownership transfer in its dedicated stage.
-2. Reuse `sessionVersion` for explicit administrative revocation when that flow is implemented.
-3. Extend the audit action set for ownership transfer and emergency recovery when those flows are implemented.
-4. Replace bounded suspension/closure staleness with a Redis minimum-session-version watermark if stricter enforcement
+1. Reuse `sessionVersion` for explicit administrative revocation when that flow is implemented.
+2. Extend the audit action set for emergency recovery when that flow is implemented.
+3. Replace bounded suspension/closure staleness with a Redis minimum-session-version watermark if stricter enforcement
    becomes necessary.
+4. Consider two-person approval or a second acceptance factor if organizational risk later requires it.
 
 ## Review checklist
 

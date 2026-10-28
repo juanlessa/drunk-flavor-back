@@ -35,6 +35,7 @@ export class ConfirmEmailService {
 
 		await this.usersRepository.update({
 			id: user.id,
+			emailVerified: true,
 			status: UserStatuses.active,
 			sessionVersion: user.sessionVersion + 1,
 		});

@@ -273,3 +273,25 @@ is no longer exposed.
 
 Google reauthentication validates that the provider subject belongs to the current usable account. When the verified ID
 token includes `iat`, it must be within the five-minute window plus one minute of clock-skew tolerance.
+
+### Ownership transfer invitation
+
+Ownership changes use a singleton invitation workflow. `POST /administration/ownership-transfer` creates a 24-hour
+invitation for an active, email-verified admin with at least one authentication method. Only one invitation may exist;
+`POST /administration/ownership-transfer/resend` rotates its one-time token and restarts the expiry window, while
+`DELETE /administration/ownership-transfer` cancels it. All owner commands require recent authentication.
+
+The invitation token is sent only by email and stored only as a hash. The invited admin must sign in, authenticate
+recently, and call `POST /administration/ownership-transfer/accept` with the token. Owner and target session-version
+snapshots must still match. Acceptance atomically demotes the current owner to admin, promotes the target to owner,
+increments both session versions, consumes the invitation, and writes `ownership.transferred` plus `user.role_changed`
+audit events. Both users must sign in again.
+
+The `ownership_transfer_invitations` collection contains zero or one document, enforced by the
+`ownership_transfer_scope_unique` index. It also has a unique token-hash index and an `expires_at` TTL index. Expired
+records are treated as absent even before MongoDB's TTL monitor removes them. Request, resend, cancellation, and
+completion are audited; re-send uses `ownership.transfer_resent`.
+
+Invitation delivery is enqueued after the creation transaction. A queue failure is returned to the caller while the
+invitation remains available for re-send. Completion notifications to the previous and new owners are best-effort after
+commit and never roll back ownership.

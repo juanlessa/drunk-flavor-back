@@ -8,6 +8,8 @@ import { IIdentitiesRepository } from '../../../repositories/IIdentities.reposit
 import { IdentitiesRepository } from '../repositories/Identities.repository';
 import { IAdministrativeEventsRepository } from '../../../repositories/IAdministrativeEvents.repository';
 import { AdministrativeEventsRepository } from '../repositories/AdministrativeEvents.repository';
+import { IOwnershipTransferInvitationsRepository } from '../../../repositories/IOwnershipTransferInvitations.repository';
+import { OwnershipTransferInvitationsRepository } from '../repositories/OwnershipTransferInvitations.repository';
 
 const usersRepository: IUsersRepository = new UsersRepository();
 export const resolveUsersRepository = () => usersRepository;
@@ -23,3 +25,7 @@ export const resolveIdentitiesRepository = () => identitiesRepository;
 
 const administrativeEventsRepository: IAdministrativeEventsRepository = new AdministrativeEventsRepository();
 export const resolveAdministrativeEventsRepository = () => administrativeEventsRepository;
+
+const ownershipTransferInvitationsRepository: IOwnershipTransferInvitationsRepository =
+	new OwnershipTransferInvitationsRepository();
+export const resolveOwnershipTransferInvitationsRepository = () => ownershipTransferInvitationsRepository;
