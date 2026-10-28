@@ -152,8 +152,8 @@ describe('DrinksRepository (integration)', () => {
 				ingredients: [],
 				avg_rating: 0,
 				ratings_count: 0,
-				createdAt: sharedDate,
-				updatedAt: sharedDate,
+				created_at: sharedDate,
+				updated_at: sharedDate,
 			})),
 		);
 
@@ -164,6 +164,44 @@ describe('DrinksRepository (integration)', () => {
 
 		expect(firstPage.map((item) => item.id)).toEqual(expectedOrder.slice(0, 2));
 		expect(secondPage.map((item) => item.id)).toEqual(expectedOrder.slice(2, 3));
+	});
+
+	it('applies rating deltas atomically and recalculates the average', async () => {
+		const drink = await repository.create(buildDrink({ en: 'Rated drink', pt: 'Drink avaliado' }));
+
+		await Promise.all(
+			[5, 4, 3, 2].map((value) =>
+				repository.applyRatingDelta({ drinkId: drink.id, countDelta: 1, sumDelta: value }),
+			),
+		);
+		await expect(repository.applyRatingDelta({ drinkId: drink.id, countDelta: 0, sumDelta: 2 })).resolves.toEqual({
+			average: 4,
+			count: 4,
+		});
+		await expect(repository.applyRatingDelta({ drinkId: drink.id, countDelta: -1, sumDelta: -2 })).resolves.toEqual(
+			{
+				average: 14 / 3,
+				count: 3,
+			},
+		);
+
+		expect(await repository.findById(drink.id)).toMatchObject({
+			ratingsCount: 3,
+			ratingsSum: 14,
+			avgRating: 14 / 3,
+		});
+	});
+
+	it('rejects missing-drink and aggregate-underflow rating deltas without mutation', async () => {
+		await expect(
+			repository.applyRatingDelta({ drinkId: new ObjectId().toString(), countDelta: 1, sumDelta: 4 }),
+		).rejects.toBeInstanceOf(NotFoundError);
+		const drink = await repository.create(buildDrink({ en: 'Empty drink', pt: 'Drink vazio' }));
+		await expect(
+			repository.applyRatingDelta({ drinkId: drink.id, countDelta: -1, sumDelta: -1 }),
+		).rejects.toBeInstanceOf(NotFoundError);
+		expect(await repository.findById(drink.id)).toMatchObject({ ratingsCount: 0, ratingsSum: 0, avgRating: 0 });
+		expect(await repository.findById('invalid-id')).toBeNull();
 	});
 
 	it('succeeds with no sort supplied', async () => {

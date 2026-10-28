@@ -107,6 +107,38 @@ describe('DrinksRepositoryInMemory', () => {
 		await expect(repository.delete(new ObjectId().toString())).rejects.toBeInstanceOf(NotFoundError);
 	});
 
+	it('applies rating deltas and resets the average when the count reaches zero', async () => {
+		const drink = await repository.create({
+			translations: { en: { name: 'Rated', method: 'm' }, pt: { name: 'Avaliado', method: 'm' } },
+			ingredients: [],
+		});
+
+		await expect(repository.applyRatingDelta({ drinkId: drink.id, countDelta: 1, sumDelta: 4 })).resolves.toEqual({
+			average: 4,
+			count: 1,
+		});
+		await expect(repository.applyRatingDelta({ drinkId: drink.id, countDelta: -1, sumDelta: -4 })).resolves.toEqual(
+			{
+				average: 0,
+				count: 0,
+			},
+		);
+		expect(await repository.findById(drink.id)).toMatchObject({ avgRating: 0, ratingsCount: 0, ratingsSum: 0 });
+	});
+
+	it('rejects rating deltas for missing drinks and aggregate underflow', async () => {
+		await expect(
+			repository.applyRatingDelta({ drinkId: 'missing-drink', countDelta: 1, sumDelta: 4 }),
+		).rejects.toBeInstanceOf(NotFoundError);
+		const drink = await repository.create({
+			translations: { en: { name: 'Empty', method: 'm' }, pt: { name: 'Vazio', method: 'm' } },
+			ingredients: [],
+		});
+		await expect(repository.applyRatingDelta({ drinkId: drink.id, countDelta: -1, sumDelta: -1 })).rejects.toThrow(
+			'Rating projection invariant violated',
+		);
+	});
+
 	it('applies search, sort and pagination in findAll', async () => {
 		await repository.create({
 			translations: { en: { name: 'Alpha', method: 'm' }, pt: { name: 'Alpha', method: 'm' } },

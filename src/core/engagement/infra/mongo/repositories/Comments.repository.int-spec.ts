@@ -4,6 +4,7 @@ import { CommentListQuery } from '@/core/engagement/dtos/comment.dtos';
 import { CommentStatuses } from '@/core/engagement/entities/comment.entity';
 import { CommentModel } from '@/core/engagement/infra/mongo/entities/comment.model';
 import { CommentsRepository } from '@/core/engagement/infra/mongo/repositories/Comments.repository';
+import { NotFoundError } from '@/shared/error/error.lib';
 
 const query: CommentListQuery = { page: 1, limit: 50, sort: { createdAt: -1, id: -1 } };
 let repository: CommentsRepository;
@@ -83,6 +84,33 @@ describe('CommentsRepository (integration)', () => {
 		const visibleOnly = await repository.findByDrink(drinkId, query, { status: CommentStatuses.visible });
 		expect(visibleOnly.map((comment) => comment.id)).toEqual([visible.id]);
 		expect(await repository.findByUser(userId, query)).toHaveLength(2);
+	});
+
+	it('lists all statuses globally and deletes one comment by id', async () => {
+		repository = new CommentsRepository();
+		const drinkId = new ObjectId().toString();
+		const userId = new ObjectId().toString();
+		const visible = await repository.create({ drinkId, userId, content: 'visible' });
+		const hidden = await repository.create({ drinkId, userId, content: 'hidden' });
+		await repository.updateStatus({ id: hidden.id, status: CommentStatuses.hidden });
+
+		expect(await repository.findAll(query)).toHaveLength(2);
+		expect(await repository.findAll(query, { status: CommentStatuses.visible })).toHaveLength(1);
+		await expect(repository.delete(visible.id)).resolves.toMatchObject({ id: visible.id });
+		expect(await repository.findById(visible.id)).toBeNull();
+	});
+
+	it('handles invalid and missing ids consistently', async () => {
+		repository = new CommentsRepository();
+		const missingId = new ObjectId().toString();
+
+		expect(await repository.findById('invalid-id')).toBeNull();
+		await expect(repository.update({ id: missingId, content: 'missing' })).rejects.toBeInstanceOf(NotFoundError);
+		await expect(repository.updateStatus({ id: missingId, status: CommentStatuses.hidden })).rejects.toBeInstanceOf(
+			NotFoundError,
+		);
+		await expect(repository.delete(missingId)).rejects.toBeInstanceOf(NotFoundError);
+		await expect(repository.update({ id: 'invalid-id', content: 'missing' })).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('returns exact bulk delete counts including zero on repeat', async () => {
