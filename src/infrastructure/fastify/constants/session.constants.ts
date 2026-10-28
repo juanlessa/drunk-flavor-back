@@ -12,7 +12,7 @@ export const AUTH_SESSION_COOKIE = '__Host-Refresh-Token';
 
 export const SESSION_OPTIONS = {
 	cookieName: AUTH_SESSION_COOKIE,
-	key: ['e2e', 'testing'].includes(env.NODE_ENV) ? root : fs.readFileSync(path.join(root, 'secret-key')),
+	key: ['testing'].includes(env.NODE_ENV) ? root : fs.readFileSync(path.join(root, 'secret-key')),
 	cookie: {
 		...AUTH_COOKIE_OPTIONS,
 		signed: false,
