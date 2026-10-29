@@ -65,7 +65,7 @@
 		"fastify": "5.12.7",
 		"fastify-i18n": "3.0.0",
 		"fastify-type-provider-zod": "7.0.0",
-		"google-auth-library": "11.3.1",
+		"google-auth-library": "11.3.2",
 		"mjml": "5.4.1",
 		"mongodb": "7.7.0",
 		"mongoose": "9.11.4",
