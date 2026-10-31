@@ -71,7 +71,7 @@ services:
             - node-network
 
     mailpit:
-        image: axllent/mailpit:v1.31.6
+        image: axllent/mailpit:v1.33.0
         restart: unless-stopped
         container_name: mailpit
         ports:
