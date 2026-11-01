@@ -38,8 +38,9 @@ These capabilities require a demonstrated operational need before they are intro
 - **Actor:** The authenticated user requesting an operation.
 - **Target:** The user affected by an operation.
 - **Requested role:** The role that would be assigned if a role transition succeeds.
-- **Generic administration:** Create, read, list, role change, suspension, reactivation, session revocation, or closure
-  through normal user administration endpoints.
+- **Generic administration:** Read, list, role change, suspension, reactivation, session revocation, or closure of an
+  existing account through normal user administration endpoints. Accounts are created only through self-service sign-up;
+  generic administration never creates users.
 - **Ownership transfer:** The only operation allowed to replace the current owner.
 - **Self-service:** Operations on the authenticated user's own profile through dedicated `/me` use cases. Self-service
   is outside generic administration.
@@ -49,13 +50,13 @@ These capabilities require a demonstrated operational need before they are intro
 ### Owner
 
 The single governance authority for the application. The owner can govern administrators and perform operational
-administration. Ownership is not assigned through generic user creation or role-update operations.
+administration. Ownership is not assigned through role-update operations.
 
 ### Admin
 
 An operational administrator. An admin can manage members and partners and can read administrative user information as
-permitted by data-projection rules. An admin cannot create, promote, demote, suspend, reactivate, close, or revoke the
-sessions of another admin or the owner.
+permitted by data-projection rules. An admin cannot promote anyone to admin, and cannot demote, suspend, reactivate,
+close, or revoke the sessions of another admin or the owner.
 
 ### Partner
 
@@ -86,7 +87,6 @@ permission definition. Application code must not infer authorization from role o
 
 User administration uses specific actions instead of treating every mutation as `update`:
 
-- `create`
 - `get`
 - `list`
 - `changeRole`
@@ -94,7 +94,6 @@ User administration uses specific actions instead of treating every mutation as 
 - `reactivate`
 - `close`
 - `revokeSessions`
-- `delete` (internal expired-pending cleanup only)
 - `transferOwnership`
 
 `manage` remains CASL's action alias for all actions, but it must not be granted broadly to `admin` on `User`. Specific
@@ -134,16 +133,16 @@ These rules apply even when a broad CASL rule would otherwise allow an action.
 
 1. Exactly one active owner must exist after every committed administrative operation.
 2. At most one owner must be enforced by a database constraint, not only by an application-level count.
-3. The owner cannot be created by a generic user-creation endpoint.
-4. The owner cannot be changed, suspended, reactivated, closed, deleted, or have their sessions revoked by generic
+3. Generic administration cannot create accounts; every account starts through self-service sign-up as a member.
+4. The owner cannot be changed, suspended, reactivated, closed, or have their sessions revoked by generic
    administration.
 5. The owner cannot close the owner account through self-service; ownership must be transferred first.
 6. Ownership can change only through the dedicated ownership-transfer use case.
 7. An actor cannot change their own role through generic administration.
-8. An actor cannot suspend, reactivate, close, delete, or revoke the sessions of their own account through generic
+8. An actor cannot suspend, reactivate, close, or revoke the sessions of their own account through generic
    administration.
 9. An admin cannot mutate an admin or owner account.
-10. An admin cannot create or promote an admin.
+10. An admin cannot promote anyone to admin.
 11. A partner, member, or anonymous requester cannot use generic user-administration operations.
 12. Authorization must use the actor's current persisted role and status for security-sensitive operations. A stale
     token claim is insufficient.
@@ -187,11 +186,8 @@ CASL distinguishes between a subject type and a subject instance:
 
 Conditions such as target ID, current role, requested role, and status attributes can be evaluated only against a
 concrete subject. Services must load the persisted target and pass a `UserPermissionModel` to CASL before a target
-mutation. Checking only `'User'` is insufficient for `changeRole`, `suspend`, `reactivate`, `close`, `revokeSessions`,
-and internal `delete`.
-
-For creation, construct a prospective user permission subject from validated server-side input so CASL can evaluate the
-requested role. Do not authorize conditional creation using only the `'User'` subject type.
+mutation. Checking only `'User'` is insufficient for `changeRole`, `suspend`, `reactivate`, `close`, and
+`revokeSessions`.
 
 ### Keep subject detection explicit
 
@@ -235,7 +231,7 @@ Those guarantees belong to domain services and persistence constraints. The expe
 
 1. Authenticate the request.
 2. Load the current actor from persistence.
-3. Load the persisted target, or build a validated prospective subject for creation.
+3. Load the persisted target.
 4. Build the actor's CASL ability.
 5. Validate hard self-administration and owner-flow invariants.
 6. Check the specific action against the concrete subject.

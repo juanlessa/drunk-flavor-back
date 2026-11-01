@@ -2,8 +2,6 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { pluginGenerator } from '../../helpers/fastify.helpers';
 import { Routes } from '../../types/fastify.types';
 import { verifyAndRenewToken } from '../../middlewares/verifyAndRenewToken';
-import { createUserSchema } from '@/core/accounts/useCases/users/create/createUser.schema';
-import { createUserController } from '@/core/accounts/useCases/users/create/createUser.controller';
 import { getUserSchema } from '@/core/accounts/useCases/users/get/getUser.schema';
 import { getUserController } from '@/core/accounts/useCases/users/get/getUser.controller';
 import { getUserAdministrativeCapabilitiesController } from '@/core/accounts/useCases/users/getAdministrativeCapabilities/getUserAdministrativeCapabilities.controller';
@@ -34,23 +32,6 @@ import {
 import { revokeUserSessionsController } from '@/core/accounts/useCases/users/revokeSessions/revokeUserSessions.controller';
 
 const routes: Routes = (server) => {
-	server.withTypeProvider<ZodTypeProvider>().post(
-		'/users',
-		{
-			schema: {
-				tags: ['Users'],
-				body: createUserSchema,
-			},
-			preValidation: [
-				verifyAndRenewToken,
-				enforceCompleteProfile,
-				requireRecentAuthentication,
-				verifyPermissions('create', 'User'),
-			],
-		},
-		createUserController,
-	);
-
 	server.withTypeProvider<ZodTypeProvider>().get(
 		'/users/:id/administrative-capabilities',
 		{

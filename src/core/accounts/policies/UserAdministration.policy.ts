@@ -13,8 +13,6 @@ import { Actor } from '@/shared/accessControl/actor.types';
 import { userPermissionSchema } from '@/shared/accessControl/entities/user';
 import { NonOwnerRole, Role, Roles } from '@/shared/accessControl/roles';
 
-const PROSPECTIVE_USER_ID = 'prospective-user';
-
 const validRoleTransitions: Record<NonOwnerRole, readonly NonOwnerRole[]> = {
 	admin: [Roles.partner, Roles.member],
 	partner: [Roles.admin, Roles.member],
@@ -51,16 +49,6 @@ export class UserAdministrationPolicy {
 		}
 	}
 
-	assertCanCreateUser(actor: Actor, requestedRole: Role): void {
-		this.assertNonOwnerRole(requestedRole, 'UserAdministrationPolicy.create');
-
-		const ability = this.defineAbility(actor);
-		const prospectiveUser = this.toSubject({ id: PROSPECTIVE_USER_ID, role: requestedRole });
-		if (ability.cannot('create', prospectiveUser)) {
-			throw new UserAdministrationForbiddenError({ path: 'UserAdministrationPolicy.create' });
-		}
-	}
-
 	assertCanChangeRole(
 		actor: Actor,
 		target: UserStatusAdministrationTarget,
@@ -88,10 +76,6 @@ export class UserAdministrationPolicy {
 		}
 
 		return UserRoleChangeOutcomes.apply;
-	}
-
-	assertCanDeleteUser(actor: Actor, target: UserAdministrationTarget): void {
-		this.assertCanMutateTarget('delete', actor, target);
 	}
 
 	assertCanCloseUser(actor: Actor, target: UserStatusAdministrationTarget): void {
@@ -141,7 +125,7 @@ export class UserAdministrationPolicy {
 	}
 
 	private assertCanMutateTarget(
-		action: 'delete' | 'suspend' | 'reactivate' | 'close' | 'revokeSessions',
+		action: 'suspend' | 'reactivate' | 'close' | 'revokeSessions',
 		actor: Actor,
 		target: UserAdministrationTarget,
 	): void {

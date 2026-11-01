@@ -41,17 +41,6 @@ describe('UserAdministrationPolicy', () => {
 		}
 	});
 
-	it('allows owner to create non-owner roles and limits admin to partner and member', () => {
-		for (const role of [Roles.admin, Roles.partner, Roles.member]) {
-			expect(() => policy.assertCanCreateUser(owner, role)).not.toThrow();
-		}
-		for (const role of [Roles.partner, Roles.member]) {
-			expect(() => policy.assertCanCreateUser(admin, role)).not.toThrow();
-		}
-		expect(() => policy.assertCanCreateUser(admin, Roles.admin)).toThrow(UserAdministrationForbiddenError);
-		expect(() => policy.assertCanCreateUser(owner, Roles.owner)).toThrow(OwnerManagementRequiresTransferError);
-	});
-
 	it('returns apply and noop only for authorized role transitions', () => {
 		expect(policy.assertCanChangeRole(owner, target('target', Roles.member), Roles.admin)).toBe(
 			UserRoleChangeOutcomes.apply,
@@ -114,7 +103,7 @@ describe('UserAdministrationPolicy', () => {
 	});
 
 	it('protects mutations against self, owner targets, admin peers, and non-administrators', () => {
-		expect(() => policy.assertCanDeleteUser(admin, target(admin.id, Roles.admin))).toThrow(
+		expect(() => policy.assertCanCloseUser(admin, target(admin.id, Roles.admin, UserStatuses.suspended))).toThrow(
 			UserSelfAdministrationForbiddenError,
 		);
 		expect(() => policy.assertCanSuspendUser(owner, target('owner-target', Roles.owner))).toThrow(
@@ -123,7 +112,9 @@ describe('UserAdministrationPolicy', () => {
 		expect(() => policy.assertCanReactivateUser(admin, target('peer', Roles.admin))).toThrow(
 			AdminPeerManagementForbiddenError,
 		);
-		expect(() => policy.assertCanDeleteUser(member, target('target'))).toThrow(UserAdministrationForbiddenError);
+		expect(() => policy.assertCanCloseUser(member, target('target', Roles.member, UserStatuses.suspended))).toThrow(
+			UserAdministrationForbiddenError,
+		);
 	});
 
 	it.each([

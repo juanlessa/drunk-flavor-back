@@ -30,25 +30,24 @@ from persistence, and target mutations are authorized against concrete User subj
 #### Users
 
 User management is Owner/Admin-only. Partner and Member have no abilities over the `User` subject, so any `/users`
-operation returns `403 Forbidden` for them. Generic create and role-update payloads reject the Owner role.
+operation returns `403 Forbidden` for them. Role-update payloads reject the Owner role. Accounts are created only
+through self-service sign-up (`POST /signup`, `POST /google`); user administration manages existing accounts.
 
-| Capability                                                                                                                            | Owner | Admin | Partner | Member | Anonymous |
-| ------------------------------------------------------------------------------------------------------------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
-| Create member or partner (`POST /users`)                                                                                              |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
-| Create admin (`POST /users`)                                                                                                          |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
-| Get or list users (`GET /users/:id`, `GET /users`)                                                                                    |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
-| Get administrative capabilities for a user (`GET /users/:id/administrative-capabilities`)                                             |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
-| Change member ↔ partner (`PATCH /users/role`)                                                                                         |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
-| Promote member/partner to admin (`PATCH /users/role`)                                                                                 |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
-| Demote admin to member/partner (`PATCH /users/role`)                                                                                  |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
-| Close member or partner (`POST /users/:id/closure`)                                                                                   |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
-| Close admin (`POST /users/:id/closure`)                                                                                               |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
-| Suspend/reactivate member or partner (`POST /users/:id/suspension`, `POST /users/:id/reactivation`)                                   |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
-| Suspend/reactivate admin (`POST /users/:id/suspension`, `POST /users/:id/reactivation`)                                               |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
-| Suspend/reactivate owner (`POST /users/:id/suspension`, `POST /users/:id/reactivation`)                                               |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
-| Create, change, close, or suspend owner (`POST /users`, `PATCH /users/role`, `POST /users/:id/closure`, `POST /users/:id/suspension`) |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
-| Change role or close self (`PATCH /users/role`, `POST /users/:id/closure`)                                                            |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
-| Repeat an authorized current-role assignment (`PATCH /users/role`)                                                                    | No-op | No-op |   ❌    |   ❌   |    ❌     |
+| Capability                                                                                                     | Owner | Admin | Partner | Member | Anonymous |
+| -------------------------------------------------------------------------------------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
+| Get or list users (`GET /users/:id`, `GET /users`)                                                             |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Get administrative capabilities for a user (`GET /users/:id/administrative-capabilities`)                      |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Change member ↔ partner (`PATCH /users/role`)                                                                  |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Promote member/partner to admin (`PATCH /users/role`)                                                          |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Demote admin to member/partner (`PATCH /users/role`)                                                           |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Close member or partner (`POST /users/:id/closure`)                                                            |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Close admin (`POST /users/:id/closure`)                                                                        |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Suspend/reactivate member or partner (`POST /users/:id/suspension`, `POST /users/:id/reactivation`)            |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Suspend/reactivate admin (`POST /users/:id/suspension`, `POST /users/:id/reactivation`)                        |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Suspend/reactivate owner (`POST /users/:id/suspension`, `POST /users/:id/reactivation`)                        |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Change, close, or suspend owner (`PATCH /users/role`, `POST /users/:id/closure`, `POST /users/:id/suspension`) |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Change role or close self (`PATCH /users/role`, `POST /users/:id/closure`)                                     |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Repeat an authorized current-role assignment (`PATCH /users/role`)                                             | No-op | No-op |   ❌    |   ❌   |    ❌     |
 
 Role-change and closure decisions use the actor and target records loaded from persistence in the same transaction as
 the mutation. A valid access token carrying a stale role cannot override the actor's current persisted role.
