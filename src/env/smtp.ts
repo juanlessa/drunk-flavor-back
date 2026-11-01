@@ -3,8 +3,15 @@ import { z } from 'zod/v4';
 import { type InstanceMode, parseControlEnv } from './control';
 import { type NodeEnv, parseNodeEnv } from './node';
 
-/** Environments where the mailer credentials are allowed to be empty. */
-const SMTP_OPTIONAL_ENVIRONMENTS: readonly NodeEnv[] = ['testing', 'e2e'];
+/** Environments where the SMTP host is allowed to be empty. */
+const SMTP_HOST_OPTIONAL_ENVIRONMENTS: readonly NodeEnv[] = ['testing', 'e2e'];
+
+/**
+ * Environments where the SMTP credentials are allowed to be empty. Development
+ * is included because local mail catchers such as MailDev accept connections
+ * without authentication.
+ */
+const SMTP_CREDENTIALS_OPTIONAL_ENVIRONMENTS: readonly NodeEnv[] = ['development', 'testing', 'e2e'];
 
 const SMTP_DEFAULT_DOMAIN = 'drunkflavor.com';
 const SMTP_DEFAULT_PORT = 465;
@@ -32,8 +39,8 @@ export const MANAGED_SMTP_CONNECTION: SmtpConnection = {
 	password: '',
 };
 
-const requiredUnlessTestEnv = (nodeEnv: NodeEnv, variableName: string) =>
-	SMTP_OPTIONAL_ENVIRONMENTS.includes(nodeEnv)
+const requiredUnlessIn = (optionalEnvironments: readonly NodeEnv[], nodeEnv: NodeEnv, variableName: string) =>
+	optionalEnvironments.includes(nodeEnv)
 		? z.string().default('')
 		: z.string().min(1, `${variableName} is required in the "${nodeEnv}" environment`);
 
@@ -80,9 +87,9 @@ const buildExternalSmtpSchema = (nodeEnv: NodeEnv) =>
 		SMTP_MODE: z.literal('external'),
 		...smtpDomainShape,
 		SMTP_PORT: buildSmtpPortSchema(nodeEnv),
-		SMTP_HOST: requiredUnlessTestEnv(nodeEnv, 'SMTP_HOST'),
-		SMTP_USERNAME: requiredUnlessTestEnv(nodeEnv, 'SMTP_USERNAME'),
-		SMTP_PASSWORD: requiredUnlessTestEnv(nodeEnv, 'SMTP_PASSWORD'),
+		SMTP_HOST: requiredUnlessIn(SMTP_HOST_OPTIONAL_ENVIRONMENTS, nodeEnv, 'SMTP_HOST'),
+		SMTP_USERNAME: requiredUnlessIn(SMTP_CREDENTIALS_OPTIONAL_ENVIRONMENTS, nodeEnv, 'SMTP_USERNAME'),
+		SMTP_PASSWORD: requiredUnlessIn(SMTP_CREDENTIALS_OPTIONAL_ENVIRONMENTS, nodeEnv, 'SMTP_PASSWORD'),
 	});
 
 export const buildSmtpSchema = (nodeEnv: NodeEnv) =>

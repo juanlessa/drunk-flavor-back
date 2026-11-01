@@ -2,6 +2,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { acceptOwnershipTransferController } from '@/core/accounts/useCases/ownershipTransfer/accept/acceptOwnershipTransfer.controller';
 import { acceptOwnershipTransferSchema } from '@/core/accounts/useCases/ownershipTransfer/accept/acceptOwnershipTransfer.schema';
 import { cancelOwnershipTransferController } from '@/core/accounts/useCases/ownershipTransfer/cancel/cancelOwnershipTransfer.controller';
+import { getPendingOwnershipTransferController } from '@/core/accounts/useCases/ownershipTransfer/getPending/getPendingOwnershipTransfer.controller';
 import { requestOwnershipTransferController } from '@/core/accounts/useCases/ownershipTransfer/request/requestOwnershipTransfer.controller';
 import { requestOwnershipTransferSchema } from '@/core/accounts/useCases/ownershipTransfer/request/requestOwnershipTransfer.schema';
 import { resendOwnershipTransferController } from '@/core/accounts/useCases/ownershipTransfer/resend/resendOwnershipTransfer.controller';
@@ -25,7 +26,20 @@ const ownerPreValidation = [
 
 const acceptancePreValidation = [verifyAndRenewToken, enforceCompleteProfile, requireRecentAuthentication];
 
+// Read-only: no recent authentication or sensitive rate limit, but the same owner-only permission as the commands.
+const ownerReadPreValidation = [
+	verifyAndRenewToken,
+	enforceCompleteProfile,
+	verifyPermissions('transferOwnership', 'User'),
+];
+
 const routes: Routes = (server) => {
+	server.get(
+		'/administration/ownership-transfer',
+		{ schema: { tags: ['Administration'] }, preValidation: ownerReadPreValidation },
+		getPendingOwnershipTransferController,
+	);
+
 	server.withTypeProvider<ZodTypeProvider>().post(
 		'/administration/ownership-transfer',
 		{

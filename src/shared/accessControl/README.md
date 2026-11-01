@@ -55,10 +55,12 @@ the mutation. A valid access token carrying a stale role cannot override the act
 
 #### Ownership transfer
 
-Ownership transfer commands are reserved for the current Owner through the `transferOwnership` ability.
+Ownership transfer commands and the pending-invitation read are reserved for the current Owner through the
+`transferOwnership` ability.
 
 |                                                                      | Owner | Admin | Partner | Member | Anonymous |
 | -------------------------------------------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
+| Get pending transfer (`GET /administration/ownership-transfer`)      |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
 | Request transfer (`POST /administration/ownership-transfer`)         |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
 | Resend invitation (`POST /administration/ownership-transfer/resend`) |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
 | Cancel transfer (`DELETE /administration/ownership-transfer`)        |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
