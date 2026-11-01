@@ -1,11 +1,18 @@
-import { logger } from '@/shared/providers/logger';
 import {
-	DEFAULT_LOCAL_MAILDEV_WEB_PORT,
-	DEFAULT_LOCAL_SMTP_HOST,
-	DEFAULT_LOCAL_SMTP_PORT,
-	startLocalMailDevServer,
-} from './local-maildev-server';
+	DEFAULT_MAILDEV_HOST,
+	DEFAULT_MAILDEV_SMTP_PORT,
+	DEFAULT_MAILDEV_WEB_PORT,
+	MailDevServer,
+} from '@/infrastructure/maildev/MailDevServer';
+import { logger } from '@/shared/providers/logger';
 
+/**
+ * Starts a local MailDev server for development (`npm run maildev`).
+ *
+ * It listens on fixed, predictable ports so the application can reach it through
+ * `SMTP_HOST` / `SMTP_PORT` (or `SMTP_MODE=managed`). Override them with
+ * `MAILDEV_HOST`, `MAILDEV_SMTP_PORT` and `MAILDEV_WEB_PORT`.
+ */
 const TERMINATION_SIGNALS = ['SIGINT', 'SIGTERM', 'SIGHUP'] as const;
 type TerminationSignal = (typeof TERMINATION_SIGNALS)[number];
 
@@ -20,12 +27,13 @@ const readPort = (environmentKey: string, defaultPort: number): number => {
 };
 
 const main = async (): Promise<void> => {
-	const host = process.env.LOCAL_SMTP_HOST?.trim() || DEFAULT_LOCAL_SMTP_HOST;
-	const maildev = await startLocalMailDevServer({
-		host,
-		smtpPort: readPort('LOCAL_SMTP_PORT', DEFAULT_LOCAL_SMTP_PORT),
-		webPort: readPort('LOCAL_MAILDEV_WEB_PORT', DEFAULT_LOCAL_MAILDEV_WEB_PORT),
+	const maildev = new MailDevServer({
+		host: process.env.MAILDEV_HOST?.trim() || DEFAULT_MAILDEV_HOST,
+		smtpPort: readPort('MAILDEV_SMTP_PORT', DEFAULT_MAILDEV_SMTP_PORT),
+		webPort: readPort('MAILDEV_WEB_PORT', DEFAULT_MAILDEV_WEB_PORT),
 	});
+	await maildev.start();
+
 	let terminationSignal: TerminationSignal | undefined;
 	let resolveStop: (() => void) | undefined;
 	let rejectStop: ((error: Error) => void) | undefined;
@@ -51,9 +59,7 @@ const main = async (): Promise<void> => {
 		process.once(signal, handler);
 	}
 
-	const handleServerError = (error: Error): void => rejectStop?.(error);
-	maildev.servers.smtp.once('error', handleServerError);
-	maildev.servers.api?.once('error', handleServerError);
+	maildev.onError((error) => rejectStop?.(error));
 
 	logger.info(`Local MailDev SMTP server listening on ${maildev.smtpUrl}.`);
 	logger.info(`MailDev inbox and API available at ${maildev.webUrl}.`);
@@ -62,7 +68,7 @@ const main = async (): Promise<void> => {
 	try {
 		await stopPromise;
 	} finally {
-		await maildev.close();
+		await maildev.stop();
 		removeHandlers();
 		logger.info('Local MailDev server has been closed.');
 	}

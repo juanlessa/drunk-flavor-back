@@ -37,6 +37,16 @@ const typescriptConfig = tsEslint.config({
  */
 const coreModules = ['accounts', 'drinks', 'engagement'];
 
+/**
+ * MailDev is a development and test tool (`maildev` is a devDependency). Only the
+ * Vitest setup files, its own folder, and scripts may import it, so it can never
+ * end up in the server or worker bundles.
+ */
+const maildevRestriction = {
+	regex: '^@/infrastructure/maildev(?:$|/)',
+	message: 'MailDev is a development/test tool; import it only from the Vitest setup files or scripts.',
+};
+
 const moduleBoundaryConfigs = coreModules.map((module) => {
 	const otherModules = coreModules.filter((other) => other !== module);
 	return {
@@ -45,10 +55,13 @@ const moduleBoundaryConfigs = coreModules.map((module) => {
 			'no-restricted-imports': [
 				'error',
 				{
-					patterns: otherModules.map((other) => ({
-						regex: `^@/core/${other}(?:$|/(?!public(?:/|$)))`,
-						message: `"${module}" may import from the "${other}" module only through "@/core/${other}/public".`,
-					})),
+					patterns: [
+						...otherModules.map((other) => ({
+							regex: `^@/core/${other}(?:$|/(?!public(?:/|$)))`,
+							message: `"${module}" may import from the "${other}" module only through "@/core/${other}/public".`,
+						})),
+						maildevRestriction,
+					],
 				},
 			],
 		},
@@ -79,6 +92,13 @@ export default [
 	{ ignores: ['dist/**', 'coverage/**', 'build/**', 'node_modules/**'] },
 	...typescriptConfig,
 	...moduleBoundaryConfigs,
+	{
+		files: ['src/**/*.ts'],
+		ignores: ['src/core/**', 'src/infrastructure/maildev/**', 'src/infrastructure/vitest/**'],
+		rules: {
+			'no-restricted-imports': ['error', { patterns: [maildevRestriction] }],
+		},
+	},
 	vitestConfig,
 	eslintConfigPrettier,
 ];

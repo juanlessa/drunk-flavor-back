@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { z } from 'zod/v4';
+import { type InstanceMode, parseControlEnv } from './control';
 import { type NodeEnv, parseNodeEnv } from './node';
 
 /** Environments where the mailer credentials are allowed to be empty. */
@@ -10,6 +11,26 @@ const SMTP_DEFAULT_PORT = 465;
 
 /** Secure SMTP ports allowed in production: 465 (implicit TLS) and 587 (STARTTLS). */
 const SMTP_SECURE_PORTS = [465, 587] as const;
+
+/** Everything a transporter needs to reach an SMTP server. */
+export type SmtpConnection = {
+	host: string;
+	port: number;
+	username: string;
+	password: string;
+};
+
+/**
+ * Address of the local MailDev server (`npm run maildev`). It is used when
+ * `SMTP_MODE` is `managed` and no connection is injected at runtime (for
+ * example in development), and it backfills the flat `env.SMTP_*` keys.
+ */
+export const MANAGED_SMTP_CONNECTION: SmtpConnection = {
+	host: 'localhost',
+	port: 1025,
+	username: '',
+	password: '',
+};
 
 const requiredUnlessTestEnv = (nodeEnv: NodeEnv, variableName: string) =>
 	SMTP_OPTIONAL_ENVIRONMENTS.includes(nodeEnv)
@@ -33,18 +54,74 @@ const buildSmtpPortSchema = (nodeEnv: NodeEnv) => {
 	});
 };
 
-export const buildSmtpSchema = (nodeEnv: NodeEnv) =>
+const smtpDomainShape = {
+	SMTP_DOMAIN: z.string().min(1).default(SMTP_DEFAULT_DOMAIN),
+};
+
+/**
+ * `managed`: a local MailDev server provides the mail transport, so no
+ * connection variables are read. A development mail catcher must never receive
+ * production mail, hence the production guard.
+ */
+const buildManagedSmtpSchema = (nodeEnv: NodeEnv) =>
+	z
+		.object({
+			SMTP_MODE: z.literal('managed'),
+			...smtpDomainShape,
+		})
+		.refine(() => nodeEnv !== 'production', {
+			message: 'SMTP_MODE must be "external" in the "production" environment',
+			path: ['SMTP_MODE'],
+		});
+
+/** `external`: connect to an already-running SMTP server described by `SMTP_*`. */
+const buildExternalSmtpSchema = (nodeEnv: NodeEnv) =>
 	z.object({
-		SMTP_DOMAIN: z.string().min(1).default(SMTP_DEFAULT_DOMAIN),
+		SMTP_MODE: z.literal('external'),
+		...smtpDomainShape,
 		SMTP_PORT: buildSmtpPortSchema(nodeEnv),
 		SMTP_HOST: requiredUnlessTestEnv(nodeEnv, 'SMTP_HOST'),
 		SMTP_USERNAME: requiredUnlessTestEnv(nodeEnv, 'SMTP_USERNAME'),
 		SMTP_PASSWORD: requiredUnlessTestEnv(nodeEnv, 'SMTP_PASSWORD'),
 	});
 
+export const buildSmtpSchema = (nodeEnv: NodeEnv) =>
+	z.discriminatedUnion('SMTP_MODE', [buildManagedSmtpSchema(nodeEnv), buildExternalSmtpSchema(nodeEnv)]);
+
 export type SmtpSchema = z.infer<ReturnType<typeof buildSmtpSchema>>;
 
-export const parseSmtpEnv = (source: NodeJS.ProcessEnv = process.env, nodeEnv?: NodeEnv): SmtpSchema => {
+/**
+ * Flattened SMTP shape (the `external` branch, which carries every connection
+ * key). The composed `env` uses this so consumers can access `env.SMTP_*`
+ * without needing to narrow on `SMTP_MODE`.
+ */
+export type FlatSmtpSchema = z.infer<ReturnType<typeof buildExternalSmtpSchema>>;
+
+export const parseSmtpEnv = (
+	source: NodeJS.ProcessEnv = process.env,
+	mode?: InstanceMode,
+	nodeEnv?: NodeEnv,
+): SmtpSchema => {
 	const resolvedNodeEnv = nodeEnv ?? parseNodeEnv(source).NODE_ENV;
-	return buildSmtpSchema(resolvedNodeEnv).parse(source);
+	const resolvedMode = mode ?? parseControlEnv(source, resolvedNodeEnv).SMTP_MODE;
+	return buildSmtpSchema(resolvedNodeEnv).parse({ ...source, SMTP_MODE: resolvedMode });
+};
+
+/**
+ * Resolves the SMTP connection from the environment: the `SMTP_*` variables in
+ * `external` mode, or the local MailDev address in `managed` mode.
+ */
+export const readSmtpConnection = (source: NodeJS.ProcessEnv = process.env): SmtpConnection => {
+	const smtp = parseSmtpEnv(source);
+
+	if (smtp.SMTP_MODE === 'managed') {
+		return { ...MANAGED_SMTP_CONNECTION };
+	}
+
+	return {
+		host: smtp.SMTP_HOST,
+		port: smtp.SMTP_PORT,
+		username: smtp.SMTP_USERNAME,
+		password: smtp.SMTP_PASSWORD,
+	};
 };
