@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb';
 import { CategoriesRepository } from './Categories.repository';
 import { CategoryModel } from '../entities/category.model';
 import { CreateCategory } from '@/core/drinks/dtos/category.dtos';
-import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
+import { ConflictError, NotFoundError } from '@/shared/error/error.lib';
 
 const buildCategory = (name: { en: string; pt: string }): CreateCategory => ({
 	translations: { en: { name: name.en }, pt: { name: name.pt } },
@@ -56,14 +56,14 @@ describe('CategoriesRepository (integration)', () => {
 		expect(updated.isAlcoholic).toBe(true);
 	});
 
-	it('translates a sequential duplicate en/pt name create to BadRequestError', async () => {
+	it('translates a sequential duplicate en/pt name create to ConflictError', async () => {
 		await repository.create(buildCategory({ en: 'Citrus', pt: 'Cítrico' }));
 
 		await expect(repository.create(buildCategory({ en: 'Citrus', pt: 'Outro' }))).rejects.toBeInstanceOf(
-			BadRequestError,
+			ConflictError,
 		);
 		await expect(repository.create(buildCategory({ en: 'Other', pt: 'Cítrico' }))).rejects.toBeInstanceOf(
-			BadRequestError,
+			ConflictError,
 		);
 	});
 
@@ -76,18 +76,18 @@ describe('CategoriesRepository (integration)', () => {
 		expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
 		const rejected = results.filter((result) => result.status === 'rejected') as PromiseRejectedResult[];
 		expect(rejected).toHaveLength(1);
-		expect(rejected[0].reason).toBeInstanceOf(BadRequestError);
+		expect(rejected[0].reason).toBeInstanceOf(ConflictError);
 
 		expect(await CategoryModel.countDocuments({ 'translations.en.name': 'Citrus' })).toBe(1);
 	});
 
-	it('translates an update rename collision to BadRequestError', async () => {
+	it('translates an update rename collision to ConflictError', async () => {
 		await repository.create(buildCategory({ en: 'Citrus', pt: 'Cítrico' }));
 		const other = await repository.create(buildCategory({ en: 'Herbal', pt: 'Herbal' }));
 
 		await expect(
 			repository.update({ id: other.id, translations: { en: { name: 'Citrus' } } }),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(ConflictError);
 	});
 
 	it('orders findAll deterministically with the _id tie-breaker under equal sort keys', async () => {

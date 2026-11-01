@@ -1,6 +1,6 @@
 import { RatingListQuery } from '@/core/engagement/dtos/rating.dtos';
 import { RatingsRepositoryInMemory } from '@/core/engagement/repositories/inMemory/Ratings.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { ConflictError } from '@/shared/error/error.lib';
 import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it } from 'vitest';
 
@@ -17,7 +17,7 @@ describe('RatingsRepositoryInMemory', () => {
 
 	it('enforces a single rating per drink and user pair', async () => {
 		await repository.create({ drinkId, userId, value: 4 });
-		await expect(repository.create({ drinkId, userId, value: 2 })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(repository.create({ drinkId, userId, value: 2 })).rejects.toBeInstanceOf(ConflictError);
 	});
 
 	it('keeps associations immutable on update and changes only value', async () => {

@@ -1,6 +1,6 @@
 import { IRatingsRepository } from '@/core/engagement/repositories/IRatings.repository';
 import { RatingsRepositoryInMemory } from '@/core/engagement/repositories/inMemory/Ratings.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError } from '@/shared/error/error.lib';
 import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { GetRatingService } from './GetRating.service';
@@ -25,6 +25,6 @@ describe('Get Rating', () => {
 	});
 
 	it('rejects a nonexistent rating', async () => {
-		await expect(service.execute({ id: new ObjectId().toString() })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ id: new ObjectId().toString() })).rejects.toBeInstanceOf(NotFoundError);
 	});
 });

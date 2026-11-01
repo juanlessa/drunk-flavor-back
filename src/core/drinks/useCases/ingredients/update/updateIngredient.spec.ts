@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb';
 import { UpdateIngredientService } from './UpdateIngredient.service';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Units.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError, ConflictError, BadRequestError } from '@/shared/error/error.lib';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
@@ -86,7 +86,7 @@ describe('Update Ingredient', () => {
 				categoryId: updatedCategory.id,
 				unitId: updatedUnit.id,
 			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('should not be able to update an ingredient name to an existing name', async () => {
@@ -103,7 +103,7 @@ describe('Update Ingredient', () => {
 				categoryId: updatedCategory.id,
 				unitId: updatedUnit.id,
 			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(ConflictError);
 	});
 	it('should not be able to update an ingredient with a nonexistent category', async () => {
 		await expect(

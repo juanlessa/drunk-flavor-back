@@ -2,7 +2,7 @@ import { ICommentsRepository } from '@/core/engagement/repositories/IComments.re
 import { defineAbilityFor } from '@/shared/accessControl';
 import { commentPermissionSchema } from '@/shared/accessControl/entities/comment';
 import { userPermissionSchema } from '@/shared/accessControl/entities/user';
-import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
+import { ForbiddenError, NotFoundError } from '@/shared/error/error.lib';
 import { DeleteCommentCommand } from './deleteComment.dtos';
 
 export class DeleteCommentService {
@@ -10,7 +10,7 @@ export class DeleteCommentService {
 
 	async execute({ id, actor }: DeleteCommentCommand): Promise<void> {
 		const comment = await this.commentsRepository.findById(id);
-		if (!comment) throw new BadRequestError('apiResponses.comments.notExist', { path: 'DeleteComment.service' });
+		if (!comment) throw new NotFoundError('apiResponses.comments.notExist', { path: 'DeleteComment.service' });
 
 		const subject = commentPermissionSchema.parse({
 			id: comment.id,

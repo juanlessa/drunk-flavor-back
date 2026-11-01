@@ -3,7 +3,7 @@ import { Actor } from '@/shared/accessControl/actor.types';
 import { IRatingsRepository } from '@/core/engagement/repositories/IRatings.repository';
 import { RatingsRepositoryInMemory } from '@/core/engagement/repositories/inMemory/Ratings.repository';
 import { Roles } from '@/shared/accessControl/roles';
-import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
+import { ForbiddenError, NotFoundError } from '@/shared/error/error.lib';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -38,7 +38,7 @@ describe('Update Rating', () => {
 
 	it('rejects a nonexistent rating', async () => {
 		await expect(service.execute({ id: new ObjectId().toString(), value: 3, actor: owner })).rejects.toBeInstanceOf(
-			BadRequestError,
+			NotFoundError,
 		);
 	});
 

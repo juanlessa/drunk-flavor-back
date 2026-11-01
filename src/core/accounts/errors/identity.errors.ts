@@ -1,7 +1,7 @@
 import { AppErrorOptions } from '@/shared/error/error.dtos';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { ConflictError } from '@/shared/error/error.lib';
 
-export class IdentityProviderSubjectAlreadyExistsError extends BadRequestError {
+export class IdentityProviderSubjectAlreadyExistsError extends ConflictError {
 	constructor(options: AppErrorOptions = {}) {
 		super('apiResponses.users.alreadyExist', {
 			...options,
@@ -11,7 +11,7 @@ export class IdentityProviderSubjectAlreadyExistsError extends BadRequestError {
 	}
 }
 
-export class IdentityUserProviderAlreadyExistsError extends BadRequestError {
+export class IdentityUserProviderAlreadyExistsError extends ConflictError {
 	constructor(options: AppErrorOptions = {}) {
 		super('apiResponses.users.alreadyExist', {
 			...options,

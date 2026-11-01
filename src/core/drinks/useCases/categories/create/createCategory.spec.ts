@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { CreateCategoryService } from './CreateCategory.service';
 import { Category } from '@/core/drinks/entities/category.entity';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { ConflictError } from '@/shared/error/error.lib';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 
@@ -29,6 +29,6 @@ describe('Create Category', () => {
 	it('should not be able to create a category with an existing name', async () => {
 		await categoriesRepository.create({ translations, isAlcoholic });
 
-		await expect(service.execute({ translations, isAlcoholic })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ translations, isAlcoholic })).rejects.toBeInstanceOf(ConflictError);
 	});
 });

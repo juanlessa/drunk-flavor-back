@@ -14,7 +14,7 @@ export const verifyPermissions =
 		const { cannot } = defineAbilityFor(user);
 
 		if (cannot(...args)) {
-			throw new ForbiddenError('apiResponses.auth.invalidCredentials', {
+			throw new ForbiddenError('apiResponses.auth.insufficientPermissions', {
 				path: 'verifyPermissionsByToken.middleware',
 			});
 		}

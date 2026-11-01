@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb';
 import { UnitsRepository } from './Units.repository';
 import { UnitModel } from '../entities/unit.model';
 import { CreateUnit } from '@/core/drinks/dtos/unit.dtos';
-import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
+import { ConflictError, NotFoundError } from '@/shared/error/error.lib';
 
 const buildUnit = (name: { en: string; pt: string }): CreateUnit => ({
 	translations: {
@@ -60,14 +60,14 @@ describe('UnitsRepository (integration)', () => {
 		expect(updated.allowDecimal).toBe(false);
 	});
 
-	it('translates a sequential duplicate en/pt name create to BadRequestError', async () => {
+	it('translates a sequential duplicate en/pt name create to ConflictError', async () => {
 		await repository.create(buildUnit({ en: 'milliliter', pt: 'mililitro' }));
 
 		await expect(repository.create(buildUnit({ en: 'milliliter', pt: 'outro' }))).rejects.toBeInstanceOf(
-			BadRequestError,
+			ConflictError,
 		);
 		await expect(repository.create(buildUnit({ en: 'other', pt: 'mililitro' }))).rejects.toBeInstanceOf(
-			BadRequestError,
+			ConflictError,
 		);
 	});
 
@@ -80,18 +80,18 @@ describe('UnitsRepository (integration)', () => {
 		expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
 		const rejected = results.filter((result) => result.status === 'rejected') as PromiseRejectedResult[];
 		expect(rejected).toHaveLength(1);
-		expect(rejected[0].reason).toBeInstanceOf(BadRequestError);
+		expect(rejected[0].reason).toBeInstanceOf(ConflictError);
 
 		expect(await UnitModel.countDocuments({ 'translations.en.name': 'milliliter' })).toBe(1);
 	});
 
-	it('translates an update rename collision to BadRequestError', async () => {
+	it('translates an update rename collision to ConflictError', async () => {
 		await repository.create(buildUnit({ en: 'milliliter', pt: 'mililitro' }));
 		const other = await repository.create(buildUnit({ en: 'centiliter', pt: 'centilitro' }));
 
 		await expect(
 			repository.update({ id: other.id, translations: { en: { name: 'milliliter' } } }),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(ConflictError);
 	});
 
 	it('orders findAll deterministically with the _id tie-breaker under equal sort keys', async () => {

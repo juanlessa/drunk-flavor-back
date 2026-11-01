@@ -1,6 +1,6 @@
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 import { UpdateDrinkCoverDTO } from './updateDrinkCover.dtos';
 import { generateStoredFileName, isSupportedFileType } from '@/shared/helpers/file.helpers';
 
@@ -20,7 +20,7 @@ export class UpdateDrinkCoverService {
 
 		const drink = await this.drinksRepository.findById(drinkId);
 		if (!drink) {
-			throw new BadRequestError('apiResponses.drinks.notExist', { path: 'UpdateDrinkCover.service.2' });
+			throw new NotFoundError('apiResponses.drinks.notExist', { path: 'UpdateDrinkCover.service.2' });
 		}
 
 		if (drink.cover) {

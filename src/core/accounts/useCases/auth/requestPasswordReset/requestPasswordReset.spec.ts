@@ -15,7 +15,7 @@ import { MjmlProvider } from '@/shared/providers/template/implementations/Mjml.p
 import { Token } from '@/core/accounts/entities/token.entity';
 import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError, ConflictError } from '@/shared/error/error.lib';
 import { env } from '@/env';
 
 let usersRepository: IUsersRepository;
@@ -77,7 +77,7 @@ describe('Request Password Reset', () => {
 	});
 
 	it('rejects a nonexistent user', async () => {
-		await expect(service.execute({ email: 'invalid-email@test.com' })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ email: 'invalid-email@test.com' })).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('rejects a request while a recent reset token is still valid', async () => {
@@ -90,7 +90,7 @@ describe('Request Password Reset', () => {
 			expiresAt: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
-		await expect(service.execute({ email })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ email })).rejects.toBeInstanceOf(ConflictError);
 	});
 
 	it('issues a new reset token after the previous one expires', async () => {

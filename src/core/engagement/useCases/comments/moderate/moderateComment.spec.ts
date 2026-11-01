@@ -3,7 +3,7 @@ import { ICommentsRepository } from '@/core/engagement/repositories/IComments.re
 import { CommentsRepositoryInMemory } from '@/core/engagement/repositories/inMemory/Comments.repository';
 import { Actor } from '@/shared/accessControl/actor.types';
 import { Roles } from '@/shared/accessControl/roles';
-import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
+import { ForbiddenError, NotFoundError } from '@/shared/error/error.lib';
 import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ModerateCommentService } from './ModerateComment.service';
@@ -39,6 +39,6 @@ describe('Moderate Comment', () => {
 	it('rejects a nonexistent comment', async () => {
 		await expect(
 			service.execute({ id: new ObjectId().toString(), status: CommentStatuses.hidden, actor: admin }),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(NotFoundError);
 	});
 });

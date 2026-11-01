@@ -48,7 +48,11 @@ describe('Auth rate limiting', () => {
 		});
 
 		expect(limited.status).toBe(HTTP_STATUS.too_many_requests);
-		expect(limited.body as ErrorBody).toMatchObject({ ok: false, localeKey: LOCALE_KEY });
+		expect(limited.body as ErrorBody).toMatchObject({
+			ok: false,
+			code: 'TOO_MANY_REQUESTS',
+			localeKey: LOCALE_KEY,
+		});
 		expect(typeof (limited.body as ErrorBody).message).toBe('string');
 		expect(limited.headers['retry-after']).toBeDefined();
 	});

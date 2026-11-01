@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateCategoryService } from './UpdateCategory.service';
 import { Category } from '@/core/drinks/entities/category.entity';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError, ConflictError } from '@/shared/error/error.lib';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 
@@ -45,7 +45,7 @@ describe('Update Category', () => {
 				translations: updatedTranslations,
 				isAlcoholic: updatedIsAlcoholic,
 			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('should not be able to update an ingredient name to an existing name', async () => {
@@ -59,6 +59,6 @@ describe('Update Category', () => {
 				translations: updatedTranslations,
 				isAlcoholic: updatedIsAlcoholic,
 			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(ConflictError);
 	});
 });

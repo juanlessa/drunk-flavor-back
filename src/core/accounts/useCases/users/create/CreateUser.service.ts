@@ -9,7 +9,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { env } from '@/env';
 import { CLIENT_PAGE_PATHS } from '@/shared/constants/client.constants';
 import { MAIL_SENDERS } from '@/shared/constants/mailer.constants';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { ConflictError } from '@/shared/error/error.lib';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
@@ -90,7 +90,7 @@ export class CreateUserService {
 
 			const existingUser = await this.usersRepository.findByEmail(email);
 			if (existingUser && existingUser.status === UserStatuses.active) {
-				throw new BadRequestError('apiResponses.users.alreadyExist', {
+				throw new ConflictError('apiResponses.users.alreadyExist', {
 					path: 'CreateUser.service.ensureEmailIsAvailable.active',
 				});
 			}
@@ -100,7 +100,7 @@ export class CreateUserService {
 					type: TokenTypes['email-verification'],
 				});
 				if (existingToken && !this.dateProvider.isExpiredDate(existingToken.expiresAt)) {
-					throw new BadRequestError('apiResponses.auth.emailVerificationPending', {
+					throw new ConflictError('apiResponses.auth.emailVerificationPending', {
 						path: 'CreateUser.service.ensureEmailIsAvailable.pending',
 					});
 				}

@@ -13,7 +13,7 @@ import { Token } from '@/core/accounts/entities/token.entity';
 import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { Roles } from '@/shared/accessControl/roles';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError, ConflictError } from '@/shared/error/error.lib';
 import { env } from '@/env';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
 import { MjmlProvider } from '@/shared/providers/template/implementations/Mjml.provider';
@@ -96,7 +96,7 @@ describe('Resend Email Verification', () => {
 	});
 
 	it('rejects a nonexistent user', async () => {
-		await expect(service.execute({ email: 'invalid-email@test.com' })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ email: 'invalid-email@test.com' })).rejects.toBeInstanceOf(NotFoundError);
 		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 
@@ -109,7 +109,7 @@ describe('Resend Email Verification', () => {
 			status: UserStatuses['active'],
 		});
 
-		await expect(service.execute({ email })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ email })).rejects.toBeInstanceOf(ConflictError);
 		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 
@@ -123,7 +123,7 @@ describe('Resend Email Verification', () => {
 			expiresAt: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
-		await expect(service.execute({ email })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ email })).rejects.toBeInstanceOf(ConflictError);
 		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 

@@ -3,7 +3,7 @@ import { Actor } from '@/shared/accessControl/actor.types';
 import { IRatingsRepository } from '@/core/engagement/repositories/IRatings.repository';
 import { RatingsRepositoryInMemory } from '@/core/engagement/repositories/inMemory/Ratings.repository';
 import { Roles } from '@/shared/accessControl/roles';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { ConflictError } from '@/shared/error/error.lib';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -35,6 +35,6 @@ describe('Create Rating', () => {
 
 	it('rejects a duplicate pair before relying on the index', async () => {
 		await service.execute({ drinkId, value: 4, actor });
-		await expect(service.execute({ drinkId, value: 2, actor })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ drinkId, value: 2, actor })).rejects.toBeInstanceOf(ConflictError);
 	});
 });

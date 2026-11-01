@@ -3,7 +3,7 @@ import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemo
 import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Units.repository';
 import { ObjectId } from 'mongodb';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
@@ -119,7 +119,7 @@ describe('Update Drink', () => {
 				mimetype: fileMimetype,
 				fileStream: mockedFileStream,
 			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('should be able to delete the existing drink thumbnail during the update', async () => {

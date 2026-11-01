@@ -1,7 +1,7 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
 import { CreateUserService } from './CreateUser.service';
-import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
+import { ForbiddenError, ConflictError } from '@/shared/error/error.lib';
 import { Actor } from '@/shared/accessControl/actor.types';
 import { Roles } from '@/shared/accessControl/roles';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
@@ -143,7 +143,7 @@ describe('Create User', () => {
 		});
 
 		await expect(service.execute({ name, surname, email, password, role, actor: admin })).rejects.toBeInstanceOf(
-			BadRequestError,
+			ConflictError,
 		);
 		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
 	});

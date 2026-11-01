@@ -1,6 +1,6 @@
 import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
 import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Units.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { ConflictError } from '@/shared/error/error.lib';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CreateUnitService } from './CreateUnit.service';
 
@@ -33,6 +33,6 @@ describe('Create Unit', () => {
 		['Portuguese', { en: { name: 'unique english unit' }, pt: { name: 'mililitro' } }],
 	] as const)('rejects a duplicate name in %s only', async (_, translations) => {
 		await repository.create(createUnitFactory());
-		await expect(service.execute(createUnitFactory({ translations }))).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute(createUnitFactory({ translations }))).rejects.toBeInstanceOf(ConflictError);
 	});
 });

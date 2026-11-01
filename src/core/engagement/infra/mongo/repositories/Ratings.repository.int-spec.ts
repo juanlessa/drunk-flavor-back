@@ -4,7 +4,7 @@ import { RatingListQuery } from '@/core/engagement/dtos/rating.dtos';
 import { RatingModel } from '@/core/engagement/infra/mongo/entities/rating.model';
 import { RatingsRepository } from '@/core/engagement/infra/mongo/repositories/Ratings.repository';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { ConflictError } from '@/shared/error/error.lib';
 
 const query: RatingListQuery = { page: 1, limit: 50, sort: { createdAt: -1, id: -1 } };
 let repository: RatingsRepository;
@@ -20,12 +20,12 @@ describe('RatingsRepository (integration)', () => {
 	});
 
 	describe('duplicate-pair classification', () => {
-		it('translates a sequential duplicate pair to BadRequestError', async () => {
+		it('translates a sequential duplicate pair to ConflictError', async () => {
 			repository = new RatingsRepository();
 			const drinkId = new ObjectId().toString();
 			const userId = new ObjectId().toString();
 			await repository.create({ drinkId, userId, value: 4 });
-			await expect(repository.create({ drinkId, userId, value: 2 })).rejects.toBeInstanceOf(BadRequestError);
+			await expect(repository.create({ drinkId, userId, value: 2 })).rejects.toBeInstanceOf(ConflictError);
 		});
 
 		it('resolves a concurrent create race to one record and one rejection', async () => {
@@ -55,7 +55,7 @@ describe('RatingsRepository (integration)', () => {
 				user_id: new ObjectId().toString(),
 				value: 4,
 			});
-			await expect(collision).rejects.not.toBeInstanceOf(BadRequestError);
+			await expect(collision).rejects.not.toBeInstanceOf(ConflictError);
 		});
 	});
 

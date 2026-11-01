@@ -1,7 +1,7 @@
 import { AppErrorOptions } from '@/shared/error/error.dtos';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { ConflictError } from '@/shared/error/error.lib';
 
-export class TokenHashAlreadyExistsError extends BadRequestError {
+export class TokenHashAlreadyExistsError extends ConflictError {
 	constructor(options: AppErrorOptions = {}) {
 		super('apiResponses.auth.tokenAlreadyExist', {
 			...options,
@@ -11,7 +11,7 @@ export class TokenHashAlreadyExistsError extends BadRequestError {
 	}
 }
 
-export class TokenUserTypeAlreadyExistsError extends BadRequestError {
+export class TokenUserTypeAlreadyExistsError extends ConflictError {
 	constructor(options: AppErrorOptions = {}) {
 		super('apiResponses.auth.tokenAlreadyExist', {
 			...options,

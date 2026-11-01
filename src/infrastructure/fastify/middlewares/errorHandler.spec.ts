@@ -2,17 +2,20 @@ import { describe, expect, it, vi } from 'vitest';
 import { SessionRevokedError } from '@/core/accounts/errors/session.errors';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { AUTH_COOKIE } from '../constants/cookie.constants';
+import en from '@/shared/locales/en.json';
 import { errorHandler } from './errorHandler';
 
 const createContext = () => {
 	const send = vi.fn();
 	const reply = {
 		clearCookie: vi.fn(),
+		getHeader: vi.fn(),
+		header: vi.fn(),
 		status: vi.fn(() => ({ send })),
 	};
 	const request = {
 		session: { delete: vi.fn() },
-		i18n: { t: vi.fn((key: string) => `translated:${key}`) },
+		locale: 'en',
 	};
 	return { request, reply, send };
 };
@@ -28,8 +31,9 @@ describe('errorHandler', () => {
 		expect(reply.status).toHaveBeenCalledWith(HTTP_STATUS.unauthorized);
 		expect(send).toHaveBeenCalledWith({
 			ok: false,
+			code: 'SESSION_REVOKED',
 			localeKey: 'apiResponses.auth.sessionRevoked',
-			message: 'translated:apiResponses.auth.sessionRevoked',
+			message: en['apiResponses.auth.sessionRevoked'],
 		});
 	});
 
@@ -41,5 +45,26 @@ describe('errorHandler', () => {
 		expect(request.session.delete).not.toHaveBeenCalled();
 		expect(reply.clearCookie).not.toHaveBeenCalled();
 		expect(reply.status).toHaveBeenCalledWith(HTTP_STATUS.internal_server_error);
+	});
+	it('marks the localized response with Content-Language and Vary', async () => {
+		const { request, reply } = createContext();
+
+		await errorHandler(new SessionRevokedError({ path: 'test' }), request as never, reply as never);
+
+		expect(reply.header).toHaveBeenCalledWith('Content-Language', 'en');
+		expect(reply.header).toHaveBeenCalledWith('Vary', 'Accept-Language');
+	});
+
+	it('translates unhandled errors to the internal server error message', async () => {
+		const { request, reply, send } = createContext();
+
+		await errorHandler(new Error('database unavailable'), request as never, reply as never);
+
+		expect(send).toHaveBeenCalledWith({
+			ok: false,
+			code: 'INTERNAL_ERROR',
+			localeKey: 'apiResponses.internalServerError',
+			message: en['apiResponses.internalServerError'],
+		});
 	});
 });

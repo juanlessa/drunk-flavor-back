@@ -1,7 +1,7 @@
 import { AppErrorOptions } from '@/shared/error/error.dtos';
-import { BadRequestError, ConflictError, ForbiddenError } from '@/shared/error/error.lib';
+import { ConflictError, ForbiddenError } from '@/shared/error/error.lib';
 
-export class UserEmailAlreadyExistsError extends BadRequestError {
+export class UserEmailAlreadyExistsError extends ConflictError {
 	constructor(options: AppErrorOptions = {}) {
 		super('apiResponses.users.alreadyExist', {
 			...options,

@@ -2,7 +2,7 @@ import { ICommentsRepository } from '@/core/engagement/repositories/IComments.re
 import { defineAbilityFor } from '@/shared/accessControl';
 import { commentPermissionSchema } from '@/shared/accessControl/entities/comment';
 import { userPermissionSchema } from '@/shared/accessControl/entities/user';
-import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
+import { ForbiddenError, NotFoundError } from '@/shared/error/error.lib';
 import { ModerateCommentCommand } from './moderateComment.dtos';
 
 export class ModerateCommentService {
@@ -10,7 +10,7 @@ export class ModerateCommentService {
 
 	async execute({ id, status, actor }: ModerateCommentCommand): Promise<void> {
 		const comment = await this.commentsRepository.findById(id);
-		if (!comment) throw new BadRequestError('apiResponses.comments.notExist', { path: 'ModerateComment.service' });
+		if (!comment) throw new NotFoundError('apiResponses.comments.notExist', { path: 'ModerateComment.service' });
 
 		const subject = commentPermissionSchema.parse({
 			id: comment.id,

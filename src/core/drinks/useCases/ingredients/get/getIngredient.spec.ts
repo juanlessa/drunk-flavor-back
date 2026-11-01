@@ -4,7 +4,7 @@ import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemor
 import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Ingredients.repository';
 import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Units.repository';
 import { GetIngredientService } from './GetIngredient.service';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError } from '@/shared/error/error.lib';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
@@ -55,6 +55,6 @@ describe('Get Ingredient', () => {
 	it('should not be able to find a nonexistent ingredient', async () => {
 		const nonexistentId = new ObjectId().toString();
 
-		await expect(service.execute({ id: nonexistentId })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ id: nonexistentId })).rejects.toBeInstanceOf(NotFoundError);
 	});
 });

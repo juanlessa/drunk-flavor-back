@@ -7,7 +7,7 @@ import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CreateDrinkService } from './CreateDrink.service';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { ConflictError, BadRequestError } from '@/shared/error/error.lib';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
@@ -89,7 +89,7 @@ describe('Create Drink', () => {
 				translations,
 				ingredients: [{ ingredientId: createdIngredient.id, quantity: 60 }],
 			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(ConflictError);
 	});
 
 	it('should not be able to create a drink with a nonexistent ingredient', async () => {

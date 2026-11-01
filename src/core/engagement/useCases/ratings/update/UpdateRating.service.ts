@@ -3,7 +3,7 @@ import { IRatingsRepository } from '@/core/engagement/repositories/IRatings.repo
 import { defineAbilityFor } from '@/shared/accessControl';
 import { ratingPermissionSchema } from '@/shared/accessControl/entities/rating';
 import { userPermissionSchema } from '@/shared/accessControl/entities/user';
-import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
+import { ForbiddenError, NotFoundError } from '@/shared/error/error.lib';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { UpdateRatingCommand, UpdateRatingResult } from './updateRating.dtos';
 
@@ -17,7 +17,7 @@ export class UpdateRatingService {
 	async execute({ id, value, actor }: UpdateRatingCommand): Promise<UpdateRatingResult> {
 		return this.transactionManager.withTransaction(async () => {
 			const rating = await this.ratingsRepository.findById(id);
-			if (!rating) throw new BadRequestError('apiResponses.ratings.notExist', { path: 'UpdateRating.service' });
+			if (!rating) throw new NotFoundError('apiResponses.ratings.notExist', { path: 'UpdateRating.service' });
 
 			const subject = ratingPermissionSchema.parse({
 				id: rating.id,

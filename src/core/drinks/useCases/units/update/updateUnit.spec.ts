@@ -1,6 +1,6 @@
 import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
 import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Units.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError, ConflictError } from '@/shared/error/error.lib';
 import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateUnitService } from './UpdateUnit.service';
@@ -49,7 +49,7 @@ describe('Update Unit', () => {
 
 	it('rejects a nonexistent unit', async () => {
 		await expect(service.execute({ id: new ObjectId().toString(), ...createUnitFactory() })).rejects.toBeInstanceOf(
-			BadRequestError,
+			NotFoundError,
 		);
 	});
 	it.each([
@@ -64,6 +64,6 @@ describe('Update Unit', () => {
 			}),
 		);
 		const update = createUnitFactory({ translations, kind: 'mass' });
-		await expect(service.execute({ id: first.id, ...update })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ id: first.id, ...update })).rejects.toBeInstanceOf(ConflictError);
 	});
 });

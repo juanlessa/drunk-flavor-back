@@ -4,7 +4,7 @@ import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { IEmailQueueProvider } from '@/shared/providers/queue/email/IEmailQueue.provider';
 import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError, ConflictError } from '@/shared/error/error.lib';
 import { MAIL_SENDERS } from '@/shared/constants/mailer.constants';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { CLIENT_PAGE_PATHS } from '@/shared/constants/client.constants';
@@ -25,7 +25,7 @@ export class RequestPasswordResetService {
 	async execute({ email }: RequestPasswordReset) {
 		const user = await this.usersRepository.findByEmail(email);
 		if (!user) {
-			throw new BadRequestError('apiResponses.users.notExist', { path: 'RequestPasswordReset.service.1' });
+			throw new NotFoundError('apiResponses.users.notExist', { path: 'RequestPasswordReset.service.1' });
 		}
 
 		const tokenAlreadyExists = await this.tokensRepository.findByUserIdAndType({
@@ -34,7 +34,7 @@ export class RequestPasswordResetService {
 		});
 
 		if (tokenAlreadyExists && !this.dateProvider.isExpiredDate(tokenAlreadyExists.expiresAt)) {
-			throw new BadRequestError('apiResponses.auth.actionAlreadyRequested', {
+			throw new ConflictError('apiResponses.auth.actionAlreadyRequested', {
 				path: 'RequestPasswordReset.service.2',
 			});
 		}

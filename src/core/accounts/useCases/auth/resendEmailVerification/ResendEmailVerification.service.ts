@@ -2,7 +2,7 @@ import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError, ConflictError } from '@/shared/error/error.lib';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { env } from '@/env';
@@ -26,13 +26,13 @@ export class ResendEmailVerificationService {
 	async execute({ email }: ResendEmailVerification): Promise<void> {
 		const user = await this.usersRepository.findByEmail(email);
 		if (!user) {
-			throw new BadRequestError('apiResponses.users.notExist', {
+			throw new NotFoundError('apiResponses.users.notExist', {
 				path: 'ResendEmailVerification.service.userNotFound',
 			});
 		}
 
 		if (user.status === UserStatuses['active']) {
-			throw new BadRequestError('apiResponses.auth.emailAlreadyVerified', {
+			throw new ConflictError('apiResponses.auth.emailAlreadyVerified', {
 				path: 'ResendEmailVerification.service.alreadyVerified',
 			});
 		}
@@ -43,7 +43,7 @@ export class ResendEmailVerificationService {
 		});
 
 		if (existingToken && !this.dateProvider.isExpiredDate(existingToken.expiresAt)) {
-			throw new BadRequestError('apiResponses.auth.actionAlreadyRequested', {
+			throw new ConflictError('apiResponses.auth.actionAlreadyRequested', {
 				path: 'ResendEmailVerification.service.resendNotAllowed',
 			});
 		}

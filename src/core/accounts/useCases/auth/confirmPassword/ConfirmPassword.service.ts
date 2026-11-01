@@ -1,5 +1,5 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
@@ -26,7 +26,7 @@ export class ConfirmPasswordService {
 		const tokenHash = this.cryptoProvider.hashToken(token);
 		const initialTokenRecord = await this.tokensRepository.findByTokenHash(tokenHash);
 		if (!initialTokenRecord) {
-			throw new BadRequestError('apiResponses.auth.tokenNotFound', { path: 'ConfirmPassword.service.1' });
+			throw new NotFoundError('apiResponses.auth.tokenNotFound', { path: 'ConfirmPassword.service.1' });
 		}
 		if (this.dateProvider.isExpiredDate(initialTokenRecord.expiresAt)) {
 			await this.tokensRepository.delete(initialTokenRecord.id);
@@ -44,7 +44,7 @@ export class ConfirmPasswordService {
 
 			const user = await this.usersRepository.findById(tokenRecord.userId);
 			if (!user) {
-				throw new BadRequestError('apiResponses.users.notExist', { path: 'ConfirmPassword.service.3' });
+				throw new NotFoundError('apiResponses.users.notExist', { path: 'ConfirmPassword.service.3' });
 			}
 
 			const existingCredential = await this.credentialsRepository.findByUserId(user.id);

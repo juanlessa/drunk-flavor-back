@@ -3,7 +3,7 @@ import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { mapToTranslationsName } from '@/core/drinks/mappers/translations.mappers';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { BadRequestError, ConflictError } from '@/shared/error/error.lib';
 import { CreateDrinkDTO } from './createDrink.dtos';
 
 export class CreateDrinkService {
@@ -14,7 +14,7 @@ export class CreateDrinkService {
 
 	async execute({ translations, ingredients }: CreateDrinkDTO): Promise<string> {
 		if (await this.drinksRepository.findByName(mapToTranslationsName(translations))) {
-			throw new BadRequestError('apiResponses.drinks.alreadyExist', { path: 'CreateDrink.service' });
+			throw new ConflictError('apiResponses.drinks.alreadyExist', { path: 'CreateDrink.service' });
 		}
 		const existingIngredients = await this.ingredientsRepository.findByIdList(
 			ingredients.map(({ ingredientId }) => ingredientId),

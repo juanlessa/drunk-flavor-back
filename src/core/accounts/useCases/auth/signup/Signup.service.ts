@@ -5,7 +5,7 @@ import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { ConflictError } from '@/shared/error/error.lib';
 import { Signup } from './signup.dtos';
 import { env } from '@/env';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
@@ -34,12 +34,12 @@ export class SignupService {
 	async execute({ name, surname, email, password }: Signup): Promise<void> {
 		const existingUser = await this.usersRepository.findByEmail(email);
 		if (existingUser && existingUser.status === UserStatuses['active']) {
-			throw new BadRequestError('apiResponses.users.alreadyExist', {
+			throw new ConflictError('apiResponses.users.alreadyExist', {
 				path: 'Signup.service.ensureEmailIsAvailable.active',
 			});
 		}
 		if (existingUser && existingUser.status === UserStatuses['pending']) {
-			throw new BadRequestError('apiResponses.auth.emailVerificationPending', {
+			throw new ConflictError('apiResponses.auth.emailVerificationPending', {
 				path: 'Signup.service.ensureEmailIsAvailable.pending',
 			});
 		}

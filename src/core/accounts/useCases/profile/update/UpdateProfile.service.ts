@@ -1,6 +1,6 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError } from '@/shared/error/error.lib';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { UpdateProfile, UpdateProfileResult } from './updateProfile.dtos';
 import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
@@ -16,7 +16,7 @@ export class UpdateProfileService {
 	async execute({ id, name, surname }: UpdateProfile): Promise<UpdateProfileResult> {
 		const user = await this.usersRepository.findById(id);
 		if (!user) {
-			throw new BadRequestError('apiResponses.users.notExist', { path: 'UpdateProfile.service' });
+			throw new NotFoundError('apiResponses.users.notExist', { path: 'UpdateProfile.service' });
 		}
 
 		const hasCompleteProfile = name.trim().length > 0 && surname.trim().length > 0;

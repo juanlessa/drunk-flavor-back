@@ -1,7 +1,7 @@
 import { User } from '@/core/accounts/entities/user.entity';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
@@ -101,7 +101,7 @@ describe('Confirm Password', () => {
 				token: 'non-existing-token',
 				password: updatedPassword,
 			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('rejects an expired reset token', async () => {
@@ -143,6 +143,6 @@ describe('Confirm Password', () => {
 				token,
 				password: updatedPassword,
 			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(NotFoundError);
 	});
 });

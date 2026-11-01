@@ -8,7 +8,7 @@ import {
 } from '@/core/engagement/dtos/rating.dtos';
 import { Rating } from '@/core/engagement/entities/rating.entity';
 import { IRatingsRepository } from '@/core/engagement/repositories/IRatings.repository';
-import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
+import { NotFoundError, ConflictError } from '@/shared/error/error.lib';
 
 const compareValues = (a: unknown, b: unknown): number => {
 	if (a instanceof Date && b instanceof Date) return a.getTime() - b.getTime();
@@ -37,7 +37,7 @@ export class RatingsRepositoryInMemory implements IRatingsRepository {
 
 	async create(data: CreateRating): Promise<Rating> {
 		if (this.collection.some((record) => record.drinkId === data.drinkId && record.userId === data.userId)) {
-			throw new BadRequestError('apiResponses.ratings.alreadyExist', {
+			throw new ConflictError('apiResponses.ratings.alreadyExist', {
 				path: 'RatingsInMemory.repository',
 				cause: 'Duplicate (drinkId, userId) pair',
 			});

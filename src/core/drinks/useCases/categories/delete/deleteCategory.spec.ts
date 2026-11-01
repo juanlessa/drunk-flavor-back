@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { ObjectId } from 'mongodb';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError } from '@/shared/error/error.lib';
 import { DeleteCategoryService } from './DeleteCategory.service';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
@@ -29,6 +29,6 @@ describe('Delete category', () => {
 
 	it('should not be able to delete a nonexistent ingredient', async () => {
 		const nonexistentId = new ObjectId().toString();
-		await expect(service.execute({ id: nonexistentId })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ id: nonexistentId })).rejects.toBeInstanceOf(NotFoundError);
 	});
 });

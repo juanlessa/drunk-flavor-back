@@ -6,7 +6,7 @@ import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Uni
 import { ObjectId } from 'mongodb';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DeleteDrinkService } from './DeleteDrink.service';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError } from '@/shared/error/error.lib';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
@@ -78,7 +78,7 @@ describe('Delete Drink', () => {
 
 	it('should not be able to delete a nonexistent drink', async () => {
 		const nonexistentId = new ObjectId().toString();
-		await expect(service.execute({ id: nonexistentId })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ id: nonexistentId })).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('should be able to delete the cover and thumbnail during delete a drink', async () => {

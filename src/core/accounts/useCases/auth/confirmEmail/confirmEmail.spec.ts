@@ -2,7 +2,7 @@ import { User } from '@/core/accounts/entities/user.entity';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
@@ -79,7 +79,7 @@ describe('Confirm Email', () => {
 			service.execute({
 				token: 'non-existing-token',
 			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('rejects an expired verification token', async () => {
@@ -125,6 +125,6 @@ describe('Confirm Email', () => {
 			service.execute({
 				token,
 			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(NotFoundError);
 	});
 });

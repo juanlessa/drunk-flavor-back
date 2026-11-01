@@ -5,7 +5,7 @@ import { IngredientModel } from '../entities/ingredient.model';
 import { CreateIngredient } from '@/core/drinks/dtos/ingredient.dtos';
 import { Category } from '@/core/drinks/entities/category.entity';
 import { Unit } from '@/core/drinks/entities/unit.entity';
-import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
+import { ConflictError, NotFoundError } from '@/shared/error/error.lib';
 
 const buildCategory = (): Category => ({
 	id: new ObjectId().toString(),
@@ -89,14 +89,14 @@ describe('IngredientsRepository (integration)', () => {
 		expect(updated.translations.en.name).toBe('Lemon');
 	});
 
-	it('translates a sequential duplicate en/pt name create to BadRequestError', async () => {
+	it('translates a sequential duplicate en/pt name create to ConflictError', async () => {
 		await repository.create(buildIngredient({ en: 'Lime', pt: 'Limão' }));
 
 		await expect(repository.create(buildIngredient({ en: 'Lime', pt: 'Outro' }))).rejects.toBeInstanceOf(
-			BadRequestError,
+			ConflictError,
 		);
 		await expect(repository.create(buildIngredient({ en: 'Other', pt: 'Limão' }))).rejects.toBeInstanceOf(
-			BadRequestError,
+			ConflictError,
 		);
 	});
 
@@ -109,18 +109,18 @@ describe('IngredientsRepository (integration)', () => {
 		expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
 		const rejected = results.filter((result) => result.status === 'rejected') as PromiseRejectedResult[];
 		expect(rejected).toHaveLength(1);
-		expect(rejected[0].reason).toBeInstanceOf(BadRequestError);
+		expect(rejected[0].reason).toBeInstanceOf(ConflictError);
 
 		expect(await IngredientModel.countDocuments({ 'translations.en.name': 'Lime' })).toBe(1);
 	});
 
-	it('translates an update rename collision to BadRequestError', async () => {
+	it('translates an update rename collision to ConflictError', async () => {
 		await repository.create(buildIngredient({ en: 'Lime', pt: 'Limão' }));
 		const other = await repository.create(buildIngredient({ en: 'Mint', pt: 'Hortelã' }));
 
 		await expect(
 			repository.update({ id: other.id, translations: { en: { name: 'Lime' } } }),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(ConflictError);
 	});
 
 	it('orders findAll deterministically with the _id tie-breaker under equal sort keys', async () => {

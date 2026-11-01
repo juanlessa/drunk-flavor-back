@@ -1,5 +1,5 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
@@ -24,7 +24,7 @@ export class ConfirmEmailService {
 
 		const tokenRecord = await this.tokensRepository.findByTokenHash(tokenHash);
 		if (!tokenRecord) {
-			throw new BadRequestError('apiResponses.auth.tokenNotFound', { path: 'ConfirmEmail.service.1' });
+			throw new NotFoundError('apiResponses.auth.tokenNotFound', { path: 'ConfirmEmail.service.1' });
 		}
 
 		const isTokenExpired = this.dateProvider.isExpiredDate(tokenRecord.expiresAt);
@@ -35,7 +35,7 @@ export class ConfirmEmailService {
 
 		const user = await this.usersRepository.findById(tokenRecord.userId);
 		if (!user) {
-			throw new BadRequestError('apiResponses.users.notExist', { path: 'ConfirmEmail.service.3' });
+			throw new NotFoundError('apiResponses.users.notExist', { path: 'ConfirmEmail.service.3' });
 		}
 
 		await this.transactionManager.withTransaction(async () => {

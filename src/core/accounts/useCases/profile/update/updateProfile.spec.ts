@@ -2,7 +2,7 @@ import { User } from '@/core/accounts/entities/user.entity';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
 import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
@@ -103,6 +103,6 @@ describe('Update Profile', () => {
 				name: updatedName,
 				surname: updatedSurname,
 			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(NotFoundError);
 	});
 });

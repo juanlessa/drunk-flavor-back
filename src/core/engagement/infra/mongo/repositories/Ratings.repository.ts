@@ -8,7 +8,7 @@ import {
 import { RatingMapper } from '@/core/engagement/infra/mongo/mappers/rating.mapper';
 import { IRatingsRepository } from '@/core/engagement/repositories/IRatings.repository';
 import { isDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
-import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
+import { NotFoundError, ConflictError } from '@/shared/error/error.lib';
 import { QueryFilter } from 'mongoose';
 
 export class RatingsRepository implements IRatingsRepository {
@@ -18,7 +18,7 @@ export class RatingsRepository implements IRatingsRepository {
 			return RatingMapper.toDomain(document);
 		} catch (error) {
 			if (isDuplicateKeyError(error, [RATING_DRINK_USER_UNIQUE_INDEX])) {
-				throw new BadRequestError('apiResponses.ratings.alreadyExist', {
+				throw new ConflictError('apiResponses.ratings.alreadyExist', {
 					path: 'Ratings.repository',
 					cause: 'Unique (drink_id, user_id) index violation',
 				});

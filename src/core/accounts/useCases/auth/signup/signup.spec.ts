@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { ConflictError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
@@ -111,7 +111,7 @@ describe('Signup', () => {
 			status: UserStatuses['active'],
 		});
 
-		await expect(service.execute({ name, surname, email, password })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ name, surname, email, password })).rejects.toBeInstanceOf(ConflictError);
 		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 
@@ -124,7 +124,7 @@ describe('Signup', () => {
 			status: UserStatuses['pending'],
 		});
 
-		await expect(service.execute({ name, surname, email, password })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ name, surname, email, password })).rejects.toBeInstanceOf(ConflictError);
 		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 });
