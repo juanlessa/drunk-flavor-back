@@ -1,26 +1,8 @@
 import { Role } from '@/shared/accessControl/roles';
 import { UserStatus } from './user.entity';
-
-export const AdministrativeEventActions = {
-	ownershipTransferRequested: 'ownership.transfer_requested',
-	ownershipTransferResent: 'ownership.transfer_resent',
-	ownershipTransferCancelled: 'ownership.transfer_cancelled',
-	ownershipTransferred: 'ownership.transferred',
-	userCreated: 'user.created',
-	userRoleChanged: 'user.role_changed',
-	userSuspended: 'user.suspended',
-	userReactivated: 'user.reactivated',
-	userClosed: 'user.closed',
-	userDeleted: 'user.deleted',
-} as const;
+import { AdministrativeEventActions, AdministrativeEventOrigins } from '../constants/administrativeEvent.constants';
 
 export type AdministrativeEventAction = (typeof AdministrativeEventActions)[keyof typeof AdministrativeEventActions];
-
-export const AdministrativeEventOrigins = {
-	api: 'api',
-	cli: 'cli',
-	system: 'system',
-} as const;
 
 export type AdministrativeEventOrigin = (typeof AdministrativeEventOrigins)[keyof typeof AdministrativeEventOrigins];
 
