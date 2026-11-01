@@ -10,7 +10,7 @@ export const findRequiredAdministrationUser = async (
 ): Promise<User> => {
 	const user = await usersRepository.findById(id);
 	if (!user) {
-		throw new NotFoundError('apiResponses.users.notExist', { path });
+		throw new NotFoundError('apiResponses.users.notFound', { path });
 	}
 	return user;
 };

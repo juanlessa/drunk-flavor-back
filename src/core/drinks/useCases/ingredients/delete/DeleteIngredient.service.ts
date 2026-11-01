@@ -8,7 +8,7 @@ export class DeleteIngredientService {
 	async execute({ id }: DeleteIngredient) {
 		const ingredientExists = await this.ingredientsRepository.findById(id);
 		if (!ingredientExists) {
-			throw new NotFoundError('apiResponses.ingredients.notExist', { path: 'DeleteIngredient.service' });
+			throw new NotFoundError('apiResponses.ingredients.notFound', { path: 'DeleteIngredient.service' });
 		}
 
 		await this.ingredientsRepository.delete(id);

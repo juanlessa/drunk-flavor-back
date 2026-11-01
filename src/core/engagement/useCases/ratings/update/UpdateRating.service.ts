@@ -17,7 +17,7 @@ export class UpdateRatingService {
 	async execute({ id, value, actor }: UpdateRatingCommand): Promise<UpdateRatingResult> {
 		return this.transactionManager.withTransaction(async () => {
 			const rating = await this.ratingsRepository.findById(id);
-			if (!rating) throw new NotFoundError('apiResponses.ratings.notExist', { path: 'UpdateRating.service' });
+			if (!rating) throw new NotFoundError('apiResponses.ratings.notFound', { path: 'UpdateRating.service' });
 
 			const subject = ratingPermissionSchema.parse({
 				id: rating.id,

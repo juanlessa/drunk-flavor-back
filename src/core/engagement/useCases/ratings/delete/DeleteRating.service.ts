@@ -17,7 +17,7 @@ export class DeleteRatingService {
 	async execute({ id, actor }: DeleteRatingCommand): Promise<DeleteRatingResult> {
 		return this.transactionManager.withTransaction(async () => {
 			const rating = await this.ratingsRepository.findById(id);
-			if (!rating) throw new NotFoundError('apiResponses.ratings.notExist', { path: 'DeleteRating.service' });
+			if (!rating) throw new NotFoundError('apiResponses.ratings.notFound', { path: 'DeleteRating.service' });
 
 			const subject = ratingPermissionSchema.parse({
 				id: rating.id,

@@ -22,7 +22,7 @@ export class CreatePasswordService {
 		return this.transactionManager.withTransaction(async () => {
 			const user = await this.usersRepository.findById(userId);
 			if (!user) {
-				throw new NotFoundError('apiResponses.users.notExist', {
+				throw new NotFoundError('apiResponses.users.notFound', {
 					path: 'CreatePassword.service.user',
 				});
 			}

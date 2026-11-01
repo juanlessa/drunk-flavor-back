@@ -12,7 +12,7 @@ export class DeleteDrinkService {
 	async execute({ id }: DeleteDrink) {
 		const drinkExists = await this.drinksRepository.findById(id);
 		if (!drinkExists) {
-			throw new NotFoundError('apiResponses.drinks.notExist', { path: 'DeleteDrink.service' });
+			throw new NotFoundError('apiResponses.drinks.notFound', { path: 'DeleteDrink.service' });
 		}
 
 		await this.drinksRepository.delete(id);

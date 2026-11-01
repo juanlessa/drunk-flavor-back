@@ -15,7 +15,7 @@ export class GetProfileService {
 	async execute({ id }: GetProfile): Promise<ProfileView> {
 		const user = await this.usersRepository.findById(id);
 		if (!user) {
-			throw new NotFoundError('apiResponses.users.notExist', { path: 'GetProfile.service' });
+			throw new NotFoundError('apiResponses.users.notFound', { path: 'GetProfile.service' });
 		}
 
 		const [passwordEnabled, providers] = await Promise.all([

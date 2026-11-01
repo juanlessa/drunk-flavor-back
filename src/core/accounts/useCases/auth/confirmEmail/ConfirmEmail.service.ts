@@ -35,7 +35,7 @@ export class ConfirmEmailService {
 
 		const user = await this.usersRepository.findById(tokenRecord.userId);
 		if (!user) {
-			throw new NotFoundError('apiResponses.users.notExist', { path: 'ConfirmEmail.service.3' });
+			throw new NotFoundError('apiResponses.users.notFound', { path: 'ConfirmEmail.service.3' });
 		}
 
 		await this.transactionManager.withTransaction(async () => {

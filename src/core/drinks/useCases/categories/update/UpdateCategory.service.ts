@@ -8,7 +8,7 @@ export class UpdateCategoryService {
 
 	async execute({ id, translations, isAlcoholic }: UpdateCategoryDTO): Promise<void> {
 		const category = await this.categoriesRepository.findById(id);
-		if (!category) throw new NotFoundError('apiResponses.categories.notExist', { path: 'UpdateCategory.service' });
+		if (!category) throw new NotFoundError('apiResponses.categories.notFound', { path: 'UpdateCategory.service' });
 		if (translations) {
 			const duplicate = await this.categoriesRepository.findByName(mapToTranslationsName(translations));
 			if (duplicate && duplicate.id !== category.id) {

@@ -15,7 +15,7 @@ export class UpdateIngredientService {
 	async execute({ id, translations, categoryId, unitId }: UpdateIngredientDTO): Promise<void> {
 		const ingredient = await this.ingredientsRepository.findById(id);
 		if (!ingredient) {
-			throw new NotFoundError('apiResponses.ingredients.notExist', { path: 'UpdateIngredient.service.1' });
+			throw new NotFoundError('apiResponses.ingredients.notFound', { path: 'UpdateIngredient.service.1' });
 		}
 		const duplicate = await this.ingredientsRepository.findByName(mapToTranslationsName(translations));
 		if (duplicate && duplicate.id !== ingredient.id) {

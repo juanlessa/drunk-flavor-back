@@ -3,7 +3,7 @@ import cors from '@fastify/cors';
 import { afterEach, describe, expect, it } from 'vitest';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { errorHandler } from '@/infrastructure/fastify/middlewares/errorHandler';
-import en from '@/shared/locales/en.json';
+import { i18n as appI18n } from '@/infrastructure/i18n';
 import { I18N_OPTIONS } from '@/infrastructure/fastify/constants/i18n.constants';
 import { createI18n } from './i18n.lib';
 import { i18nPlugin } from './i18n.plugin';
@@ -80,7 +80,7 @@ describe('i18nPlugin with the error handler', () => {
 		await app.close();
 	});
 
-	it('localizes the error body, falls back for unsupported locales and merges Vary with other plugins', async () => {
+	const getMissing = async (acceptLanguage: string) => {
 		app = fastify();
 		app.register(i18nPlugin, I18N_OPTIONS);
 		app.register(cors, { origin: true });
@@ -90,21 +90,32 @@ describe('i18nPlugin with the error handler', () => {
 		});
 		await app.ready();
 
-		const response = await app.inject({
+		return app.inject({
 			url: '/missing',
-			headers: { 'accept-language': 'pt-BR', origin: 'http://localhost:3000' },
+			headers: { 'accept-language': acceptLanguage, origin: 'http://localhost:3000' },
 		});
+	};
+
+	it('localizes the error body in the negotiated language and merges Vary with other plugins', async () => {
+		const response = await getMissing('pt-BR');
 
 		expect(response.statusCode).toBe(404);
 		expect(response.json()).toEqual({
 			ok: false,
 			code: 'NOT_FOUND',
 			localeKey: 'apiResponses.users.notFound',
-			message: en['apiResponses.users.notFound'],
+			message: 'Usuário não encontrado',
 		});
-		expect(response.headers['content-language']).toBe('en');
+		expect(response.headers['content-language']).toBe('pt');
 		expect(String(response.headers.vary).split(/,\s*/)).toEqual(
 			expect.arrayContaining(['Origin', 'Accept-Language']),
 		);
+	});
+
+	it('falls back to the default language when none of the requested ones is supported', async () => {
+		const response = await getMissing('ja, fr;q=0.8');
+
+		expect(response.json()).toMatchObject({ message: appI18n.translate('en', 'apiResponses.users.notFound') });
+		expect(response.headers['content-language']).toBe('en');
 	});
 });

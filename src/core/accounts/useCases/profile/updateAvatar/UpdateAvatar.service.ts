@@ -20,7 +20,7 @@ export class UpdateAvatarService {
 
 		const user = await this.usersRepository.findById(userId);
 		if (!user) {
-			throw new NotFoundError('apiResponses.users.notExist', { path: 'UpdateAvatar.service.2' });
+			throw new NotFoundError('apiResponses.users.notFound', { path: 'UpdateAvatar.service.2' });
 		}
 
 		const name = generateStoredFileName(userId, 'avatar', mimetype);

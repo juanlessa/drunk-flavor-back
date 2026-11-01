@@ -11,7 +11,7 @@ import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUI from '@fastify/swagger-ui';
 import { jsonSchemaTransform, serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import { errorHandler } from './middlewares/errorHandler';
-import { NotFoundError } from '@/shared/error/error.lib';
+import { notFoundHandler } from './middlewares/notFoundHandler';
 import { REFRESH_TOKEN_OPTIONS, TOKEN_OPTIONS } from './constants/jwt.constants';
 import { SESSION_OPTIONS } from './constants/session.constants';
 import { FASTIFY_COOKIE_OPTIONS } from './constants/cookie.constants';
@@ -66,10 +66,7 @@ void app.register(fastifySwaggerUI, SWAGGER_UI_OPTIONS);
 
 router.map((route) => app.register(route));
 app.setErrorHandler(errorHandler);
-// Fastify's default 404 body bypasses the error handler; throwing here keeps the standard error contract.
-app.setNotFoundHandler(async () => {
-	throw new NotFoundError('apiResponses.request.routeNotFound', { path: 'Fastify.routeNotFound' });
-});
+app.setNotFoundHandler(notFoundHandler);
 
 export const startApp = async () => {
 	LoggerInstance.setLogger(app.log);

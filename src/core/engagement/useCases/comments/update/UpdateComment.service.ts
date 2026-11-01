@@ -10,7 +10,7 @@ export class UpdateCommentService {
 
 	async execute({ id, content, actor }: UpdateCommentCommand): Promise<void> {
 		const comment = await this.commentsRepository.findById(id);
-		if (!comment) throw new NotFoundError('apiResponses.comments.notExist', { path: 'UpdateComment.service' });
+		if (!comment) throw new NotFoundError('apiResponses.comments.notFound', { path: 'UpdateComment.service' });
 
 		const subject = commentPermissionSchema.parse({
 			id: comment.id,

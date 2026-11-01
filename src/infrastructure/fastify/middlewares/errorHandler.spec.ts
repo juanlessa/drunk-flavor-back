@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { SessionRevokedError } from '@/core/accounts/errors/session.errors';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { AUTH_COOKIE } from '../constants/cookie.constants';
-import en from '@/shared/locales/en.json';
+import { i18n } from '@/infrastructure/i18n';
 import { errorHandler } from './errorHandler';
 
 const createContext = () => {
@@ -33,7 +33,7 @@ describe('errorHandler', () => {
 			ok: false,
 			code: 'SESSION_REVOKED',
 			localeKey: 'apiResponses.auth.sessionRevoked',
-			message: en['apiResponses.auth.sessionRevoked'],
+			message: i18n.translate('en', 'apiResponses.auth.sessionRevoked'),
 		});
 	});
 
@@ -64,7 +64,7 @@ describe('errorHandler', () => {
 			ok: false,
 			code: 'INTERNAL_ERROR',
 			localeKey: 'apiResponses.internalServerError',
-			message: en['apiResponses.internalServerError'],
+			message: i18n.translate('en', 'apiResponses.internalServerError'),
 		});
 	});
 });

@@ -6,8 +6,9 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { I18N_OPTIONS } from '@/infrastructure/fastify/constants/i18n.constants';
 import { errorHandler } from '@/infrastructure/fastify/middlewares/errorHandler';
+import { notFoundHandler } from '@/infrastructure/fastify/middlewares/notFoundHandler';
 import { i18nPlugin } from '@/infrastructure/i18n/i18n.plugin';
-import en from '@/shared/locales/en.json';
+import { i18n } from '@/infrastructure/i18n';
 import { handleFastifyError } from './fastifyError';
 
 const createFastifyError = (overrides: Partial<FastifyError> & Pick<FastifyError, 'code'>): FastifyError =>
@@ -200,6 +201,7 @@ describe('Fastify errors through the error handler', () => {
 		app.register(i18nPlugin, I18N_OPTIONS);
 		app.register(fastifyMultipart, { limits: { files: 1, fileSize: 10 } });
 		app.setErrorHandler(errorHandler);
+		app.setNotFoundHandler(notFoundHandler);
 
 		app.post(
 			'/items',
@@ -212,6 +214,19 @@ describe('Fastify errors through the error handler', () => {
 						age: z.number(),
 						address: z.object({ street: z.string({ error: 'apiResponses.users.requiredSurname' }) }),
 						tags: z.array(z.string({ error: 'apiResponses.users.requiredId' })),
+					}),
+				},
+			},
+			async () => ({ ok: true }),
+		);
+		app.post(
+			'/signup',
+			{
+				schema: {
+					body: z.object({
+						password: z
+							.string({ error: 'apiResponses.users.requiredPassword' })
+							.min(8, { error: 'apiResponses.users.invalidPasswordMinSize' }),
 					}),
 				},
 			},
@@ -247,34 +262,75 @@ describe('Fastify errors through the error handler', () => {
 			ok: false,
 			code: 'VALIDATION_FAILED',
 			localeKey: 'apiResponses.validation.failed',
-			message: en['apiResponses.validation.failed'],
+			message: i18n.translate('en', 'apiResponses.validation.failed'),
 			errors: [
 				{
 					location: 'body',
 					path: 'name',
 					localeKey: 'apiResponses.users.invalidNameFormat',
 					params: { min: 1 },
-					message: en['apiResponses.users.invalidNameFormat'],
+					message: i18n.translate('en', 'apiResponses.users.invalidNameFormat'),
 				},
 				{
 					location: 'body',
 					path: 'age',
 					localeKey: 'apiResponses.validation.invalidValue',
-					message: en['apiResponses.validation.invalidValue'],
+					message: i18n.translate('en', 'apiResponses.validation.invalidValue'),
 				},
 				{
 					location: 'body',
 					path: 'address.street',
 					localeKey: 'apiResponses.users.requiredSurname',
-					message: en['apiResponses.users.requiredSurname'],
+					message: i18n.translate('en', 'apiResponses.users.requiredSurname'),
 				},
 				{
 					location: 'body',
 					path: 'tags.1',
 					localeKey: 'apiResponses.users.requiredId',
-					message: en['apiResponses.users.requiredId'],
+					message: i18n.translate('en', 'apiResponses.users.requiredId'),
 				},
 			],
+		});
+	});
+
+	it.each([
+		['en', 'Password must have a minimum of 8 characters'],
+		['pt-BR', 'A senha deve ter no mínimo 8 caracteres'],
+	])('interpolates the rule limit into the message for "%s"', async (language, message) => {
+		await buildApp();
+
+		const response = await app.inject({
+			method: 'POST',
+			url: '/signup',
+			headers: { 'accept-language': language },
+			payload: { password: 'short' },
+		});
+
+		expect(response.json<{ errors: unknown[] }>().errors).toEqual([
+			{
+				location: 'body',
+				path: 'password',
+				localeKey: 'apiResponses.users.invalidPasswordMinSize',
+				params: { min: 8 },
+				message,
+			},
+		]);
+	});
+
+	it.each([
+		['an unknown route', 'GET', '/does-not-exist'],
+		['an unsupported method', 'PUT', '/items'],
+	])('answers %s with the standard error contract', async (_name, method, url) => {
+		await buildApp();
+
+		const response = await app.inject({ method: method as 'GET' | 'PUT', url });
+
+		expect(response.statusCode).toBe(HTTP_STATUS.not_found);
+		expect(response.json()).toEqual({
+			ok: false,
+			code: 'NOT_FOUND',
+			localeKey: 'apiResponses.request.routeNotFound',
+			message: i18n.translate('en', 'apiResponses.request.routeNotFound'),
 		});
 	});
 
@@ -290,7 +346,7 @@ describe('Fastify errors through the error handler', () => {
 				path: 'page',
 				localeKey: 'apiResponses.validation.invalidValue',
 				params: { min: 1 },
-				message: en['apiResponses.validation.invalidValue'],
+				message: i18n.translate('en', 'apiResponses.validation.invalidValue'),
 			},
 		]);
 	});
@@ -310,7 +366,12 @@ describe('Fastify errors through the error handler', () => {
 		});
 
 		expect(response.statusCode).toBe(statusCode);
-		expect(response.json()).toEqual({ ok: false, code: 'BAD_REQUEST', localeKey, message: en[localeKey] });
+		expect(response.json()).toEqual({
+			ok: false,
+			code: 'BAD_REQUEST',
+			localeKey,
+			message: i18n.translate('en', localeKey),
+		});
 	});
 
 	it('translates an uploaded file above the size limit', async () => {
@@ -334,7 +395,7 @@ describe('Fastify errors through the error handler', () => {
 			ok: false,
 			code: 'BAD_REQUEST',
 			localeKey: 'apiResponses.request.fileTooLarge',
-			message: en['apiResponses.request.fileTooLarge'],
+			message: i18n.translate('en', 'apiResponses.request.fileTooLarge'),
 		});
 	});
 });

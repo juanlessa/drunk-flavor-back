@@ -36,7 +36,7 @@ export class DeleteProfileService {
 		const closedUser = await this.transactionManager.withTransaction(async () => {
 			const user = await this.usersRepository.findById(id);
 			if (!user) {
-				throw new NotFoundError('apiResponses.users.notExist', { path: 'DeleteProfile.service' });
+				throw new NotFoundError('apiResponses.users.notFound', { path: 'DeleteProfile.service' });
 			}
 			if (user.role === Roles.owner) {
 				throw new OwnerManagementRequiresTransferError({ path: 'DeleteProfile.service' });

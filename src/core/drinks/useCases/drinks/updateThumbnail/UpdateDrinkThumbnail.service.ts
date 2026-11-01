@@ -21,7 +21,7 @@ export class UpdateDrinkThumbnailService {
 
 		const drink = await this.drinksRepository.findById(drinkId);
 		if (!drink) {
-			throw new NotFoundError('apiResponses.drinks.notExist', { path: 'UpdateDrinkThumbnail.service.2' });
+			throw new NotFoundError('apiResponses.drinks.notFound', { path: 'UpdateDrinkThumbnail.service.2' });
 		}
 
 		if (drink.thumbnail) {

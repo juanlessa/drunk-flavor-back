@@ -10,7 +10,7 @@ export class DeleteCommentService {
 
 	async execute({ id, actor }: DeleteCommentCommand): Promise<void> {
 		const comment = await this.commentsRepository.findById(id);
-		if (!comment) throw new NotFoundError('apiResponses.comments.notExist', { path: 'DeleteComment.service' });
+		if (!comment) throw new NotFoundError('apiResponses.comments.notFound', { path: 'DeleteComment.service' });
 
 		const subject = commentPermissionSchema.parse({
 			id: comment.id,

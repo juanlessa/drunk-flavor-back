@@ -14,7 +14,7 @@ export class UpdateDrinkService {
 
 	async execute({ id, translations, ingredients }: UpdateDrinkDTO): Promise<void> {
 		const drink = await this.drinksRepository.findById(id);
-		if (!drink) throw new NotFoundError('apiResponses.drinks.notExist', { path: 'UpdateDrink.service.1' });
+		if (!drink) throw new NotFoundError('apiResponses.drinks.notFound', { path: 'UpdateDrink.service.1' });
 		const duplicate = await this.drinksRepository.findByName(mapToTranslationsName(translations));
 		if (duplicate && duplicate.id !== drink.id) {
 			throw new ConflictError('apiResponses.drinks.nameAlreadyExist', { path: 'UpdateDrink.service.2' });

@@ -259,7 +259,7 @@ later without changing the policy semantics.
 | Generic administration targets the actor                    |     403     | `apiResponses.users.selfAdministrationForbidden`       |
 | Admin attempts to mutate an admin                           |     403     | `apiResponses.users.adminPeerManagementForbidden`      |
 | Generic administration targets an owner                     |     403     | `apiResponses.users.ownerManagementRequiresTransfer`   |
-| Target user does not exist                                  |     404     | `apiResponses.users.notExist`                          |
+| Target user does not exist                                  |     404     | `apiResponses.users.notFound`                          |
 | Requested role transition is not valid from current state   |     409     | `apiResponses.users.invalidRoleTransition`             |
 | Requested status transition is not valid from current state |     409     | `apiResponses.users.invalidStatusTransition`           |
 | Authorized request produces no change                       |   Success   | No error; return without persistence or a change event |

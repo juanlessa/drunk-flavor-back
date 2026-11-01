@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createI18n } from './i18n.lib';
+import { createI18n, flattenMessages } from './i18n.lib';
 
 const catalogs = {
 	en: { greeting: 'Hello', onlyEnglish: 'English only', range: 'Between {min} and {max}' },
@@ -65,5 +65,63 @@ describe('createI18n', () => {
 		];
 
 		expect(results).toEqual(['Olá', 'Hello', 'Olá']);
+	});
+});
+
+describe('flattenMessages', () => {
+	it('turns nested objects into dotted paths', () => {
+		expect(flattenMessages({ a: { b: { c: 'deep' }, d: 'mid' }, e: 'top' })).toEqual({
+			'a.b.c': 'deep',
+			'a.d': 'mid',
+			e: 'top',
+		});
+	});
+
+	it('keeps an already flat catalog unchanged', () => {
+		expect(flattenMessages({ greeting: 'Hello' })).toEqual({ greeting: 'Hello' });
+	});
+
+	it('rejects a segment that contains the path separator', () => {
+		expect(() => flattenMessages({ 'a.b': 'x' })).toThrow('invalid key segment "a.b"');
+	});
+
+	it('rejects an empty segment', () => {
+		expect(() => flattenMessages({ a: { '': 'x' } })).toThrow('invalid key segment ""');
+	});
+
+	it.each([
+		['a number', 1],
+		['null', null],
+		['an array', ['x']],
+		['a boolean', true],
+	])('rejects a leaf that is %s', (_name, value) => {
+		expect(() => flattenMessages({ a: value } as never)).toThrow('"a" must be a string or an object');
+	});
+});
+
+describe('createI18n with nested catalogs', () => {
+	const nested = createI18n({
+		catalogs: {
+			en: { errors: { notFound: 'Not found', range: 'Between {min} and {max}' } },
+			pt: { errors: { notFound: 'Não encontrado' } },
+		},
+		defaultLocale: 'en',
+	});
+
+	it('resolves dotted paths into the nested catalog', () => {
+		expect(nested.translate('pt', 'errors.notFound')).toBe('Não encontrado');
+	});
+
+	it('falls back per key to the default catalog', () => {
+		expect(nested.translate('pt', 'errors.range', { min: 1, max: 5 })).toBe('Between 1 and 5');
+	});
+
+	it('does not resolve a branch of the tree as a message', () => {
+		expect(nested.has('errors')).toBe(false);
+		expect(nested.translate('en', 'errors')).toBe('errors');
+	});
+
+	it('reports nested keys through has', () => {
+		expect(nested.has('errors.notFound')).toBe(true);
 	});
 });

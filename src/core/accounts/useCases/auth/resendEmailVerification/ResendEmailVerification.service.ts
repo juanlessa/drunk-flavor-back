@@ -26,7 +26,7 @@ export class ResendEmailVerificationService {
 	async execute({ email }: ResendEmailVerification): Promise<void> {
 		const user = await this.usersRepository.findByEmail(email);
 		if (!user) {
-			throw new NotFoundError('apiResponses.users.notExist', {
+			throw new NotFoundError('apiResponses.users.notFound', {
 				path: 'ResendEmailVerification.service.userNotFound',
 			});
 		}

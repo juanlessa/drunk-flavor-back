@@ -44,7 +44,7 @@ export class ConfirmPasswordService {
 
 			const user = await this.usersRepository.findById(tokenRecord.userId);
 			if (!user) {
-				throw new NotFoundError('apiResponses.users.notExist', { path: 'ConfirmPassword.service.3' });
+				throw new NotFoundError('apiResponses.users.notFound', { path: 'ConfirmPassword.service.3' });
 			}
 
 			const existingCredential = await this.credentialsRepository.findByUserId(user.id);

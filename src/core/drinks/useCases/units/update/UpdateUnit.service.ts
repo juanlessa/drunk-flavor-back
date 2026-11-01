@@ -8,7 +8,7 @@ export class UpdateUnitService {
 
 	async execute(data: UpdateUnitDTO): Promise<void> {
 		const unit = await this.unitsRepository.findById(data.id);
-		if (!unit) throw new NotFoundError('apiResponses.units.notExist', { path: 'UpdateUnit.service' });
+		if (!unit) throw new NotFoundError('apiResponses.units.notFound', { path: 'UpdateUnit.service' });
 		if (data.translations) {
 			const duplicate = await this.unitsRepository.findByName(mapToTranslationsName(data.translations));
 			if (duplicate && duplicate.id !== unit.id) {

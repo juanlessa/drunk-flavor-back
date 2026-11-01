@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import en from '@/shared/locales/en.json';
+import { i18n } from '@/infrastructure/i18n';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import type { LocaleKey } from '@/shared/types/locale.types';
 import { ERROR_CODE_BY_LOCALE_KEY, ERROR_CODE_PATTERN, ERROR_CODES, resolveErrorCode } from './error.codes';
@@ -67,27 +67,12 @@ describe('resolveErrorCode', () => {
 
 	it('maps only locale keys that exist in the catalog to declared codes', () => {
 		for (const [localeKey, code] of Object.entries(ERROR_CODE_BY_LOCALE_KEY)) {
-			expect(Object.keys(en)).toContain(localeKey);
+			expect(i18n.has(localeKey)).toBe(true);
 			expect(ERROR_CODES as readonly string[]).toContain(code);
 		}
 	});
 
 	it('does not resolve prototype keys as specific groups', () => {
 		expect(resolveErrorCode('constructor' as LocaleKey, HTTP_STATUS.not_found)).toBe('NOT_FOUND');
-	});
-});
-
-describe('message placeholders', () => {
-	const ALLOWED_PLACEHOLDERS = ['min', 'max'];
-
-	it('only uses placeholders that validation errors provide as params', () => {
-		const placeholders = Object.values(en).flatMap((message) =>
-			[...message.matchAll(/\{(\w+)\}/g)].map((match) => match[1]),
-		);
-
-		expect(placeholders.length).toBeGreaterThan(0);
-		for (const placeholder of placeholders) {
-			expect(ALLOWED_PLACEHOLDERS).toContain(placeholder);
-		}
 	});
 });

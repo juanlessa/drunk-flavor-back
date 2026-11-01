@@ -20,7 +20,7 @@ export class UpdateDrinkCoverService {
 
 		const drink = await this.drinksRepository.findById(drinkId);
 		if (!drink) {
-			throw new NotFoundError('apiResponses.drinks.notExist', { path: 'UpdateDrinkCover.service.2' });
+			throw new NotFoundError('apiResponses.drinks.notFound', { path: 'UpdateDrinkCover.service.2' });
 		}
 
 		if (drink.cover) {

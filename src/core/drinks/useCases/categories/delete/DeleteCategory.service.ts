@@ -8,7 +8,7 @@ export class DeleteCategoryService {
 	async execute({ id }: DeleteCategory) {
 		const categoryExists = await this.categoriesRepository.findById(id);
 		if (!categoryExists) {
-			throw new NotFoundError('apiResponses.categories.notExist', { path: 'DeleteCategory.service' });
+			throw new NotFoundError('apiResponses.categories.notFound', { path: 'DeleteCategory.service' });
 		}
 
 		await this.categoriesRepository.delete(id);

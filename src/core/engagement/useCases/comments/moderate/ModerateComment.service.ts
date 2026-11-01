@@ -10,7 +10,7 @@ export class ModerateCommentService {
 
 	async execute({ id, status, actor }: ModerateCommentCommand): Promise<void> {
 		const comment = await this.commentsRepository.findById(id);
-		if (!comment) throw new NotFoundError('apiResponses.comments.notExist', { path: 'ModerateComment.service' });
+		if (!comment) throw new NotFoundError('apiResponses.comments.notFound', { path: 'ModerateComment.service' });
 
 		const subject = commentPermissionSchema.parse({
 			id: comment.id,

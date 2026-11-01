@@ -25,7 +25,7 @@ export class RequestPasswordResetService {
 	async execute({ email }: RequestPasswordReset) {
 		const user = await this.usersRepository.findByEmail(email);
 		if (!user) {
-			throw new NotFoundError('apiResponses.users.notExist', { path: 'RequestPasswordReset.service.1' });
+			throw new NotFoundError('apiResponses.users.notFound', { path: 'RequestPasswordReset.service.1' });
 		}
 
 		const tokenAlreadyExists = await this.tokensRepository.findByUserIdAndType({

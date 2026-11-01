@@ -16,7 +16,7 @@ export class UpdateProfileService {
 	async execute({ id, name, surname }: UpdateProfile): Promise<UpdateProfileResult> {
 		const user = await this.usersRepository.findById(id);
 		if (!user) {
-			throw new NotFoundError('apiResponses.users.notExist', { path: 'UpdateProfile.service' });
+			throw new NotFoundError('apiResponses.users.notFound', { path: 'UpdateProfile.service' });
 		}
 
 		const hasCompleteProfile = name.trim().length > 0 && surname.trim().length > 0;
