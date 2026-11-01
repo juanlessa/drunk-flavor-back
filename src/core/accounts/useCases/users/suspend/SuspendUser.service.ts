@@ -1,12 +1,18 @@
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
-import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
+import { AdministrativeEventActions } from '@/core/accounts/constants/administrativeEvent.constants';
 import { UserAdministrationPolicy, UserStatusChangeOutcomes } from '@/core/accounts/policies/UserAdministration.policy';
 import { IAdministrativeEventsRepository } from '@/core/accounts/repositories/IAdministrativeEvents.repository';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { SuspendUser } from './suspendUser.dtos';
-import { authorizeUserAdministration, resolveAdministrativeEventContext } from '../userAdministrationAudit.helpers';
-import { findRequiredAdministrationUser, toAdministrationActor } from '../userAdministration.helpers';
+import {
+	authorizeUserAdministration,
+	resolveAdministrativeEventContext,
+} from '@/core/accounts/helpers/userAdministrationAudit.helpers';
+import {
+	findRequiredAdministrationUser,
+	toAdministrationActor,
+} from '@/core/accounts/helpers/userAdministration.helpers';
 
 export class SuspendUserService {
 	constructor(

@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import { OWNERSHIP_TRANSFER_INVITATION_SCOPE } from '@/core/accounts/constants/ownershipTransfer.constants';
-import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
+import { AdministrativeEventActions } from '@/core/accounts/constants/administrativeEvent.constants';
 import { AdministrativeEventModel } from '@/core/accounts/infra/mongo/entities/administrativeEvent.model';
 import { CredentialModel } from '@/core/accounts/infra/mongo/entities/credential.model';
 import { OwnershipTransferInvitationModel } from '@/core/accounts/infra/mongo/entities/ownershipTransferInvitation.model';

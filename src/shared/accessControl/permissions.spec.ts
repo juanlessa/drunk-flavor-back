@@ -77,3 +77,22 @@ describe('Engagement permissions', () => {
 		expect(defineAbilityFor(makeUser(role)).can('moderate', ownComment)).toBe(false);
 	});
 });
+
+describe('User administration permissions', () => {
+	it.each([Roles.owner, Roles.admin])('allows %s to revoke managed user sessions', (role) => {
+		const { can } = defineAbilityFor(makeUser(role));
+		expect(can('revokeSessions', makeUser(Roles.member, foreignId))).toBe(true);
+	});
+
+	it('prevents an admin from revoking self, owner, or peer-admin sessions', () => {
+		const { can } = defineAbilityFor(makeUser(Roles.admin));
+		expect(can('revokeSessions', makeUser(Roles.admin, ownerId))).toBe(false);
+		expect(can('revokeSessions', makeUser(Roles.owner, foreignId))).toBe(false);
+		expect(can('revokeSessions', makeUser(Roles.admin, foreignId))).toBe(false);
+	});
+
+	it.each([Roles.partner, Roles.member])('prevents %s from revoking user sessions', (role) => {
+		const { can } = defineAbilityFor(makeUser(role));
+		expect(can('revokeSessions', makeUser(Roles.member, foreignId))).toBe(false);
+	});
+});

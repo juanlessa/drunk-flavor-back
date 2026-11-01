@@ -8,6 +8,7 @@ export const UserAdministrativeCapabilityActions = {
 	suspend: 'suspend',
 	reactivate: 'reactivate',
 	close: 'close',
+	revokeSessions: 'revokeSessions',
 	requestOwnershipTransfer: 'requestOwnershipTransfer',
 } as const;
 

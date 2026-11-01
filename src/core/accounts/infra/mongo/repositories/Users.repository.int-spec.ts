@@ -68,6 +68,50 @@ describe('UsersRepository (integration)', () => {
 		expect(updated.name).toBe('Jane');
 	});
 
+	it('atomically increments session_version and returns the mapped updated user', async () => {
+		const created = await repository.create(
+			createUserFactory({
+				email: 'sessions@example.com',
+				role: 'partner',
+				status: 'suspended',
+				sessionVersion: 4,
+			}),
+		);
+		const previousUpdatedAt = new Date('2020-01-01T00:00:00.000Z');
+		await UserModel.collection.updateOne(
+			{ _id: new ObjectId(created.id) },
+			{ $set: { updated_at: previousUpdatedAt } },
+		);
+
+		const updated = await repository.incrementSessionVersion(created.id);
+		const persisted = await UserModel.findById(created.id).lean();
+
+		expect(updated).toMatchObject({ role: 'partner', status: 'suspended', sessionVersion: 5 });
+		expect(updated).not.toHaveProperty('session_version');
+		expect(updated.updatedAt.getTime()).toBeGreaterThan(previousUpdatedAt.getTime());
+		expect(persisted).toMatchObject({
+			role: 'partner',
+			status: 'suspended',
+			session_version: 5,
+			updated_at: updated.updatedAt,
+		});
+	});
+
+	it('retains concurrent increments and rejects invalid or missing IDs', async () => {
+		const created = await repository.create(createUserFactory({ email: 'concurrent-sessions@example.com' }));
+
+		await Promise.all([
+			repository.incrementSessionVersion(created.id),
+			repository.incrementSessionVersion(created.id),
+		]);
+
+		expect(await UserModel.findById(created.id).lean()).toMatchObject({ session_version: 3 });
+		await expect(repository.incrementSessionVersion('invalid')).rejects.toBeInstanceOf(NotFoundError);
+		await expect(repository.incrementSessionVersion(new ObjectId().toString())).rejects.toBeInstanceOf(
+			NotFoundError,
+		);
+	});
+
 	it('runs schema validators on updates', async () => {
 		const created = await repository.create(createUserFactory({ email: 'validated-update@example.com' }));
 

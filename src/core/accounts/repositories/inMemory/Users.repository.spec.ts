@@ -62,6 +62,38 @@ describe('UsersRepositoryInMemory', () => {
 		});
 	});
 
+	describe('incrementSessionVersion', () => {
+		it('increments once, preserves fields, updates the timestamp, and stores the replacement', async () => {
+			const created = await repository.create(
+				createUserFactory({ email: 'sessions@example.com', sessionVersion: 3 }),
+			);
+			const previousUpdatedAt = created.updatedAt;
+
+			const updated = await repository.incrementSessionVersion(created.id);
+
+			expect(updated).toMatchObject({
+				id: created.id,
+				role: created.role,
+				status: created.status,
+				sessionVersion: 4,
+			});
+			expect(updated.updatedAt.getTime()).toBeGreaterThanOrEqual(previousUpdatedAt.getTime());
+			expect(await repository.findById(created.id)).toEqual(updated);
+		});
+
+		it('retains both concurrent increments and rejects missing IDs', async () => {
+			const created = await repository.create(createUserFactory({ email: 'concurrent@example.com' }));
+
+			await Promise.all([
+				repository.incrementSessionVersion(created.id),
+				repository.incrementSessionVersion(created.id),
+			]);
+
+			expect((await repository.findById(created.id))?.sessionVersion).toBe(3);
+			await expect(repository.incrementSessionVersion('missing')).rejects.toBeInstanceOf(NotFoundError);
+		});
+	});
+
 	describe('delete', () => {
 		it('returns the removed record', async () => {
 			const created = await repository.create(createUserFactory({ email: 'delete@example.com' }));

@@ -2,7 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { ObjectId } from 'mongodb';
 import request from 'supertest';
 import { app } from '@/infrastructure/fastify/app';
-import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
+import { AdministrativeEventActions } from '@/core/accounts/constants/administrativeEvent.constants';
 import { AdministrativeEventModel } from '@/core/accounts/infra/mongo/entities/administrativeEvent.model';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { resolveCommentsRepository, resolveRatingsRepository } from '@/core/engagement/infra/mongo/container';

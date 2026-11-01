@@ -51,14 +51,14 @@ describe('Profile password methods', () => {
 			(await request(app.server).post('/me/reauthentication/google').set('Cookie', cookies).send({ idToken }))
 				.status,
 		).toBe(HTTP_STATUS.no_content);
-		expect((await request(app.server).post('/me/password').set('Cookie', cookies).send({ password })).status).toBe(
-			HTTP_STATUS.no_content,
-		);
-		expect((await request(app.server).get('/me').set('Cookie', cookies)).body as ProfileResponseBody).toMatchObject(
-			{
-				authenticationMethods: { password: { enabled: true }, providers: ['google'] },
-			},
-		);
+		const createPassword = await request(app.server).post('/me/password').set('Cookie', cookies).send({ password });
+		expect(createPassword.status).toBe(HTTP_STATUS.no_content);
+		const rotatedCookies = createPassword.headers['set-cookie'] as unknown as string[];
+		expect(
+			(await request(app.server).get('/me').set('Cookie', rotatedCookies)).body as ProfileResponseBody,
+		).toMatchObject({
+			authenticationMethods: { password: { enabled: true }, providers: ['google'] },
+		});
 		expect((await request(app.server).post('/signin').send({ email: googleIdentity.email, password })).status).toBe(
 			HTTP_STATUS.ok,
 		);

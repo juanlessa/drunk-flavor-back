@@ -1,6 +1,6 @@
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { TokenTypes } from '@/core/accounts/constants/token.constants';
-import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
+import { AdministrativeEventActions } from '@/core/accounts/constants/administrativeEvent.constants';
 import { UserAdministrationPolicy } from '@/core/accounts/policies/UserAdministration.policy';
 import { IAdministrativeEventsRepository } from '@/core/accounts/repositories/IAdministrativeEvents.repository';
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
@@ -18,8 +18,14 @@ import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.const
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { CreateUserDTO } from './createUser.dtos';
-import { authorizeUserAdministration, resolveAdministrativeEventContext } from '../userAdministrationAudit.helpers';
-import { findRequiredAdministrationUser, toAdministrationActor } from '../userAdministration.helpers';
+import {
+	authorizeUserAdministration,
+	resolveAdministrativeEventContext,
+} from '@/core/accounts/helpers/userAdministrationAudit.helpers';
+import {
+	findRequiredAdministrationUser,
+	toAdministrationActor,
+} from '@/core/accounts/helpers/userAdministration.helpers';
 
 export class CreateUserService {
 	constructor(

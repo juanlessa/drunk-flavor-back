@@ -5,6 +5,7 @@ import {
 	ForgotPasswordProps,
 	OwnershipTransferChangedProps,
 	OwnershipTransferInvitationProps,
+	UserSessionsRevokedProps,
 } from '../template.dtos';
 import { ServerError } from '@/shared/error/error.lib';
 import { emailVerificationTemplate } from './views/emailVerification.template';
@@ -12,6 +13,7 @@ import { MJMLJsonObject } from './mjml.types';
 import { forgotPasswordTemplate } from './views/forgotPassword.template';
 import { ownershipTransferChangedTemplate } from './views/ownershipTransferChanged.template';
 import { ownershipTransferInvitationTemplate } from './views/ownershipTransferInvitation.template';
+import { userSessionsRevokedTemplate } from './views/userSessionsRevoked.template';
 import { logger } from '@/shared/providers/logger';
 
 export class MjmlProvider implements ITemplateProvider {
@@ -41,6 +43,11 @@ export class MjmlProvider implements ITemplateProvider {
 
 	async ownershipTransferChanged(data: OwnershipTransferChangedProps): Promise<string> {
 		const [id, template] = ownershipTransferChangedTemplate(data);
+		return this.parseToHtml(id, template);
+	}
+
+	async userSessionsRevoked(data: UserSessionsRevokedProps): Promise<string> {
+		const [id, template] = userSessionsRevokedTemplate(data);
 		return this.parseToHtml(id, template);
 	}
 }

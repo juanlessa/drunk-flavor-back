@@ -27,6 +27,11 @@ import {
 	reactivateUserParamsSchema,
 } from '@/core/accounts/useCases/users/reactivate/reactivateUser.schema';
 import { reactivateUserController } from '@/core/accounts/useCases/users/reactivate/reactivateUser.controller';
+import {
+	revokeUserSessionsBodySchema,
+	revokeUserSessionsParamsSchema,
+} from '@/core/accounts/useCases/users/revokeSessions/revokeUserSessions.schema';
+import { revokeUserSessionsController } from '@/core/accounts/useCases/users/revokeSessions/revokeUserSessions.controller';
 
 const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
@@ -130,6 +135,24 @@ const routes: Routes = (server) => {
 			],
 		},
 		suspendUserController,
+	);
+
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/users/:id/session-revocation',
+		{
+			schema: {
+				tags: ['Users'],
+				params: revokeUserSessionsParamsSchema,
+				body: revokeUserSessionsBodySchema,
+			},
+			preValidation: [
+				verifyAndRenewToken,
+				enforceCompleteProfile,
+				requireRecentAuthentication,
+				verifyPermissions('revokeSessions', 'User'),
+			],
+		},
+		revokeUserSessionsController,
 	);
 
 	server.withTypeProvider<ZodTypeProvider>().post(

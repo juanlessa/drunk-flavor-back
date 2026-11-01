@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ObjectId } from 'mongodb';
-import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
+import { AdministrativeEventActions } from '@/core/accounts/constants/administrativeEvent.constants';
 import {
 	AdminPeerManagementForbiddenError,
 	OwnerManagementRequiresTransferError,

@@ -1,7 +1,5 @@
-import {
-	AdministrativeEventContext,
-	AdministrativeEventOrigins,
-} from '@/core/accounts/entities/administrativeEvent.entity';
+import { AdministrativeEventOrigins } from '@/core/accounts/constants/administrativeEvent.constants';
+import { AdministrativeEventContext } from '@/core/accounts/entities/administrativeEvent.entity';
 import { Role } from '@/shared/accessControl/roles';
 import { ForbiddenError } from '@/shared/error/error.lib';
 import { logger } from '@/shared/providers/logger';
@@ -14,6 +12,7 @@ export type UserAdministrationLogAction =
 	| 'user.suspend'
 	| 'user.reactivate'
 	| 'user.close'
+	| 'user.revoke_sessions'
 	| 'user.delete';
 
 type DeniedAdministrationDetails = {

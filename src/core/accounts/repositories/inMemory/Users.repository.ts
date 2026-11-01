@@ -73,6 +73,24 @@ export class UsersRepositoryInMemory implements IUsersRepository {
 		return record;
 	}
 
+	async incrementSessionVersion(id: string): Promise<User> {
+		const recordIndex = this.collection.findIndex((record) => record.id === id);
+		if (recordIndex === -1) {
+			throw new NotFoundError('apiResponses.users.notFound', {
+				path: 'Users.repository.incrementSessionVersion',
+				cause: 'Error on findOneAndUpdate operation',
+			});
+		}
+
+		const record: User = {
+			...this.collection[recordIndex],
+			sessionVersion: this.collection[recordIndex].sessionVersion + 1,
+			updatedAt: new Date(),
+		};
+		this.collection[recordIndex] = record;
+		return record;
+	}
+
 	async delete(id: string): Promise<User> {
 		const recordIndex = this.collection.findIndex((record) => record.id === id);
 		if (recordIndex === -1) {

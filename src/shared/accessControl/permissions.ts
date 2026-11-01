@@ -20,7 +20,7 @@ export const permissions: Record<Role, PermissionsByRole> = {
 
 		can(['list', 'get'], 'User');
 		can('create', 'User', { role: { $in: ADMIN_MANAGED_ROLES } });
-		can(['delete', 'suspend', 'reactivate', 'close'], 'User', {
+		can(['delete', 'suspend', 'reactivate', 'close', 'revokeSessions'], 'User', {
 			id: { $ne: user.id },
 			role: { $in: ADMIN_MANAGED_ROLES },
 		});

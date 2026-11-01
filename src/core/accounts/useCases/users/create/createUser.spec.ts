@@ -23,7 +23,7 @@ import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
 import { CredentialsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Credentials.repository';
 import { AdministrativeEventsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/AdministrativeEvents.repository';
-import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
+import { AdministrativeEventActions } from '@/core/accounts/constants/administrativeEvent.constants';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { MockEmailQueueProvider } from '@/shared/providers/queue/email/implementations/MockEmailQueue.provider';
 import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';

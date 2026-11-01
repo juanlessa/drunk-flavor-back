@@ -1,5 +1,5 @@
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
-import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
+import { AdministrativeEventActions } from '@/core/accounts/constants/administrativeEvent.constants';
 import { OwnershipTransferInvitationNotFoundError } from '@/core/accounts/errors/ownershipTransfer.errors';
 import { UserAdministrationPolicy } from '@/core/accounts/policies/UserAdministration.policy';
 import { IAdministrativeEventsRepository } from '@/core/accounts/repositories/IAdministrativeEvents.repository';
@@ -14,13 +14,16 @@ import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { IEmailQueueProvider } from '@/shared/providers/queue/email/IEmailQueue.provider';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
-import { findRequiredAdministrationUser, toAdministrationActor } from '../../users/userAdministration.helpers';
-import { resolveAdministrativeEventContext } from '../../users/userAdministrationAudit.helpers';
+import {
+	findRequiredAdministrationUser,
+	toAdministrationActor,
+} from '@/core/accounts/helpers/userAdministration.helpers';
+import { resolveAdministrativeEventContext } from '@/core/accounts/helpers/userAdministrationAudit.helpers';
 import {
 	assertEligibleOwnershipTarget,
 	createOwnershipTransferExpiration,
 	enqueueOwnershipTransferInvitation,
-} from '../ownershipTransfer.helpers';
+} from '@/core/accounts/helpers/ownershipTransfer.helpers';
 import { ResendOwnershipTransfer } from './resendOwnershipTransfer.dtos';
 
 export class ResendOwnershipTransferService {

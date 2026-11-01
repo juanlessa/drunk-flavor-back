@@ -9,6 +9,7 @@ export type UserAdministrationAction =
 	| 'suspend'
 	| 'reactivate'
 	| 'close'
+	| 'revokeSessions'
 	| 'transferOwnership'
 	| 'manage';
 

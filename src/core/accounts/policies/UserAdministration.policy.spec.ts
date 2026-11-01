@@ -126,6 +126,54 @@ describe('UserAdministrationPolicy', () => {
 		expect(() => policy.assertCanDeleteUser(member, target('target'))).toThrow(UserAdministrationForbiddenError);
 	});
 
+	it.each([
+		['owner -> admin', owner, Roles.admin],
+		['owner -> partner', owner, Roles.partner],
+		['owner -> member', owner, Roles.member],
+		['admin -> partner', admin, Roles.partner],
+		['admin -> member', admin, Roles.member],
+	] as const)('allows the %s session-revocation relationship for both eligible statuses', (_case, actor, role) => {
+		for (const status of [UserStatuses.active, UserStatuses.suspended]) {
+			expect(() => policy.assertCanRevokeUserSessions(actor, target('target', role, status))).not.toThrow();
+		}
+	});
+
+	it.each([
+		['admin -> admin', admin, Roles.admin, AdminPeerManagementForbiddenError],
+		['partner -> admin', partner, Roles.admin, UserAdministrationForbiddenError],
+		['partner -> partner', partner, Roles.partner, UserAdministrationForbiddenError],
+		['partner -> member', partner, Roles.member, UserAdministrationForbiddenError],
+		['member -> admin', member, Roles.admin, UserAdministrationForbiddenError],
+		['member -> partner', member, Roles.partner, UserAdministrationForbiddenError],
+		['member -> member', member, Roles.member, UserAdministrationForbiddenError],
+	] as const)(
+		'denies the %s session-revocation relationship for both eligible statuses',
+		(_case, actor, role, ErrorType) => {
+			for (const status of [UserStatuses.active, UserStatuses.suspended]) {
+				expect(() => policy.assertCanRevokeUserSessions(actor, target('target', role, status))).toThrow(
+					ErrorType,
+				);
+			}
+		},
+	);
+
+	it('rejects session revocation for ineligible target statuses', () => {
+		for (const status of [UserStatuses.idle, UserStatuses.pending, UserStatuses.incomplete_profile]) {
+			expect(() => policy.assertCanRevokeUserSessions(owner, target('target', Roles.member, status))).toThrow(
+				UserStatusTransitionInvalidError,
+			);
+		}
+	});
+
+	it('protects session revocation against self and owner targets', () => {
+		expect(() => policy.assertCanRevokeUserSessions(admin, target(admin.id, Roles.admin))).toThrow(
+			UserSelfAdministrationForbiddenError,
+		);
+		expect(() => policy.assertCanRevokeUserSessions(owner, target('owner-target', Roles.owner))).toThrow(
+			OwnerManagementRequiresTransferError,
+		);
+	});
+
 	it('allows only the owner to transfer ownership to another non-owner user', () => {
 		expect(() => policy.assertCanTransferOwnership(owner, target('admin-target', Roles.admin))).not.toThrow();
 		expect(() => policy.assertCanTransferOwnership(admin, target('admin-target', Roles.admin))).toThrow(

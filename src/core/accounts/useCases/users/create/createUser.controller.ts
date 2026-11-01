@@ -2,7 +2,7 @@ import { resolveCreateUserService } from './createUser.container';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { CreateUserReqBody } from './createUser.dtos';
-import { AdministrativeEventOrigins } from '@/core/accounts/entities/administrativeEvent.entity';
+import { AdministrativeEventOrigins } from '@/core/accounts/constants/administrativeEvent.constants';
 
 export const createUserController: Controller<{ Body: CreateUserReqBody }> = async (request, response) => {
 	const { name, surname, email, password, role } = request.body;

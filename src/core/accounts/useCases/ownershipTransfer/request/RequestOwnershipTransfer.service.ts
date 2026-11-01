@@ -1,6 +1,6 @@
 import { OWNERSHIP_TRANSFER_INVITATION_SCOPE } from '@/core/accounts/constants/ownershipTransfer.constants';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
-import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
+import { AdministrativeEventActions } from '@/core/accounts/constants/administrativeEvent.constants';
 import {
 	OwnershipTransferAlreadyPendingError,
 	OwnershipTransferInvalidError,
@@ -17,13 +17,16 @@ import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { IEmailQueueProvider } from '@/shared/providers/queue/email/IEmailQueue.provider';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
-import { findRequiredAdministrationUser, toAdministrationActor } from '../../users/userAdministration.helpers';
-import { resolveAdministrativeEventContext } from '../../users/userAdministrationAudit.helpers';
+import {
+	findRequiredAdministrationUser,
+	toAdministrationActor,
+} from '@/core/accounts/helpers/userAdministration.helpers';
+import { resolveAdministrativeEventContext } from '@/core/accounts/helpers/userAdministrationAudit.helpers';
 import {
 	assertEligibleOwnershipTarget,
 	createOwnershipTransferExpiration,
 	enqueueOwnershipTransferInvitation,
-} from '../ownershipTransfer.helpers';
+} from '@/core/accounts/helpers/ownershipTransfer.helpers';
 import { RequestOwnershipTransfer } from './requestOwnershipTransfer.dtos';
 import { env } from '@/env';
 

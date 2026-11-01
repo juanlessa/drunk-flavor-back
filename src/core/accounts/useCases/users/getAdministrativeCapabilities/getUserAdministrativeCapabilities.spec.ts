@@ -66,7 +66,11 @@ describe('GetUserAdministrativeCapabilitiesService', () => {
 		expect(result).toBeDefined();
 		expectCapabilities(
 			result,
-			[UserAdministrativeCapabilityActions.changeRole, UserAdministrativeCapabilityActions.suspend],
+			[
+				UserAdministrativeCapabilityActions.changeRole,
+				UserAdministrativeCapabilityActions.suspend,
+				UserAdministrativeCapabilityActions.revokeSessions,
+			],
 			[Roles.partner],
 		);
 	});
@@ -88,6 +92,7 @@ describe('GetUserAdministrativeCapabilitiesService', () => {
 				UserAdministrativeCapabilityActions.changeRole,
 				UserAdministrativeCapabilityActions.reactivate,
 				UserAdministrativeCapabilityActions.close,
+				UserAdministrativeCapabilityActions.revokeSessions,
 			],
 			[Roles.partner],
 		);
@@ -122,6 +127,7 @@ describe('GetUserAdministrativeCapabilitiesService', () => {
 			[
 				UserAdministrativeCapabilityActions.changeRole,
 				UserAdministrativeCapabilityActions.suspend,
+				UserAdministrativeCapabilityActions.revokeSessions,
 				UserAdministrativeCapabilityActions.requestOwnershipTransfer,
 			],
 			[Roles.partner, Roles.member],

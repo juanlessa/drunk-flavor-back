@@ -1,4 +1,4 @@
-import { AdministrativeEventOrigins } from '@/core/accounts/entities/administrativeEvent.entity';
+import { AdministrativeEventOrigins } from '@/core/accounts/constants/administrativeEvent.constants';
 import { OwnerManagementRequiresTransferError } from '@/core/accounts/errors/user.errors';
 import { IAdministrativeEventsRepository } from '@/core/accounts/repositories/IAdministrativeEvents.repository';
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
@@ -9,7 +9,7 @@ import {
 	assertAccountCanBeSelfClosed,
 	deleteAccountAvatar,
 	deleteAccountData,
-} from '@/core/accounts/useCases/accountClosure/accountClosure.helpers';
+} from '@/core/accounts/helpers/accountClosure.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { IEngagementModule } from '@/core/engagement/public';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';

@@ -16,7 +16,7 @@ import {
 import { UpdateUserRoleService } from './UpdateUserRole.service';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { AdministrativeEventsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/AdministrativeEvents.repository';
-import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
+import { AdministrativeEventActions } from '@/core/accounts/constants/administrativeEvent.constants';
 
 let usersRepository: IUsersRepository;
 let service: UpdateUserRoleService;

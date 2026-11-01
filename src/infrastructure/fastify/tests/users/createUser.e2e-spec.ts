@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import request from 'supertest';
-import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
+import { AdministrativeEventActions } from '@/core/accounts/constants/administrativeEvent.constants';
 import { AdministrativeEventModel } from '@/core/accounts/infra/mongo/entities/administrativeEvent.model';
 import { TokenModel } from '@/core/accounts/infra/mongo/entities/token.model';
 import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';

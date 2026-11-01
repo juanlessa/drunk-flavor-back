@@ -10,6 +10,7 @@ export type EmailJobDataMap = {
 	[EMAIL_JOB_NAMES.forgotPassword]: SendEmailJobData;
 	[EMAIL_JOB_NAMES.ownershipTransferInvitation]: SendEmailJobData;
 	[EMAIL_JOB_NAMES.ownershipTransferChanged]: SendEmailJobData;
+	[EMAIL_JOB_NAMES.userSessionsRevoked]: SendEmailJobData;
 };
 
 export type EmailJobData = EmailJobDataMap[EmailJobName];

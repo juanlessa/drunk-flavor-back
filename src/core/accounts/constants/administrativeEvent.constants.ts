@@ -8,6 +8,7 @@ export const AdministrativeEventActions = {
 	userSuspended: 'user.suspended',
 	userReactivated: 'user.reactivated',
 	userClosed: 'user.closed',
+	userSessionsRevoked: 'user.sessions_revoked',
 	userDeleted: 'user.deleted',
 } as const;
 

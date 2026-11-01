@@ -1,7 +1,7 @@
 import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { resolveGetUserService } from './getUser.container';
 import { GetUserSchemaReqParams } from './getUser.dtos';
-import { AdministrativeEventOrigins } from '@/core/accounts/entities/administrativeEvent.entity';
+import { AdministrativeEventOrigins } from '@/core/accounts/constants/administrativeEvent.constants';
 
 export const getUserController: Controller<{ Params: GetUserSchemaReqParams }> = async (request, reply) => {
 	const { id } = request.params;

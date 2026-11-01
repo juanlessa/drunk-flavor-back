@@ -1,8 +1,6 @@
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
-import {
-	AdministrativeEventActions,
-	AdministrativeEventContext,
-} from '@/core/accounts/entities/administrativeEvent.entity';
+import { AdministrativeEventActions } from '@/core/accounts/constants/administrativeEvent.constants';
+import { AdministrativeEventContext } from '@/core/accounts/entities/administrativeEvent.entity';
 import { User } from '@/core/accounts/entities/user.entity';
 import { UserStatusTransitionInvalidError } from '@/core/accounts/errors/user.errors';
 import { IAdministrativeEventsRepository } from '@/core/accounts/repositories/IAdministrativeEvents.repository';

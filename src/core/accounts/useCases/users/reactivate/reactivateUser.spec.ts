@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
+import { AdministrativeEventActions } from '@/core/accounts/constants/administrativeEvent.constants';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { AdminPeerManagementForbiddenError } from '@/core/accounts/errors/user.errors';

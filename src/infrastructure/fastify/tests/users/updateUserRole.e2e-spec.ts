@@ -9,8 +9,7 @@ import { Roles } from '@/shared/accessControl/roles';
 import { AUTH_COOKIE } from '@/infrastructure/fastify/constants/cookie.constants';
 import { AUTH_SESSION_COOKIE } from '@/infrastructure/fastify/constants/session.constants';
 import { AdministrativeEventModel } from '@/core/accounts/infra/mongo/entities/administrativeEvent.model';
-import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
-import { UserStatuses } from '@/core/accounts/constants/user.constants';
+import { AdministrativeEventActions } from '@/core/accounts/constants/administrativeEvent.constants';
 
 type ErrorResponseBody = { localeKey: string };
 
@@ -68,15 +67,15 @@ describe('Update User Role', () => {
 		expect(suspensionNoopResponse.status).toBe(HTTP_STATUS.no_content);
 
 		const boundedAccessResponse = await request(app.server).get('/me').set('Cookie', targetCookies).send();
-		expect(boundedAccessResponse.status).toBe(HTTP_STATUS.ok);
-		expect((boundedAccessResponse.body as { status: string }).status).toBe(UserStatuses.suspended);
-
-		const staleRefreshResponse = await request(app.server)
-			.post('/refresh-token')
-			.set('Cookie', targetCookies)
-			.send();
-		expect(staleRefreshResponse.status).toBe(HTTP_STATUS.unauthorized);
-		expect((staleRefreshResponse.body as ErrorResponseBody).localeKey).toBe('apiResponses.auth.sessionRevoked');
+		expect(boundedAccessResponse.status).toBe(HTTP_STATUS.unauthorized);
+		expect((boundedAccessResponse.body as ErrorResponseBody).localeKey).toBe('apiResponses.auth.sessionRevoked');
+		const boundedAccessClearedCookies = boundedAccessResponse.headers['set-cookie'] as unknown as string[];
+		expect(boundedAccessClearedCookies).toEqual(
+			expect.arrayContaining([
+				expect.stringContaining(`${AUTH_COOKIE}=;`),
+				expect.stringContaining(`${AUTH_SESSION_COOKIE}=;`),
+			]),
+		);
 
 		const reactivationReason = 'Administrative review completed';
 		const reactivationResponse = await request(app.server)

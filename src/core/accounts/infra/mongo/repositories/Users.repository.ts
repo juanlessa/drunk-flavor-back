@@ -60,6 +60,25 @@ export class UsersRepository implements IUsersRepository {
 		return UserMapper.toDomain(document);
 	}
 
+	async incrementSessionVersion(id: string): Promise<User> {
+		const objectId = UserMapper.toObjectId(id);
+		if (!objectId) {
+			throw this.userNotFound('Users.repository.incrementSessionVersion', 'Error on findOneAndUpdate operation');
+		}
+
+		const document = await UserModel.findByIdAndUpdate(
+			objectId,
+			{ $inc: { session_version: 1 } },
+			{ returnDocument: 'after' },
+		)
+			.lean<UserPersistence>()
+			.exec();
+		if (!document) {
+			throw this.userNotFound('Users.repository.incrementSessionVersion', 'Error on findOneAndUpdate operation');
+		}
+		return UserMapper.toDomain(document);
+	}
+
 	async delete(id: string): Promise<User> {
 		const objectId = UserMapper.toObjectId(id);
 		if (!objectId) {

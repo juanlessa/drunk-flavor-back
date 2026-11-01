@@ -43,7 +43,8 @@ describe('Link Google identity', () => {
 		const linked = await request(app.server).post('/me/identities/google').set('Cookie', cookies).send({ idToken });
 
 		expect(linked.status).toBe(HTTP_STATUS.no_content);
-		const profile = await request(app.server).get('/me').set('Cookie', cookies);
+		const rotatedCookies = linked.headers['set-cookie'] as unknown as string[];
+		const profile = await request(app.server).get('/me').set('Cookie', rotatedCookies);
 		expect((profile.body as ProfileResponseBody).authenticationMethods).toEqual({
 			password: { enabled: true },
 			providers: ['google'],

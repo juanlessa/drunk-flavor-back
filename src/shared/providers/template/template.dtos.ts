@@ -17,3 +17,7 @@ export type OwnershipTransferChangedProps = {
 	userName: string;
 	role: 'owner' | 'admin';
 };
+
+export type UserSessionsRevokedProps = {
+	userName: string;
+};

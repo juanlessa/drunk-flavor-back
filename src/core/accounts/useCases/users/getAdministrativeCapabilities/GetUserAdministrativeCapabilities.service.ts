@@ -8,8 +8,11 @@ import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.
 import { IOwnershipTransferInvitationsRepository } from '@/core/accounts/repositories/IOwnershipTransferInvitations.repository';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { NonOwnerRole, Roles } from '@/shared/accessControl/roles';
-import { assertEligibleOwnershipTarget } from '@/core/accounts/useCases/ownershipTransfer/ownershipTransfer.helpers';
-import { findRequiredAdministrationUser, toAdministrationActor } from '../userAdministration.helpers';
+import { assertEligibleOwnershipTarget } from '@/core/accounts/helpers/ownershipTransfer.helpers';
+import {
+	findRequiredAdministrationUser,
+	toAdministrationActor,
+} from '@/core/accounts/helpers/userAdministration.helpers';
 import {
 	GetUserAdministrativeCapabilities,
 	UserAdministrativeCapabilities,
@@ -83,6 +86,9 @@ export class GetUserAdministrativeCapabilitiesService {
 		}
 		if (policyAllows(() => this.userAdministrationPolicy.assertCanCloseUser(currentActor, target))) {
 			actions.push(UserAdministrativeCapabilityActions.close);
+		}
+		if (policyAllows(() => this.userAdministrationPolicy.assertCanRevokeUserSessions(currentActor, target))) {
+			actions.push(UserAdministrativeCapabilityActions.revokeSessions);
 		}
 		if (await this.canRequestOwnershipTransfer(currentActor, target)) {
 			actions.push(UserAdministrativeCapabilityActions.requestOwnershipTransfer);

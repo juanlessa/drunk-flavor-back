@@ -21,7 +21,7 @@ import { Roles } from '@/shared/accessControl/roles';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { MockStorageProvider } from '@/shared/providers/storage/implementations/MockStorage.provider';
 import { AdministrativeEventsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/AdministrativeEvents.repository';
-import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
+import { AdministrativeEventActions } from '@/core/accounts/constants/administrativeEvent.constants';
 import { IEngagementModule } from '@/core/engagement/public';
 
 let cryptoProvider: NodeCryptoProvider;

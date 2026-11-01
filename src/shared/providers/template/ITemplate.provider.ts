@@ -3,6 +3,7 @@ import {
 	ForgotPasswordProps,
 	OwnershipTransferChangedProps,
 	OwnershipTransferInvitationProps,
+	UserSessionsRevokedProps,
 } from './template.dtos';
 
 export interface ITemplateProvider {
@@ -10,4 +11,5 @@ export interface ITemplateProvider {
 	forgotPassword(data: ForgotPasswordProps): Promise<string>;
 	ownershipTransferInvitation(data: OwnershipTransferInvitationProps): Promise<string>;
 	ownershipTransferChanged(data: OwnershipTransferChangedProps): Promise<string>;
+	userSessionsRevoked(data: UserSessionsRevokedProps): Promise<string>;
 }

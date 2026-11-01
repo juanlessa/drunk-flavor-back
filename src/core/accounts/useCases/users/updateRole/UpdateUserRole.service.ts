@@ -2,13 +2,19 @@ import { UpdateUserRole } from './updateUserRole.dtos';
 import {
 	AdministrativeEventActions,
 	AdministrativeEventOrigins,
-} from '@/core/accounts/entities/administrativeEvent.entity';
+} from '@/core/accounts/constants/administrativeEvent.constants';
 import { UserAdministrationPolicy, UserRoleChangeOutcomes } from '@/core/accounts/policies/UserAdministration.policy';
 import { IAdministrativeEventsRepository } from '@/core/accounts/repositories/IAdministrativeEvents.repository';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
-import { authorizeUserAdministration, resolveAdministrativeEventContext } from '../userAdministrationAudit.helpers';
-import { findRequiredAdministrationUser, toAdministrationActor } from '../userAdministration.helpers';
+import {
+	authorizeUserAdministration,
+	resolveAdministrativeEventContext,
+} from '@/core/accounts/helpers/userAdministrationAudit.helpers';
+import {
+	findRequiredAdministrationUser,
+	toAdministrationActor,
+} from '@/core/accounts/helpers/userAdministration.helpers';
 
 export class UpdateUserRoleService {
 	constructor(

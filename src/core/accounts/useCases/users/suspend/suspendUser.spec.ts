@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
 	AdministrativeEventActions,
 	AdministrativeEventOrigins,
-} from '@/core/accounts/entities/administrativeEvent.entity';
+} from '@/core/accounts/constants/administrativeEvent.constants';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { UserAdministrationForbiddenError } from '@/core/accounts/errors/user.errors';

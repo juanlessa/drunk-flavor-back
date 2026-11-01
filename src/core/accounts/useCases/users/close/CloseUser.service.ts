@@ -1,4 +1,4 @@
-import { AdministrativeEventOrigins } from '@/core/accounts/entities/administrativeEvent.entity';
+import { AdministrativeEventOrigins } from '@/core/accounts/constants/administrativeEvent.constants';
 import { UserAdministrationPolicy } from '@/core/accounts/policies/UserAdministration.policy';
 import { IAdministrativeEventsRepository } from '@/core/accounts/repositories/IAdministrativeEvents.repository';
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
@@ -8,9 +8,12 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { IEngagementModule } from '@/core/engagement/public';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
-import { deleteAccountAvatar, deleteAccountData } from '@/core/accounts/useCases/accountClosure/accountClosure.helpers';
-import { authorizeUserAdministration } from '../userAdministrationAudit.helpers';
-import { findRequiredAdministrationUser, toAdministrationActor } from '../userAdministration.helpers';
+import { deleteAccountAvatar, deleteAccountData } from '@/core/accounts/helpers/accountClosure.helpers';
+import { authorizeUserAdministration } from '@/core/accounts/helpers/userAdministrationAudit.helpers';
+import {
+	findRequiredAdministrationUser,
+	toAdministrationActor,
+} from '@/core/accounts/helpers/userAdministration.helpers';
 import { CloseUser } from './closeUser.dtos';
 
 export class CloseUserService {

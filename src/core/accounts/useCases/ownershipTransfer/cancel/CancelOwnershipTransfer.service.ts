@@ -1,13 +1,13 @@
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
-import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
+import { AdministrativeEventActions } from '@/core/accounts/constants/administrativeEvent.constants';
 import { OwnershipTransferInvitationNotFoundError } from '@/core/accounts/errors/ownershipTransfer.errors';
 import { IAdministrativeEventsRepository } from '@/core/accounts/repositories/IAdministrativeEvents.repository';
 import { IOwnershipTransferInvitationsRepository } from '@/core/accounts/repositories/IOwnershipTransferInvitations.repository';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { Roles } from '@/shared/accessControl/roles';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
-import { findRequiredAdministrationUser } from '../../users/userAdministration.helpers';
-import { resolveAdministrativeEventContext } from '../../users/userAdministrationAudit.helpers';
+import { findRequiredAdministrationUser } from '@/core/accounts/helpers/userAdministration.helpers';
+import { resolveAdministrativeEventContext } from '@/core/accounts/helpers/userAdministrationAudit.helpers';
 import { CancelOwnershipTransfer } from './cancelOwnershipTransfer.dtos';
 
 export class CancelOwnershipTransferService {

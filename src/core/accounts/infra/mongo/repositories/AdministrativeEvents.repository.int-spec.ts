@@ -2,7 +2,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
 	AdministrativeEventActions,
 	AdministrativeEventOrigins,
-} from '@/core/accounts/entities/administrativeEvent.entity';
+} from '@/core/accounts/constants/administrativeEvent.constants';
 import { Roles } from '@/shared/accessControl/roles';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import {
@@ -67,6 +67,33 @@ describe('AdministrativeEventsRepository (integration)', () => {
 			occurred_at: occurredAt,
 		});
 		expect(persisted).not.toHaveProperty('actorId');
+	});
+
+	it('persists a session-revocation event with unchanged role and status snapshots', async () => {
+		const event = await repository.create({
+			actorId: 'owner-id',
+			targetUserId: 'member-id',
+			action: AdministrativeEventActions.userSessionsRevoked,
+			before: { role: Roles.member, status: UserStatuses.suspended },
+			after: { role: Roles.member, status: UserStatuses.suspended },
+			origin: AdministrativeEventOrigins.api,
+			requestId: 'request-id',
+			reason: 'End all sessions after a security review',
+		});
+
+		expect(event).toMatchObject({
+			action: AdministrativeEventActions.userSessionsRevoked,
+			before: { role: Roles.member, status: UserStatuses.suspended },
+			after: { role: Roles.member, status: UserStatuses.suspended },
+		});
+		const persisted = await AdministrativeEventModel.findById(event.id).lean();
+		expect(persisted).toMatchObject({
+			actor_id: 'owner-id',
+			target_user_id: 'member-id',
+			action: 'user.sessions_revoked',
+			before: { role: Roles.member, status: UserStatuses.suspended },
+			after: { role: Roles.member, status: UserStatuses.suspended },
+		});
 	});
 
 	it('defaults occurredAt and keeps optional state and context absent', async () => {

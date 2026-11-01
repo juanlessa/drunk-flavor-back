@@ -1,4 +1,4 @@
-import { AdministrativeEventOrigins } from '@/core/accounts/entities/administrativeEvent.entity';
+import { AdministrativeEventOrigins } from '@/core/accounts/constants/administrativeEvent.constants';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { resolveReactivateUserService } from './reactivateUser.container';

@@ -27,7 +27,7 @@ describe('Get User', () => {
 		expect(user.status).toBe(HTTP_STATUS.ok);
 		expect(capabilities.status).toBe(HTTP_STATUS.ok);
 		expect(capabilities.body as CapabilitiesResponseBody).toEqual({
-			actions: ['changeRole', 'suspend'],
+			actions: ['changeRole', 'suspend', 'revokeSessions'],
 			roleTransitions: ['member'],
 		});
 	});

@@ -2,7 +2,7 @@ import mongoose, { InferRawDocType, Model, Schema } from 'mongoose';
 import {
 	AdministrativeEventActions,
 	AdministrativeEventOrigins,
-} from '@/core/accounts/entities/administrativeEvent.entity';
+} from '@/core/accounts/constants/administrativeEvent.constants';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { Roles } from '@/shared/accessControl/roles';
 

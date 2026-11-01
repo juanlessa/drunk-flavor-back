@@ -123,6 +123,13 @@ export class UserAdministrationPolicy {
 		return UserStatusChangeOutcomes.apply;
 	}
 
+	assertCanRevokeUserSessions(actor: Actor, target: UserStatusAdministrationTarget): void {
+		this.assertCanMutateTarget('revokeSessions', actor, target);
+		if (target.status !== UserStatuses.active && target.status !== UserStatuses.suspended) {
+			throw new UserStatusTransitionInvalidError({ path: 'UserAdministrationPolicy.revokeSessions' });
+		}
+	}
+
 	assertCanTransferOwnership(actor: Actor, target: UserAdministrationTarget): void {
 		this.assertNotSelf(actor, target, 'UserAdministrationPolicy.transferOwnership');
 		this.assertNonOwnerTarget(target, 'UserAdministrationPolicy.transferOwnership');
@@ -134,7 +141,7 @@ export class UserAdministrationPolicy {
 	}
 
 	private assertCanMutateTarget(
-		action: 'delete' | 'suspend' | 'reactivate' | 'close',
+		action: 'delete' | 'suspend' | 'reactivate' | 'close' | 'revokeSessions',
 		actor: Actor,
 		target: UserAdministrationTarget,
 	): void {

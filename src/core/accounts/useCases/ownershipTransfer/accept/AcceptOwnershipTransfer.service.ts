@@ -1,5 +1,5 @@
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
-import { AdministrativeEventActions } from '@/core/accounts/entities/administrativeEvent.entity';
+import { AdministrativeEventActions } from '@/core/accounts/constants/administrativeEvent.constants';
 import { User } from '@/core/accounts/entities/user.entity';
 import { OwnershipTransferInvalidError } from '@/core/accounts/errors/ownershipTransfer.errors';
 import { IAdministrativeEventsRepository } from '@/core/accounts/repositories/IAdministrativeEvents.repository';
@@ -13,13 +13,13 @@ import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { IEmailQueueProvider } from '@/shared/providers/queue/email/IEmailQueue.provider';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
-import { findRequiredAdministrationUser } from '../../users/userAdministration.helpers';
-import { resolveAdministrativeEventContext } from '../../users/userAdministrationAudit.helpers';
+import { findRequiredAdministrationUser } from '@/core/accounts/helpers/userAdministration.helpers';
+import { resolveAdministrativeEventContext } from '@/core/accounts/helpers/userAdministrationAudit.helpers';
 import {
 	assertEligibleOwnershipTarget,
 	assertOwnershipTransferInvitationCurrent,
 	enqueueOwnershipTransferChangedBestEffort,
-} from '../ownershipTransfer.helpers';
+} from '@/core/accounts/helpers/ownershipTransfer.helpers';
 import { AcceptOwnershipTransfer } from './acceptOwnershipTransfer.dtos';
 
 type OwnershipTransferResult = {
