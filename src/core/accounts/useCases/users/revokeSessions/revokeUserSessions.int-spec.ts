@@ -6,25 +6,23 @@ import { UsersRepository } from '@/core/accounts/infra/mongo/repositories/Users.
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { Roles } from '@/shared/accessControl/roles';
 import { MockEmailQueueProvider } from '@/shared/providers/queue/email/implementations/MockEmailQueue.provider';
-import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
+import {
+	MOCK_TEMPLATE_HTML,
+	MockTemplateProvider,
+} from '@/shared/providers/template/implementations/MockTemplate.provider';
 import { MongoTransactionManager } from '@/infrastructure/mongo/transactions/MongoTransactionManager';
 import { RevokeUserSessionsService } from './RevokeUserSessions.service';
+import { SessionVersionMarkerStoreInMemory } from '@/core/accounts/stores/inMemory/SessionVersionMarker.store';
 
 let usersRepository: UsersRepository;
 let eventsRepository: AdministrativeEventsRepository;
-let templateProvider: ITemplateProvider;
+let templateProvider: MockTemplateProvider;
 let emailQueueProvider: MockEmailQueueProvider;
 
 beforeEach(() => {
 	usersRepository = new UsersRepository();
 	eventsRepository = new AdministrativeEventsRepository();
-	templateProvider = {
-		emailVerification: vi.fn(async () => ''),
-		forgotPassword: vi.fn(async () => ''),
-		ownershipTransferInvitation: vi.fn(async () => ''),
-		ownershipTransferChanged: vi.fn(async () => ''),
-		userSessionsRevoked: vi.fn(async () => ''),
-	};
+	templateProvider = new MockTemplateProvider();
 	emailQueueProvider = new MockEmailQueueProvider();
 });
 
@@ -33,7 +31,7 @@ afterEach(async () => {
 	await AdministrativeEventModel.deleteMany({});
 });
 
-describe('RevokeUserSessionsService (integration)', () => {
+describe('Revoke User Sessions (integration)', () => {
 	it('rolls back the atomic increment when event creation fails', async () => {
 		const actor = await usersRepository.create(
 			createUserFactory({ email: 'owner@example.com', role: Roles.owner, sessionVersion: 2 }),
@@ -49,6 +47,7 @@ describe('RevokeUserSessionsService (integration)', () => {
 			eventsRepository,
 			templateProvider,
 			emailQueueProvider,
+			new SessionVersionMarkerStoreInMemory(),
 		);
 
 		await expect(

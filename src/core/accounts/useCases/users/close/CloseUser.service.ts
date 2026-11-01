@@ -15,6 +15,7 @@ import {
 	toAdministrationActor,
 } from '@/core/accounts/helpers/userAdministration.helpers';
 import { CloseUser } from './closeUser.dtos';
+import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
 
 export class CloseUserService {
 	constructor(
@@ -26,6 +27,7 @@ export class CloseUserService {
 		private engagementModule: IEngagementModule,
 		private transactionManager: ITransactionManager,
 		private storageProvider: IStorageProvider,
+		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
 		private userAdministrationPolicy = new UserAdministrationPolicy(),
 	) {}
 
@@ -60,6 +62,7 @@ export class CloseUserService {
 				tokensRepository: this.tokensRepository,
 				administrativeEventsRepository: this.administrativeEventsRepository,
 				engagementModule: this.engagementModule,
+				sessionVersionMarkerStore: this.sessionVersionMarkerStore,
 			});
 			return target;
 		});

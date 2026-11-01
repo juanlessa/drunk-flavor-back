@@ -10,6 +10,7 @@ import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { ObjectId } from 'mongodb';
 import { UpdatePasswordService } from './updatePassword.service';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
+import { SessionVersionMarkerStoreInMemory } from '@/core/accounts/stores/inMemory/SessionVersionMarker.store';
 
 let hashProvider: IHashProvider;
 let usersRepository: IUsersRepository;
@@ -37,10 +38,11 @@ describe('Update Password', () => {
 			credentialsRepository,
 			hashProvider,
 			new FakeTransactionManager(),
+			new SessionVersionMarkerStoreInMemory(),
 		);
 	});
 
-	it('Should be able update the password', async () => {
+	it('replaces the password and invalidates existing sessions', async () => {
 		const { createdUser, hashedPassword } = await seedUserWithCredential();
 
 		await service.execute({
@@ -68,7 +70,7 @@ describe('Update Password', () => {
 		).rejects.toBeInstanceOf(UnauthorizedError);
 	});
 
-	it('Should not be able to update the password of a user without a credential', async () => {
+	it('rejects a user without a password credential', async () => {
 		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 
 		await expect(
@@ -92,7 +94,7 @@ describe('Update Password', () => {
 		).rejects.toBeInstanceOf(UnauthorizedError);
 	});
 
-	it('Should not be able to update if the new password is the same as the current one', async () => {
+	it('rejects a new password that matches the current one', async () => {
 		const { createdUser } = await seedUserWithCredential();
 
 		await expect(

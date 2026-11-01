@@ -12,10 +12,14 @@ import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/U
 import { Roles } from '@/shared/accessControl/roles';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { NativeDateProvider } from '@/shared/providers/date/implementations/NativeDate.provider';
-import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
+import {
+	MOCK_TEMPLATE_HTML,
+	MockTemplateProvider,
+} from '@/shared/providers/template/implementations/MockTemplate.provider';
 import { MockEmailQueueProvider } from '@/shared/providers/queue/email/implementations/MockEmailQueue.provider';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { AcceptOwnershipTransferService } from './AcceptOwnershipTransfer.service';
+import { SessionVersionMarkerStoreInMemory } from '@/core/accounts/stores/inMemory/SessionVersionMarker.store';
 
 const now = new Date('2025-01-01T00:00:00.000Z');
 const reason = 'The current owner is transitioning operational responsibility';
@@ -66,13 +70,7 @@ describe('Accept Ownership Transfer', () => {
 			generateToken: vi.fn(async () => 'plain-token'),
 			hashToken: vi.fn((token: string) => `hash:${token}`),
 		};
-		const templateProvider: ITemplateProvider = {
-			emailVerification: vi.fn(async () => 'verification-template'),
-			forgotPassword: vi.fn(async () => 'password-template'),
-			ownershipTransferInvitation: vi.fn(async () => 'invitation-template'),
-			ownershipTransferChanged: vi.fn(async () => 'changed-template'),
-			userSessionsRevoked: vi.fn(async () => 'sessions-revoked-template'),
-		};
+		const templateProvider: MockTemplateProvider = new MockTemplateProvider();
 		emailQueueProvider = new MockEmailQueueProvider();
 		service = new AcceptOwnershipTransferService(
 			usersRepository,
@@ -85,6 +83,7 @@ describe('Accept Ownership Transfer', () => {
 			new FakeTransactionManager(),
 			templateProvider,
 			emailQueueProvider,
+			new SessionVersionMarkerStoreInMemory(),
 		);
 	});
 
@@ -108,13 +107,19 @@ describe('Accept Ownership Transfer', () => {
 		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(2);
 	});
 
-	it('rejects an unknown token and an authenticated actor different from the target', async () => {
+	it('rejects an unknown token', async () => {
 		const { owner, target } = await createEligibleParticipants();
 		await createInvitation(owner, target);
 
 		await expect(
 			service.execute({ token: 'wrong-token', actor: { id: target.id, role: target.role } }),
 		).rejects.toBeInstanceOf(OwnershipTransferInvalidError);
+	});
+
+	it('rejects an authenticated actor different from the invited target', async () => {
+		const { owner, target } = await createEligibleParticipants();
+		await createInvitation(owner, target);
+
 		await expect(
 			service.execute({ token: 'accept-token', actor: { id: owner.id, role: owner.role } }),
 		).rejects.toBeInstanceOf(OwnershipTransferInvalidError);

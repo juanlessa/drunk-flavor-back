@@ -7,6 +7,8 @@ import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provide
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { ConfirmPassword } from './confirmPassword.dtos';
+import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
+import { invalidateUserSessions } from '@/core/accounts/helpers/sessionInvalidation.helpers';
 
 export class ConfirmPasswordService {
 	constructor(
@@ -17,6 +19,7 @@ export class ConfirmPasswordService {
 		private hashProvider: IHashProvider,
 		private cryptoProvider: ICryptoProvider,
 		private transactionManager: ITransactionManager,
+		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
 	) {}
 
 	async execute({ token, password }: ConfirmPassword): Promise<void> {
@@ -50,10 +53,7 @@ export class ConfirmPasswordService {
 			} else {
 				await this.credentialsRepository.create({ userId: user.id, passwordHash: hashedPassword });
 			}
-			await this.usersRepository.update({
-				id: user.id,
-				sessionVersion: user.sessionVersion + 1,
-			});
+			await invalidateUserSessions(this.usersRepository, this.sessionVersionMarkerStore, user.id);
 			await this.tokensRepository.delete(tokenRecord.id);
 		});
 	}

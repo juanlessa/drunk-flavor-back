@@ -19,6 +19,7 @@ import { TokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
 import { CredentialsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Credentials.repository';
 import { ObjectId } from 'mongodb';
+import { SessionVersionMarkerStoreInMemory } from '@/core/accounts/stores/inMemory/SessionVersionMarker.store';
 
 let cryptoProvider: ICryptoProvider;
 let hashProvider: IHashProvider;
@@ -50,6 +51,7 @@ describe('Confirm Password', () => {
 			hashProvider,
 			cryptoProvider,
 			new FakeTransactionManager(),
+			new SessionVersionMarkerStoreInMemory(),
 		);
 	});
 
@@ -57,7 +59,7 @@ describe('Confirm Password', () => {
 		vi.useRealTimers();
 	});
 
-	it('Should be able to confirm the password', async () => {
+	it('replaces the password and invalidates existing sessions', async () => {
 		const hashedPassword = await hashProvider.hash(password);
 		const createdUser = await usersRepository.create({
 			name,
@@ -84,7 +86,7 @@ describe('Confirm Password', () => {
 		});
 
 		const verifyUser = (await usersRepository.findById(createdUser.id)) as User;
-		expect(verifyUser).toBeDefined();
+		expect(verifyUser).not.toBeNull();
 		expect(verifyUser.sessionVersion).toBe(createdUser.sessionVersion + 1);
 
 		const verifyCredential = await credentialsRepository.findByUserId(createdUser.id);
@@ -93,7 +95,7 @@ describe('Confirm Password', () => {
 		expect(await hashProvider.compare(updatedPassword, verifyCredential!.passwordHash)).toBe(true);
 	});
 
-	it('should not be able to confirm the password using a nonexisting token', async () => {
+	it('rejects an unknown reset token', async () => {
 		await expect(
 			service.execute({
 				token: 'non-existing-token',
@@ -102,7 +104,7 @@ describe('Confirm Password', () => {
 		).rejects.toBeInstanceOf(BadRequestError);
 	});
 
-	it('should not be able to confirm the password using a expired token', async () => {
+	it('rejects an expired reset token', async () => {
 		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
@@ -126,7 +128,7 @@ describe('Confirm Password', () => {
 		expect(findToken).toBeNull();
 	});
 
-	it('Should not be able to confirm the password of a nonexistent user', async () => {
+	it('rejects a reset token whose user no longer exists', async () => {
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		const nonexistentUserId = new ObjectId().toString();
 		await tokensRepository.create({

@@ -1,5 +1,5 @@
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
-import { UserStatuses } from '@/core/accounts/constants/user.constants';
+import { hasUsableSessionStatus } from '@/core/accounts/policies/SessionVersion.policy';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { UnauthorizedError } from '@/shared/error/error.lib';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
@@ -20,12 +20,7 @@ export class ReauthenticatePasswordService {
 		const passwordHash = credential?.passwordHash ?? (await this.hashProvider.getDummyHash());
 		const passwordMatches = await this.hashProvider.compare(password, passwordHash);
 
-		if (
-			!user ||
-			(user.status !== UserStatuses.active && user.status !== UserStatuses.incomplete_profile) ||
-			!credential ||
-			!passwordMatches
-		) {
+		if (!user || !hasUsableSessionStatus(user.status) || !credential || !passwordMatches) {
 			throw new UnauthorizedError('apiResponses.profile.invalidReauthentication', {
 				path: 'ReauthenticatePassword.service',
 				cause: !user ? 'User does not exist' : 'Password credential is missing or invalid',

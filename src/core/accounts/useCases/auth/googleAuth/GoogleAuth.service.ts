@@ -10,6 +10,7 @@ import { User } from '@/core/accounts/entities/user.entity';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { Roles } from '@/shared/accessControl/roles';
 import { IdentityProviderSubjectAlreadyExistsError } from '@/core/accounts/errors/identity.errors';
+import { hasUsableSessionStatus } from '@/core/accounts/policies/SessionVersion.policy';
 
 type GoogleAuthResult = {
 	user: {
@@ -63,6 +64,7 @@ export class GoogleAuthService {
 				cause: 'identity references a missing user',
 			});
 		}
+		this.assertCanStartSession(user, 'GoogleAuth.service.linkedIdentityStatus');
 
 		await this.identitiesRepository.touchLastLogin(identity.id, authenticatedAt);
 
@@ -74,6 +76,20 @@ export class GoogleAuthService {
 				sessionVersion: user.sessionVersion,
 			},
 		};
+	}
+
+	/**
+	 * Mirrors the password sign-in gate: a user whose status cannot hold a session (for example `suspended`) must not
+	 * receive one. Incomplete profiles are allowed because Google sign-up creates them and they rely on Google to sign
+	 * in. The response stays opaque so it cannot be used to discover account status.
+	 */
+	private assertCanStartSession(user: User, path: string): void {
+		if (!hasUsableSessionStatus(user.status)) {
+			throw new UnauthorizedError('apiResponses.auth.invalidCredentials', {
+				path,
+				cause: 'inactive account',
+			});
+		}
 	}
 
 	private requireVerifiedEmailForGoogleSignup(googleProfile: VerifiedGoogleIdentity): string {
@@ -162,6 +178,7 @@ export class GoogleAuthService {
 		if (!user) {
 			throw error;
 		}
+		this.assertCanStartSession(user, 'GoogleAuth.service.concurrentIdentityStatus');
 
 		return {
 			user: {

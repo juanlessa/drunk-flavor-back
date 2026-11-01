@@ -6,6 +6,8 @@ import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { IGoogleTokenVerifier } from '@/shared/providers/googleAuth/IGoogleTokenVerifier';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { LinkGoogleIdentity, LinkGoogleIdentityResult } from './linkGoogleIdentity.dtos';
+import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
+import { invalidateUserSessions } from '@/core/accounts/helpers/sessionInvalidation.helpers';
 
 export class LinkGoogleIdentityService {
 	constructor(
@@ -14,6 +16,7 @@ export class LinkGoogleIdentityService {
 		private googleTokenVerifier: IGoogleTokenVerifier,
 		private dateProvider: IDateProvider,
 		private transactionManager: ITransactionManager,
+		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
 	) {}
 
 	async execute({ userId, idToken }: LinkGoogleIdentity): Promise<LinkGoogleIdentityResult> {
@@ -61,10 +64,11 @@ export class LinkGoogleIdentityService {
 				pictureUrl: googleIdentity.pictureUrl,
 				lastLoginAt: this.dateProvider.dateNow(),
 			});
-			const updatedUser = await this.usersRepository.update({
-				id: userId,
-				sessionVersion: user.sessionVersion + 1,
-			});
+			const updatedUser = await invalidateUserSessions(
+				this.usersRepository,
+				this.sessionVersionMarkerStore,
+				userId,
+			);
 			return { user: updatedUser };
 		});
 	}

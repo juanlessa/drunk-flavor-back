@@ -22,15 +22,19 @@ import { NotFoundError } from '@/shared/error/error.lib';
 import { logger } from '@/shared/providers/logger';
 import { MockEmailQueueProvider } from '@/shared/providers/queue/email/implementations/MockEmailQueue.provider';
 import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
-import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
+import {
+	MOCK_TEMPLATE_HTML,
+	MockTemplateProvider,
+} from '@/shared/providers/template/implementations/MockTemplate.provider';
 import { ITransactionManager, TransactionWork } from '@/shared/transactions/ITransactionManager';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { RevokeUserSessionsService } from './RevokeUserSessions.service';
+import { SessionVersionMarkerStoreInMemory } from '@/core/accounts/stores/inMemory/SessionVersionMarker.store';
 
 const reason = 'Security review requires ending every existing session';
 let usersRepository: UsersRepositoryInMemory;
 let eventsRepository: AdministrativeEventsRepositoryInMemory;
-let templateProvider: ITemplateProvider;
+let templateProvider: MockTemplateProvider;
 let emailQueueProvider: MockEmailQueueProvider;
 let service: RevokeUserSessionsService;
 
@@ -41,18 +45,13 @@ const createService = (transactionManager: ITransactionManager = new FakeTransac
 		eventsRepository,
 		templateProvider,
 		emailQueueProvider,
+		new SessionVersionMarkerStoreInMemory(),
 	);
 
 beforeEach(() => {
 	usersRepository = new UsersRepositoryInMemory();
 	eventsRepository = new AdministrativeEventsRepositoryInMemory();
-	templateProvider = {
-		emailVerification: vi.fn(async () => 'verification-template'),
-		forgotPassword: vi.fn(async () => 'password-template'),
-		ownershipTransferInvitation: vi.fn(async () => 'invitation-template'),
-		ownershipTransferChanged: vi.fn(async () => 'changed-template'),
-		userSessionsRevoked: vi.fn(async () => '<html>security notice</html>'),
-	};
+	templateProvider = new MockTemplateProvider();
 	emailQueueProvider = new MockEmailQueueProvider();
 	service = createService();
 });
@@ -72,7 +71,7 @@ const createParticipants = async (targetStatus: UserStatus = UserStatuses.active
 	return { actor, target };
 };
 
-describe('RevokeUserSessionsService', () => {
+describe('Revoke User Sessions', () => {
 	it.each([UserStatuses.active, UserStatuses.suspended])(
 		'increments and audits an eligible %s target before enqueueing one private notification',
 		async (status) => {
@@ -107,7 +106,7 @@ describe('RevokeUserSessionsService', () => {
 				to: target.email,
 				from: MAIL_SENDERS.noReply,
 				subject: 'Your Drunk Flavor sessions were ended',
-				html: '<html>security notice</html>',
+				html: MOCK_TEMPLATE_HTML.userSessionsRevoked,
 			});
 			const templateInput = vi.mocked(templateProvider.userSessionsRevoked).mock.calls[0][0];
 			const queueInput = emailQueueProvider.addMock.mock.calls[0][1];
@@ -189,7 +188,7 @@ describe('RevokeUserSessionsService', () => {
 
 	it('rejects a stale actor session before target effects', async () => {
 		const { actor, target } = await createParticipants();
-		await usersRepository.update({ id: actor.id, sessionVersion: actor.sessionVersion + 1 });
+		await usersRepository.incrementSessionVersion(actor.id);
 
 		await expect(
 			service.execute({
@@ -248,21 +247,37 @@ describe('RevokeUserSessionsService', () => {
 		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 
-	it('rejects increment and event failures without notification', async () => {
+	it('propagates an increment failure without auditing or notifying', async () => {
 		const { actor, target } = await createParticipants();
-		const command = {
-			id: target.id,
-			reason,
-			actor: { id: actor.id, role: actor.role, sessionVersion: actor.sessionVersion },
-		};
 		const incrementFailure = new Error('increment failed');
 		vi.spyOn(usersRepository, 'incrementSessionVersion').mockRejectedValueOnce(incrementFailure);
-		await expect(service.execute(command)).rejects.toBe(incrementFailure);
-		expect(eventsRepository.collection).toHaveLength(0);
 
+		await expect(
+			service.execute({
+				id: target.id,
+				reason,
+				actor: { id: actor.id, role: actor.role, sessionVersion: actor.sessionVersion },
+			}),
+		).rejects.toBe(incrementFailure);
+
+		expect(eventsRepository.collection).toHaveLength(0);
+		expect(templateProvider.userSessionsRevoked).not.toHaveBeenCalled();
+		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
+	});
+
+	it('propagates an audit event failure without notifying', async () => {
+		const { actor, target } = await createParticipants();
 		const eventFailure = new Error('event failed');
 		vi.spyOn(eventsRepository, 'create').mockRejectedValueOnce(eventFailure);
-		await expect(service.execute(command)).rejects.toBe(eventFailure);
+
+		await expect(
+			service.execute({
+				id: target.id,
+				reason,
+				actor: { id: actor.id, role: actor.role, sessionVersion: actor.sessionVersion },
+			}),
+		).rejects.toBe(eventFailure);
+
 		expect(templateProvider.userSessionsRevoked).not.toHaveBeenCalled();
 		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
 	});

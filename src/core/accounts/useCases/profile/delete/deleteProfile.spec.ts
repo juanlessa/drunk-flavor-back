@@ -23,6 +23,7 @@ import { MockStorageProvider } from '@/shared/providers/storage/implementations/
 import { AdministrativeEventsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/AdministrativeEvents.repository';
 import { AdministrativeEventActions } from '@/core/accounts/constants/administrativeEvent.constants';
 import { IEngagementModule } from '@/core/engagement/public';
+import { SessionVersionMarkerStoreInMemory } from '@/core/accounts/stores/inMemory/SessionVersionMarker.store';
 
 let cryptoProvider: NodeCryptoProvider;
 let usersRepository: IUsersRepository;
@@ -55,10 +56,11 @@ describe('Delete Profile', () => {
 			storageProvider,
 			administrativeEventsRepository,
 			engagementModule,
+			new SessionVersionMarkerStoreInMemory(),
 		);
 	});
 
-	it('should be able to delete the profile', async () => {
+	it('deletes the profile, its comments, and records the closure', async () => {
 		const createdUser = await usersRepository.create(userData);
 
 		await service.execute({ id: createdUser.id });
@@ -77,12 +79,12 @@ describe('Delete Profile', () => {
 		]);
 	});
 
-	it('should not be able to delete a nonexistent profile', async () => {
+	it('rejects a nonexistent profile', async () => {
 		const nonexistentId = new ObjectId().toString();
 		await expect(service.execute({ id: nonexistentId })).rejects.toBeInstanceOf(NotFoundError);
 	});
 
-	it('should delete the profile together with its tokens, credential and identities', async () => {
+	it('deletes the tokens, credential, and identities of the profile', async () => {
 		const createdUser = await usersRepository.create(userData);
 		const userId = createdUser.id;
 

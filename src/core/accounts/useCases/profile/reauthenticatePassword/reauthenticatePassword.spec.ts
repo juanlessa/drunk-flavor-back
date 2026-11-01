@@ -29,7 +29,7 @@ beforeEach(() => {
 	);
 });
 
-describe('ReauthenticatePasswordService', () => {
+describe('Reauthenticate Password', () => {
 	it.each([UserStatuses.active, UserStatuses.incomplete_profile])(
 		'accepts a matching credential for a %s user',
 		async (status) => {

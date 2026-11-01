@@ -1,5 +1,5 @@
 import { IdentityProviders } from '@/core/accounts/constants/identity.constants';
-import { UserStatuses } from '@/core/accounts/constants/user.constants';
+import { hasUsableSessionStatus } from '@/core/accounts/policies/SessionVersion.policy';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.repository';
 import { UnauthorizedError } from '@/shared/error/error.lib';
@@ -27,12 +27,7 @@ export class ReauthenticateGoogleService {
 			googleIdentity.subject,
 		);
 
-		if (
-			!user ||
-			(user.status !== UserStatuses.active && user.status !== UserStatuses.incomplete_profile) ||
-			!identity ||
-			identity.userId !== userId
-		) {
+		if (!user || !hasUsableSessionStatus(user.status) || !identity || identity.userId !== userId) {
 			throw new UnauthorizedError('apiResponses.profile.invalidReauthentication', {
 				path: 'ReauthenticateGoogle.service',
 				cause: 'Google identity is not linked to the authenticated user',

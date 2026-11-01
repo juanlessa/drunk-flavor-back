@@ -11,6 +11,7 @@ import { resolveDateProvider } from '@/shared/providers/date';
 import { resolveEmailQueueProvider } from '@/shared/providers/queue/email';
 import { resolveTemplateProvider } from '@/shared/providers/template';
 import { AcceptOwnershipTransferService } from './AcceptOwnershipTransfer.service';
+import { resolveSessionVersionMarkerStore } from '@/core/accounts/infra/redis/container';
 
 const service = new AcceptOwnershipTransferService(
 	resolveUsersRepository(),
@@ -23,6 +24,7 @@ const service = new AcceptOwnershipTransferService(
 	resolveTransactionManager(),
 	resolveTemplateProvider(),
 	resolveEmailQueueProvider(),
+	resolveSessionVersionMarkerStore(),
 );
 
 export const resolveAcceptOwnershipTransferService = () => service;

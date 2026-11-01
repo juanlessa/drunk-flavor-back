@@ -70,6 +70,8 @@ const vitestConfig = {
 	rules: {
 		...vitest.configs.recommended.rules,
 		'vitest/max-nested-describe': ['error', { max: 3 }],
+		// Assertion helpers named `expect*` (for example `expectCapabilities`) count as assertions.
+		'vitest/expect-expect': ['error', { assertFunctionNames: ['expect', 'expect*'] }],
 	},
 };
 

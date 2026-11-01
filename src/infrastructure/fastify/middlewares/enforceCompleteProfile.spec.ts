@@ -15,8 +15,9 @@ describe('enforceCompleteProfile', () => {
 	it('throws a ForbiddenError when the user has an incomplete profile', async () => {
 		const request = buildRequest(UserStatuses.incomplete_profile);
 
-		await expect(enforceCompleteProfile(request, reply)).rejects.toBeInstanceOf(ForbiddenError);
-		await expect(enforceCompleteProfile(request, reply)).rejects.toThrow('apiResponses.auth.profileIncomplete');
+		const execution = enforceCompleteProfile(request, reply);
+		await expect(execution).rejects.toBeInstanceOf(ForbiddenError);
+		await expect(execution).rejects.toThrow('apiResponses.auth.profileIncomplete');
 	});
 
 	it('resolves without throwing for a complete (active) user', async () => {

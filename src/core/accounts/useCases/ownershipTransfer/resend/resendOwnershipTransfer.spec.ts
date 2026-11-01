@@ -13,7 +13,10 @@ import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/U
 import { Roles } from '@/shared/accessControl/roles';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { NativeDateProvider } from '@/shared/providers/date/implementations/NativeDate.provider';
-import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
+import {
+	MOCK_TEMPLATE_HTML,
+	MockTemplateProvider,
+} from '@/shared/providers/template/implementations/MockTemplate.provider';
 import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
 import { MockEmailQueueProvider } from '@/shared/providers/queue/email/implementations/MockEmailQueue.provider';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
@@ -64,13 +67,7 @@ describe('Resend Ownership Transfer', () => {
 			generateToken: vi.fn(async () => 'plain-token'),
 			hashToken: vi.fn((token: string) => `hash:${token}`),
 		};
-		const templateProvider: ITemplateProvider = {
-			emailVerification: vi.fn(async () => 'verification-template'),
-			forgotPassword: vi.fn(async () => 'password-template'),
-			ownershipTransferInvitation: vi.fn(async () => 'invitation-template'),
-			ownershipTransferChanged: vi.fn(async () => 'changed-template'),
-			userSessionsRevoked: vi.fn(async () => 'sessions-revoked-template'),
-		};
+		const templateProvider: MockTemplateProvider = new MockTemplateProvider();
 		emailQueueProvider = new MockEmailQueueProvider();
 		service = new ResendOwnershipTransferService(
 			usersRepository,

@@ -16,6 +16,7 @@ import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { Roles } from '@/shared/accessControl/roles';
 import { DeleteProfile } from './deleteProfile.dtos';
+import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
 
 export class DeleteProfileService {
 	constructor(
@@ -27,6 +28,7 @@ export class DeleteProfileService {
 		private storageProvider: IStorageProvider,
 		private administrativeEventsRepository: IAdministrativeEventsRepository,
 		private engagementModule: IEngagementModule,
+		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
 	) {}
 
 	async execute({ id, administrativeContext }: DeleteProfile): Promise<void> {
@@ -51,6 +53,7 @@ export class DeleteProfileService {
 				tokensRepository: this.tokensRepository,
 				administrativeEventsRepository: this.administrativeEventsRepository,
 				engagementModule: this.engagementModule,
+				sessionVersionMarkerStore: this.sessionVersionMarkerStore,
 			});
 			return user;
 		});

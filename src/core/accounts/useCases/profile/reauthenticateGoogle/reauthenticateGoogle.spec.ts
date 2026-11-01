@@ -17,7 +17,7 @@ let verifier: FakeGoogleTokenVerifier;
 let dateProvider: IDateProvider;
 let service: ReauthenticateGoogleService;
 
-describe('ReauthenticateGoogleService', () => {
+describe('Reauthenticate Google', () => {
 	beforeEach(() => {
 		usersRepository = new UsersRepositoryInMemory();
 		identitiesRepository = new IdentitiesRepositoryInMemory();

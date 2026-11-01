@@ -10,6 +10,7 @@ import { NativeDateProvider } from '@/shared/providers/date/implementations/Nati
 import { FakeGoogleTokenVerifier } from '@/shared/providers/googleAuth/fakes/FakeGoogleTokenVerifier';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { LinkGoogleIdentityService } from './LinkGoogleIdentity.service';
+import { SessionVersionMarkerStoreInMemory } from '@/core/accounts/stores/inMemory/SessionVersionMarker.store';
 
 let usersRepository: IUsersRepository;
 let identitiesRepository: IIdentitiesRepository;
@@ -18,7 +19,7 @@ let service: LinkGoogleIdentityService;
 
 const seedAccount = () => usersRepository.create(createUserFactory({ email: 'local@example.com' }));
 
-describe('LinkGoogleIdentityService', () => {
+describe('Link Google Identity', () => {
 	beforeEach(() => {
 		usersRepository = new UsersRepositoryInMemory();
 		identitiesRepository = new IdentitiesRepositoryInMemory();
@@ -29,6 +30,7 @@ describe('LinkGoogleIdentityService', () => {
 			verifier,
 			new NativeDateProvider(),
 			new FakeTransactionManager(),
+			new SessionVersionMarkerStoreInMemory(),
 		);
 	});
 

@@ -9,6 +9,7 @@ import { Roles } from '@/shared/accessControl/roles';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { ReactivateUserService } from './ReactivateUser.service';
+import { SessionVersionMarkerStoreInMemory } from '@/core/accounts/stores/inMemory/SessionVersionMarker.store';
 
 let usersRepository: UsersRepositoryInMemory;
 let eventsRepository: AdministrativeEventsRepositoryInMemory;
@@ -19,10 +20,15 @@ const reason = 'Administrative review completed successfully';
 beforeEach(() => {
 	usersRepository = new UsersRepositoryInMemory();
 	eventsRepository = new AdministrativeEventsRepositoryInMemory();
-	service = new ReactivateUserService(usersRepository, new FakeTransactionManager(), eventsRepository);
+	service = new ReactivateUserService(
+		usersRepository,
+		new FakeTransactionManager(),
+		eventsRepository,
+		new SessionVersionMarkerStoreInMemory(),
+	);
 });
 
-describe('ReactivateUserService', () => {
+describe('Reactivate User', () => {
 	it('reactivates a suspended managed user, revokes sessions, and records the audit event', async () => {
 		const actor = await usersRepository.create(
 			createUserFactory({ email: 'owner@example.com', role: Roles.owner }),

@@ -8,6 +8,8 @@ import { ICredentialsRepository } from '@/core/accounts/repositories/ICredential
 import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.repository';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
+import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
+import { invalidateDeletedUserSessions } from '@/core/accounts/helpers/sessionInvalidation.helpers';
 import { getManagedStoredFileName } from '@/shared/helpers/file.helpers';
 import { IEngagementModule } from '@/core/engagement/public';
 import { logger } from '@/shared/providers/logger';
@@ -36,6 +38,7 @@ type DeleteAccountDataOptions = {
 	tokensRepository: ITokensRepository;
 	administrativeEventsRepository: IAdministrativeEventsRepository;
 	engagementModule: IEngagementModule;
+	sessionVersionMarkerStore: ISessionVersionMarkerStore;
 };
 
 export const deleteAccountData = async ({
@@ -49,12 +52,14 @@ export const deleteAccountData = async ({
 	tokensRepository,
 	administrativeEventsRepository,
 	engagementModule,
+	sessionVersionMarkerStore,
 }: DeleteAccountDataOptions): Promise<void> => {
 	await engagementModule.deleteCommentsByUser(user.id);
 	await credentialsRepository.deleteByUserId(user.id);
 	await identitiesRepository.deleteByUserId(user.id);
 	await tokensRepository.deleteByUserId(user.id);
 	await usersRepository.delete(user.id);
+	await invalidateDeletedUserSessions(sessionVersionMarkerStore, user);
 	await administrativeEventsRepository.create({
 		actorId,
 		targetUserId: user.id,

@@ -7,6 +7,8 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { UpdateProfileService } from './UpdateProfile.service';
+import { SessionVersionMarkerStoreInMemory } from '@/core/accounts/stores/inMemory/SessionVersionMarker.store';
+import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 
 let usersRepository: IUsersRepository;
 let service: UpdateProfileService;
@@ -17,10 +19,14 @@ const { name: updatedName, surname: updatedSurname } = createUserFactory({ name:
 describe('Update Profile', () => {
 	beforeEach(async () => {
 		usersRepository = new UsersRepositoryInMemory();
-		service = new UpdateProfileService(usersRepository);
+		service = new UpdateProfileService(
+			usersRepository,
+			new FakeTransactionManager(),
+			new SessionVersionMarkerStoreInMemory(),
+		);
 	});
 
-	it('Should be able to update the profile', async () => {
+	it('updates the profile names', async () => {
 		const createdUser = await usersRepository.create({
 			name,
 			surname,
@@ -36,7 +42,7 @@ describe('Update Profile', () => {
 
 		const verifyUser = (await usersRepository.findById(createdUser.id)) as User;
 
-		expect(verifyUser).toBeDefined();
+		expect(verifyUser).not.toBeNull();
 		expect(verifyUser.name).toEqual(updatedName);
 		expect(verifyUser.surname).toEqual(updatedSurname);
 	});
@@ -89,7 +95,7 @@ describe('Update Profile', () => {
 		expect(verifyUser.surname).toEqual(updatedSurname);
 	});
 
-	it('should not be able to update a nonexistent profile', async () => {
+	it('rejects a nonexistent profile', async () => {
 		const nonexistentUserId = new ObjectId().toString();
 		await expect(
 			service.execute({

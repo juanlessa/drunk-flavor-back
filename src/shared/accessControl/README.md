@@ -2,9 +2,8 @@
 
 Roles & permissions.
 
-> This README describes the currently implemented access-control behavior. The approved target design for administrative
-> user management is defined in [USER_ADMINISTRATION_POLICY.md](./USER_ADMINISTRATION_POLICY.md) and will be enforced
-> incrementally in subsequent implementation stages.
+> This README lists the implemented per-route access-control behavior. The normative rules behind these tables are
+> defined in [USER_ADMINISTRATION_POLICY.md](./USER_ADMINISTRATION_POLICY.md).
 
 ### Roles
 
@@ -16,12 +15,11 @@ Roles & permissions.
 
 Owner is the single governance authority and retains the broad `manage all` CASL baseline. Admin permissions are
 explicit: content operations are enumerated, and user mutations are conditional on the concrete target and requested
-role. Generic user creation and role-update requests cannot assign Owner; ownership will be changed only by the
-dedicated transfer flow introduced in a later stage.
+role. Generic user creation and role-update requests cannot assign Owner; ownership changes only through the dedicated
+ownership-transfer flow.
 
 User routes use subject-type checks only as an early fail-fast gate. Every user administration service reloads the actor
-from persistence, and target mutations are authorized against concrete User subjects. The resource tables retain their
-legacy columns; where Owner is omitted, Owner follows the Admin column unless the section states otherwise.
+from persistence, and target mutations are authorized against concrete User subjects.
 
 ### Permissions Table
 
@@ -34,103 +32,126 @@ legacy columns; where Owner is omitted, Owner follows the Admin column unless th
 User management is Owner/Admin-only. Partner and Member have no abilities over the `User` subject, so any `/users`
 operation returns `403 Forbidden` for them. Generic create and role-update payloads reject the Owner role.
 
-| Capability                                   | Owner | Admin | Partner | Member | Anonymous |
-| -------------------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
-| Create member or partner                     |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
-| Create admin                                 |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
-| Get or list users                            |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
-| Change member ↔ partner                      |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
-| Promote member/partner to admin              |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
-| Demote admin to member/partner               |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
-| Close member or partner                      |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
-| Close admin                                  |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
-| Suspend/reactivate member or partner         |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
-| Suspend/reactivate admin                     |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
-| Suspend/reactivate owner                     |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
-| Create, change, close, or suspend owner      |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
-| Change role or close self through `/users`   |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
-| Repeat an authorized current-role assignment | No-op | No-op |   ❌    |   ❌   |    ❌     |
+| Capability                                                                                                                            | Owner | Admin | Partner | Member | Anonymous |
+| ------------------------------------------------------------------------------------------------------------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
+| Create member or partner (`POST /users`)                                                                                              |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Create admin (`POST /users`)                                                                                                          |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Get or list users (`GET /users/:id`, `GET /users`)                                                                                    |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Get administrative capabilities for a user (`GET /users/:id/administrative-capabilities`)                                             |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Change member ↔ partner (`PATCH /users/role`)                                                                                         |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Promote member/partner to admin (`PATCH /users/role`)                                                                                 |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Demote admin to member/partner (`PATCH /users/role`)                                                                                  |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Close member or partner (`POST /users/:id/closure`)                                                                                   |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Close admin (`POST /users/:id/closure`)                                                                                               |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Suspend/reactivate member or partner (`POST /users/:id/suspension`, `POST /users/:id/reactivation`)                                   |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
+| Suspend/reactivate admin (`POST /users/:id/suspension`, `POST /users/:id/reactivation`)                                               |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Suspend/reactivate owner (`POST /users/:id/suspension`, `POST /users/:id/reactivation`)                                               |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Create, change, close, or suspend owner (`POST /users`, `PATCH /users/role`, `POST /users/:id/closure`, `POST /users/:id/suspension`) |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Change role or close self (`PATCH /users/role`, `POST /users/:id/closure`)                                                            |  ❌   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Repeat an authorized current-role assignment (`PATCH /users/role`)                                                                    | No-op | No-op |   ❌    |   ❌   |    ❌     |
 
 Role-change and closure decisions use the actor and target records loaded from persistence in the same transaction as
 the mutation. A valid access token carrying a stale role cannot override the actor's current persisted role.
+
+#### Ownership transfer
+
+Ownership transfer commands are reserved for the current Owner through the `transferOwnership` ability.
+
+|                                                                      | Owner | Admin | Partner | Member | Anonymous |
+| -------------------------------------------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
+| Request transfer (`POST /administration/ownership-transfer`)         |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Resend invitation (`POST /administration/ownership-transfer/resend`) |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Cancel transfer (`DELETE /administration/ownership-transfer`)        |  ✅   |  ❌   |   ❌    |   ❌   |    ❌     |
+| Accept transfer (`POST /administration/ownership-transfer/accept`)   |  ❌   |  🟠   |   ❌    |   ❌   |    ❌     |
+
+##### Conditions
+
+- Only an active, email-verified admin with at least one authentication method can be invited.
+- Only the invited admin may accept the invitation.
 
 #### Profile (self-service)
 
 Profile operations act only on the authenticated user. They are gated by authentication (`verifyAndRenewToken`) and are
 not enforced by CASL: there is no `Profile` subject. Authenticated roles may manage their own profile, except that Owner
-cannot close the owner account before transferring ownership. Account closure through `DELETE /me` requires recent
-authentication.
+cannot close the owner account before transferring ownership. Account closure, password creation, and Google identity
+linking require recent authentication.
 
-|                                  | Owner | Admin | Partner | Member | Anonymous |
-| -------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
-| Get own profile (`/me`)          |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
-| Update own profile (`/me`)       |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
-| Close own profile (`DELETE /me`) |  ❌   |  ✅   |   ✅    |   ✅   |    ❌     |
-| Update own password              |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+|                                                                     | Owner | Admin | Partner | Member | Anonymous |
+| ------------------------------------------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
+| Get own profile (`GET /me`)                                         |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Update own profile (`PATCH /me`)                                    |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Update own avatar (`PATCH /me/avatar`)                              |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Close own profile (`DELETE /me`)                                    |  ❌   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Create own password (`POST /me/password`)                           |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Update own password (`PATCH /me/password`)                          |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Link Google identity (`POST /me/identities/google`)                 |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Reauthenticate with password (`POST /me/reauthentication/password`) |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Reauthenticate with Google (`POST /me/reauthentication/google`)     |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
 
 #### Categories
 
-|                 | Admin | Partner | Member | Anonymous |
-| --------------- | :---: | :-----: | :----: | :-------: |
-| Create category |  ✅   |   ✅    |   ❌   |    ❌     |
-| Delete category |  ✅   |   ✅    |   ❌   |    ❌     |
-| Get category    |  ✅   |   ✅    |   ✅   |    ✅     |
-| List categories |  ✅   |   ✅    |   ✅   |    ✅     |
-| Update category |  ✅   |   ✅    |   ❌   |    ❌     |
+|                                        | Owner | Admin | Partner | Member | Anonymous |
+| -------------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
+| Create category (`POST /categories`)   |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
+| Delete category (`DELETE /categories`) |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
+| Get category (`GET /categories/:id`)   |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
+| List categories (`GET /categories`)    |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
+| Update category (`PATCH /categories`)  |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
 
 #### Units
 
-|             | Admin | Partner | Member | Anonymous |
-| ----------- | :---: | :-----: | :----: | :-------: |
-| Create unit |  ✅   |   ✅    |   ❌   |    ❌     |
-| Delete unit |  ✅   |   ✅    |   ❌   |    ❌     |
-| Get unit    |  ✅   |   ✅    |   ✅   |    ✅     |
-| List units  |  ✅   |   ✅    |   ✅   |    ✅     |
-| Update unit |  ✅   |   ✅    |   ❌   |    ❌     |
+|                               | Owner | Admin | Partner | Member | Anonymous |
+| ----------------------------- | :---: | :---: | :-----: | :----: | :-------: |
+| Create unit (`POST /units`)   |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
+| Delete unit (`DELETE /units`) |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
+| Get unit (`GET /units/:id`)   |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
+| List units (`GET /units`)     |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
+| Update unit (`PATCH /units`)  |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
 
 #### Ingredients
 
-|                   | Admin | Partner | Member | Anonymous |
-| ----------------- | :---: | :-----: | :----: | :-------: |
-| Create ingredient |  ✅   |   ✅    |   ❌   |    ❌     |
-| Delete ingredient |  ✅   |   ✅    |   ❌   |    ❌     |
-| Get ingredient    |  ✅   |   ✅    |   ✅   |    ✅     |
-| List ingredients  |  ✅   |   ✅    |   ✅   |    ✅     |
-| Update ingredient |  ✅   |   ✅    |   ❌   |    ❌     |
+|                                           | Owner | Admin | Partner | Member | Anonymous |
+| ----------------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
+| Create ingredient (`POST /ingredients`)   |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
+| Delete ingredient (`DELETE /ingredients`) |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
+| Get ingredient (`GET /ingredients/:id`)   |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
+| List ingredients (`GET /ingredients`)     |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
+| Update ingredient (`PATCH /ingredients`)  |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
 
 #### Drinks
 
 The three update endpoints (`PATCH /drinks`, `PATCH /drinks/:id/cover`, `PATCH /drinks/:id/thumbnail`) are each gated by
-`verifyPermissions('update', 'Drink')`, so they share the same Admin/Partner-allowed, Member/Anonymous-denied policy.
+`verifyPermissions('update', 'Drink')`, so they share the same Owner/Admin/Partner-allowed, Member/Anonymous-denied
+policy.
 
-|                                                        | Admin | Partner | Member | Anonymous |
-| ------------------------------------------------------ | :---: | :-----: | :----: | :-------: |
-| Create drink (`POST /drinks`)                          |  ✅   |   ✅    |   ❌   |    ❌     |
-| Delete drink (`DELETE /drinks`)                        |  ✅   |   ✅    |   ❌   |    ❌     |
-| Get drink (`GET /drinks/:id`)                          |  ✅   |   ✅    |   ✅   |    ✅     |
-| List drinks (`GET /drinks`)                            |  ✅   |   ✅    |   ✅   |    ✅     |
-| Update drink (`PATCH /drinks`)                         |  ✅   |   ✅    |   ❌   |    ❌     |
-| Update drink cover (`PATCH /drinks/:id/cover`)         |  ✅   |   ✅    |   ❌   |    ❌     |
-| Update drink thumbnail (`PATCH /drinks/:id/thumbnail`) |  ✅   |   ✅    |   ❌   |    ❌     |
+|                                                        | Owner | Admin | Partner | Member | Anonymous |
+| ------------------------------------------------------ | :---: | :---: | :-----: | :----: | :-------: |
+| Create drink (`POST /drinks`)                          |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
+| Delete drink (`DELETE /drinks`)                        |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
+| Get drink (`GET /drinks/:id`)                          |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
+| List drinks (`GET /drinks`)                            |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
+| Update drink (`PATCH /drinks`)                         |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
+| Update drink cover (`PATCH /drinks/:id/cover`)         |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
+| Update drink thumbnail (`PATCH /drinks/:id/thumbnail`) |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
 
 #### Comments
 
-Public reads (`GET /comments`, `GET /comments/:id`, `GET /drinks/:drink_id/comments`) expose only `visible` comments;
+Public reads (`GET /comments`, `GET /comments/:id`, `GET /drinks/:drinkId/comments`) expose only `visible` comments;
 `hidden` and `flagged` records are treated as missing. The authenticated current-user list (`GET /me/comments`) returns
 all statuses that belong to the caller. There is no arbitrary-user listing route.
 
 Ownership for update and delete is evaluated against the stored comment loaded by its ID (concrete-subject check in the
 service), not against a subject name. Create and current-user list are role-only and use static `verifyPermissions`.
-Moderation (`PATCH /comments/:id/status`) is Admin-only.
+Moderation (`PATCH /comments/:id/status`) is Owner/Admin-only.
 
-|                 | Admin | Partner | Member | Anonymous |
-| --------------- | :---: | :-----: | :----: | :-------: |
-| Create comment  |  ✅   |   ✅    |   ✅   |    ❌     |
-| Delete comment  |  ✅   |   🟠    |   🟠   |    ❌     |
-| Get comment     |  ✅   |   ✅    |   ✅   |    ✅     |
-| List comments   |  ✅   |   ✅    |   ✅   |    ✅     |
-| Update comment  |  🟠   |   🟠    |   🟠   |    ❌     |
-| Moderate status |  ✅   |   ❌    |   ❌   |    ❌     |
+|                                                                  | Owner | Admin | Partner | Member | Anonymous |
+| ---------------------------------------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
+| Create comment (`POST /comments`)                                |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Delete comment (`DELETE /comments/:id`)                          |  ✅   |  ✅   |   🟠    |   🟠   |    ❌     |
+| Get comment (`GET /comments/:id`)                                |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
+| List comments (`GET /comments`, `GET /drinks/:drinkId/comments`) |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
+| Update comment (`PATCH /comments/:id`)                           |  🟠   |  🟠   |   🟠    |   🟠   |    ❌     |
+| Moderate status (`PATCH /comments/:id/status`)                   |  ✅   |  ✅   |   ❌    |   ❌   |    ❌     |
 
 ##### Conditions
 
@@ -141,17 +162,17 @@ Moderation (`PATCH /comments/:id/status`) is Admin-only.
 #### Ratings
 
 Rating mirrors the Comment CRUD policy. Public reads (`GET /ratings`, `GET /ratings/:id`,
-`GET /drinks/:drink_id/ratings`) require no authentication. The authenticated current-user list (`GET /me/ratings`)
+`GET /drinks/:drinkId/ratings`) require no authentication. The authenticated current-user list (`GET /me/ratings`)
 always scopes to the caller. Ownership for update and delete is evaluated against the stored rating loaded by its ID
 (concrete-subject check in the service). There is no arbitrary-user listing route.
 
-|               | Admin | Partner | Member | Anonymous |
-| ------------- | :---: | :-----: | :----: | :-------: |
-| Create rating |  ✅   |   ✅    |   ✅   |    ❌     |
-| Delete rating |  ✅   |   🟠    |   🟠   |    ❌     |
-| Get rating    |  ✅   |   ✅    |   ✅   |    ✅     |
-| List ratings  |  ✅   |   ✅    |   ✅   |    ✅     |
-| Update rating |  🟠   |   🟠    |   🟠   |    ❌     |
+|                                                               | Owner | Admin | Partner | Member | Anonymous |
+| ------------------------------------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
+| Create rating (`POST /ratings`)                               |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Delete rating (`DELETE /ratings/:id`)                         |  ✅   |  ✅   |   🟠    |   🟠   |    ❌     |
+| Get rating (`GET /ratings/:id`)                               |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
+| List ratings (`GET /ratings`, `GET /drinks/:drinkId/ratings`) |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
+| Update rating (`PATCH /ratings/:id`)                          |  🟠   |  🟠   |   🟠    |   🟠   |    ❌     |
 
 ##### Conditions
 
@@ -162,149 +183,23 @@ always scopes to the caller. Ownership for update and delete is evaluated agains
 
 Authentication endpoints are unauthenticated: they are reachable by anyone (Anonymous).
 
-|                            | Admin | Partner | Member | Anonymous |
-| -------------------------- | :---: | :-----: | :----: | :-------: |
-| Sign up                    |  ✅   |   ✅    |   ✅   |    ✅     |
-| Sign in                    |  ✅   |   ✅    |   ✅   |    ✅     |
-| Sign out                   |  ✅   |   ✅    |   ✅   |    ✅     |
-| Request password reset     |  ✅   |   ✅    |   ✅   |    ✅     |
-| Confirm password reset     |  ✅   |   ✅    |   ✅   |    ✅     |
-| Confirm email verification |  ✅   |   ✅    |   ✅   |    ✅     |
-| Resend email verification  |  ✅   |   ✅    |   ✅   |    ✅     |
-| Refresh token              |  ✅   |   ✅    |   ✅   |    ✅     |
+|                                                                 | Owner | Admin | Partner | Member | Anonymous |
+| --------------------------------------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
+| Sign up (`POST /signup`)                                        |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
+| Sign in (`POST /signin`)                                        |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
+| Sign out (`POST /signout`)                                      |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
+| Request password reset (`POST /password-reset/request`)         |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
+| Confirm password reset (`POST /password-reset/confirm`)         |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
+| Confirm email verification (`POST /email-verification/confirm`) |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
+| Resend email verification (`POST /email-verification/resend`)   |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
+| Refresh token (`POST /refresh-token`)                           |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
 
 #### Health (public probes)
 
 Health probes are unauthenticated and expose no internal details. They are used by orchestration/infrastructure to check
 liveness and readiness.
 
-|                                   | Admin | Partner | Member | Anonymous |
-| --------------------------------- | :---: | :-----: | :----: | :-------: |
-| Liveness probe (`/health/live`)   |  ✅   |   ✅    |   ✅   |    ✅     |
-| Readiness probe (`/health/ready`) |  ✅   |   ✅    |   ✅   |    ✅     |
-
-### Session freshness
-
-Every user has an internal monotonic `sessionVersion`. It is included in access tokens, refresh tokens, and the
-encrypted refresh session, but omitted from profile and user-administration responses.
-
-A role change increments the target user's version in the same transaction. An authorized assignment of the current role
-is a no-op and does not increment it.
-
-Tokens claiming `owner` or `admin` are compared with the persisted version on every authenticated request. A stale
-privileged token is rejected immediately. Tokens claiming `partner` or `member` do not add a database lookup to ordinary
-requests; they may retain their old access-token permissions after a role change or suspension until expiration, but an
-outdated refresh token cannot renew the session. A suspended account cannot sign in. Revocation returns `401` with
-`apiResponses.auth.sessionRevoked` and clears both authentication cookies.
-
-### Administrative audit
-
-Successful administrative user creation, role change, suspension, reactivation, and closure write an append-only
-`administrative_events` record in the same MongoDB transaction as the mutation. Internal expired-pending cleanup retains
-its separate `user.deleted` event. If the audit write fails, the mutation is rolled back. Authorized no-op role/status
-assignments and read operations do not create events.
-
-Events contain only actor and target IDs, action, minimal before/after role or status state, origin, optional request
-ID, optional reason, and occurrence time. They do not contain names, emails, credentials, tokens, session versions,
-request bodies, IP addresses, or user agents.
-
-Authorization denials are emitted as structured security logs and are not persisted in the audit collection. The
-application exposes no audit read/update/delete repository operations or HTTP endpoints. MongoDB removes events after
-730 days through the `administrative_event_occurred_at_ttl` index.
-
-### Suspension lifecycle
-
-Only an `active` account can transition to `suspended`, and only a `suspended` account can transition back to `active`.
-An authorized request for the current state is an idempotent no-op: it does not write the user, increment
-`sessionVersion`, or create an audit event. Pending and incomplete-profile accounts cannot use these transitions.
-
-Suspension uses `POST /users/:id/suspension`; reactivation uses `POST /users/:id/reactivation`. Both require a trimmed
-administrative reason between 10 and 500 characters. The reason is retained only in the audit event. Account content and
-relationships remain unchanged, and this stage sends no email notification.
-
-### Account closure
-
-Administrative closure uses `POST /users/:id/closure` with a required 10-500 character reason and accepts only a
-suspended target. Active users must be suspended first. Self-service closure uses `DELETE /me` and remains available to
-active, suspended, and incomplete-profile users. Both require recent authentication. Owner cannot be closed, admin
-cannot close a peer admin, and generic self-administration remains forbidden.
-
-Closure physically removes the user, credentials, identities, verification/reset tokens, and comments in one MongoDB
-transaction, then removes a managed avatar after commit. Ratings and their original `user_id` are intentionally
-retained; drink aggregates are unchanged. The surviving `user.closed` audit event stores IDs and the previous
-role/status for 730 days without names or email. A repeated request resolves as `404` after deletion (or `401` after the
-client applies the self-service cookie cleanup).
-
-By explicit bounded-staleness policy, an access token claiming `member` or `partner` may remain usable until expiration
-even after hard delete; refresh and new sign-in cannot succeed. The current self-service response clears its own access
-and refresh cookies, but other devices remain bounded by access-token lifetime.
-
-#### Future immediate revocation with Redis
-
-To remove bounded staleness later, apply a Redis watermark check inside `verifyAndRenewToken` for every authenticated
-route. This automatically covers profile routes, user administration, and authenticated category/unit/ingredient/drink,
-comment, and rating mutations without maintaining a separate route list; public unauthenticated reads need no check.
-
-Before committing closure, write `auth:min-session-version:<userId> = <currentVersion + 1>` with a TTL of
-`ACCESS_TOKEN_EXPIRES_IN_SECONDS` plus a small clock-skew allowance. Fail the closure if Redis cannot accept the
-watermark. On each authenticated request, reject and clear cookies when the token version is below the stored minimum.
-The key can expire after every access token issued before closure is guaranteed to have expired; refresh already checks
-MongoDB and fails because the user no longer exists.
-
-### Critical-operation reauthentication
-
-A password sign-in or Google sign-in starts a five-minute recent-authentication window. An authenticated user can renew
-that window with `POST /me/reauthentication/password` or `POST /me/reauthentication/google`; a hybrid account may use
-either linked method. The proof applies to all critical operations during the window.
-
-All user-administration mutations require recent authentication: create user, change role, close account, suspend, and
-reactivate. Profile closure, password creation, and Google identity linking also require it. Password update validates
-the current password inline. User/profile reads, comment moderation, catalog management, and ordinary profile/avatar
-updates do not require step-up authentication.
-
-Password and Google reauthentication failures return the opaque `apiResponses.profile.invalidReauthentication` response.
-Attempts are rate-limited and logged with user ID, method, request ID, and outcome; credentials and provider tokens are
-never logged or persisted as administrative events.
-
-Creating/updating a password, linking Google, and password reset increment `sessionVersion`. The current interactive
-session receives new access and refresh tokens after credential creation/update/linking; all other sessions become
-stale. Password reset emits no session. Credential changes consume recent authentication by removing both the original
-login timestamp and any reauthentication timestamp from the rotated session. The legacy `PATCH /update-password` alias
-is no longer exposed.
-
-Google reauthentication validates that the provider subject belongs to the current usable account. When the verified ID
-token includes `iat`, it must be within the five-minute window plus one minute of clock-skew tolerance.
-
-### Ownership transfer invitation
-
-Ownership changes use a singleton invitation workflow. `POST /administration/ownership-transfer` creates a 24-hour
-invitation for an active, email-verified admin with at least one authentication method. Only one invitation may exist;
-`POST /administration/ownership-transfer/resend` rotates its one-time token and restarts the expiry window, while
-`DELETE /administration/ownership-transfer` cancels it. All owner commands require recent authentication.
-
-The invitation token is sent only by email and stored only as a hash. The invited admin must sign in, authenticate
-recently, and call `POST /administration/ownership-transfer/accept` with the token. Owner and target session-version
-snapshots must still match. Acceptance atomically demotes the current owner to admin, promotes the target to owner,
-increments both session versions, consumes the invitation, and writes `ownership.transferred` plus `user.role_changed`
-audit events. Both users must sign in again.
-
-The `ownership_transfer_invitations` collection contains zero or one document, enforced by the
-`ownership_transfer_scope_unique` index. It also has a unique token-hash index and an `expires_at` TTL index. Expired
-records are treated as absent even before MongoDB's TTL monitor removes them. Request, resend, cancellation, and
-completion are audited; re-send uses `ownership.transfer_resent`.
-
-Invitation delivery is enqueued after the creation transaction. A queue failure is returned to the caller while the
-invitation remains available for re-send. Completion notifications to the previous and new owners are best-effort after
-commit and never roll back ownership.
-
-### On-demand administrative capabilities
-
-`GET /users/:id/administrative-capabilities` returns the actions that the current owner/admin can perform against one
-persisted target. It is read-only, requires no recent-authentication step, emits no audit event, and never replaces
-authorization in mutation endpoints.
-
-The response contains `actions` (`changeRole`, `suspend`, `reactivate`, `close`, or `requestOwnershipTransfer`) and
-`roleTransitions`. Self-targets and admin/owner targets viewed by an admin return empty arrays. Role changes are
-available only for active or suspended targets. Closure appears only for suspended targets. Ownership transfer appears
-only for an eligible admin when no valid invitation is pending; credential, identity, and invitation checks are
-performed only for that selected target. `GET /users` remains unchanged and does not calculate capabilities.
+|                                       | Owner | Admin | Partner | Member | Anonymous |
+| ------------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
+| Liveness probe (`GET /health/live`)   |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
+| Readiness probe (`GET /health/ready`) |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |

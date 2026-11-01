@@ -21,6 +21,8 @@ import {
 	enqueueOwnershipTransferChangedBestEffort,
 } from '@/core/accounts/helpers/ownershipTransfer.helpers';
 import { AcceptOwnershipTransfer } from './acceptOwnershipTransfer.dtos';
+import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
+import { invalidateUserSessions } from '@/core/accounts/helpers/sessionInvalidation.helpers';
 
 type OwnershipTransferResult = {
 	previousOwner: User;
@@ -39,6 +41,7 @@ export class AcceptOwnershipTransferService {
 		private transactionManager: ITransactionManager,
 		private templateProvider: ITemplateProvider,
 		private emailQueueProvider: IEmailQueueProvider,
+		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
 	) {}
 
 	async execute({ token, actor, administrativeContext }: AcceptOwnershipTransfer): Promise<void> {
@@ -93,16 +96,18 @@ export class AcceptOwnershipTransferService {
 				'AcceptOwnershipTransfer.service.target',
 			);
 
-			const updatedPreviousOwner = await this.usersRepository.update({
-				id: previousOwner.id,
-				role: Roles.admin,
-				sessionVersion: previousOwner.sessionVersion + 1,
-			});
-			const updatedNewOwner = await this.usersRepository.update({
-				id: newOwner.id,
-				role: Roles.owner,
-				sessionVersion: newOwner.sessionVersion + 1,
-			});
+			await this.usersRepository.update({ id: previousOwner.id, role: Roles.admin });
+			const updatedPreviousOwner = await invalidateUserSessions(
+				this.usersRepository,
+				this.sessionVersionMarkerStore,
+				previousOwner.id,
+			);
+			await this.usersRepository.update({ id: newOwner.id, role: Roles.owner });
+			const updatedNewOwner = await invalidateUserSessions(
+				this.usersRepository,
+				this.sessionVersionMarkerStore,
+				newOwner.id,
+			);
 			await this.invitationsRepository.delete(invitation.id);
 			await this.administrativeEventsRepository.create({
 				actorId: previousOwner.id,

@@ -4,6 +4,8 @@ import { BadRequestError, UnauthorizedError } from '@/shared/error/error.lib';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { UpdatePassword, UpdatePasswordResult } from './updatePassword.dtos';
+import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
+import { invalidateUserSessions } from '@/core/accounts/helpers/sessionInvalidation.helpers';
 
 export class UpdatePasswordService {
 	constructor(
@@ -11,6 +13,7 @@ export class UpdatePasswordService {
 		private credentialsRepository: ICredentialsRepository,
 		private hashProvider: IHashProvider,
 		private transactionManager: ITransactionManager,
+		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
 	) {}
 
 	async execute({ id, currentPassword, newPassword }: UpdatePassword): Promise<UpdatePasswordResult> {
@@ -36,10 +39,11 @@ export class UpdatePasswordService {
 
 			const hashedPassword = await this.hashProvider.hash(newPassword);
 			await this.credentialsRepository.update({ userId: user.id, passwordHash: hashedPassword });
-			const updatedUser = await this.usersRepository.update({
-				id: user.id,
-				sessionVersion: user.sessionVersion + 1,
-			});
+			const updatedUser = await invalidateUserSessions(
+				this.usersRepository,
+				this.sessionVersionMarkerStore,
+				user.id,
+			);
 			return { user: updatedUser };
 		});
 	}

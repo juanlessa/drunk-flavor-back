@@ -4,6 +4,8 @@ import { ConflictError, NotFoundError } from '@/shared/error/error.lib';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { CreatePassword, CreatePasswordResult } from './createPassword.dtos';
+import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
+import { invalidateUserSessions } from '@/core/accounts/helpers/sessionInvalidation.helpers';
 
 export class CreatePasswordService {
 	constructor(
@@ -11,6 +13,7 @@ export class CreatePasswordService {
 		private credentialsRepository: ICredentialsRepository,
 		private hashProvider: IHashProvider,
 		private transactionManager: ITransactionManager,
+		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
 	) {}
 
 	async execute({ userId, password }: CreatePassword): Promise<CreatePasswordResult> {
@@ -30,10 +33,11 @@ export class CreatePasswordService {
 			}
 
 			await this.credentialsRepository.create({ userId, passwordHash });
-			const updatedUser = await this.usersRepository.update({
-				id: userId,
-				sessionVersion: user.sessionVersion + 1,
-			});
+			const updatedUser = await invalidateUserSessions(
+				this.usersRepository,
+				this.sessionVersionMarkerStore,
+				userId,
+			);
 			return { user: updatedUser };
 		});
 	}

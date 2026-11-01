@@ -3,6 +3,7 @@ import { resolveTransactionManager } from '@/infrastructure/mongo/transactions';
 import { resolveDateProvider } from '@/shared/providers/date';
 import { resolveGoogleTokenVerifier } from '@/shared/providers/googleAuth';
 import { LinkGoogleIdentityService } from './LinkGoogleIdentity.service';
+import { resolveSessionVersionMarkerStore } from '@/core/accounts/infra/redis/container';
 
 const service = new LinkGoogleIdentityService(
 	resolveUsersRepository(),
@@ -10,6 +11,7 @@ const service = new LinkGoogleIdentityService(
 	resolveGoogleTokenVerifier(),
 	resolveDateProvider(),
 	resolveTransactionManager(),
+	resolveSessionVersionMarkerStore(),
 );
 
 export const resolveLinkGoogleIdentityService = () => service;

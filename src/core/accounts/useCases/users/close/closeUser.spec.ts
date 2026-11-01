@@ -27,6 +27,7 @@ import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementati
 import { MockStorageProvider } from '@/shared/providers/storage/implementations/MockStorage.provider';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { CloseUserService } from './CloseUser.service';
+import { SessionVersionMarkerStoreInMemory } from '@/core/accounts/stores/inMemory/SessionVersionMarker.store';
 
 let usersRepository: IUsersRepository;
 let tokensRepository: ITokensRepository;
@@ -75,6 +76,7 @@ describe('Close User', () => {
 			engagementModule,
 			new FakeTransactionManager(),
 			storageProvider,
+			new SessionVersionMarkerStoreInMemory(),
 		);
 	});
 

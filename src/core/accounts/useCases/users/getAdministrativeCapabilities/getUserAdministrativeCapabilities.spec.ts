@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { OWNERSHIP_TRANSFER_INVITATION_SCOPE } from '@/core/accounts/constants/ownershipTransfer.constants';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
@@ -45,13 +45,16 @@ beforeEach(() => {
 	);
 });
 
-describe('GetUserAdministrativeCapabilitiesService', () => {
+afterEach(() => {
+	vi.useRealTimers();
+});
+
+describe('Get User Administrative Capabilities', () => {
 	it('returns no administrative actions for the actor own user', async () => {
 		const owner = await usersRepository.create(createUserFactory({ role: Roles.owner }));
 
 		const result = await service.execute({ id: owner.id, actor: { id: owner.id, role: owner.role } });
 
-		expect(result).toBeDefined();
 		expectCapabilities(result, [], []);
 	});
 
@@ -63,7 +66,6 @@ describe('GetUserAdministrativeCapabilitiesService', () => {
 
 		const result = await service.execute({ id: member.id, actor: { id: admin.id, role: admin.role } });
 
-		expect(result).toBeDefined();
 		expectCapabilities(
 			result,
 			[
@@ -85,7 +87,6 @@ describe('GetUserAdministrativeCapabilitiesService', () => {
 
 		const result = await service.execute({ id: member.id, actor: { id: admin.id, role: admin.role } });
 
-		expect(result).toBeDefined();
 		expectCapabilities(
 			result,
 			[
@@ -106,7 +107,6 @@ describe('GetUserAdministrativeCapabilitiesService', () => {
 
 		const result = await service.execute({ id: peer.id, actor: { id: admin.id, role: admin.role } });
 
-		expect(result).toBeDefined();
 		expectCapabilities(result, [], []);
 	});
 
@@ -121,7 +121,6 @@ describe('GetUserAdministrativeCapabilitiesService', () => {
 
 		const result = await service.execute({ id: target.id, actor: { id: owner.id, role: owner.role } });
 
-		expect(result).toBeDefined();
 		expectCapabilities(
 			result,
 			[

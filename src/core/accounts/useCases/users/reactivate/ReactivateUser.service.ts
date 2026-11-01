@@ -13,12 +13,15 @@ import {
 	findRequiredAdministrationUser,
 	toAdministrationActor,
 } from '@/core/accounts/helpers/userAdministration.helpers';
+import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
+import { invalidateUserSessions } from '@/core/accounts/helpers/sessionInvalidation.helpers';
 
 export class ReactivateUserService {
 	constructor(
 		private usersRepository: IUsersRepository,
 		private transactionManager: ITransactionManager,
 		private administrativeEventsRepository: IAdministrativeEventsRepository,
+		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
 		private userAdministrationPolicy = new UserAdministrationPolicy(),
 	) {}
 
@@ -50,11 +53,8 @@ export class ReactivateUserService {
 				return;
 			}
 
-			await this.usersRepository.update({
-				id: target.id,
-				status: UserStatuses.active,
-				sessionVersion: target.sessionVersion + 1,
-			});
+			await this.usersRepository.update({ id: target.id, status: UserStatuses.active });
+			await invalidateUserSessions(this.usersRepository, this.sessionVersionMarkerStore, target.id);
 			await this.administrativeEventsRepository.create({
 				actorId: currentActor.id,
 				targetUserId: target.id,

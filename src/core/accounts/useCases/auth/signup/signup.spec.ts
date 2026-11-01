@@ -67,7 +67,7 @@ describe('Signup', () => {
 		vi.clearAllMocks();
 	});
 
-	it('Should be able to signup', async () => {
+	it('creates a pending user', async () => {
 		await service.execute({ name, surname, email, password });
 
 		const verifyUser = (await usersRepository.findByEmail(email)) as User;
@@ -92,7 +92,7 @@ describe('Signup', () => {
 		expect(await hashProvider.compare(password, verifyCredential!.passwordHash)).toBe(true);
 	});
 
-	it('Should queue the verification email after signup', async () => {
+	it('queues the verification email', async () => {
 		await service.execute({ name, surname, email, password });
 
 		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
@@ -102,7 +102,7 @@ describe('Signup', () => {
 		);
 	});
 
-	it('Should not be able to signup an existent and active user', async () => {
+	it('rejects an email that belongs to an active user', async () => {
 		await usersRepository.create({
 			name,
 			surname,
@@ -115,7 +115,7 @@ describe('Signup', () => {
 		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 
-	it('Should not be able to signup an existent and pending user', async () => {
+	it('rejects an email that belongs to a pending user', async () => {
 		await usersRepository.create({
 			name,
 			surname,

@@ -95,7 +95,7 @@ describe('Create User', () => {
 		vi.clearAllMocks();
 	});
 
-	it('should be able to create a user when the actor is an admin', async () => {
+	it('creates a user when the actor is an admin', async () => {
 		await service.execute({ name, surname, email, password, role, actor: admin });
 
 		const verifyUser = (await usersRepository.findByEmail(email)) as User;
@@ -133,7 +133,7 @@ describe('Create User', () => {
 		]);
 	});
 
-	it('should not be able to create an existing active user', async () => {
+	it('rejects an email that belongs to an active user', async () => {
 		await usersRepository.create({
 			name,
 			surname,
@@ -148,7 +148,7 @@ describe('Create User', () => {
 		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 
-	it('should be able to create a non-active existing user if the email verification token does not exist', async () => {
+	it('replaces a pending user without a verification token', async () => {
 		await usersRepository.create({
 			name,
 			surname,
@@ -181,7 +181,7 @@ describe('Create User', () => {
 		);
 	});
 
-	it('should be able to create a non-active existing user if the email verification token is expired', async () => {
+	it('replaces a pending user whose verification token expired', async () => {
 		const createdUser = await usersRepository.create({
 			name,
 			surname,
@@ -223,7 +223,7 @@ describe('Create User', () => {
 		);
 	});
 
-	it('should not be able to create a user when the actor is a member', async () => {
+	it('rejects a member actor', async () => {
 		await expect(service.execute({ name, surname, email, password, role, actor: member })).rejects.toBeInstanceOf(
 			ForbiddenError,
 		);
@@ -232,7 +232,7 @@ describe('Create User', () => {
 		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 
-	it('should not be able to create a user when the actor is a partner', async () => {
+	it('rejects a partner actor', async () => {
 		await expect(service.execute({ name, surname, email, password, role, actor: partner })).rejects.toBeInstanceOf(
 			ForbiddenError,
 		);

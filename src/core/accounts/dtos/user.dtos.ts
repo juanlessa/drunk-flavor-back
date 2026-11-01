@@ -4,4 +4,5 @@ import { EntityMetadata } from '@/shared/types/entity.types';
 
 export type CreateUser = Omit<User, keyof EntityMetadata>;
 
-export type UpdateUser = Pick<User, 'id'> & Partial<Omit<User, keyof EntityMetadata>>;
+/** `sessionVersion` is excluded on purpose: use `IUsersRepository.incrementSessionVersion` so markers are raised. */
+export type UpdateUser = Pick<User, 'id'> & Partial<Omit<User, keyof EntityMetadata | 'sessionVersion'>>;

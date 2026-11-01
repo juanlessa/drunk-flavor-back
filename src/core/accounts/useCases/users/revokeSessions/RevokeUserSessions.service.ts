@@ -18,6 +18,8 @@ import {
 import { authorizeUserAdministration } from '@/core/accounts/helpers/userAdministrationAudit.helpers';
 import { RevokeUserSessions } from './revokeUserSessions.dtos';
 import { enqueueUserSessionsRevokedBestEffort } from '@/core/accounts/helpers/revokeUserSessionsNotification.helpers';
+import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
+import { invalidateUserSessions } from '@/core/accounts/helpers/sessionInvalidation.helpers';
 
 export class RevokeUserSessionsService {
 	constructor(
@@ -26,6 +28,7 @@ export class RevokeUserSessionsService {
 		private administrativeEventsRepository: IAdministrativeEventsRepository,
 		private templateProvider: ITemplateProvider,
 		private emailQueueProvider: IEmailQueueProvider,
+		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
 		private userAdministrationPolicy = new UserAdministrationPolicy(),
 	) {}
 
@@ -65,7 +68,11 @@ export class RevokeUserSessionsService {
 				() => this.userAdministrationPolicy.assertCanRevokeUserSessions(currentActor, target),
 			);
 
-			const updated = await this.usersRepository.incrementSessionVersion(target.id);
+			const updated = await invalidateUserSessions(
+				this.usersRepository,
+				this.sessionVersionMarkerStore,
+				target.id,
+			);
 			await this.administrativeEventsRepository.create({
 				actorId: currentActor.id,
 				targetUserId: target.id,

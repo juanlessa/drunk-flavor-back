@@ -17,6 +17,7 @@ import { UpdateUserRoleService } from './UpdateUserRole.service';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { AdministrativeEventsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/AdministrativeEvents.repository';
 import { AdministrativeEventActions } from '@/core/accounts/constants/administrativeEvent.constants';
+import { SessionVersionMarkerStoreInMemory } from '@/core/accounts/stores/inMemory/SessionVersionMarker.store';
 
 let usersRepository: IUsersRepository;
 let service: UpdateUserRoleService;
@@ -48,10 +49,11 @@ describe('Update User Role', () => {
 			usersRepository,
 			new FakeTransactionManager(),
 			administrativeEventsRepository,
+			new SessionVersionMarkerStoreInMemory(),
 		);
 	});
 
-	it('Should be able to update the role of a user', async () => {
+	it('updates the role of a user', async () => {
 		const createdPartnerUser = await usersRepository.create({
 			name,
 			surname,
@@ -77,7 +79,7 @@ describe('Update User Role', () => {
 		]);
 	});
 
-	it('Should not be able to update the role of a nonexistent user', async () => {
+	it('rejects a nonexistent user', async () => {
 		const nonexistentId = new ObjectId().toString();
 		await expect(
 			service.execute({
@@ -88,7 +90,7 @@ describe('Update User Role', () => {
 		).rejects.toBeInstanceOf(NotFoundError);
 	});
 
-	it('Should not be able to update a user role when the actor is a member', async () => {
+	it('rejects a member actor', async () => {
 		const createdPartnerUser = await usersRepository.create({
 			name,
 			surname,

@@ -7,6 +7,7 @@ import { ConfirmPasswordService } from './ConfirmPassword.service';
 import { resolveDateProvider } from '@/shared/providers/date';
 import { resolveCryptoProvider, resolveHashProvider } from '@/shared/providers/cryptography';
 import { resolveTransactionManager } from '@/infrastructure/mongo/transactions';
+import { resolveSessionVersionMarkerStore } from '@/core/accounts/infra/redis/container';
 
 const dateProvider = resolveDateProvider();
 const hashProvider = resolveHashProvider();
@@ -23,5 +24,6 @@ const confirmPasswordService = new ConfirmPasswordService(
 	hashProvider,
 	cryptoProvider,
 	resolveTransactionManager(),
+	resolveSessionVersionMarkerStore(),
 );
 export const resolveConfirmPasswordService = () => confirmPasswordService;

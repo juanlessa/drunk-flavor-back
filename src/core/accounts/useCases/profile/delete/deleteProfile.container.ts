@@ -9,6 +9,7 @@ import { resolveEngagementModule } from '@/core/engagement/public';
 import { resolveTransactionManager } from '@/infrastructure/mongo/transactions';
 import { resolveStorageProvider } from '@/shared/providers/storage';
 import { DeleteProfileService } from './DeleteProfile.service';
+import { resolveSessionVersionMarkerStore } from '@/core/accounts/infra/redis/container';
 
 const deleteProfileService = new DeleteProfileService(
 	resolveUsersRepository(),
@@ -19,6 +20,7 @@ const deleteProfileService = new DeleteProfileService(
 	resolveStorageProvider(),
 	resolveAdministrativeEventsRepository(),
 	resolveEngagementModule(),
+	resolveSessionVersionMarkerStore(),
 );
 
 export const resolveDeleteProfileService = () => deleteProfileService;

@@ -12,7 +12,7 @@ vi.mock('./revokeUserSessions.container', () => ({
 import { revokeUserSessionsController } from './revokeUserSessions.controller';
 import { revokeUserSessionsParamsSchema } from './revokeUserSessions.schema';
 
-describe('revokeUserSessionsController', () => {
+describe('Revoke User Sessions Controller', () => {
 	beforeEach(() => {
 		executeMock.mockReset();
 	});

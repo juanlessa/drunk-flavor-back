@@ -9,6 +9,7 @@ import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
 import { CreatePasswordService } from './CreatePassword.service';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
+import { SessionVersionMarkerStoreInMemory } from '@/core/accounts/stores/inMemory/SessionVersionMarker.store';
 
 let usersRepository: IUsersRepository;
 let credentialsRepository: ICredentialsRepository;
@@ -17,7 +18,7 @@ let service: CreatePasswordService;
 
 const password = 'New-password-123456';
 
-describe('CreatePasswordService', () => {
+describe('Create Password', () => {
 	beforeEach(() => {
 		usersRepository = new UsersRepositoryInMemory();
 		credentialsRepository = new CredentialsRepositoryInMemory();
@@ -27,6 +28,7 @@ describe('CreatePasswordService', () => {
 			credentialsRepository,
 			hashProvider,
 			new FakeTransactionManager(),
+			new SessionVersionMarkerStoreInMemory(),
 		);
 	});
 

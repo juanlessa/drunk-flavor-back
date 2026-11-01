@@ -33,7 +33,7 @@ beforeEach(() => {
 	service = new UpdateAvatarService(usersRepository, storageProvider);
 });
 
-describe('UpdateAvatarService', () => {
+describe('Update Avatar', () => {
 	it('uploads an image and stores its public URL', async () => {
 		const user = await usersRepository.create(createUserFactory());
 		vi.mocked(storageProvider.getFileURL).mockImplementation((name) => `https://cdn.example.com/${name}`);

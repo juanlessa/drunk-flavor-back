@@ -12,6 +12,7 @@ import { Roles } from '@/shared/accessControl/roles';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { SuspendUserService } from './SuspendUser.service';
+import { SessionVersionMarkerStoreInMemory } from '@/core/accounts/stores/inMemory/SessionVersionMarker.store';
 
 let usersRepository: UsersRepositoryInMemory;
 let eventsRepository: AdministrativeEventsRepositoryInMemory;
@@ -22,10 +23,15 @@ const reason = 'Repeated violation of community guidelines';
 beforeEach(() => {
 	usersRepository = new UsersRepositoryInMemory();
 	eventsRepository = new AdministrativeEventsRepositoryInMemory();
-	service = new SuspendUserService(usersRepository, new FakeTransactionManager(), eventsRepository);
+	service = new SuspendUserService(
+		usersRepository,
+		new FakeTransactionManager(),
+		eventsRepository,
+		new SessionVersionMarkerStoreInMemory(),
+	);
 });
 
-describe('SuspendUserService', () => {
+describe('Suspend User', () => {
 	it('suspends an active managed user, revokes sessions, and records the audit event', async () => {
 		const actor = await usersRepository.create(
 			createUserFactory({ email: 'admin@example.com', role: Roles.admin }),
@@ -83,15 +89,23 @@ describe('SuspendUserService', () => {
 		expect((await usersRepository.findById(target.id))?.status).toBe(UserStatuses.active);
 	});
 
-	it('rejects missing actors and targets consistently', async () => {
+	it('rejects a missing target', async () => {
 		const actor = await usersRepository.create(
 			createUserFactory({ email: 'admin@example.com', role: Roles.admin }),
 		);
+
 		await expect(
 			service.execute({ id: 'missing-target', reason, actor: { id: actor.id, role: actor.role } }),
 		).rejects.toBeInstanceOf(NotFoundError);
+	});
+
+	it('rejects a missing actor', async () => {
+		const target = await usersRepository.create(
+			createUserFactory({ email: 'member@example.com', role: Roles.member }),
+		);
+
 		await expect(
-			service.execute({ id: actor.id, reason, actor: { id: 'missing-actor', role: Roles.owner } }),
+			service.execute({ id: target.id, reason, actor: { id: 'missing-actor', role: Roles.owner } }),
 		).rejects.toBeInstanceOf(NotFoundError);
 	});
 });

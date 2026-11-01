@@ -37,7 +37,7 @@ describe('List Users', () => {
 		await usersRepository.create(createUser4);
 	});
 
-	it('should be able to list users', async () => {
+	it('lists users', async () => {
 		const usersFound = await service.execute({ actor: admin });
 
 		expect(usersFound.length).greaterThan(0);
@@ -45,19 +45,19 @@ describe('List Users', () => {
 		expect(usersFound.every((user) => !('sessionVersion' in user))).toBe(true);
 	});
 
-	it('should be able to list users using pagination', async () => {
+	it('paginates users', async () => {
 		const usersFound = await service.execute({ query: { page: 1, limit: 3 }, actor: admin });
 
 		expect(usersFound.length).toEqual(3);
 	});
 
-	it('should be able to list users using search term', async () => {
+	it('filters users by search term', async () => {
 		const usersFound = await service.execute({ query: { search: { email: 'part' } }, actor: admin });
 
 		expect(usersFound.length).toEqual(2);
 	});
 
-	it('should be able to list users using sort', async () => {
+	it('sorts users', async () => {
 		const usersFound = await service.execute({
 			query: { limit: 2, page: 1, sort: { email: -1 } },
 			actor: admin,
@@ -68,7 +68,7 @@ describe('List Users', () => {
 		expect(usersFound[1].email).toEqual(createUser1.email);
 	});
 
-	it('should not be able to list users when the actor is a member', async () => {
+	it('rejects a member actor', async () => {
 		await expect(service.execute({ actor: member })).rejects.toBeInstanceOf(ForbiddenError);
 	});
 });

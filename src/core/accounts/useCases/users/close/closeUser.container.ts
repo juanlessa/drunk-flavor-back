@@ -9,6 +9,7 @@ import { resolveEngagementModule } from '@/core/engagement/public';
 import { resolveTransactionManager } from '@/infrastructure/mongo/transactions';
 import { resolveStorageProvider } from '@/shared/providers/storage';
 import { CloseUserService } from './CloseUser.service';
+import { resolveSessionVersionMarkerStore } from '@/core/accounts/infra/redis/container';
 
 const closeUserService = new CloseUserService(
 	resolveUsersRepository(),
@@ -19,6 +20,7 @@ const closeUserService = new CloseUserService(
 	resolveEngagementModule(),
 	resolveTransactionManager(),
 	resolveStorageProvider(),
+	resolveSessionVersionMarkerStore(),
 );
 
 export const resolveCloseUserService = () => closeUserService;

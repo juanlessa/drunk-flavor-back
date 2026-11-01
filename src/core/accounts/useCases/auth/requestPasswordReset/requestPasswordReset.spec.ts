@@ -28,7 +28,7 @@ let service: RequestPasswordResetService;
 
 const { name, surname, email, role, status } = createUserFactory();
 
-describe('RequestPasswordReset', () => {
+describe('Request Password Reset', () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 		vi.useFakeTimers();
@@ -57,7 +57,7 @@ describe('RequestPasswordReset', () => {
 		vi.clearAllMocks();
 	});
 
-	it('Should be able to request a password reset', async () => {
+	it('stores a reset token and queues the reset email', async () => {
 		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 
 		await service.execute({ email });
@@ -76,11 +76,11 @@ describe('RequestPasswordReset', () => {
 		);
 	});
 
-	it('Should not be able to request a password reset for a nonexistent user', async () => {
+	it('rejects a nonexistent user', async () => {
 		await expect(service.execute({ email: 'invalid-email@test.com' })).rejects.toBeInstanceOf(BadRequestError);
 	});
 
-	it('Should not be able to request a password reset when it has been recently requested', async () => {
+	it('rejects a request while a recent reset token is still valid', async () => {
 		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
@@ -93,7 +93,7 @@ describe('RequestPasswordReset', () => {
 		await expect(service.execute({ email })).rejects.toBeInstanceOf(BadRequestError);
 	});
 
-	it('Should be able to request a password reset after the token expiration time', async () => {
+	it('issues a new reset token after the previous one expires', async () => {
 		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 		const initialToken = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({

@@ -30,7 +30,7 @@ describe('Get User', () => {
 		service = new GetUserService(usersRepository);
 	});
 
-	it('should be able to get a user when the actor is an admin', async () => {
+	it('returns a user to an admin actor', async () => {
 		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 
 		const result = await service.execute({ id: createdUser.id, actor: admin });
@@ -43,12 +43,12 @@ describe('Get User', () => {
 		expect(result).not.toHaveProperty('sessionVersion');
 	});
 
-	it('Should not be able to find a nonexistent user', async () => {
+	it('rejects a nonexistent user', async () => {
 		const nonexistentId = new ObjectId().toString();
 		await expect(service.execute({ id: nonexistentId, actor: admin })).rejects.toBeInstanceOf(NotFoundError);
 	});
 
-	it('should not be able to get a user when the actor is a member', async () => {
+	it('rejects a member actor', async () => {
 		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 
 		await expect(service.execute({ id: createdUser.id, actor: member })).rejects.toBeInstanceOf(ForbiddenError);
