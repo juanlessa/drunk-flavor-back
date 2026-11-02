@@ -1,4 +1,4 @@
-import { DrinkRatingSummary } from '@/shared/providers/moduleCommunication/drinks';
+import { DrinkRatingSummary } from '@/core/drinks/public';
 import { Actor } from '@/shared/accessControl/actor.types';
 import { z } from 'zod/v4';
 import { updateRatingBodySchema, updateRatingParamsSchema } from './updateRating.schema';

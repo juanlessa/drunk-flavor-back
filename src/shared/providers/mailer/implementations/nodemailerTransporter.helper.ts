@@ -1,8 +1,6 @@
-import { parseSmtpEnv } from '@/env/smtp';
+import { readSmtpConnection, type SmtpConnection } from '@/env/smtp';
 import nodemailer, { Transporter } from 'nodemailer';
 import type SMTPTransport from 'nodemailer/lib/smtp-transport';
-
-const smtp = parseSmtpEnv();
 
 /** Implicit TLS port: the connection is encrypted from the handshake. */
 const SMTP_IMPLICIT_TLS_PORT = 465;
@@ -38,20 +36,26 @@ const resolveSecurityOptions = (port: number): Partial<SMTPTransport.Options> =>
 	return {};
 };
 
-export const nodemailerTransporter = (): Transporter => {
+/**
+ * Builds the transporter for the given SMTP connection. The environment is read
+ * only when no connection is provided, at call time rather than at import time,
+ * so a connection that is only known at runtime (for example an ephemeral
+ * MailDev port) can be supplied.
+ */
+export const nodemailerTransporter = (connection: SmtpConnection = readSmtpConnection()): Transporter => {
 	const auth =
-		smtp.SMTP_USERNAME && smtp.SMTP_PASSWORD
+		connection.username && connection.password
 			? {
-					user: smtp.SMTP_USERNAME,
-					pass: smtp.SMTP_PASSWORD,
+					user: connection.username,
+					pass: connection.password,
 				}
 			: undefined;
 
 	const options: SMTPTransport.Options = {
-		host: smtp.SMTP_HOST,
-		port: smtp.SMTP_PORT,
+		host: connection.host,
+		port: connection.port,
 		auth,
-		...resolveSecurityOptions(smtp.SMTP_PORT),
+		...resolveSecurityOptions(connection.port),
 	};
 
 	return nodemailer.createTransport(options);

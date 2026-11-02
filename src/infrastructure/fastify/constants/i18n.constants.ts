@@ -1,9 +1,7 @@
-import en from '@/shared/locales/en.json';
-import { FastifyI18nOptions } from '../types/i18n.types';
+import { i18n } from '@/infrastructure/i18n';
+import type { I18nPluginOptions } from '@/infrastructure/i18n/i18n.types';
 
 export const I18N_OPTIONS = {
-	fallbackLocale: 'en',
-	messages: {
-		en,
-	},
-} satisfies FastifyI18nOptions;
+	defaultLocale: i18n.defaultLocale,
+	supportedLocales: i18n.supportedLocales,
+} satisfies I18nPluginOptions;

@@ -1,7 +1,8 @@
 import { GetDrink } from '@/core/drinks/dtos/drink.dtos';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError } from '@/shared/error/error.lib';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
+import { toDrinkView } from '@/core/drinks/mappers/drink.mappers';
 
 export class GetDrinkService {
 	constructor(
@@ -13,7 +14,7 @@ export class GetDrinkService {
 		const drink = await this.drinksRepository.findById(id);
 
 		if (!drink) {
-			throw new BadRequestError('apiResponses.drinks.notFound', { path: 'GetDrink.service' });
+			throw new NotFoundError('apiResponses.drinks.notFound', { path: 'GetDrink.service' });
 		}
 
 		if (drink.cover) {
@@ -23,6 +24,6 @@ export class GetDrinkService {
 			drink.thumbnail.url = this.storageProvider.getFileURL(drink.thumbnail.name);
 		}
 
-		return drink;
+		return toDrinkView(drink);
 	}
 }

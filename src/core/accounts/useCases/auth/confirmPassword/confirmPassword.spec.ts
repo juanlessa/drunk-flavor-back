@@ -1,13 +1,14 @@
 import { User } from '@/core/accounts/entities/user.entity';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { BcryptHashProvider } from '@/shared/providers/cryptography/implementations/BcryptHash.provider';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { ConfirmPasswordService } from './ConfirmPassword.service';
+import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
 import { DayjsProvider } from '@/shared/providers/date/implementations/Dayjs.provider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
@@ -18,6 +19,7 @@ import { TokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
 import { CredentialsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Credentials.repository';
 import { ObjectId } from 'mongodb';
+import { SessionVersionMarkerStoreInMemory } from '@/core/accounts/stores/inMemory/SessionVersionMarker.store';
 
 let cryptoProvider: ICryptoProvider;
 let hashProvider: IHashProvider;
@@ -48,6 +50,8 @@ describe('Confirm Password', () => {
 			dateProvider,
 			hashProvider,
 			cryptoProvider,
+			new FakeTransactionManager(),
+			new SessionVersionMarkerStoreInMemory(),
 		);
 	});
 
@@ -55,7 +59,7 @@ describe('Confirm Password', () => {
 		vi.useRealTimers();
 	});
 
-	it('Should be able to confirm the password', async () => {
+	it('replaces the password and invalidates existing sessions', async () => {
 		const hashedPassword = await hashProvider.hash(password);
 		const createdUser = await usersRepository.create({
 			name,
@@ -65,15 +69,15 @@ describe('Confirm Password', () => {
 			status,
 		});
 		await credentialsRepository.create({
-			user_id: createdUser._id.toString(),
-			password_hash: hashedPassword,
+			userId: createdUser.id,
+			passwordHash: hashedPassword,
 		});
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
-			token_hash: cryptoProvider.hashToken(token),
-			user_id: createdUser._id.toString(),
+			tokenHash: cryptoProvider.hashToken(token),
+			userId: createdUser.id,
 			type: TokenTypes['forgot-password'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+			expiresAt: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		await service.execute({
@@ -81,32 +85,33 @@ describe('Confirm Password', () => {
 			password: updatedPassword,
 		});
 
-		const verifyUser = (await usersRepository.findById(createdUser._id.toString())) as User;
-		expect(verifyUser).toBeDefined();
+		const verifyUser = (await usersRepository.findById(createdUser.id)) as User;
+		expect(verifyUser).not.toBeNull();
+		expect(verifyUser.sessionVersion).toBe(createdUser.sessionVersion + 1);
 
-		const verifyCredential = await credentialsRepository.findByUserId(createdUser._id.toString());
+		const verifyCredential = await credentialsRepository.findByUserId(createdUser.id);
 		expect(verifyCredential).not.toBeNull();
-		expect(verifyCredential?.password_hash).not.toEqual(hashedPassword);
-		expect(await hashProvider.compare(updatedPassword, verifyCredential!.password_hash)).toBe(true);
+		expect(verifyCredential?.passwordHash).not.toEqual(hashedPassword);
+		expect(await hashProvider.compare(updatedPassword, verifyCredential!.passwordHash)).toBe(true);
 	});
 
-	it('should not be able to confirm the password using a nonexisting token', async () => {
+	it('rejects an unknown reset token', async () => {
 		await expect(
 			service.execute({
 				token: 'non-existing-token',
 				password: updatedPassword,
 			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(NotFoundError);
 	});
 
-	it('should not be able to confirm the password using a expired token', async () => {
+	it('rejects an expired reset token', async () => {
 		const createdUser = await usersRepository.create({ name, surname, email, role, status });
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
-			token_hash: cryptoProvider.hashToken(token),
-			user_id: createdUser._id.toString(),
+			tokenHash: cryptoProvider.hashToken(token),
+			userId: createdUser.id,
 			type: TokenTypes['forgot-password'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+			expiresAt: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		vi.advanceTimersByTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);
@@ -123,14 +128,14 @@ describe('Confirm Password', () => {
 		expect(findToken).toBeNull();
 	});
 
-	it('Should not be able to confirm the password of a nonexistent user', async () => {
+	it('rejects a reset token whose user no longer exists', async () => {
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		const nonexistentUserId = new ObjectId().toString();
 		await tokensRepository.create({
-			token_hash: cryptoProvider.hashToken(token),
-			user_id: nonexistentUserId,
+			tokenHash: cryptoProvider.hashToken(token),
+			userId: nonexistentUserId,
 			type: TokenTypes['forgot-password'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+			expiresAt: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		await expect(
@@ -138,6 +143,6 @@ describe('Confirm Password', () => {
 				token,
 				password: updatedPassword,
 			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(NotFoundError);
 	});
 });

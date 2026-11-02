@@ -1,14 +1,9 @@
 import { Controller } from '@/infrastructure/fastify/types/fastify.types';
-import { resolveUpdateCategoryService } from './updateCategory.container';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
+import { resolveUpdateCategoryService } from './updateCategory.container';
 import { UpdateCategoryReqBody } from './updateCategory.dtos';
 
 export const updateCategoryController: Controller<{ Body: UpdateCategoryReqBody }> = async (request, reply) => {
-	const { id, translations, is_alcoholic } = request.body;
-
-	const service = resolveUpdateCategoryService();
-
-	await service.execute({ id, translations, is_alcoholic });
-
+	await resolveUpdateCategoryService().execute(request.body);
 	return reply.status(HTTP_STATUS.no_content).send();
 };

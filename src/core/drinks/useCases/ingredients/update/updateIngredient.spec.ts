@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb';
 import { UpdateIngredientService } from './UpdateIngredient.service';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Units.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError, ConflictError, BadRequestError } from '@/shared/error/error.lib';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
@@ -46,11 +46,11 @@ describe('Update Ingredient', () => {
 
 		createdCategory = await categoriesRepository.create({
 			translations: categoryTranslations,
-			is_alcoholic: false,
+			isAlcoholic: false,
 		});
 		updatedCategory = await categoriesRepository.create({
 			translations: updatedCategoryTranslations,
-			is_alcoholic: false,
+			isAlcoholic: false,
 		});
 		createdUnit = await unitsRepository.create(createUnitFactory());
 		updatedUnit = await unitsRepository.create(
@@ -65,15 +65,13 @@ describe('Update Ingredient', () => {
 
 	it('should be able to update an ingredient', async () => {
 		await service.execute({
-			id: createdIngredient._id.toString(),
+			id: createdIngredient.id,
 			translations: updatedTranslations,
-			category_id: updatedCategory._id.toString(),
-			unit_id: updatedUnit._id.toString(),
+			categoryId: updatedCategory.id,
+			unitId: updatedUnit.id,
 		});
 
-		const findUpdatedIngredient = (await ingredientsRepository.findById(
-			createdIngredient._id.toString(),
-		)) as Ingredient;
+		const findUpdatedIngredient = (await ingredientsRepository.findById(createdIngredient.id)) as Ingredient;
 
 		expect(findUpdatedIngredient.translations).toEqual(updatedTranslations);
 		expect(findUpdatedIngredient.category).toEqual(updatedCategory);
@@ -85,10 +83,10 @@ describe('Update Ingredient', () => {
 			service.execute({
 				id: new ObjectId().toString(),
 				translations: updatedTranslations,
-				category_id: updatedCategory._id.toString(),
-				unit_id: updatedUnit._id.toString(),
+				categoryId: updatedCategory.id,
+				unitId: updatedUnit.id,
 			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('should not be able to update an ingredient name to an existing name', async () => {
@@ -100,30 +98,30 @@ describe('Update Ingredient', () => {
 
 		await expect(
 			service.execute({
-				id: createdIngredient._id.toString(),
+				id: createdIngredient.id,
 				translations: updatedTranslations,
-				category_id: updatedCategory._id.toString(),
-				unit_id: updatedUnit._id.toString(),
+				categoryId: updatedCategory.id,
+				unitId: updatedUnit.id,
 			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(ConflictError);
 	});
 	it('should not be able to update an ingredient with a nonexistent category', async () => {
 		await expect(
 			service.execute({
-				id: createdIngredient._id.toString(),
+				id: createdIngredient.id,
 				translations: updatedTranslations,
-				category_id: new ObjectId().toString(),
-				unit_id: updatedUnit._id.toString(),
+				categoryId: new ObjectId().toString(),
+				unitId: updatedUnit.id,
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});
 	it('should not be able to update an ingredient with a nonexistent unit', async () => {
 		await expect(
 			service.execute({
-				id: createdIngredient._id.toString(),
+				id: createdIngredient.id,
 				translations: updatedTranslations,
-				category_id: updatedCategory._id.toString(),
-				unit_id: new ObjectId().toString(),
+				categoryId: updatedCategory.id,
+				unitId: new ObjectId().toString(),
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});

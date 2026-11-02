@@ -3,14 +3,14 @@ import { ObjectId } from 'mongodb';
 import { UnitsRepository } from './Units.repository';
 import { UnitModel } from '../entities/unit.model';
 import { CreateUnit } from '@/core/drinks/dtos/unit.dtos';
-import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
+import { ConflictError, NotFoundError } from '@/shared/error/error.lib';
 
 const buildUnit = (name: { en: string; pt: string }): CreateUnit => ({
 	translations: {
-		en: { name: name.en, name_plural: `${name.en}s` },
-		pt: { name: name.pt, name_plural: `${name.pt}s` },
+		en: { name: name.en, namePlural: `${name.en}s` },
+		pt: { name: name.pt, namePlural: `${name.pt}s` },
 	},
-	allow_decimal: true,
+	allowDecimal: true,
 	kind: 'volume',
 });
 
@@ -32,7 +32,7 @@ describe('UnitsRepository (integration)', () => {
 	it('returns lean documents without __v', async () => {
 		const created = await repository.create(buildUnit({ en: 'milliliter', pt: 'mililitro' }));
 
-		const byId = await repository.findById(created._id.toString());
+		const byId = await repository.findById(created.id);
 		const byName = await repository.findByName({ en: { name: 'milliliter' } });
 		const [listed] = await repository.findAll({});
 
@@ -50,24 +50,24 @@ describe('UnitsRepository (integration)', () => {
 	});
 
 	it('throws NotFoundError on update/delete of a missing id and returns the updated doc on success', async () => {
-		await expect(repository.update({ id: new ObjectId().toString(), allow_decimal: false })).rejects.toBeInstanceOf(
+		await expect(repository.update({ id: new ObjectId().toString(), allowDecimal: false })).rejects.toBeInstanceOf(
 			NotFoundError,
 		);
 		await expect(repository.delete(new ObjectId().toString())).rejects.toBeInstanceOf(NotFoundError);
 
 		const created = await repository.create(buildUnit({ en: 'milliliter', pt: 'mililitro' }));
-		const updated = await repository.update({ id: created._id.toString(), allow_decimal: false });
-		expect(updated.allow_decimal).toBe(false);
+		const updated = await repository.update({ id: created.id, allowDecimal: false });
+		expect(updated.allowDecimal).toBe(false);
 	});
 
-	it('translates a sequential duplicate en/pt name create to BadRequestError', async () => {
+	it('translates a sequential duplicate en/pt name create to ConflictError', async () => {
 		await repository.create(buildUnit({ en: 'milliliter', pt: 'mililitro' }));
 
 		await expect(repository.create(buildUnit({ en: 'milliliter', pt: 'outro' }))).rejects.toBeInstanceOf(
-			BadRequestError,
+			ConflictError,
 		);
 		await expect(repository.create(buildUnit({ en: 'other', pt: 'mililitro' }))).rejects.toBeInstanceOf(
-			BadRequestError,
+			ConflictError,
 		);
 	});
 
@@ -80,18 +80,18 @@ describe('UnitsRepository (integration)', () => {
 		expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
 		const rejected = results.filter((result) => result.status === 'rejected') as PromiseRejectedResult[];
 		expect(rejected).toHaveLength(1);
-		expect(rejected[0].reason).toBeInstanceOf(BadRequestError);
+		expect(rejected[0].reason).toBeInstanceOf(ConflictError);
 
 		expect(await UnitModel.countDocuments({ 'translations.en.name': 'milliliter' })).toBe(1);
 	});
 
-	it('translates an update rename collision to BadRequestError', async () => {
+	it('translates an update rename collision to ConflictError', async () => {
 		await repository.create(buildUnit({ en: 'milliliter', pt: 'mililitro' }));
 		const other = await repository.create(buildUnit({ en: 'centiliter', pt: 'centilitro' }));
 
 		await expect(
-			repository.update({ id: other._id.toString(), translations: { en: { name: 'milliliter' } } }),
-		).rejects.toBeInstanceOf(BadRequestError);
+			repository.update({ id: other.id, translations: { en: { name: 'milliliter' } } }),
+		).rejects.toBeInstanceOf(ConflictError);
 	});
 
 	it('orders findAll deterministically with the _id tie-breaker under equal sort keys', async () => {
@@ -101,10 +101,10 @@ describe('UnitsRepository (integration)', () => {
 			ids.map((id, index) => ({
 				_id: id,
 				translations: {
-					en: { name: `Unit ${index}`, name_plural: `Unit ${index}s` },
-					pt: { name: `Unit PT ${index}`, name_plural: `Unit PT ${index}s` },
+					en: { name: `Unit ${index}`, namePlural: `Unit ${index}s` },
+					pt: { name: `Unit PT ${index}`, namePlural: `Unit PT ${index}s` },
 				},
-				allow_decimal: true,
+				allowDecimal: true,
 				kind: 'volume',
 				created_at: sharedDate,
 				updated_at: sharedDate,
@@ -116,8 +116,8 @@ describe('UnitsRepository (integration)', () => {
 		const firstPage = await repository.findAll({ page: 1, limit: 2, sort: { created_at: -1 } });
 		const secondPage = await repository.findAll({ page: 2, limit: 2, sort: { created_at: -1 } });
 
-		expect(firstPage.map((item) => item._id.toString())).toEqual(expectedOrder.slice(0, 2));
-		expect(secondPage.map((item) => item._id.toString())).toEqual(expectedOrder.slice(2, 3));
+		expect(firstPage.map((item) => item.id)).toEqual(expectedOrder.slice(0, 2));
+		expect(secondPage.map((item) => item.id)).toEqual(expectedOrder.slice(2, 3));
 	});
 
 	it('succeeds with no sort supplied', async () => {

@@ -5,7 +5,7 @@ import { GetMineByDrinkCommand } from './getMineByDrink.dtos';
 export class GetMineByDrinkService {
 	constructor(private ratingsRepository: IRatingsRepository) {}
 
-	async execute({ drink_id, actor }: GetMineByDrinkCommand): Promise<Rating | null> {
-		return this.ratingsRepository.findByDrinkAndUser(drink_id, actor.id);
+	async execute({ drinkId, actor }: GetMineByDrinkCommand): Promise<Rating | null> {
+		return this.ratingsRepository.findByDrinkAndUser(drinkId, actor.id);
 	}
 }

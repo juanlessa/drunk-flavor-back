@@ -25,6 +25,7 @@ export default defineConfig({
 				'src/infrastructure/mongo/helpers/duplicateKey.helpers.ts',
 				'src/infrastructure/mongo/helpers/mongoose.helpers.ts',
 				'src/infrastructure/mongo/helpers/query.helpers.ts',
+				'src/infrastructure/maildev/MailDevServer.ts',
 				'src/infrastructure/mongo/MongoConnection.ts',
 				'src/infrastructure/redis/RedisConnection.ts',
 				'src/infrastructure/redis/RedisRateLimit.store.ts',

@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { ConflictError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
@@ -67,7 +67,7 @@ describe('Signup', () => {
 		vi.clearAllMocks();
 	});
 
-	it('Should be able to signup', async () => {
+	it('creates a pending user', async () => {
 		await service.execute({ name, surname, email, password });
 
 		const verifyUser = (await usersRepository.findByEmail(email)) as User;
@@ -79,20 +79,20 @@ describe('Signup', () => {
 		expect(verifyUser.status).toEqual(UserStatuses['pending']);
 
 		const verifyToken = (await tokensRepository.findByUserIdAndType({
-			user_id: verifyUser._id.toString(),
+			userId: verifyUser.id,
 			type: TokenTypes['email-verification'],
 		})) as Token;
 
 		expect(verifyToken).not.toBeNull();
-		expect(verifyToken.token_hash).toBeTruthy();
+		expect(verifyToken.tokenHash).toBeTruthy();
 
-		const verifyCredential = await credentialsRepository.findByUserId(verifyUser._id.toString());
+		const verifyCredential = await credentialsRepository.findByUserId(verifyUser.id);
 		expect(verifyCredential).not.toBeNull();
-		expect(verifyCredential?.password_hash).toBeTruthy();
-		expect(await hashProvider.compare(password, verifyCredential!.password_hash)).toBe(true);
+		expect(verifyCredential?.passwordHash).toBeTruthy();
+		expect(await hashProvider.compare(password, verifyCredential!.passwordHash)).toBe(true);
 	});
 
-	it('Should queue the verification email after signup', async () => {
+	it('queues the verification email', async () => {
 		await service.execute({ name, surname, email, password });
 
 		expect(emailQueueProvider.addMock).toHaveBeenCalledTimes(1);
@@ -102,7 +102,7 @@ describe('Signup', () => {
 		);
 	});
 
-	it('Should not be able to signup an existent and active user', async () => {
+	it('rejects an email that belongs to an active user', async () => {
 		await usersRepository.create({
 			name,
 			surname,
@@ -111,11 +111,11 @@ describe('Signup', () => {
 			status: UserStatuses['active'],
 		});
 
-		await expect(service.execute({ name, surname, email, password })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ name, surname, email, password })).rejects.toBeInstanceOf(ConflictError);
 		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 
-	it('Should not be able to signup an existent and pending user', async () => {
+	it('rejects an email that belongs to a pending user', async () => {
 		await usersRepository.create({
 			name,
 			surname,
@@ -124,7 +124,7 @@ describe('Signup', () => {
 			status: UserStatuses['pending'],
 		});
 
-		await expect(service.execute({ name, surname, email, password })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ name, surname, email, password })).rejects.toBeInstanceOf(ConflictError);
 		expect(emailQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 });

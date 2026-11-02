@@ -76,3 +76,25 @@ export const setFileExtension = (name: string, mimetype: string) => {
 export const getFileName = (path: string) => {
 	return path.split(FILE_PATH_SEPARATOR).pop() ?? '';
 };
+
+/**
+ * Returns the server-managed file name embedded in a public URL. External URLs
+ * (for example an OAuth provider avatar) and names owned by another record are
+ * intentionally ignored so they are never passed to the storage delete API.
+ */
+export const getManagedStoredFileName = (
+	url: string | undefined,
+	ownerId: string,
+	role: string,
+): string | undefined => {
+	if (!url) return undefined;
+
+	const pathWithoutQuery = url.split(/[?#]/, 1)[0] ?? '';
+	const name = getFileName(pathWithoutQuery);
+	const escapedOwnerId = ownerId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	const escapedRole = role.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	const imageExtensions = SUPPORTED_MIME_TYPES.image.join('|');
+	const pattern = new RegExp(`^[0-9a-f]{32}-${escapedOwnerId}-${escapedRole}\\.(${imageExtensions})$`);
+
+	return pattern.test(name) ? name : undefined;
+};

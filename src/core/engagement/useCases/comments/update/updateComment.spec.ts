@@ -3,14 +3,13 @@ import { ICommentsRepository } from '@/core/engagement/repositories/IComments.re
 import { CommentsRepositoryInMemory } from '@/core/engagement/repositories/inMemory/Comments.repository';
 import { Actor } from '@/shared/accessControl/actor.types';
 import { Roles } from '@/shared/accessControl/roles';
-import { BadRequestError, ForbiddenError } from '@/shared/error/error.lib';
+import { ForbiddenError, NotFoundError } from '@/shared/error/error.lib';
 import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateCommentService } from './UpdateComment.service';
 
 let commentsRepository: ICommentsRepository;
 let service: UpdateCommentService;
-
 const ownerId = new ObjectId().toString();
 const drinkId = new ObjectId().toString();
 const owner: Actor = { id: ownerId, role: Roles.member };
@@ -23,9 +22,9 @@ describe('Update Comment', () => {
 	});
 
 	it('updates only content and preserves status', async () => {
-		const created = await commentsRepository.create({ drink_id: drinkId, user_id: ownerId, content: 'first' });
-		await service.execute({ id: created._id.toString(), content: 'edited', actor: owner });
-		const updated = await commentsRepository.findById(created._id.toString());
+		const created = await commentsRepository.create({ drinkId, userId: ownerId, content: 'first' });
+		await service.execute({ id: created.id, content: 'edited', actor: owner });
+		const updated = await commentsRepository.findById(created.id);
 		expect(updated?.content).toBe('edited');
 		expect(updated?.status).toBe(CommentStatuses.visible);
 	});
@@ -33,13 +32,13 @@ describe('Update Comment', () => {
 	it('rejects a nonexistent comment', async () => {
 		await expect(
 			service.execute({ id: new ObjectId().toString(), content: 'x', actor: owner }),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('forbids updating a foreign comment', async () => {
-		const created = await commentsRepository.create({ drink_id: drinkId, user_id: ownerId, content: 'first' });
-		await expect(
-			service.execute({ id: created._id.toString(), content: 'x', actor: foreign }),
-		).rejects.toBeInstanceOf(ForbiddenError);
+		const created = await commentsRepository.create({ drinkId, userId: ownerId, content: 'first' });
+		await expect(service.execute({ id: created.id, content: 'x', actor: foreign })).rejects.toBeInstanceOf(
+			ForbiddenError,
+		);
 	});
 });

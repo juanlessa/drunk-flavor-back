@@ -1,20 +1,12 @@
+import { AuthenticatedSession } from '@/core/accounts/dtos/session.dtos';
+import { loadCurrentSession } from '@/core/accounts/helpers/session.helpers';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { RefreshToken } from './refreshToken.dtos';
-import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 
 export class RefreshTokenService {
 	constructor(private usersRepository: IUsersRepository) {}
 
-	async execute({ user_id }: RefreshToken) {
-		const user = await this.usersRepository.findById(user_id);
-		if (!user) {
-			throw new NotFoundError('apiResponses.users.notExist', { path: 'RefreshToken.service' });
-		}
-
-		if (user.status !== 'active') {
-			throw new BadRequestError('apiResponses.auth.inactiveAccount', { path: 'RefreshToken.service' });
-		}
-
-		return user;
+	execute({ userId, sessionVersion }: RefreshToken): Promise<AuthenticatedSession> {
+		return loadCurrentSession(this.usersRepository, { id: userId, sessionVersion }, 'RefreshToken.service');
 	}
 }

@@ -4,5 +4,5 @@ import { z } from 'zod/v4';
 
 export const createCategorySchema = z.object({
 	translations: generateTranslationsSchema(categoryTranslationSchema),
-	is_alcoholic: categoryIsAlcoholicValidation,
+	isAlcoholic: categoryIsAlcoholicValidation,
 });

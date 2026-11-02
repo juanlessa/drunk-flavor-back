@@ -32,11 +32,19 @@ const REDIS_MODE_DEFAULTS: Record<NodeEnv, InstanceMode> = {
 	e2e: 'managed',
 };
 
+const SMTP_MODE_DEFAULTS: Record<NodeEnv, InstanceMode> = {
+	development: 'external',
+	production: 'external',
+	testing: 'managed',
+	e2e: 'managed',
+};
+
 export const buildControlSchema = (nodeEnv: NodeEnv) =>
 	z.object({
 		STORAGE_TYPE: z.enum(storageTypeOptions).default(STORAGE_TYPE_DEFAULTS[nodeEnv]),
 		MONGO_MODE: z.enum(instanceModeOptions).default(MONGO_MODE_DEFAULTS[nodeEnv]),
 		REDIS_MODE: z.enum(instanceModeOptions).default(REDIS_MODE_DEFAULTS[nodeEnv]),
+		SMTP_MODE: z.enum(instanceModeOptions).default(SMTP_MODE_DEFAULTS[nodeEnv]),
 	});
 
 export type ControlSchema = z.infer<ReturnType<typeof buildControlSchema>>;

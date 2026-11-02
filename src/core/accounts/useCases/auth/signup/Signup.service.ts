@@ -5,7 +5,7 @@ import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { ConflictError } from '@/shared/error/error.lib';
 import { Signup } from './signup.dtos';
 import { env } from '@/env';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
@@ -34,12 +34,12 @@ export class SignupService {
 	async execute({ name, surname, email, password }: Signup): Promise<void> {
 		const existingUser = await this.usersRepository.findByEmail(email);
 		if (existingUser && existingUser.status === UserStatuses['active']) {
-			throw new BadRequestError('apiResponses.users.alreadyExist', {
+			throw new ConflictError('apiResponses.users.alreadyExist', {
 				path: 'Signup.service.ensureEmailIsAvailable.active',
 			});
 		}
 		if (existingUser && existingUser.status === UserStatuses['pending']) {
-			throw new BadRequestError('apiResponses.auth.emailVerificationPending', {
+			throw new ConflictError('apiResponses.auth.emailVerificationPending', {
 				path: 'Signup.service.ensureEmailIsAvailable.pending',
 			});
 		}
@@ -52,21 +52,21 @@ export class SignupService {
 				name: name,
 				surname: surname,
 				email: email,
-				email_verified: false,
+				emailVerified: false,
 				role: Roles['member'],
 				status: UserStatuses['pending'],
 			});
 
 			await this.credentialsRepository.create({
-				user_id: createdUser._id.toString(),
-				password_hash: passwordHash,
+				userId: createdUser.id,
+				passwordHash: passwordHash,
 			});
 
 			await this.tokensRepository.create({
-				token_hash: this.cryptoProvider.hashToken(token),
+				tokenHash: this.cryptoProvider.hashToken(token),
 				type: TokenTypes['email-verification'],
-				user_id: createdUser._id.toString(),
-				expires_at: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+				userId: createdUser.id,
+				expiresAt: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 			});
 
 			return createdUser;

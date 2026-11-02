@@ -1,27 +1,27 @@
-import { DatabaseCommonInfo } from '@/infrastructure/mongo/types';
+import { EntityMetadata } from '@/shared/types/entity.types';
 import { IdentityProviders } from '../constants/identity.constants';
 
 export type IdentityProvider = (typeof IdentityProviders)[keyof typeof IdentityProviders];
 
 /**
  * Identity =
- *     _id: ObjectId
- *     user_id: string (references User._id)
+ *     id: string
+ *     userId: string (references User.id)
  *     provider: IdentityProvider ("google")
- *     provider_sub: string (stable subject id from the provider; the link key)
+ *     providerSubject: string (stable subject id from the provider; the link key)
  *     email?: string (email reported by the provider; may differ from User.email)
- *     email_verified?: boolean (whether the provider verified that email)
- *     picture?: string (avatar URL reported by the provider)
- *     last_login_at?: Date
- *     created_at: Date
- *     updated_at: Date
+ *     isEmailVerified?: boolean (whether the provider verified that email)
+ *     pictureUrl?: string (avatar URL reported by the provider)
+ *     lastLoginAt?: Date
+ *     createdAt: Date
+ *     updatedAt: Date
  */
-export type Identity = DatabaseCommonInfo & {
-	user_id: string;
+export type Identity = EntityMetadata & {
+	userId: string;
 	provider: IdentityProvider;
-	provider_sub: string;
+	providerSubject: string;
 	email?: string;
-	email_verified?: boolean;
-	picture?: string;
-	last_login_at?: Date;
+	isEmailVerified?: boolean;
+	pictureUrl?: string;
+	lastLoginAt?: Date;
 };

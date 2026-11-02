@@ -6,7 +6,7 @@ import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Uni
 import { ObjectId } from 'mongodb';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DeleteDrinkService } from './DeleteDrink.service';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError } from '@/shared/error/error.lib';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
@@ -50,7 +50,7 @@ describe('Delete Drink', () => {
 
 		createdCategory = await categoriesRepository.create({
 			translations: categoryTranslations,
-			is_alcoholic: false,
+			isAlcoholic: false,
 		});
 		createdUnit = await unitsRepository.create(createUnitFactory());
 		createdIngredient = await ingredientsRepository.create({
@@ -69,28 +69,28 @@ describe('Delete Drink', () => {
 	});
 
 	it('should be able to delete a drink', async () => {
-		await service.execute({ id: createdDrink._id.toString() });
+		await service.execute({ id: createdDrink.id });
 
-		const found = await drinksRepository.findById(createdDrink._id.toString());
+		const found = await drinksRepository.findById(createdDrink.id);
 
 		expect(found).toBeNull();
 	});
 
 	it('should not be able to delete a nonexistent drink', async () => {
 		const nonexistentId = new ObjectId().toString();
-		await expect(service.execute({ id: nonexistentId })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ id: nonexistentId })).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('should be able to delete the cover and thumbnail during delete a drink', async () => {
 		await drinksRepository.update({
-			id: createdDrink._id.toString(),
+			id: createdDrink.id,
 			cover: { name: 'coverFile.png', mimetype: 'image/png', url: '' },
 			thumbnail: { name: 'thumbnailFile.jpeg', mimetype: 'image/jpeg', url: '' },
 		});
 
-		await service.execute({ id: createdDrink._id.toString() });
+		await service.execute({ id: createdDrink.id });
 
-		const found = await drinksRepository.findById(createdDrink._id.toString());
+		const found = await drinksRepository.findById(createdDrink.id);
 
 		expect(storageProvider.deleteFile).toBeCalledTimes(2);
 	});

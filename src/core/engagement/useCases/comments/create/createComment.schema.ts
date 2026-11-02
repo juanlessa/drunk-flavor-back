@@ -3,7 +3,7 @@ import { z } from 'zod/v4';
 
 export const createCommentSchema = z
 	.object({
-		drink_id: commentDrinkIdValidation,
+		drinkId: commentDrinkIdValidation,
 		content: commentContentValidation,
 	})
 	.strict();

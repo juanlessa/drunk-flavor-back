@@ -14,7 +14,7 @@ export const updateUnitSchema = z.object({
 	translations: generateTranslationsSchema(unitTranslationSchema),
 	// Omitted keeps the current symbol; `null` removes it (the unit has no symbol).
 	symbol: unitSymbolValidation.nullable().optional(),
-	space_before_symbol: unitSpaceBeforeSymbolValidation.optional(),
-	allow_decimal: unitAllowDecimalValidation,
+	spaceBeforeSymbol: unitSpaceBeforeSymbolValidation.optional(),
+	allowDecimal: unitAllowDecimalValidation,
 	kind: unitKindValidation,
 });

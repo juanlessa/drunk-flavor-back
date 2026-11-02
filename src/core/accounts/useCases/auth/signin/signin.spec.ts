@@ -21,8 +21,8 @@ const password = 'Password-12345678';
 const seedUserWithCredential = async (userStatus = status) => {
 	const user = await usersRepository.create({ name, surname, email, role, status: userStatus });
 	await credentialsRepository.create({
-		user_id: user._id.toString(),
-		password_hash: await hashProvider.hash(password),
+		userId: user.id,
+		passwordHash: await hashProvider.hash(password),
 	});
 	return user;
 };
@@ -35,7 +35,7 @@ describe('Signin', () => {
 		service = new SigninService(usersRepository, credentialsRepository, hashProvider);
 	});
 
-	it('should be able to signin', async () => {
+	it('signs in an active user with a matching password', async () => {
 		await seedUserWithCredential();
 
 		const result = await service.execute({
@@ -45,40 +45,41 @@ describe('Signin', () => {
 
 		expect(result).toHaveProperty('user');
 		expect(result.user.status).toBe(UserStatuses.active);
+		expect(result.user.sessionVersion).toBe(1);
 	});
 
-	it('should reject a nonexistent account with a generic unauthorized error', async () => {
-		await expect(service.execute({ email, password })).rejects.toBeInstanceOf(UnauthorizedError);
-		await expect(service.execute({ email, password })).rejects.toThrow('apiResponses.auth.invalidCredentials');
+	it('rejects a nonexistent account with a generic unauthorized error', async () => {
+		const execution = service.execute({ email, password });
+		await expect(execution).rejects.toBeInstanceOf(UnauthorizedError);
+		await expect(execution).rejects.toThrow('apiResponses.auth.invalidCredentials');
 	});
 
-	it('should reject a non-active account with the SAME generic unauthorized error', async () => {
+	it('rejects a non-active account with the SAME generic unauthorized error', async () => {
 		await seedUserWithCredential(UserStatuses['pending']);
 
 		// Must be indistinguishable from an invalid-credentials failure (no account
 		// enumeration): same error type and same external message.
-		await expect(service.execute({ email, password })).rejects.toBeInstanceOf(UnauthorizedError);
-		await expect(service.execute({ email, password })).rejects.toThrow('apiResponses.auth.invalidCredentials');
+		const execution = service.execute({ email, password });
+		await expect(execution).rejects.toBeInstanceOf(UnauthorizedError);
+		await expect(execution).rejects.toThrow('apiResponses.auth.invalidCredentials');
 	});
 
-	it('should reject an incorrect password with a generic unauthorized error', async () => {
+	it('rejects an incorrect password with a generic unauthorized error', async () => {
 		await seedUserWithCredential();
 
-		await expect(service.execute({ email, password: 'incorrectPassword' })).rejects.toBeInstanceOf(
-			UnauthorizedError,
-		);
-		await expect(service.execute({ email, password: 'incorrectPassword' })).rejects.toThrow(
-			'apiResponses.auth.invalidCredentials',
-		);
+		const execution = service.execute({ email, password: 'incorrectPassword' });
+		await expect(execution).rejects.toBeInstanceOf(UnauthorizedError);
+		await expect(execution).rejects.toThrow('apiResponses.auth.invalidCredentials');
 	});
 
-	it('should reject an active user with NO credential exactly like a nonexistent account', async () => {
+	it('rejects an active user with NO credential exactly like a nonexistent account', async () => {
 		// A Google-only account has no credentials document. It must be
 		// indistinguishable from a nonexistent account.
 		await usersRepository.create({ name, surname, email, role, status });
 
-		await expect(service.execute({ email, password })).rejects.toBeInstanceOf(UnauthorizedError);
-		await expect(service.execute({ email, password })).rejects.toThrow('apiResponses.auth.invalidCredentials');
+		const execution = service.execute({ email, password });
+		await expect(execution).rejects.toBeInstanceOf(UnauthorizedError);
+		await expect(execution).rejects.toThrow('apiResponses.auth.invalidCredentials');
 	});
 
 	describe('timing equalization (indistinguishability across failure modes)', () => {
@@ -133,7 +134,7 @@ describe('Signin', () => {
 		});
 	});
 
-	it('should carry the real reason internally (in cause) while keeping the message generic', async () => {
+	it('carries the real reason internally (in cause) while keeping the message generic', async () => {
 		await seedUserWithCredential(UserStatuses['pending']);
 
 		const error = await service.execute({ email, password }).catch((caught: unknown) => caught);

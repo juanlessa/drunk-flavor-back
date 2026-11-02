@@ -1,20 +1,8 @@
-import { TokenType } from '../entities/token.entity';
+import { Token, TokenType } from '../entities/token.entity';
 
-export type CreateToken = {
-	token_hash: string;
-	user_id: string;
-	type: TokenType;
-	expires_at: Date;
-};
+export type CreateToken = Pick<Token, 'tokenHash' | 'userId' | 'type' | 'expiresAt'>;
 
-export type UpdateToken = { id: string } & Partial<{
-	token_hash: string;
-	user_id: string;
-	type: TokenType;
-	expires_at: Date;
-}>;
+/** Partial update: only the provided fields change, matching both repository implementations. */
+export type UpdateToken = Pick<Token, 'id'> & Partial<Pick<Token, 'tokenHash' | 'userId' | 'type' | 'expiresAt'>>;
 
-export type FindByUserIdAndType = {
-	user_id: string;
-	type: TokenType;
-};
+export type FindByUserIdAndType = Pick<Token, 'userId' | 'type'>;

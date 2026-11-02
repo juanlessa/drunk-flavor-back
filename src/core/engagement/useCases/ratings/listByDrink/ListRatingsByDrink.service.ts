@@ -5,7 +5,7 @@ import { ListRatingsByDrinkCommand } from './listRatingsByDrink.dtos';
 export class ListRatingsByDrinkService {
 	constructor(private ratingsRepository: IRatingsRepository) {}
 
-	async execute({ drink_id, query }: ListRatingsByDrinkCommand): Promise<Rating[]> {
-		return this.ratingsRepository.findByDrink(drink_id, query);
+	async execute({ drinkId, query }: ListRatingsByDrinkCommand): Promise<Rating[]> {
+		return this.ratingsRepository.findByDrink(drinkId, query);
 	}
 }

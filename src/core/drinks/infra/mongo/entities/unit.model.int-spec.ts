@@ -4,19 +4,18 @@ import {
 	UNIT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX,
 	UnitModel,
 } from './unit.model';
-import { CreateUnit } from '@/core/drinks/dtos/unit.dtos';
 
 type IndexInfo = { name: string; key: Record<string, number>; unique?: boolean };
 
 const getIndexes = async (): Promise<IndexInfo[]> => (await UnitModel.collection.indexes()) as unknown as IndexInfo[];
 
-const buildUnit = (name: { en: string; pt: string }): CreateUnit => ({
+const buildUnit = (name: { en: string; pt: string }) => ({
 	translations: {
 		en: { name: name.en, name_plural: `${name.en}s` },
 		pt: { name: name.pt, name_plural: `${name.pt}s` },
 	},
 	allow_decimal: true,
-	kind: 'volume',
+	kind: 'volume' as const,
 });
 
 describe('UnitModel (integration)', () => {
@@ -60,7 +59,7 @@ describe('UnitModel (integration)', () => {
 					pt: { name: 'centilitro', name_plural: 'mililitros' },
 				},
 				allow_decimal: true,
-				kind: 'volume',
+				kind: 'volume' as const,
 			}),
 		).resolves.toBeDefined();
 	});

@@ -38,21 +38,32 @@ describe('UsersRepositoryInMemory', () => {
 		it('returns a match and null otherwise', async () => {
 			const created = await repository.create(createUserFactory({ email: 'byid@example.com' }));
 
-			expect((await repository.findById(created._id.toString()))?.email).toBe('byid@example.com');
+			expect((await repository.findById(created.id))?.email).toBe('byid@example.com');
 			expect(await repository.findById(new ObjectId().toString())).toBeNull();
 		});
 	});
 
+	describe('findByIds', () => {
+		it('returns only the users whose ids match', async () => {
+			const first = await repository.create(createUserFactory({ email: 'first@example.com' }));
+			await repository.create(createUserFactory({ email: 'second@example.com' }));
+
+			const found = await repository.findByIds([first.id, new ObjectId().toString()]);
+
+			expect(found.map((user) => user.email)).toEqual(['first@example.com']);
+		});
+	});
+
 	describe('update', () => {
-		it('deep-merges partial data, refreshes updated_at and preserves untouched fields', async () => {
+		it('deep-merges partial data, refreshes updatedAt and preserves untouched fields', async () => {
 			const created = await repository.create(createUserFactory({ email: 'update@example.com' }));
 
-			const updated = await repository.update({ id: created._id.toString(), name: 'Jane' });
+			const updated = await repository.update({ id: created.id, name: 'Jane' });
 
 			expect(updated.name).toBe('Jane');
 			expect(updated.surname).toBe(created.surname);
 			expect(updated.email).toBe('update@example.com');
-			expect(updated.updated_at.getTime()).toBeGreaterThanOrEqual(created.updated_at.getTime());
+			expect(updated.updatedAt.getTime()).toBeGreaterThanOrEqual(created.updatedAt.getTime());
 		});
 
 		it('throws NotFoundError when the id is missing', async () => {
@@ -62,13 +73,45 @@ describe('UsersRepositoryInMemory', () => {
 		});
 	});
 
+	describe('incrementSessionVersion', () => {
+		it('increments once, preserves fields, updates the timestamp, and stores the replacement', async () => {
+			const created = await repository.create(
+				createUserFactory({ email: 'sessions@example.com', sessionVersion: 3 }),
+			);
+			const previousUpdatedAt = created.updatedAt;
+
+			const updated = await repository.incrementSessionVersion(created.id);
+
+			expect(updated).toMatchObject({
+				id: created.id,
+				role: created.role,
+				status: created.status,
+				sessionVersion: 4,
+			});
+			expect(updated.updatedAt.getTime()).toBeGreaterThanOrEqual(previousUpdatedAt.getTime());
+			expect(await repository.findById(created.id)).toEqual(updated);
+		});
+
+		it('retains both concurrent increments and rejects missing IDs', async () => {
+			const created = await repository.create(createUserFactory({ email: 'concurrent@example.com' }));
+
+			await Promise.all([
+				repository.incrementSessionVersion(created.id),
+				repository.incrementSessionVersion(created.id),
+			]);
+
+			expect((await repository.findById(created.id))?.sessionVersion).toBe(3);
+			await expect(repository.incrementSessionVersion('missing')).rejects.toBeInstanceOf(NotFoundError);
+		});
+	});
+
 	describe('delete', () => {
 		it('returns the removed record', async () => {
 			const created = await repository.create(createUserFactory({ email: 'delete@example.com' }));
 
-			const deleted = await repository.delete(created._id.toString());
-			expect(deleted._id.toString()).toBe(created._id.toString());
-			expect(await repository.findById(created._id.toString())).toBeNull();
+			const deleted = await repository.delete(created.id);
+			expect(deleted.id).toBe(created.id);
+			expect(await repository.findById(created.id)).toBeNull();
 		});
 
 		it('throws NotFoundError when the id is missing', async () => {

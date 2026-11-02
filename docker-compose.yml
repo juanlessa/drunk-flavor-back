@@ -20,6 +20,7 @@ services:
             - BULLMQ_REDIS_USERNAME=
             - BULLMQ_REDIS_PASSWORD=
             - BULLMQ_REDIS_DATABASE=1
+            - SMTP_MODE=external
             - SMTP_HOST=mailpit
             - SMTP_PORT=1025
             - SMTP_USERNAME=

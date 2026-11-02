@@ -6,35 +6,35 @@ import { CreateDrink } from '@/core/drinks/dtos/drink.dtos';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { Category } from '@/core/drinks/entities/category.entity';
 import { Unit } from '@/core/drinks/entities/unit.entity';
-import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
+import { ConflictError, NotFoundError } from '@/shared/error/error.lib';
 
 const buildCategory = (): Category => ({
-	_id: new ObjectId(),
+	id: new ObjectId().toString(),
 	translations: { en: { name: 'Syrup' }, pt: { name: 'Xarope' } },
-	is_alcoholic: false,
-	created_at: new Date(),
-	updated_at: new Date(),
+	isAlcoholic: false,
+	createdAt: new Date(),
+	updatedAt: new Date(),
 });
 
 const buildUnit = (): Unit => ({
-	_id: new ObjectId(),
+	id: new ObjectId().toString(),
 	translations: {
-		en: { name: 'milliliter', name_plural: 'milliliters' },
-		pt: { name: 'mililitro', name_plural: 'mililitros' },
+		en: { name: 'milliliter', namePlural: 'milliliters' },
+		pt: { name: 'mililitro', namePlural: 'mililitros' },
 	},
-	allow_decimal: true,
+	allowDecimal: true,
 	kind: 'volume',
-	created_at: new Date(),
-	updated_at: new Date(),
+	createdAt: new Date(),
+	updatedAt: new Date(),
 });
 
 const buildIngredient = (): Ingredient => ({
-	_id: new ObjectId(),
+	id: new ObjectId().toString(),
 	translations: { en: { name: 'Lime' }, pt: { name: 'Limão' } },
 	category: buildCategory(),
 	unit: buildUnit(),
-	created_at: new Date(),
-	updated_at: new Date(),
+	createdAt: new Date(),
+	updatedAt: new Date(),
 });
 
 const buildDrink = (name: { en: string; pt: string }): CreateDrink => ({
@@ -63,7 +63,7 @@ describe('DrinksRepository (integration)', () => {
 	it('returns lean documents without __v', async () => {
 		const created = await repository.create(buildDrink({ en: 'Caipirinha', pt: 'Caipirinha BR' }));
 
-		const byId = await repository.findById(created._id.toString());
+		const byId = await repository.findById(created.id);
 		const byName = await repository.findByName({ en: { name: 'Caipirinha' } });
 		const [listed] = await repository.findAll({});
 
@@ -74,7 +74,7 @@ describe('DrinksRepository (integration)', () => {
 
 	it('round-trips a drink with nested ingredient embedding category and unit', async () => {
 		const created = await repository.create(buildDrink({ en: 'Mojito', pt: 'Mojito BR' }));
-		const byId = await repository.findById(created._id.toString());
+		const byId = await repository.findById(created.id);
 
 		expect(byId?.ingredients).toHaveLength(1);
 		expect(byId?.ingredients[0].quantity).toBe(60);
@@ -99,20 +99,20 @@ describe('DrinksRepository (integration)', () => {
 
 		const created = await repository.create(buildDrink({ en: 'Daiquiri', pt: 'Daiquiri BR' }));
 		const updated = await repository.update({
-			id: created._id.toString(),
+			id: created.id,
 			translations: { en: { name: 'Daiquiri Reserve' } },
 		});
 		expect(updated.translations.en.name).toBe('Daiquiri Reserve');
 	});
 
-	it('translates a sequential duplicate en/pt name create to BadRequestError', async () => {
+	it('translates a sequential duplicate en/pt name create to ConflictError', async () => {
 		await repository.create(buildDrink({ en: 'Margarita', pt: 'Margarita BR' }));
 
 		await expect(repository.create(buildDrink({ en: 'Margarita', pt: 'Outro' }))).rejects.toBeInstanceOf(
-			BadRequestError,
+			ConflictError,
 		);
 		await expect(repository.create(buildDrink({ en: 'Other', pt: 'Margarita BR' }))).rejects.toBeInstanceOf(
-			BadRequestError,
+			ConflictError,
 		);
 	});
 
@@ -125,18 +125,18 @@ describe('DrinksRepository (integration)', () => {
 		expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
 		const rejected = results.filter((result) => result.status === 'rejected') as PromiseRejectedResult[];
 		expect(rejected).toHaveLength(1);
-		expect(rejected[0].reason).toBeInstanceOf(BadRequestError);
+		expect(rejected[0].reason).toBeInstanceOf(ConflictError);
 
 		expect(await DrinkModel.countDocuments({ 'translations.en.name': 'Gimlet' })).toBe(1);
 	});
 
-	it('translates an update rename collision to BadRequestError', async () => {
+	it('translates an update rename collision to ConflictError', async () => {
 		await repository.create(buildDrink({ en: 'Margarita', pt: 'Margarita BR' }));
 		const other = await repository.create(buildDrink({ en: 'Paloma', pt: 'Paloma BR' }));
 
 		await expect(
-			repository.update({ id: other._id.toString(), translations: { en: { name: 'Margarita' } } }),
-		).rejects.toBeInstanceOf(BadRequestError);
+			repository.update({ id: other.id, translations: { en: { name: 'Margarita' } } }),
+		).rejects.toBeInstanceOf(ConflictError);
 	});
 
 	it('orders findAll deterministically with the _id tie-breaker under equal sort keys', async () => {
@@ -159,11 +159,49 @@ describe('DrinksRepository (integration)', () => {
 
 		const expectedOrder = [...ids].map((id) => id.toString()).sort((a, b) => (a > b ? -1 : 1));
 
-		const firstPage = await repository.findAll({ page: 1, limit: 2, sort: { created_at: -1 } });
-		const secondPage = await repository.findAll({ page: 2, limit: 2, sort: { created_at: -1 } });
+		const firstPage = await repository.findAll({ page: 1, limit: 2, sort: { createdAt: -1 } });
+		const secondPage = await repository.findAll({ page: 2, limit: 2, sort: { createdAt: -1 } });
 
-		expect(firstPage.map((item) => item._id.toString())).toEqual(expectedOrder.slice(0, 2));
-		expect(secondPage.map((item) => item._id.toString())).toEqual(expectedOrder.slice(2, 3));
+		expect(firstPage.map((item) => item.id)).toEqual(expectedOrder.slice(0, 2));
+		expect(secondPage.map((item) => item.id)).toEqual(expectedOrder.slice(2, 3));
+	});
+
+	it('applies rating deltas atomically and recalculates the average', async () => {
+		const drink = await repository.create(buildDrink({ en: 'Rated drink', pt: 'Drink avaliado' }));
+
+		await Promise.all(
+			[5, 4, 3, 2].map((value) =>
+				repository.applyRatingDelta({ drinkId: drink.id, countDelta: 1, sumDelta: value }),
+			),
+		);
+		await expect(repository.applyRatingDelta({ drinkId: drink.id, countDelta: 0, sumDelta: 2 })).resolves.toEqual({
+			average: 4,
+			count: 4,
+		});
+		await expect(repository.applyRatingDelta({ drinkId: drink.id, countDelta: -1, sumDelta: -2 })).resolves.toEqual(
+			{
+				average: 14 / 3,
+				count: 3,
+			},
+		);
+
+		expect(await repository.findById(drink.id)).toMatchObject({
+			ratingsCount: 3,
+			ratingsSum: 14,
+			avgRating: 14 / 3,
+		});
+	});
+
+	it('rejects missing-drink and aggregate-underflow rating deltas without mutation', async () => {
+		await expect(
+			repository.applyRatingDelta({ drinkId: new ObjectId().toString(), countDelta: 1, sumDelta: 4 }),
+		).rejects.toBeInstanceOf(NotFoundError);
+		const drink = await repository.create(buildDrink({ en: 'Empty drink', pt: 'Drink vazio' }));
+		await expect(
+			repository.applyRatingDelta({ drinkId: drink.id, countDelta: -1, sumDelta: -1 }),
+		).rejects.toBeInstanceOf(NotFoundError);
+		expect(await repository.findById(drink.id)).toMatchObject({ ratingsCount: 0, ratingsSum: 0, avgRating: 0 });
+		expect(await repository.findById('invalid-id')).toBeNull();
 	});
 
 	it('succeeds with no sort supplied', async () => {

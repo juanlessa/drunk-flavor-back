@@ -1,0 +1,67 @@
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import request from 'supertest';
+import { app } from '@/infrastructure/fastify/app';
+import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
+import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
+import { CategoryModel } from '@/core/drinks/infra/mongo/entities/category.model';
+import { DrinkModel } from '@/core/drinks/infra/mongo/entities/drink.model';
+import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.model';
+import { UnitModel } from '@/core/drinks/infra/mongo/entities/unit.model';
+import { CommentModel } from '@/core/engagement/infra/mongo/entities/comment.model';
+import { CommentStatuses } from '@/core/engagement/entities/comment.entity';
+import { createUser } from '@/infrastructure/fastify/tests/accounts/helpers/authentication.helpers';
+import { createDrink } from '@/infrastructure/fastify/tests/drinks/helpers/drink.helpers';
+import { createCommentRecord } from '@/infrastructure/fastify/tests/engagement/helpers/comment.helpers';
+
+describe('List Comments By Drink', () => {
+	beforeAll(async () => {
+		await app.ready();
+		await CommentModel.init();
+	});
+
+	afterAll(async () => {
+		await app.close();
+	});
+
+	beforeEach(async () => {
+		await MongoConnection.Instance.emptyCollection(CategoryModel);
+		await MongoConnection.Instance.emptyCollection(IngredientModel);
+		await MongoConnection.Instance.emptyCollection(UnitModel);
+		await MongoConnection.Instance.emptyCollection(DrinkModel);
+		await MongoConnection.Instance.emptyCollection(UserModel);
+		await MongoConnection.Instance.emptyCollection(CommentModel);
+	});
+
+	it('Should be able to list the comments by drink hiding non-visible ones from public reads', async () => {
+		const { id: drinkId } = await createDrink();
+		await createCommentRecord({ drinkId, content: 'visible one' });
+		await createCommentRecord({ drinkId, content: 'hidden one', status: CommentStatuses.hidden });
+
+		const byDrink = await request(app.server).get(`/drinks/${drinkId}/comments`).send();
+		expect((byDrink.body as unknown[]).length).toBe(1);
+	});
+
+	it('Should include the public profile of each comment author and null for missing accounts', async () => {
+		const { id: drinkId } = await createDrink();
+		const author = await createUser(app, {
+			email: 'author@example.com',
+			name: 'Ada',
+			surname: 'Lovelace',
+			avatarUrl: 'https://example.com/ada.png',
+		});
+		await createCommentRecord({ drinkId, userId: author.id, content: 'by ada' });
+		await createCommentRecord({ drinkId, content: 'by a removed account' });
+
+		const response = await request(app.server).get(`/drinks/${drinkId}/comments`).send();
+
+		const comments = response.body as { content: string; author: Record<string, unknown> | null }[];
+		expect(comments.find((comment) => comment.content === 'by ada')?.author).toEqual({
+			id: author.id,
+			name: 'Ada',
+			surname: 'Lovelace',
+			avatarUrl: 'https://example.com/ada.png',
+		});
+		expect(comments.find((comment) => comment.content === 'by a removed account')?.author).toBeNull();
+		expect(JSON.stringify(comments)).not.toContain('author@example.com');
+	});
+});

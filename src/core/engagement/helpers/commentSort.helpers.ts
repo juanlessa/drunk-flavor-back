@@ -2,17 +2,17 @@ import { CommentListQuery } from '@/core/engagement/dtos/comment.dtos';
 import { normalizeSortOrder } from '@/shared/helpers/sort.helpers';
 import { SortOrder } from '@/shared/types/query.types';
 
-type CommentClientSort = Partial<Record<'created_at' | 'updated_at', SortOrder | undefined>>;
+type CommentClientSort = Partial<Record<'createdAt' | 'updatedAt', SortOrder | undefined>>;
 
 /**
- * Comment counterpart of {@link normalizeRatingSort}. Only `created_at` and `updated_at` are
- * client-selectable; the server-owned `_id: -1` tie-breaker is always appended last.
+ * Converts client sort aliases into domain field names, defaults to newest-first, and appends
+ * the server-owned `id: -1` tie-breaker so Mongo and in-memory ordering stay deterministic.
  */
 export const normalizeCommentSort = (sort?: CommentClientSort): CommentListQuery['sort'] => {
-	const normalized: Record<string, 1 | -1> = {};
+	const normalized: Partial<Record<'createdAt' | 'updatedAt' | 'id', 1 | -1>> = {};
 
 	if (sort) {
-		for (const [field, order] of Object.entries(sort)) {
+		for (const [field, order] of Object.entries(sort) as [keyof CommentClientSort, SortOrder | undefined][]) {
 			if (order !== undefined) {
 				normalized[field] = normalizeSortOrder(order);
 			}
@@ -20,10 +20,9 @@ export const normalizeCommentSort = (sort?: CommentClientSort): CommentListQuery
 	}
 
 	if (Object.keys(normalized).length === 0) {
-		normalized.created_at = -1;
+		normalized.createdAt = -1;
 	}
 
-	normalized._id = -1;
-
+	normalized.id = -1;
 	return normalized;
 };

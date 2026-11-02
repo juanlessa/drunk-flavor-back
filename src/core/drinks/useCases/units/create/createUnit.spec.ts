@@ -1,6 +1,6 @@
 import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
 import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Units.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { ConflictError } from '@/shared/error/error.lib';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CreateUnitService } from './CreateUnit.service';
 
@@ -14,10 +14,10 @@ describe('Create Unit', () => {
 	});
 
 	it('creates a unit with all fields and preserves false booleans', async () => {
-		const data = createUnitFactory({ symbol: 'mL', space_before_symbol: false, allow_decimal: false });
+		const data = createUnitFactory({ symbol: 'mL', spaceBeforeSymbol: false, allowDecimal: false });
 		await service.execute(data);
 		const unit = await repository.findByName(data.translations);
-		expect(unit).toMatchObject({ symbol: 'mL', space_before_symbol: false, allow_decimal: false, kind: 'volume' });
+		expect(unit).toMatchObject({ symbol: 'mL', spaceBeforeSymbol: false, allowDecimal: false, kind: 'volume' });
 	});
 
 	it('creates a unit with optional fields omitted', async () => {
@@ -25,7 +25,7 @@ describe('Create Unit', () => {
 		await service.execute(data);
 		const unit = await repository.findByName(data.translations);
 		expect(unit).not.toHaveProperty('symbol');
-		expect(unit).not.toHaveProperty('space_before_symbol');
+		expect(unit).not.toHaveProperty('spaceBeforeSymbol');
 	});
 
 	it.each([
@@ -33,6 +33,6 @@ describe('Create Unit', () => {
 		['Portuguese', { en: { name: 'unique english unit' }, pt: { name: 'mililitro' } }],
 	] as const)('rejects a duplicate name in %s only', async (_, translations) => {
 		await repository.create(createUnitFactory());
-		await expect(service.execute(createUnitFactory({ translations }))).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute(createUnitFactory({ translations }))).rejects.toBeInstanceOf(ConflictError);
 	});
 });

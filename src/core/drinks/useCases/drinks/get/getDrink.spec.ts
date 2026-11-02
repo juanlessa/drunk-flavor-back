@@ -4,7 +4,7 @@ import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemor
 import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Ingredients.repository';
 import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Units.repository';
 import { GetDrinkService } from './GetDrink.service';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError } from '@/shared/error/error.lib';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
@@ -46,7 +46,7 @@ describe('Get Drink', () => {
 		storageProvider = new MockStorageProvider();
 		service = new GetDrinkService(drinksRepository, storageProvider);
 
-		const category = await categoriesRepository.create({ translations: translationsCategory, is_alcoholic: false });
+		const category = await categoriesRepository.create({ translations: translationsCategory, isAlcoholic: false });
 		const unit = await unitsRepository.create(createUnitFactory());
 		ingredient = await ingredientsRepository.create({
 			translations: translationsIngredient,
@@ -65,16 +65,16 @@ describe('Get Drink', () => {
 			ingredients: [{ ingredient: ingredient, quantity: 30 }],
 		});
 
-		const drinkFound = await service.execute({ id: createdDrink._id.toString() });
+		const drinkFound = await service.execute({ id: createdDrink.id });
 
 		expect(drinkFound).toBeDefined();
-		expect(drinkFound._id).toEqual(createdDrink._id);
+		expect(drinkFound.id).toEqual(createdDrink.id);
 	});
 
 	it('should not be able to find a nonexistent drink', async () => {
 		const nonexistentId = new ObjectId().toString();
 
-		await expect(service.execute({ id: nonexistentId })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ id: nonexistentId })).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('should be able to add the cover and thumbnail url to a found drink', async () => {
@@ -83,12 +83,12 @@ describe('Get Drink', () => {
 			ingredients: [{ ingredient: ingredient, quantity: 30 }],
 		});
 		await drinksRepository.update({
-			id: createdDrink._id.toString(),
+			id: createdDrink.id,
 			cover: { name: 'coverFile.png', mimetype: 'image/png', url: '' },
 			thumbnail: { name: 'thumbnailFile.jpeg', mimetype: 'image/jpeg', url: '' },
 		});
 
-		const drinkFound = await service.execute({ id: createdDrink._id.toString() });
+		const drinkFound = await service.execute({ id: createdDrink.id });
 
 		expect(drinkFound).toBeDefined();
 		expect(storageProvider.getFileURL).toHaveBeenCalledTimes(2);
