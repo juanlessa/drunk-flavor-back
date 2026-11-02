@@ -24,6 +24,18 @@ export type CommentListQuery = {
 	sort: Readonly<Partial<Record<CommentSortField, 1 | -1>>>;
 };
 
+/** Public identity of a comment's author; `null` when the account no longer exists. */
+export type CommentAuthor = {
+	id: string;
+	name?: string;
+	surname?: string;
+	avatarUrl?: string;
+};
+
+export type CommentWithAuthor = Comment & {
+	author: CommentAuthor | null;
+};
+
 export type CommentVisibilityFilter = Readonly<{
 	status?: Comment['status'];
 }>;

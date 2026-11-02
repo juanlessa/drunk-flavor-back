@@ -43,6 +43,17 @@ describe('UsersRepositoryInMemory', () => {
 		});
 	});
 
+	describe('findByIds', () => {
+		it('returns only the users whose ids match', async () => {
+			const first = await repository.create(createUserFactory({ email: 'first@example.com' }));
+			await repository.create(createUserFactory({ email: 'second@example.com' }));
+
+			const found = await repository.findByIds([first.id, new ObjectId().toString()]);
+
+			expect(found.map((user) => user.email)).toEqual(['first@example.com']);
+		});
+	});
+
 	describe('update', () => {
 		it('deep-merges partial data, refreshes updatedAt and preserves untouched fields', async () => {
 			const created = await repository.create(createUserFactory({ email: 'update@example.com' }));

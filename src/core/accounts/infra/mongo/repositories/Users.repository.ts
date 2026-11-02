@@ -102,6 +102,17 @@ export class UsersRepository implements IUsersRepository {
 		return document ? UserMapper.toDomain(document) : null;
 	}
 
+	async findByIds(ids: string[]): Promise<User[]> {
+		const objectIds = ids.map((id) => UserMapper.toObjectId(id)).filter((objectId) => objectId !== null);
+		if (objectIds.length === 0) {
+			return [];
+		}
+		const documents = await UserModel.find({ _id: { $in: objectIds } })
+			.lean<UserPersistence[]>()
+			.exec();
+		return documents.map((document) => UserMapper.toDomain(document));
+	}
+
 	async findByEmail(email: string): Promise<User | null> {
 		const document = await UserModel.findOne({ email }).lean<UserPersistence>().exec();
 		return document ? UserMapper.toDomain(document) : null;

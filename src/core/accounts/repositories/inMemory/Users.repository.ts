@@ -119,6 +119,11 @@ export class UsersRepositoryInMemory implements IUsersRepository {
 		return recordFound || null;
 	}
 
+	async findByIds(ids: string[]): Promise<User[]> {
+		const wanted = new Set(ids);
+		return this.collection.filter((record) => wanted.has(record.id));
+	}
+
 	async findAll(query: QueryParams): Promise<User[]> {
 		let found = [...this.collection];
 

@@ -9,6 +9,8 @@ export interface IUsersRepository {
 	incrementSessionVersion(id: string): Promise<User>;
 	delete(id: string): Promise<User>;
 	findById(id: string): Promise<User | null>;
+	/** Returns the users matching the given ids; unknown or malformed ids are ignored. */
+	findByIds(ids: string[]): Promise<User[]>;
 	findByEmail(email: string): Promise<User | null>;
 	findByRole(role: Role): Promise<User | null>;
 	findAll(query: QueryParams): Promise<User[]>;

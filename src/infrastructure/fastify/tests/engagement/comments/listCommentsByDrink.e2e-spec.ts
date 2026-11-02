@@ -9,6 +9,7 @@ import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.m
 import { UnitModel } from '@/core/drinks/infra/mongo/entities/unit.model';
 import { CommentModel } from '@/core/engagement/infra/mongo/entities/comment.model';
 import { CommentStatuses } from '@/core/engagement/entities/comment.entity';
+import { createUser } from '@/infrastructure/fastify/tests/accounts/helpers/authentication.helpers';
 import { createDrink } from '@/infrastructure/fastify/tests/drinks/helpers/drink.helpers';
 import { createCommentRecord } from '@/infrastructure/fastify/tests/engagement/helpers/comment.helpers';
 
@@ -38,5 +39,29 @@ describe('List Comments By Drink', () => {
 
 		const byDrink = await request(app.server).get(`/drinks/${drinkId}/comments`).send();
 		expect((byDrink.body as unknown[]).length).toBe(1);
+	});
+
+	it('Should include the public profile of each comment author and null for missing accounts', async () => {
+		const { id: drinkId } = await createDrink();
+		const author = await createUser(app, {
+			email: 'author@example.com',
+			name: 'Ada',
+			surname: 'Lovelace',
+			avatarUrl: 'https://example.com/ada.png',
+		});
+		await createCommentRecord({ drinkId, userId: author.id, content: 'by ada' });
+		await createCommentRecord({ drinkId, content: 'by a removed account' });
+
+		const response = await request(app.server).get(`/drinks/${drinkId}/comments`).send();
+
+		const comments = response.body as { content: string; author: Record<string, unknown> | null }[];
+		expect(comments.find((comment) => comment.content === 'by ada')?.author).toEqual({
+			id: author.id,
+			name: 'Ada',
+			surname: 'Lovelace',
+			avatarUrl: 'https://example.com/ada.png',
+		});
+		expect(comments.find((comment) => comment.content === 'by a removed account')?.author).toBeNull();
+		expect(JSON.stringify(comments)).not.toContain('author@example.com');
 	});
 });

@@ -31,6 +31,18 @@ describe('UsersRepository (integration)', () => {
 		expect(listed as Record<string, unknown>).not.toHaveProperty('__v');
 	});
 
+	it('findByIds returns matching users and ignores unknown or malformed ids', async () => {
+		const first = await repository.create(createUserFactory({ email: 'first@example.com' }));
+		const second = await repository.create(createUserFactory({ email: 'second@example.com' }));
+		await repository.create(createUserFactory({ email: 'third@example.com' }));
+
+		const found = await repository.findByIds([first.id, second.id, new ObjectId().toString(), 'not-an-id']);
+
+		expect(found.map((user) => user.email).sort()).toEqual(['first@example.com', 'second@example.com']);
+		expect(found[0] as Record<string, unknown>).not.toHaveProperty('__v');
+		expect(await repository.findByIds(['not-an-id'])).toEqual([]);
+	});
+
 	it('findByEmail returns the matching user and null on no match', async () => {
 		await repository.create(createUserFactory({ email: 'find@example.com' }));
 
