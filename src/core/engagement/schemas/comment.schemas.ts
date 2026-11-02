@@ -30,8 +30,8 @@ export const commentStatusValidation = z.enum(CommentStatuses, {
 
 const commentSortSchema = z
 	.object({
-		created_at: sortOrderSchema,
-		updated_at: sortOrderSchema,
+		createdAt: sortOrderSchema,
+		updatedAt: sortOrderSchema,
 	})
 	.strict();
 

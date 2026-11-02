@@ -1,29 +1,14 @@
-import { UserStatus } from '@/core/accounts/entities/user.entity';
-import { Actor } from '@/shared/accessControl/actor.types';
+import { User, UserStatus } from '@/core/accounts/entities/user.entity';
 import { Role } from '@/shared/accessControl/roles';
+import { EntityMetadata } from '@/shared/types/entity.types';
 
-export type CreateUser = {
-	name?: string;
-	surname?: string;
-	email: string;
-	email_verified?: boolean;
-	avatar_url?: string;
-	role: Role;
-	status: UserStatus;
-};
+/**
+ * `emailVerified` and `sessionVersion` are optional because persistence owns their initial values: a new user
+ * starts unverified (`false`) at session version `1`. Callers set `emailVerified` explicitly when a provider has
+ * already verified the email.
+ */
+export type CreateUser = Omit<User, keyof EntityMetadata | 'emailVerified' | 'sessionVersion'> &
+	Partial<Pick<User, 'emailVerified' | 'sessionVersion'>>;
 
-export type UpdateUser = { id: string } & Partial<{
-	name: string;
-	surname: string;
-	email: string;
-	email_verified: boolean;
-	avatar_url: string;
-	role: Role;
-	status: UserStatus;
-}>;
-
-export type UpdateUserRole = {
-	user_id: string;
-	role: Role;
-	actor: Actor;
-};
+/** `sessionVersion` is excluded on purpose: use `IUsersRepository.incrementSessionVersion` so markers are raised. */
+export type UpdateUser = Pick<User, 'id'> & Partial<Omit<User, keyof EntityMetadata | 'sessionVersion'>>;

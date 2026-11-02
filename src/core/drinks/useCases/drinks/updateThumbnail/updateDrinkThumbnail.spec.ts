@@ -3,7 +3,7 @@ import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemo
 import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Units.repository';
 import { ObjectId } from 'mongodb';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
@@ -60,7 +60,7 @@ describe('Update Drink', () => {
 		storageProvider = new MockStorageProvider();
 		service = new UpdateDrinkThumbnailService(drinksRepository, storageProvider);
 
-		const category = await categoriesRepository.create({ translations: categoryTranslations, is_alcoholic: false });
+		const category = await categoriesRepository.create({ translations: categoryTranslations, isAlcoholic: false });
 		const unit = await unitsRepository.create(createUnitFactory());
 		ingredient = await ingredientsRepository.create({
 			translations: translationsIngredient,
@@ -79,14 +79,14 @@ describe('Update Drink', () => {
 
 	it('should be able to update a drink thumbnail', async () => {
 		await service.execute({
-			drinkId: createdDrink._id.toString(),
+			drinkId: createdDrink.id,
 			name: fileName,
 			mimetype: fileMimetype,
 			fileStream: mockedFileStream,
 		});
 
-		const findUpdatedDrink = (await drinksRepository.findById(createdDrink._id.toString())) as Drink;
-		const drinkId = createdDrink._id.toString();
+		const findUpdatedDrink = (await drinksRepository.findById(createdDrink.id)) as Drink;
+		const drinkId = createdDrink.id;
 		const [, subtype] = fileMimetype.split('/');
 
 		expect(findUpdatedDrink.thumbnail).toBeDefined();
@@ -119,17 +119,17 @@ describe('Update Drink', () => {
 				mimetype: fileMimetype,
 				fileStream: mockedFileStream,
 			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('should be able to delete the existing drink thumbnail during the update', async () => {
 		await drinksRepository.update({
-			id: createdDrink._id.toString(),
+			id: createdDrink.id,
 			thumbnail: { name: fileMimetype, mimetype: fileMimetype, url: '' },
 		});
 
 		await service.execute({
-			drinkId: createdDrink._id.toString(),
+			drinkId: createdDrink.id,
 			name: fileName,
 			mimetype: fileMimetype,
 			fileStream: mockedFileStream,
@@ -140,13 +140,13 @@ describe('Update Drink', () => {
 
 	it('should set the file extension from the mime type regardless of the uploaded name', async () => {
 		await service.execute({
-			drinkId: createdDrink._id.toString(),
+			drinkId: createdDrink.id,
 			name: 'imageFileNameWithoutExtension',
 			mimetype: fileMimetype,
 			fileStream: mockedFileStream,
 		});
 
-		const foundDrink = (await drinksRepository.findById(createdDrink._id.toString())) as Drink;
+		const foundDrink = (await drinksRepository.findById(createdDrink.id)) as Drink;
 		const drinkThumbnail = foundDrink.thumbnail as FileMetadata;
 
 		expect(drinkThumbnail).toBeDefined();

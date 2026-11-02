@@ -6,60 +6,59 @@ import {
 	UpdateCommentStatus,
 } from '@/core/engagement/dtos/comment.dtos';
 import { Comment } from '@/core/engagement/entities/comment.entity';
-import { CommentModel } from '@/core/engagement/infra/mongo/entities/comment.model';
+import { CommentModel, CommentPersistence } from '@/core/engagement/infra/mongo/entities/comment.model';
+import { CommentMapper } from '@/core/engagement/infra/mongo/mappers/comment.mapper';
 import { ICommentsRepository } from '@/core/engagement/repositories/IComments.repository';
-import { removeLeanVersionKey } from '@/infrastructure/mongo/helpers/mongoose.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryFilter } from 'mongoose';
 
 export class CommentsRepository implements ICommentsRepository {
 	async create(data: CreateComment): Promise<Comment> {
-		return CommentModel.create(data);
+		const document = await CommentModel.create(CommentMapper.toPersistence(data));
+		return CommentMapper.toDomain(document);
 	}
 
 	async update({ id, content }: UpdateComment): Promise<Comment> {
-		const comment = await CommentModel.findByIdAndUpdate<Comment>(
-			id,
+		const objectId = CommentMapper.toObjectId(id);
+		if (!objectId) throw this.notFound('update');
+		const document = await CommentModel.findByIdAndUpdate(
+			objectId,
 			{ $set: { content } },
 			{ returnDocument: 'after', runValidators: true },
-		).exec();
-		if (!comment) {
-			throw new NotFoundError('apiResponses.comments.notFound', {
-				path: 'Comments.repository',
-				cause: 'Error on findByIdAndUpdate operation',
-			});
-		}
-		return comment;
+		)
+			.lean<CommentPersistence>()
+			.exec();
+		if (!document) throw this.notFound('update');
+		return CommentMapper.toDomain(document);
 	}
 
 	async updateStatus({ id, status }: UpdateCommentStatus): Promise<Comment> {
-		const comment = await CommentModel.findByIdAndUpdate<Comment>(
-			id,
+		const objectId = CommentMapper.toObjectId(id);
+		if (!objectId) throw this.notFound('status update');
+		const document = await CommentModel.findByIdAndUpdate(
+			objectId,
 			{ $set: { status } },
 			{ returnDocument: 'after', runValidators: true },
-		).exec();
-		if (!comment) {
-			throw new NotFoundError('apiResponses.comments.notFound', {
-				path: 'Comments.repository',
-				cause: 'Error on findByIdAndUpdate status operation',
-			});
-		}
-		return comment;
+		)
+			.lean<CommentPersistence>()
+			.exec();
+		if (!document) throw this.notFound('status update');
+		return CommentMapper.toDomain(document);
 	}
 
 	async delete(id: string): Promise<Comment> {
-		const comment = await CommentModel.findByIdAndDelete<Comment>(id).exec();
-		if (!comment) {
-			throw new NotFoundError('apiResponses.comments.notFound', {
-				path: 'Comments.repository',
-				cause: 'Error on findByIdAndDelete operation',
-			});
-		}
-		return comment;
+		const objectId = CommentMapper.toObjectId(id);
+		if (!objectId) throw this.notFound('delete');
+		const document = await CommentModel.findByIdAndDelete(objectId).lean<CommentPersistence>().exec();
+		if (!document) throw this.notFound('delete');
+		return CommentMapper.toDomain(document);
 	}
 
 	async findById(id: string): Promise<Comment | null> {
-		return CommentModel.findById<Comment>(id).lean<Comment>({ transform: removeLeanVersionKey }).exec();
+		const objectId = CommentMapper.toObjectId(id);
+		if (!objectId) return null;
+		const document = await CommentModel.findById(objectId).lean<CommentPersistence>().exec();
+		return document ? CommentMapper.toDomain(document) : null;
 	}
 
 	async findAll(query: CommentListQuery, filter?: CommentVisibilityFilter): Promise<Comment[]> {
@@ -84,20 +83,27 @@ export class CommentsRepository implements ICommentsRepository {
 		return result.deletedCount;
 	}
 
-	private buildFilter(base: QueryFilter<Comment>, filter?: CommentVisibilityFilter): QueryFilter<Comment> {
-		if (filter?.status !== undefined) {
-			return { ...base, status: filter.status };
-		}
-		return base;
+	private buildFilter(
+		base: QueryFilter<CommentPersistence>,
+		filter?: CommentVisibilityFilter,
+	): QueryFilter<CommentPersistence> {
+		return filter?.status === undefined ? base : { ...base, status: filter.status };
 	}
 
-	private runListQuery(filter: QueryFilter<Comment>, query: CommentListQuery): Promise<Comment[]> {
-		const skip = (query.page - 1) * query.limit;
-		return CommentModel.find(filter)
-			.sort(query.sort)
-			.skip(skip)
+	private async runListQuery(filter: QueryFilter<CommentPersistence>, query: CommentListQuery): Promise<Comment[]> {
+		const documents = await CommentModel.find(filter)
+			.sort(CommentMapper.toPersistenceSort(query.sort))
+			.skip((query.page - 1) * query.limit)
 			.limit(query.limit)
-			.lean<Comment[]>({ transform: removeLeanVersionKey })
+			.lean<CommentPersistence[]>()
 			.exec();
+		return documents.map(CommentMapper.toDomain);
+	}
+
+	private notFound(operation: string): NotFoundError {
+		return new NotFoundError('apiResponses.comments.notFound', {
+			path: 'Comments.repository',
+			cause: `Comment missing during ${operation}`,
+		});
 	}
 }

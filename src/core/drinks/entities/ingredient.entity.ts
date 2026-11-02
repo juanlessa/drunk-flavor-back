@@ -1,13 +1,13 @@
+import { Translations } from '@/core/drinks/types/translations';
+import { EntityMetadata } from '@/shared/types/entity.types';
 import { Category } from './category.entity';
 import { Unit } from './unit.entity';
-import { DatabaseCommonInfo } from '@/infrastructure/mongo/types';
-import { Translations } from '@/core/drinks/types/translations';
 
 export type IngredientTranslation = {
 	name: string;
 };
 
-export type Ingredient = DatabaseCommonInfo & {
+export type Ingredient = EntityMetadata & {
 	translations: Translations<IngredientTranslation>;
 	category: Category;
 	unit: Unit;

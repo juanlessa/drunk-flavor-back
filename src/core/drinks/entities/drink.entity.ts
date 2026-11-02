@@ -1,7 +1,7 @@
-import { DatabaseCommonInfo } from '@/infrastructure/mongo/types';
-import { Ingredient } from './ingredient.entity';
 import { Translations } from '@/core/drinks/types/translations';
+import { EntityMetadata } from '@/shared/types/entity.types';
 import { FileMetadata } from '@/shared/types/file.types';
+import { Ingredient } from './ingredient.entity';
 
 export type DrinkTranslation = {
 	name: string;
@@ -13,12 +13,12 @@ export type DrinkIngredient = {
 	ingredient: Ingredient;
 };
 
-export type Drink = DatabaseCommonInfo & {
+export type Drink = EntityMetadata & {
 	translations: Translations<DrinkTranslation>;
-	cover: FileMetadata | undefined;
-	thumbnail: FileMetadata | undefined;
+	cover?: FileMetadata;
+	thumbnail?: FileMetadata;
 	ingredients: DrinkIngredient[];
-	avg_rating: number;
-	ratings_count: number;
-	ratings_sum: number;
+	avgRating: number;
+	ratingsCount: number;
+	ratingsSum: number;
 };

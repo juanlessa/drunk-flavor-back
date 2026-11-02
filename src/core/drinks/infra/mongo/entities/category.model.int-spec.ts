@@ -36,10 +36,6 @@ describe('CategoryModel (integration)', () => {
 			['_id_', CATEGORY_TRANSLATIONS_EN_NAME_UNIQUE_INDEX, CATEGORY_TRANSLATIONS_PT_NAME_UNIQUE_INDEX].sort(),
 		);
 
-		// The old auto-named field-level indexes must no longer exist.
-		expect(names).not.toContain('translations.en.name_1');
-		expect(names).not.toContain('translations.pt.name_1');
-
 		const enIndex = indexes.find((index) => index.name === CATEGORY_TRANSLATIONS_EN_NAME_UNIQUE_INDEX);
 		const ptIndex = indexes.find((index) => index.name === CATEGORY_TRANSLATIONS_PT_NAME_UNIQUE_INDEX);
 		expect(enIndex?.key).toEqual({ 'translations.en.name': 1 });

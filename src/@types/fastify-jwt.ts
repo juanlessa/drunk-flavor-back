@@ -11,6 +11,7 @@ declare module '@fastify/jwt' {
 			id: string;
 			role: Role;
 			status: UserStatus;
+			sessionVersion: number;
 		};
 	}
 }

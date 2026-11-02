@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { MongoServerError } from 'mongodb';
 import { isDuplicateKeyError, mapDuplicateKeyError } from './duplicateKey.helpers';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { ConflictError } from '@/shared/error/error.lib';
 
 const INDEX_NAMES = ['entity_translations_en_name_unique', 'entity_translations_pt_name_unique'] as const;
 
@@ -37,14 +37,14 @@ describe('isDuplicateKeyError', () => {
 });
 
 describe('mapDuplicateKeyError', () => {
-	it('throws a BadRequestError with the supplied LocaleKey on a matching duplicate-key error', () => {
+	it('throws a ConflictError with the supplied LocaleKey on a matching duplicate-key error', () => {
 		const error = buildDuplicateKeyError('entity_translations_pt_name_unique');
 		const act = () =>
 			mapDuplicateKeyError(error, INDEX_NAMES, 'apiResponses.categories.alreadyExist', {
 				path: 'Entities.repository',
 			});
 
-		expect(act).toThrow(BadRequestError);
+		expect(act).toThrow(ConflictError);
 		expect(act).toThrow('apiResponses.categories.alreadyExist');
 	});
 

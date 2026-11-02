@@ -1,11 +1,7 @@
 import { z } from 'zod/v4';
-import { createCategorySchema } from './createCategory.schema';
-import { Translations } from '@/core/drinks/types/translations';
 import { CategoryTranslation } from '@/core/drinks/entities/category.entity';
+import { Translations } from '@/core/drinks/types/translations';
+import { createCategorySchema } from './createCategory.schema';
 
 export type CreateCategoryReqBody = z.infer<typeof createCategorySchema>;
-
-export type CreateCategoryDTO = {
-	translations: Translations<CategoryTranslation>;
-	is_alcoholic: boolean;
-};
+export type CreateCategoryDTO = { translations: Translations<CategoryTranslation>; isAlcoholic: boolean };

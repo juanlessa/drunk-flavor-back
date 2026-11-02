@@ -6,11 +6,11 @@ export const listCommentsByDrinkController: Controller<{
 	Params: ListCommentsByDrinkReqParam;
 	Querystring: ListCommentsByDrinkReqQuery;
 }> = async (request, reply) => {
-	const { drink_id } = request.params;
+	const { drinkId } = request.params;
 	const { query } = request;
 
 	const service = resolveListCommentsByDrinkService();
-	const comments = await service.execute({ drink_id, query });
+	const comments = await service.execute({ drinkId, query });
 
 	return reply.send(comments);
 };

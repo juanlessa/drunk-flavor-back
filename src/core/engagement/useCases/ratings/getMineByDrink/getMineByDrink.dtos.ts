@@ -5,6 +5,6 @@ import { z } from 'zod/v4';
 export type GetMineByDrinkReqParam = z.infer<typeof listRatingsByDrinkSchema>;
 
 export type GetMineByDrinkCommand = {
-	drink_id: string;
+	drinkId: string;
 	actor: Actor;
 };

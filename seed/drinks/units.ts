@@ -1,6 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { Unit } from '@/core/drinks/entities/unit.entity';
-import { UnitModel } from '@/core/drinks/infra/mongo/entities/unit.model';
+import { UnitModel, UnitPersistence } from '@/core/drinks/infra/mongo/entities/unit.model';
 import { logger } from '@/shared/providers/logger';
 
 const units = [
@@ -29,12 +28,12 @@ const units = [
 		created_at: new Date(),
 		updated_at: new Date(),
 	},
-] as const satisfies readonly Unit[];
+] as const satisfies readonly UnitPersistence[];
 
 type UnitEnName = (typeof units)[number]['translations']['en']['name'];
 
-export const unitsMap = new Map<UnitEnName, Unit>(
-	units.map<[UnitEnName, Unit]>((unit) => [unit.translations.en.name, unit]),
+export const unitsMap = new Map<UnitEnName, UnitPersistence>(
+	units.map<[UnitEnName, UnitPersistence]>((unit) => [unit.translations.en.name, unit]),
 );
 
 export async function insertUnits() {

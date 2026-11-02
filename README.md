@@ -123,7 +123,8 @@ VERIFICATION_TOKEN_SIZE=16
 PASSWORD_HASH_ROUNDS=8
 
 # SMTP
-# Start the local SMTP server with `npm run smtp` when running without Docker.
+# Start the local SMTP server with `npm run maildev` when running without Docker.
+SMTP_MODE='external'
 SMTP_DOMAIN='drunkflavor.com'
 SMTP_HOST='localhost'
 SMTP_PORT=1025
@@ -171,21 +172,27 @@ npm run dev:watch
 When running the application without Docker, start MailDev in a separate terminal:
 
 ```shell
-npm run smtp
+npm run maildev
 ```
 
 MailDev listens for SMTP on `127.0.0.1:1025` without authentication. Its inbox and REST API are available at
-[http://localhost:1080](http://localhost:1080). Configure the application with `SMTP_HOST=localhost`, `SMTP_PORT=1025`,
-and empty SMTP credentials.
+[http://localhost:1080](http://localhost:1080). Configure the application with `SMTP_MODE=external`,
+`SMTP_HOST=localhost`, `SMTP_PORT=1025`, and empty SMTP credentials. Alternatively, set `SMTP_MODE=managed` to use that
+local MailDev address without configuring the `SMTP_*` connection variables.
 
-You can override the listening address and ports with `LOCAL_SMTP_HOST`, `LOCAL_SMTP_PORT`, and
-`LOCAL_MAILDEV_WEB_PORT`:
+The ports are fixed on purpose: the application and MailDev run in separate processes, so the application can only reach
+MailDev at an address it knows in advance. You can override the listening address and ports with `MAILDEV_HOST`,
+`MAILDEV_SMTP_PORT`, and `MAILDEV_WEB_PORT`:
 
 ```shell
-LOCAL_SMTP_PORT=2525 LOCAL_MAILDEV_WEB_PORT=1081 npm run smtp
+MAILDEV_SMTP_PORT=2525 MAILDEV_WEB_PORT=1081 npm run maildev
 ```
 
-If you override the SMTP port, update `SMTP_PORT` in the application environment to match.
+If you override the SMTP port, update `SMTP_PORT` in the application environment to match (and use `SMTP_MODE=external`,
+since `managed` always targets `localhost:1025`). Ports 465 and 587 are rejected because the mailer enforces TLS on them
+and MailDev does not offer it.
+
+`SMTP_MODE=managed` is not accepted in production.
 
 **Note:** make sure that when running the commands above, your MongoDB instance is available.
 
@@ -258,12 +265,7 @@ You can also run the E2E tests in watch mode:
 npm run test:e2e:watch
 ```
 
-`test:e2e` verifies the configured SMTP server before starting Vitest. If no SMTP server is available, it starts an
-isolated MailDev instance automatically, exposes its REST API through `MAILDEV_API_URL`, and closes it after the test
-process exits. The underlying Vitest command is kept in `test:e2e:run` so its flags and configuration can be changed in
-`package.json` without editing the orchestrator.
-
-Additional Vitest arguments are forwarded through the orchestrator:
+Additional Vitest arguments can be passed after `--`:
 
 ```shell
 npm run test:e2e -- src/infrastructure/fastify/tests/categories/getCategory.e2e-spec.ts
@@ -274,6 +276,10 @@ npm run test:e2e -- src/infrastructure/fastify/tests/categories/getCategory.e2e-
 - By default, the E2E tests use a managed (Node-provisioned) MongoDB instance. However, you can change this to connect
   to an external MongoDB instance by setting the MONGO_MODE environment variable to `external`. In this case make sure
   to also configure the MongoDB connection variables.
+- By default, the E2E tests start an isolated MailDev server on free ports (`SMTP_MODE=managed`), publish its SMTP
+  connection and REST API URL to the tests through Vitest's `provide`/`inject` (`smtpConnection`, `maildevApiUrl`), and
+  stop it when the run ends. To use an already-running SMTP server (for example Mailpit in CI), set `SMTP_MODE=external`
+  and configure the `SMTP_*` variables.
 - You can override any default testing environment variables by adding a `.env.testing` file in the project root,
   following the structure of `.env.example`.
 
@@ -298,7 +304,7 @@ If you are running the API locally you also will find the documentation on path 
 ## Seed
 
 Once the application is running, it's beneficial to have a populated database to aid in testing and development, as well
-as to establish an initial admin user. For these purposes, there are several seed scripts available.
+as to establish the initial owner account. For these purposes, there are several seed scripts available.
 
 **Note**: To run the seed scripts, ensure you have a valid `.env` file. The seed scripts rely on parts of the
 application code that require environment validation.
@@ -312,22 +318,25 @@ categories into the database:
 npm run seed:drinks
 ```
 
-### Admin Seed
+### Owner Bootstrap
 
-Run the admin seed script with the following command to create an initial admin user:
+Run the owner bootstrap to create the application's initial owner account:
 
 ```shell
-npm run seed:admin
+npm run seed:owner
 ```
 
-The admin is created based on the following environment variables:
+The bootstrap creates an active, verified owner from these environment variables:
 
 ```dotenv
-ADMIN_NAME=''
-ADMIN_SURNAME=''
-ADMIN_EMAIL=''
-ADMIN_PASSWORD=''
+OWNER_NAME=''
+OWNER_SURNAME=''
+OWNER_EMAIL=''
+OWNER_PASSWORD=''
 ```
 
-**Security Note**: For security purposes, make sure to remove these variables from your `.env` file after creating the
-admin user.
+The command is idempotent: when an owner already exists, it exits successfully without creating another account. The
+database also enforces that at most one owner can exist.
+
+**Security Note**: Remove these variables from your environment after creating the owner. A subsequent bootstrap run
+does not require them when an owner already exists.

@@ -1,14 +1,10 @@
+import { CreateCategory } from '@/core/drinks/dtos/category.dtos';
 import { DeepPartial } from '@/shared/types/utility.types';
-import { CreateCategoryReqBody } from '../useCases/categories/create/createCategory.dtos';
 
-export const createCategoryFactory = (category?: DeepPartial<CreateCategoryReqBody>): CreateCategoryReqBody => ({
+export const createCategoryFactory = (category?: DeepPartial<CreateCategory>): CreateCategory => ({
 	translations: {
-		en: {
-			name: category?.translations?.en?.name || 'Simple yrup',
-		},
-		pt: {
-			name: category?.translations?.pt?.name || 'Xarope simples',
-		},
+		en: { name: category?.translations?.en?.name || 'Simple syrup' },
+		pt: { name: category?.translations?.pt?.name || 'Xarope simples' },
 	},
-	is_alcoholic: category?.is_alcoholic ?? false,
+	isAlcoholic: category?.isAlcoholic ?? false,
 });

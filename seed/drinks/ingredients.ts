@@ -1,6 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.model';
-import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
+import { IngredientModel, IngredientPersistence } from '@/core/drinks/infra/mongo/entities/ingredient.model';
 import { logger } from '@/shared/providers/logger';
 import { categoriesMap } from './categories';
 import { unitsMap } from './units';
@@ -438,7 +437,7 @@ const ingredients = [
 		created_at: new Date(),
 		updated_at: new Date(),
 	},
-] as const satisfies readonly Ingredient[];
+] as const satisfies readonly IngredientPersistence[];
 
 type IngredientEnName = (typeof ingredients)[number]['translations']['en']['name'];
 
@@ -449,7 +448,7 @@ const normalizeIngredientName = (name: string): string => {
 	return `${lower.charAt(0).toLocaleUpperCase()}${lower.slice(1)}`;
 };
 
-const toIngredientDocument = (ingredient: Ingredient): Ingredient => ({
+const toIngredientDocument = (ingredient: IngredientPersistence): IngredientPersistence => ({
 	...ingredient,
 	translations: {
 		en: { name: normalizeIngredientName(ingredient.translations.en.name) },
@@ -458,8 +457,8 @@ const toIngredientDocument = (ingredient: Ingredient): Ingredient => ({
 });
 
 // Keyed by the raw English name (stable lookup key for drinks.ts); values are the normalized documents.
-export const ingredientsMap = new Map<IngredientEnName, Ingredient>(
-	ingredients.map<[IngredientEnName, Ingredient]>((ingredient) => [
+export const ingredientsMap = new Map<IngredientEnName, IngredientPersistence>(
+	ingredients.map<[IngredientEnName, IngredientPersistence]>((ingredient) => [
 		ingredient.translations.en.name,
 		toIngredientDocument(ingredient),
 	]),

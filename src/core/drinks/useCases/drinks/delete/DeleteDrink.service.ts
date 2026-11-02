@@ -1,6 +1,6 @@
 import { DeleteDrink } from '@/core/drinks/dtos/drink.dtos';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError } from '@/shared/error/error.lib';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 
 export class DeleteDrinkService {
@@ -12,7 +12,7 @@ export class DeleteDrinkService {
 	async execute({ id }: DeleteDrink) {
 		const drinkExists = await this.drinksRepository.findById(id);
 		if (!drinkExists) {
-			throw new BadRequestError('apiResponses.drinks.notExist', { path: 'DeleteDrink.service' });
+			throw new NotFoundError('apiResponses.drinks.notFound', { path: 'DeleteDrink.service' });
 		}
 
 		await this.drinksRepository.delete(id);

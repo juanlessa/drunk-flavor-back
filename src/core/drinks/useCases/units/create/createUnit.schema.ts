@@ -11,7 +11,7 @@ import { z } from 'zod/v4';
 export const createUnitSchema = z.object({
 	translations: generateTranslationsSchema(unitTranslationSchema),
 	symbol: unitSymbolValidation.optional(),
-	space_before_symbol: unitSpaceBeforeSymbolValidation.optional(),
-	allow_decimal: unitAllowDecimalValidation,
+	spaceBeforeSymbol: unitSpaceBeforeSymbolValidation.optional(),
+	allowDecimal: unitAllowDecimalValidation,
 	kind: unitKindValidation,
 });

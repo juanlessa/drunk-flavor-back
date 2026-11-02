@@ -1,6 +1,6 @@
 export type CreateRating = {
-	drink_id: string;
-	user_id: string;
+	drinkId: string;
+	userId: string;
 	value: number;
 };
 
@@ -14,7 +14,7 @@ export type RatingSummary = {
 	count: number;
 };
 
-export type RatingSortField = 'created_at' | 'updated_at' | 'value' | '_id';
+export type RatingSortField = 'createdAt' | 'updatedAt' | 'value' | 'id';
 
 export type RatingListQuery = {
 	page: number;

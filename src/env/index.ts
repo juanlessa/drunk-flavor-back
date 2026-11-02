@@ -6,7 +6,7 @@ import { parseLogEnv } from './log';
 import { parseAuthEnv } from './auth';
 import { parseGoogleAuthEnv } from './googleAuth';
 import { parseCorsEnv } from './cors';
-import { parseSmtpEnv } from './smtp';
+import { type FlatSmtpSchema, MANAGED_SMTP_CONNECTION, parseSmtpEnv } from './smtp';
 import { parseClientEnv } from './client';
 import { parseRateLimitEnv } from './rateLimit';
 import { type FlatStorageSchema, parseStorageEnv } from './storage';
@@ -59,10 +59,18 @@ const EMPTY_BULLMQ_CONNECTION_KEYS: Omit<
 	BULLMQ_REDIS_DATABASE: 0,
 };
 
+/** SMTP connection keys backfilled when `SMTP_MODE` is `managed` (local MailDev). */
+const MANAGED_SMTP_CONNECTION_KEYS: Omit<FlatSmtpSchema, 'SMTP_MODE' | 'SMTP_DOMAIN'> = {
+	SMTP_HOST: MANAGED_SMTP_CONNECTION.host,
+	SMTP_PORT: MANAGED_SMTP_CONNECTION.port,
+	SMTP_USERNAME: MANAGED_SMTP_CONNECTION.username,
+	SMTP_PASSWORD: MANAGED_SMTP_CONNECTION.password,
+};
+
 /**
  * Flat, fully-keyed environment type exposed to the rest of the app.
  *
- * `STORAGE_TYPE`, `MONGO_MODE` and `REDIS_MODE` keep their full union type (from
+ * `STORAGE_TYPE`, `MONGO_MODE`, `REDIS_MODE` and `SMTP_MODE` keep their full union type (from
  * the control stage); the AWS, Mongo- and Redis-connection keys are flattened in
  * from the discriminated-union branches with their discriminant literal stripped,
  * so every key is present without pinning the discriminant to a single branch.
@@ -74,9 +82,9 @@ export type Env = ReturnType<typeof parseNodeEnv> &
 	ReturnType<typeof parseAuthEnv> &
 	ReturnType<typeof parseGoogleAuthEnv> &
 	ReturnType<typeof parseCorsEnv> &
-	ReturnType<typeof parseSmtpEnv> &
 	ReturnType<typeof parseClientEnv> &
 	ReturnType<typeof parseRateLimitEnv> &
+	Omit<FlatSmtpSchema, 'SMTP_MODE'> &
 	Omit<FlatStorageSchema, 'STORAGE_TYPE'> &
 	Omit<FlatMongoSchema, 'MONGO_MODE'> &
 	Omit<FlatRedisSchema, 'REDIS_MODE'> &
@@ -88,7 +96,7 @@ const parseEnv = (source: NodeJS.ProcessEnv = process.env): Env => {
 
 	// Stage 2: control variables (discriminators), resolved against NODE_ENV.
 	const control = parseControlEnv(source, NODE_ENV);
-	const { STORAGE_TYPE, MONGO_MODE, REDIS_MODE } = control;
+	const { STORAGE_TYPE, MONGO_MODE, REDIS_MODE, SMTP_MODE } = control;
 
 	// Stage 3: domain variables.
 	const api = parseApiEnv(source, NODE_ENV);
@@ -96,7 +104,7 @@ const parseEnv = (source: NodeJS.ProcessEnv = process.env): Env => {
 	const auth = parseAuthEnv(source, NODE_ENV);
 	const googleAuth = parseGoogleAuthEnv(source, NODE_ENV);
 	const cors = parseCorsEnv(source, NODE_ENV);
-	const smtp = parseSmtpEnv(source, NODE_ENV);
+	const smtp = parseSmtpEnv(source, SMTP_MODE, NODE_ENV);
 	const client = parseClientEnv(source, NODE_ENV);
 	const rateLimit = parseRateLimitEnv(source, NODE_ENV);
 	const storage = parseStorageEnv(source, STORAGE_TYPE, NODE_ENV);
@@ -110,6 +118,17 @@ const parseEnv = (source: NodeJS.ProcessEnv = process.env): Env => {
 	// object stays flat and fully keyed. The discriminant itself comes from the
 	// control stage (already spread below), so only the branch-specific payload
 	// keys are backfilled here.
+	const smtpKeys: Omit<FlatSmtpSchema, 'SMTP_MODE'> =
+		smtp.SMTP_MODE === 'external'
+			? {
+					SMTP_DOMAIN: smtp.SMTP_DOMAIN,
+					SMTP_HOST: smtp.SMTP_HOST,
+					SMTP_PORT: smtp.SMTP_PORT,
+					SMTP_USERNAME: smtp.SMTP_USERNAME,
+					SMTP_PASSWORD: smtp.SMTP_PASSWORD,
+				}
+			: { SMTP_DOMAIN: smtp.SMTP_DOMAIN, ...MANAGED_SMTP_CONNECTION_KEYS };
+
 	const storageKeys: Omit<FlatStorageSchema, 'STORAGE_TYPE'> =
 		storage.STORAGE_TYPE === 's3'
 			? {
@@ -171,9 +190,9 @@ const parseEnv = (source: NodeJS.ProcessEnv = process.env): Env => {
 		...auth,
 		...googleAuth,
 		...cors,
-		...smtp,
 		...client,
 		...rateLimit,
+		...smtpKeys,
 		...storageKeys,
 		// Connection options are present in both Mongo branches.
 		MONGO_MAX_POOL_SIZE: mongo.MONGO_MAX_POOL_SIZE,

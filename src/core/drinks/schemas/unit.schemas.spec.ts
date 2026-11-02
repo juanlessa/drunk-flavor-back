@@ -1,20 +1,19 @@
-import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
 import { createUnitSchema } from '@/core/drinks/useCases/units/create/createUnit.schema';
 import { listUnitsQuerySchema } from '@/core/drinks/useCases/units/list/listUnits.schema';
 import { updateUnitSchema } from '@/core/drinks/useCases/units/update/updateUnit.schema';
 import { ObjectId } from 'mongodb';
 import { describe, expect, it } from 'vitest';
 
-const validUnit = createUnitFactory({
+const validUnit = {
 	translations: {
-		en: { name: '  MILLILITER  ', name_plural: '  MILLILITERS  ' },
-		pt: { name: '  MILILITRO  ', name_plural: '  MILILITROS  ' },
+		en: { name: '  MILLILITER  ', namePlural: '  MILLILITERS  ' },
+		pt: { name: '  MILILITRO  ', namePlural: '  MILILITROS  ' },
 	},
 	symbol: '  mL  ',
-	space_before_symbol: false,
-	allow_decimal: false,
+	spaceBeforeSymbol: false,
+	allowDecimal: false,
 	kind: 'volume',
-});
+};
 
 describe('Unit schemas', () => {
 	it.each([createUnitSchema, updateUnitSchema])(
@@ -22,19 +21,19 @@ describe('Unit schemas', () => {
 		(schema) => {
 			const input = schema === updateUnitSchema ? { id: new ObjectId().toString(), ...validUnit } : validUnit;
 			const parsed = schema.parse(input);
-			expect(parsed.translations.en).toEqual({ name: 'milliliter', name_plural: 'milliliters' });
+			expect(parsed.translations.en).toEqual({ name: 'milliliter', namePlural: 'milliliters' });
 			expect(parsed.symbol).toBe('mL');
-			expect(parsed.space_before_symbol).toBe(false);
-			expect(parsed.allow_decimal).toBe(false);
+			expect(parsed.spaceBeforeSymbol).toBe(false);
+			expect(parsed.allowDecimal).toBe(false);
 		},
 	);
 
 	it.each([createUnitSchema, updateUnitSchema])('keeps optional root fields omitted', (schema) => {
-		const { symbol: _, space_before_symbol: __, ...unit } = validUnit;
+		const { symbol: _, spaceBeforeSymbol: __, ...unit } = validUnit;
 		const input = schema === updateUnitSchema ? { id: new ObjectId().toString(), ...unit } : unit;
 		const parsed = schema.parse(input);
 		expect(parsed).not.toHaveProperty('symbol');
-		expect(parsed).not.toHaveProperty('space_before_symbol');
+		expect(parsed).not.toHaveProperty('spaceBeforeSymbol');
 	});
 
 	it.each(['volume', 'mass', 'count', 'informal'])('accepts kind %s', (kind) => {
@@ -47,11 +46,11 @@ describe('Unit schemas', () => {
 
 	it.each([
 		{ translations: { ...validUnit.translations, en: { ...validUnit.translations.en, name: ' ' } } },
-		{ translations: { ...validUnit.translations, pt: { ...validUnit.translations.pt, name_plural: ' ' } } },
+		{ translations: { ...validUnit.translations, pt: { ...validUnit.translations.pt, namePlural: ' ' } } },
 		{ symbol: ' ' },
-		{ allow_decimal: undefined },
-		{ allow_decimal: 'false' },
-		{ space_before_symbol: 'false' },
+		{ allowDecimal: undefined },
+		{ allowDecimal: 'false' },
+		{ spaceBeforeSymbol: 'false' },
 	])('rejects invalid payload fields', (override) => {
 		expect(createUnitSchema.safeParse({ ...validUnit, ...override }).success).toBe(false);
 	});
@@ -70,13 +69,13 @@ describe('Unit schemas', () => {
 		const parsed = listUnitsQuerySchema.parse({
 			page: '2',
 			limit: '5',
-			search: JSON.stringify({ 'translations.en.name_plural': 'liters' }),
+			search: JSON.stringify({ 'translations.en.namePlural': 'liters' }),
 			sort: JSON.stringify({ 'translations.pt.name': -1 }),
 		});
 		expect(parsed).toEqual({
 			page: 2,
 			limit: 5,
-			search: { 'translations.en.name_plural': 'liters' },
+			search: { 'translations.en.namePlural': 'liters' },
 			sort: { 'translations.pt.name': -1 },
 		});
 	});

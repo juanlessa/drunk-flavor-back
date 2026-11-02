@@ -2,14 +2,14 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { CreateCategoryService } from './CreateCategory.service';
 import { Category } from '@/core/drinks/entities/category.entity';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { ConflictError } from '@/shared/error/error.lib';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 
 let categoriesRepository: ICategoriesRepository;
 let service: CreateCategoryService;
 
-const { translations, is_alcoholic } = createCategoryFactory({ is_alcoholic: true });
+const { translations, isAlcoholic } = createCategoryFactory({ isAlcoholic: true });
 
 describe('Create Category', () => {
 	beforeEach(() => {
@@ -18,17 +18,17 @@ describe('Create Category', () => {
 	});
 
 	it('should be able to create a new category', async () => {
-		await service.execute({ translations, is_alcoholic });
+		await service.execute({ translations, isAlcoholic });
 
 		const createdCategory = (await categoriesRepository.findByName(translations)) as Category;
 
-		expect(createdCategory).toHaveProperty('_id');
-		expect(createdCategory.is_alcoholic).toEqual(is_alcoholic);
+		expect(createdCategory).toHaveProperty('id');
+		expect(createdCategory.isAlcoholic).toEqual(isAlcoholic);
 	});
 
 	it('should not be able to create a category with an existing name', async () => {
-		await categoriesRepository.create({ translations, is_alcoholic });
+		await categoriesRepository.create({ translations, isAlcoholic });
 
-		await expect(service.execute({ translations, is_alcoholic })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ translations, isAlcoholic })).rejects.toBeInstanceOf(ConflictError);
 	});
 });

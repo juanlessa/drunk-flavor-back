@@ -6,10 +6,10 @@ export const getSummaryByDrinkController: Controller<{ Params: GetSummaryByDrink
 	request,
 	reply,
 ) => {
-	const { drink_id } = request.params;
+	const { drinkId } = request.params;
 
 	const service = resolveGetSummaryByDrinkService();
-	const summary = await service.execute({ drink_id });
+	const summary = await service.execute({ drinkId });
 
 	return reply.send(summary);
 };

@@ -1,9 +1,5 @@
-export type CreateCredential = {
-	user_id: string;
-	password_hash: string;
-};
+import { Credential } from '../entities/credential.entity';
 
-export type UpdateCredential = {
-	user_id: string;
-	password_hash: string;
-};
+export type CreateCredential = Pick<Credential, 'userId' | 'passwordHash'>;
+
+export type UpdateCredential = Pick<Credential, 'userId' | 'passwordHash'>;

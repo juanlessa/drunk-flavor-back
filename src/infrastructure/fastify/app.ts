@@ -6,12 +6,12 @@ import helmet from '@fastify/helmet';
 import session from '@fastify/secure-session';
 import fastifyMultipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
-import i18n from 'fastify-i18n';
 import rateLimit from '@fastify/rate-limit';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUI from '@fastify/swagger-ui';
 import { jsonSchemaTransform, serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import { errorHandler } from './middlewares/errorHandler';
+import { notFoundHandler } from './middlewares/notFoundHandler';
 import { REFRESH_TOKEN_OPTIONS, TOKEN_OPTIONS } from './constants/jwt.constants';
 import { SESSION_OPTIONS } from './constants/session.constants';
 import { FASTIFY_COOKIE_OPTIONS } from './constants/cookie.constants';
@@ -22,6 +22,7 @@ import { DOCS_URL, SWAGGER_OPTIONS, SWAGGER_UI_OPTIONS } from './constants/swagg
 import { MULTIPART_OPTIONS } from './constants/multipart.constants';
 import { STATIC_FILES_OPTIONS, STATIC_FILES_URL } from './constants/static.constants';
 import { setLogger, logger } from '@/shared/providers/logger';
+import { i18nPlugin } from '@/infrastructure/i18n/i18n.plugin';
 import { I18N_OPTIONS } from './constants/i18n.constants';
 import { PINO_LOGGER_OPTIONS } from '@/shared/providers/logger/implementations/pinoLogger.constants';
 import { CORS_OPTIONS } from './constants/cors.constants';
@@ -43,7 +44,7 @@ export const app = fastify({
 });
 
 app.register(helmet);
-app.register(i18n, I18N_OPTIONS);
+app.register(i18nPlugin, I18N_OPTIONS);
 app.register(rateLimit, RATE_LIMIT_OPTIONS);
 app.register(cors, CORS_OPTIONS);
 app.register(fastifyCookie, FASTIFY_COOKIE_OPTIONS);
@@ -65,6 +66,7 @@ void app.register(fastifySwaggerUI, SWAGGER_UI_OPTIONS);
 
 router.map((route) => app.register(route));
 app.setErrorHandler(errorHandler);
+app.setNotFoundHandler(notFoundHandler);
 
 export const startApp = async () => {
 	LoggerInstance.setLogger(app.log);

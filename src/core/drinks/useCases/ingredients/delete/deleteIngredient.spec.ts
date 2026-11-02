@@ -6,7 +6,7 @@ import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Uni
 import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { DeleteIngredientService } from './DeleteIngredient.service';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError } from '@/shared/error/error.lib';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
@@ -33,7 +33,7 @@ describe('Delete Ingredient', () => {
 
 		createdCategory = await categoriesRepository.create({
 			translations: categoryTranslations,
-			is_alcoholic: false,
+			isAlcoholic: false,
 		});
 		createdUnit = await unitsRepository.create(createUnitFactory());
 	});
@@ -44,15 +44,15 @@ describe('Delete Ingredient', () => {
 			unit: createdUnit,
 		});
 
-		await service.execute({ id: createdIngredient._id.toString() });
+		await service.execute({ id: createdIngredient.id });
 
-		const findDeledIngredient = await ingredientsRepository.findById(createdIngredient._id.toString());
+		const findDeledIngredient = await ingredientsRepository.findById(createdIngredient.id);
 
 		expect(findDeledIngredient).toBeNull();
 	});
 
 	it('should not be able to delete a nonexistent ingredient', async () => {
 		const nonexistentId = new ObjectId().toString();
-		await expect(service.execute({ id: nonexistentId })).rejects.toBeInstanceOf(BadRequestError);
+		await expect(service.execute({ id: nonexistentId })).rejects.toBeInstanceOf(NotFoundError);
 	});
 });

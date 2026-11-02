@@ -7,7 +7,7 @@ import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CreateIngredientService } from './CreateIngredient.service';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { ConflictError, BadRequestError } from '@/shared/error/error.lib';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
@@ -34,7 +34,7 @@ describe('Create Ingredient', () => {
 
 		createdCategory = await categoriesRepository.create({
 			translations: categoryTranslations,
-			is_alcoholic: false,
+			isAlcoholic: false,
 		});
 		createdUnit = await unitsRepository.create(createUnitFactory());
 	});
@@ -42,13 +42,13 @@ describe('Create Ingredient', () => {
 	it('should be able to create a new ingredient', async () => {
 		await service.execute({
 			translations,
-			category_id: createdCategory._id.toString(),
-			unit_id: createdUnit._id.toString(),
+			categoryId: createdCategory.id,
+			unitId: createdUnit.id,
 		});
 
 		const createdIngredient = (await ingredientsRepository.findByName(translations)) as Ingredient;
 
-		expect(createdIngredient).toHaveProperty('_id');
+		expect(createdIngredient).toHaveProperty('id');
 		expect(createdIngredient.translations).toEqual(translations);
 		expect(createdIngredient.category).toEqual(createdCategory);
 		expect(createdIngredient.unit).toEqual(createdUnit);
@@ -64,18 +64,18 @@ describe('Create Ingredient', () => {
 		await expect(
 			service.execute({
 				translations,
-				category_id: createdCategory._id.toString(),
-				unit_id: createdUnit._id.toString(),
+				categoryId: createdCategory.id,
+				unitId: createdUnit.id,
 			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(ConflictError);
 	});
 
 	it('should not be able to create a ingredient with a nonexistent category', async () => {
 		await expect(
 			service.execute({
 				translations,
-				category_id: new ObjectId().toString(),
-				unit_id: createdUnit._id.toString(),
+				categoryId: new ObjectId().toString(),
+				unitId: createdUnit.id,
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});
@@ -84,8 +84,8 @@ describe('Create Ingredient', () => {
 		await expect(
 			service.execute({
 				translations,
-				category_id: createdCategory._id.toString(),
-				unit_id: new ObjectId().toString(),
+				categoryId: createdCategory.id,
+				unitId: new ObjectId().toString(),
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});

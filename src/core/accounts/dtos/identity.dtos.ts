@@ -1,4 +1,4 @@
 import { Identity } from '@/core/accounts/entities/identity.entity';
-import { DatabaseCommonInfo } from '@/infrastructure/mongo/types';
+import { EntityMetadata } from '@/shared/types/entity.types';
 
-export type CreateIdentity = Omit<Identity, keyof DatabaseCommonInfo>;
+export type CreateIdentity = Omit<Identity, keyof EntityMetadata>;

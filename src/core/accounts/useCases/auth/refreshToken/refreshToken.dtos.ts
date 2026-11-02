@@ -1,3 +1,4 @@
 export type RefreshToken = {
-	user_id: string;
+	userId: string;
+	sessionVersion: number;
 };

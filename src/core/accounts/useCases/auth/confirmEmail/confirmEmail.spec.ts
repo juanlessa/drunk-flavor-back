@@ -2,7 +2,7 @@ import { User } from '@/core/accounts/entities/user.entity';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
@@ -15,6 +15,8 @@ import { env } from '@/env';
 import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { TokensRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Tokens.repository';
 import { ObjectId } from 'mongodb';
+import { SessionVersionMarkerStoreInMemory } from '@/core/accounts/stores/inMemory/SessionVersionMarker.store';
+import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 
 let cryptoProvider: ICryptoProvider;
 let dateProvider: IDateProvider;
@@ -32,14 +34,21 @@ describe('Confirm Email', () => {
 		dateProvider = new DayjsProvider();
 		usersRepository = new UsersRepositoryInMemory();
 		tokensRepository = new TokensRepositoryInMemory();
-		service = new ConfirmEmailService(usersRepository, tokensRepository, dateProvider, cryptoProvider);
+		service = new ConfirmEmailService(
+			usersRepository,
+			tokensRepository,
+			dateProvider,
+			cryptoProvider,
+			new FakeTransactionManager(),
+			new SessionVersionMarkerStoreInMemory(),
+		);
 	});
 
 	afterEach(() => {
 		vi.useRealTimers();
 	});
 
-	it('Should be able confirm the email', async () => {
+	it('verifies the email and activates the user', async () => {
 		const createdUser = await usersRepository.create({
 			name,
 			surname,
@@ -49,31 +58,31 @@ describe('Confirm Email', () => {
 		});
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
-			token_hash: cryptoProvider.hashToken(token),
-			user_id: createdUser._id.toString(),
+			tokenHash: cryptoProvider.hashToken(token),
+			userId: createdUser.id,
 			type: TokenTypes['email-verification'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+			expiresAt: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		await service.execute({
 			token,
 		});
 
-		const verifyUser = (await usersRepository.findById(createdUser._id.toString())) as User;
+		const verifyUser = (await usersRepository.findById(createdUser.id)) as User;
 
-		expect(verifyUser).toBeDefined();
+		expect(verifyUser).not.toBeNull();
 		expect(verifyUser.status).toEqual(UserStatuses['active']);
 	});
 
-	it('should not be able to confirm the email using a nonexisting token', async () => {
+	it('rejects an unknown verification token', async () => {
 		await expect(
 			service.execute({
 				token: 'non-existing-token',
 			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(NotFoundError);
 	});
 
-	it('should not be able to confirm the email using a expired token', async () => {
+	it('rejects an expired verification token', async () => {
 		const createdUser = await usersRepository.create({
 			name,
 			surname,
@@ -83,10 +92,10 @@ describe('Confirm Email', () => {
 		});
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		await tokensRepository.create({
-			token_hash: cryptoProvider.hashToken(token),
-			user_id: createdUser._id.toString(),
+			tokenHash: cryptoProvider.hashToken(token),
+			userId: createdUser.id,
 			type: TokenTypes['email-verification'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+			expiresAt: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		vi.advanceTimersByTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS * 1000 + 1);
@@ -102,20 +111,20 @@ describe('Confirm Email', () => {
 		expect(findToken).toBeNull();
 	});
 
-	it('Should not be able to confirm the email of a nonexistent user', async () => {
+	it('rejects a verification token whose user no longer exists', async () => {
 		const token = await cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		const nonexistentUserId = new ObjectId().toString();
 		await tokensRepository.create({
-			token_hash: cryptoProvider.hashToken(token),
-			user_id: nonexistentUserId,
+			tokenHash: cryptoProvider.hashToken(token),
+			userId: nonexistentUserId,
 			type: TokenTypes['email-verification'],
-			expires_at: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+			expiresAt: dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		await expect(
 			service.execute({
 				token,
 			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(NotFoundError);
 	});
 });

@@ -1,50 +1,45 @@
+import { resolveAccountsModule } from '@/core/accounts/public';
 import { AUTH_COOKIE, AUTH_COOKIE_OPTIONS } from '../constants/cookie.constants';
 import { Middleware } from '../types/fastify.types';
 import { instanceOfFastifyJwtError, instanceOfJwtAuthorizationTokenExpiredError } from '../errors/fastifyJwtError';
+import { toJwtUserPayload } from '../helpers/jwt.helpers';
 import { signOut } from './signOut';
-import { resolveUsersRepository } from '@/core/accounts/infra/mongo/container';
-import { UserStatuses } from '@/core/accounts/constants/user.constants';
-import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 
+/**
+ * HTTP adapter for session validation: verifies the JWT credentials, renews the access token cookie, and signs
+ * out on invalid credentials. Whether the session itself is still valid is decided by the accounts module.
+ */
 export const verifyAndRenewToken: Middleware = async (request, reply) => {
-	// verify access token
+	let accessTokenExpired = false;
 	try {
 		await request.jwtVerify();
-		return;
 	} catch (error) {
-		if (!instanceOfJwtAuthorizationTokenExpiredError(error)) {
-			void signOut(request, reply);
+		if (instanceOfJwtAuthorizationTokenExpiredError(error)) {
+			accessTokenExpired = true;
+		} else {
+			if (instanceOfFastifyJwtError(error)) {
+				await signOut(request, reply);
+			}
 			throw error;
 		}
 	}
 
-	// verify refresh token to renew expired access token
+	if (!accessTokenExpired) {
+		request.user = await resolveAccountsModule().validateOngoingSession({ session: request.user });
+		return;
+	}
+
 	try {
 		await request.sessionJwtVerify();
 	} catch (error) {
 		if (instanceOfFastifyJwtError(error)) {
-			void signOut(request, reply);
+			await signOut(request, reply);
 		}
 		throw error;
 	}
 
-	// verify user
-	const { id } = request.user;
-
-	const usersRepository = resolveUsersRepository();
-	const user = await usersRepository.findById(id);
-	if (!user) {
-		throw new NotFoundError('apiResponses.users.notExist', { path: 'verifyAndRenewToken.middleware' });
-	}
-
-	// An `incomplete_profile` user is not `active`, but must still be able to reach
-	// the profile routes to complete their profile. Allow both; the profile gate
-	// (enforceCompleteProfile) blocks incomplete users from business routes.
-	if (user.status !== UserStatuses.active && user.status !== UserStatuses.incomplete_profile) {
-		throw new BadRequestError('apiResponses.auth.inactiveAccount', { path: 'verifyAndRenewToken.middleware' });
-	}
-
-	// new access token
-	const newAccessToken = await reply.jwtSign({ role: user.role, status: user.status }, { sign: { sub: id } });
+	const session = await resolveAccountsModule().validateSessionRenewal({ session: request.user });
+	request.user = session;
+	const newAccessToken = await reply.jwtSign(toJwtUserPayload(session), { sign: { sub: session.id } });
 	reply.setCookie(AUTH_COOKIE, newAccessToken, AUTH_COOKIE_OPTIONS);
 };

@@ -31,12 +31,21 @@ const typescriptConfig = tsEslint.config({
 /**
  * Module boundary enforcement for the modular monolith.
  *
- * Each bounded context under `src/core/<module>` must stay self-contained: it may
- * not import from a sibling module. Cross-module communication will go through a
- * public interface exposed in `src/shared`. This mirrors the "no-restricted-imports
- * with patterns" guidance from the ESLint docs, scoped per module via `files`.
+ * Each bounded context under `src/core/<module>` must stay self-contained. Imports
+ * from sibling modules are allowed only through that module's `public` folder;
+ * internal entities, repositories, use cases, and infrastructure remain private.
  */
 const coreModules = ['accounts', 'drinks', 'engagement'];
+
+/**
+ * MailDev is a development and test tool (`maildev` is a devDependency). Only the
+ * Vitest setup files, its own folder, and scripts may import it, so it can never
+ * end up in the server or worker bundles.
+ */
+const maildevRestriction = {
+	regex: '^@/infrastructure/maildev(?:$|/)',
+	message: 'MailDev is a development/test tool; import it only from the Vitest setup files or scripts.',
+};
 
 const moduleBoundaryConfigs = coreModules.map((module) => {
 	const otherModules = coreModules.filter((other) => other !== module);
@@ -46,10 +55,13 @@ const moduleBoundaryConfigs = coreModules.map((module) => {
 			'no-restricted-imports': [
 				'error',
 				{
-					patterns: otherModules.map((other) => ({
-						group: [`@/core/${other}`, `@/core/${other}/**`],
-						message: `"${module}" must not import from the "${other}" module. Cross-module communication must go through a public interface exposed in "src/shared".`,
-					})),
+					patterns: [
+						...otherModules.map((other) => ({
+							regex: `^@/core/${other}(?:$|/(?!public(?:/|$)))`,
+							message: `"${module}" may import from the "${other}" module only through "@/core/${other}/public".`,
+						})),
+						maildevRestriction,
+					],
 				},
 			],
 		},
@@ -71,6 +83,8 @@ const vitestConfig = {
 	rules: {
 		...vitest.configs.recommended.rules,
 		'vitest/max-nested-describe': ['error', { max: 3 }],
+		// Assertion helpers named `expect*` (for example `expectCapabilities`) count as assertions.
+		'vitest/expect-expect': ['error', { assertFunctionNames: ['expect', 'expect*'] }],
 	},
 };
 
@@ -78,6 +92,13 @@ export default [
 	{ ignores: ['dist/**', 'coverage/**', 'build/**', 'node_modules/**'] },
 	...typescriptConfig,
 	...moduleBoundaryConfigs,
+	{
+		files: ['src/**/*.ts'],
+		ignores: ['src/core/**', 'src/infrastructure/maildev/**', 'src/infrastructure/vitest/**'],
+		rules: {
+			'no-restricted-imports': ['error', { patterns: [maildevRestriction] }],
+		},
+	},
 	vitestConfig,
 	eslintConfigPrettier,
 ];

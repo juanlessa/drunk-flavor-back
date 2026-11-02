@@ -1,6 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { DrinkModel } from '@/core/drinks/infra/mongo/entities/drink.model';
-import { Drink } from '@/core/drinks/entities/drink.entity';
+import { DrinkModel, DrinkPersistence } from '@/core/drinks/infra/mongo/entities/drink.model';
 import { logger } from '@/shared/providers/logger';
 import { ingredientsMap } from './ingredients';
 
@@ -119,12 +118,12 @@ const drinks = [
 		created_at: new Date(),
 		updated_at: new Date(),
 	},
-] as const satisfies readonly Drink[];
+] as const satisfies readonly DrinkPersistence[];
 
 type DrinkEnName = (typeof drinks)[number]['translations']['en']['name'];
 
-export const drinksMap = new Map<DrinkEnName, Drink>(
-	drinks.map<[DrinkEnName, Drink]>((drink) => [drink.translations.en.name, drink]),
+export const drinksMap = new Map<DrinkEnName, DrinkPersistence>(
+	drinks.map<[DrinkEnName, DrinkPersistence]>((drink) => [drink.translations.en.name, drink]),
 );
 
 export async function insertDrinks() {

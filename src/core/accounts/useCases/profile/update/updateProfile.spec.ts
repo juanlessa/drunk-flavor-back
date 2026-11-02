@@ -2,11 +2,13 @@ import { User } from '@/core/accounts/entities/user.entity';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
 import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError } from '@/shared/error/error.lib';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { UpdateProfileService } from './UpdateProfile.service';
+import { SessionVersionMarkerStoreInMemory } from '@/core/accounts/stores/inMemory/SessionVersionMarker.store';
+import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 
 let usersRepository: IUsersRepository;
 let service: UpdateProfileService;
@@ -17,10 +19,14 @@ const { name: updatedName, surname: updatedSurname } = createUserFactory({ name:
 describe('Update Profile', () => {
 	beforeEach(async () => {
 		usersRepository = new UsersRepositoryInMemory();
-		service = new UpdateProfileService(usersRepository);
+		service = new UpdateProfileService(
+			usersRepository,
+			new FakeTransactionManager(),
+			new SessionVersionMarkerStoreInMemory(),
+		);
 	});
 
-	it('Should be able to update the profile', async () => {
+	it('updates the profile names', async () => {
 		const createdUser = await usersRepository.create({
 			name,
 			surname,
@@ -29,14 +35,14 @@ describe('Update Profile', () => {
 			status,
 		});
 		await service.execute({
-			id: createdUser._id.toString(),
+			id: createdUser.id,
 			name: updatedName,
 			surname: updatedSurname,
 		});
 
-		const verifyUser = (await usersRepository.findById(createdUser._id.toString())) as User;
+		const verifyUser = (await usersRepository.findById(createdUser.id)) as User;
 
-		expect(verifyUser).toBeDefined();
+		expect(verifyUser).not.toBeNull();
 		expect(verifyUser.name).toEqual(updatedName);
 		expect(verifyUser.surname).toEqual(updatedSurname);
 	});
@@ -49,15 +55,17 @@ describe('Update Profile', () => {
 		});
 
 		const result = await service.execute({
-			id: createdUser._id.toString(),
+			id: createdUser.id,
 			name: updatedName,
 			surname: updatedSurname,
 		});
 
 		expect(result.user.status).toBe(UserStatuses.active);
+		expect(result.user.sessionVersion).toBe(createdUser.sessionVersion + 1);
 
-		const verifyUser = (await usersRepository.findById(createdUser._id.toString())) as User;
+		const verifyUser = (await usersRepository.findById(createdUser.id)) as User;
 		expect(verifyUser.status).toBe(UserStatuses.active);
+		expect(verifyUser.sessionVersion).toBe(createdUser.sessionVersion + 1);
 		expect(verifyUser.name).toEqual(updatedName);
 		expect(verifyUser.surname).toEqual(updatedSurname);
 	});
@@ -72,20 +80,22 @@ describe('Update Profile', () => {
 		});
 
 		const result = await service.execute({
-			id: createdUser._id.toString(),
+			id: createdUser.id,
 			name: updatedName,
 			surname: updatedSurname,
 		});
 
 		expect(result.user.status).toBe(UserStatuses.active);
+		expect(result.user.sessionVersion).toBe(createdUser.sessionVersion);
 
-		const verifyUser = (await usersRepository.findById(createdUser._id.toString())) as User;
+		const verifyUser = (await usersRepository.findById(createdUser.id)) as User;
 		expect(verifyUser.status).toBe(UserStatuses.active);
+		expect(verifyUser.sessionVersion).toBe(createdUser.sessionVersion);
 		expect(verifyUser.name).toEqual(updatedName);
 		expect(verifyUser.surname).toEqual(updatedSurname);
 	});
 
-	it('should not be able to update a nonexistent profile', async () => {
+	it('rejects a nonexistent profile', async () => {
 		const nonexistentUserId = new ObjectId().toString();
 		await expect(
 			service.execute({
@@ -93,6 +103,6 @@ describe('Update Profile', () => {
 				name: updatedName,
 				surname: updatedSurname,
 			}),
-		).rejects.toBeInstanceOf(BadRequestError);
+		).rejects.toBeInstanceOf(NotFoundError);
 	});
 });

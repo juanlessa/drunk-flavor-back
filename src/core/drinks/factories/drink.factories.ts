@@ -1,5 +1,5 @@
+import { randomUUID } from 'node:crypto';
 import { DeepPartial } from '@/shared/types/utility.types';
-import { ObjectId } from 'mongodb';
 import { Drink } from '@/core/drinks/entities/drink.entity';
 import { CreateDrinkDTO } from '../useCases/drinks/create/createDrink.dtos';
 
@@ -14,11 +14,11 @@ export const createDrinkFactory = (drink?: DeepPartial<CreateDrinkDTO>): CreateD
 			method: drink?.translations?.pt?.method || 'Modo de preparo ...',
 		},
 	},
-	ingredients: [],
+	ingredients: (drink?.ingredients ?? []) as CreateDrinkDTO['ingredients'],
 });
 
 export const createPersistedDrinkFactory = (drink?: DeepPartial<Drink>): Drink => ({
-	_id: new ObjectId(),
+	id: drink?.id ?? randomUUID(),
 	translations: {
 		en: {
 			name: drink?.translations?.en?.name || 'Tequila sunrise',
@@ -29,12 +29,12 @@ export const createPersistedDrinkFactory = (drink?: DeepPartial<Drink>): Drink =
 			method: drink?.translations?.pt?.method || 'Modo de preparo ...',
 		},
 	},
-	cover: undefined,
-	thumbnail: undefined,
-	ingredients: [],
-	avg_rating: drink?.avg_rating ?? 0,
-	ratings_count: drink?.ratings_count ?? 0,
-	ratings_sum: drink?.ratings_sum ?? 0,
-	created_at: new Date(),
-	updated_at: new Date(),
+	cover: drink?.cover,
+	thumbnail: drink?.thumbnail,
+	ingredients: (drink?.ingredients?.filter((ingredient) => ingredient !== undefined) as Drink['ingredients']) ?? [],
+	avgRating: drink?.avgRating ?? 0,
+	ratingsCount: drink?.ratingsCount ?? 0,
+	ratingsSum: drink?.ratingsSum ?? 0,
+	createdAt: (drink?.createdAt as Date | undefined) ?? new Date(),
+	updatedAt: (drink?.updatedAt as Date | undefined) ?? new Date(),
 });

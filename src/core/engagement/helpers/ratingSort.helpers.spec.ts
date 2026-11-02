@@ -2,19 +2,19 @@ import { normalizeRatingSort } from '@/core/engagement/helpers/ratingSort.helper
 import { describe, expect, it } from 'vitest';
 
 describe('normalizeRatingSort', () => {
-	it('defaults to newest-first with the _id tie-breaker when no client sort is present', () => {
-		expect(normalizeRatingSort()).toEqual({ created_at: -1, _id: -1 });
+	it('defaults to newest-first with the id tie-breaker when no client sort is present', () => {
+		expect(normalizeRatingSort()).toEqual({ createdAt: -1, id: -1 });
 	});
 
-	it('converts aliases and always appends _id last', () => {
-		expect(normalizeRatingSort({ value: 'asc', created_at: 'descending' })).toEqual({
+	it('converts aliases and always appends id last', () => {
+		expect(normalizeRatingSort({ value: 'asc', createdAt: 'descending' })).toEqual({
 			value: 1,
-			created_at: -1,
-			_id: -1,
+			createdAt: -1,
+			id: -1,
 		});
 	});
 
 	it('ignores undefined fields', () => {
-		expect(normalizeRatingSort({ value: undefined })).toEqual({ created_at: -1, _id: -1 });
+		expect(normalizeRatingSort({ value: undefined })).toEqual({ createdAt: -1, id: -1 });
 	});
 });

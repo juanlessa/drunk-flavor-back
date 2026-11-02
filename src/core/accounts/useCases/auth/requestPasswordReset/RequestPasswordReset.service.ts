@@ -4,7 +4,7 @@ import { TokenTypes } from '@/core/accounts/constants/token.constants';
 import { IEmailQueueProvider } from '@/shared/providers/queue/email/IEmailQueue.provider';
 import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
-import { BadRequestError } from '@/shared/error/error.lib';
+import { NotFoundError, ConflictError } from '@/shared/error/error.lib';
 import { MAIL_SENDERS } from '@/shared/constants/mailer.constants';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { CLIENT_PAGE_PATHS } from '@/shared/constants/client.constants';
@@ -25,31 +25,31 @@ export class RequestPasswordResetService {
 	async execute({ email }: RequestPasswordReset) {
 		const user = await this.usersRepository.findByEmail(email);
 		if (!user) {
-			throw new BadRequestError('apiResponses.users.notExist', { path: 'RequestPasswordReset.service.1' });
+			throw new NotFoundError('apiResponses.users.notFound', { path: 'RequestPasswordReset.service.1' });
 		}
 
 		const tokenAlreadyExists = await this.tokensRepository.findByUserIdAndType({
-			user_id: user._id.toString(),
+			userId: user.id,
 			type: TokenTypes['forgot-password'],
 		});
 
-		if (tokenAlreadyExists && !this.dateProvider.isExpiredDate(tokenAlreadyExists.expires_at)) {
-			throw new BadRequestError('apiResponses.auth.actionAlreadyRequested', {
+		if (tokenAlreadyExists && !this.dateProvider.isExpiredDate(tokenAlreadyExists.expiresAt)) {
+			throw new ConflictError('apiResponses.auth.actionAlreadyRequested', {
 				path: 'RequestPasswordReset.service.2',
 			});
 		}
 
-		if (tokenAlreadyExists && this.dateProvider.isExpiredDate(tokenAlreadyExists.expires_at)) {
-			await this.tokensRepository.delete(tokenAlreadyExists._id.toString());
+		if (tokenAlreadyExists && this.dateProvider.isExpiredDate(tokenAlreadyExists.expiresAt)) {
+			await this.tokensRepository.delete(tokenAlreadyExists.id);
 		}
 
 		const token = await this.cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 
 		await this.tokensRepository.create({
-			token_hash: this.cryptoProvider.hashToken(token),
+			tokenHash: this.cryptoProvider.hashToken(token),
 			type: TokenTypes['forgot-password'],
-			user_id: user._id.toString(),
-			expires_at: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
+			userId: user.id,
+			expiresAt: this.dateProvider.addSecondsToCurrentTime(env.VERIFICATION_TOKEN_EXPIRES_IN_SECONDS),
 		});
 
 		const template = await this.templateProvider.forgotPassword({

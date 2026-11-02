@@ -14,7 +14,7 @@ jobs:
 
         services:
             mailpit:
-                image: axllent/mailpit:v1.31.6
+                image: axllent/mailpit:v1.33.0
                 env:
                     MP_DISABLE_VERSION_CHECK: 'true'
                     MP_SMTP_DISABLE_RDNS: 'true'
@@ -84,7 +84,7 @@ jobs:
             - name: E2E tests
               run: |
                   npm run generate-secret-key
-                  npm run test:e2e:run
+                  npm run test:e2e
               env:
                   LOGGER_ENABLED: false
                   MONGO_MODE: 'external'
@@ -100,6 +100,7 @@ jobs:
                   REDIS_USERNAME: ''
                   REDIS_PASSWORD: ''
                   REDIS_DATABASE: '0'
+                  SMTP_MODE: 'external'
                   SMTP_DOMAIN: 'drunkflavor.com'
                   SMTP_HOST: 'localhost'
                   SMTP_PORT: '1025'

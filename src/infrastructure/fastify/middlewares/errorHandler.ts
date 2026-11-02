@@ -9,6 +9,11 @@ import { unhandledError } from '@/shared/error/unhandledError';
 import { ErrorResponse } from '@/shared/error/error.dtos';
 import { handleFastifyError, instanceOfFastifyError } from '@/infrastructure/fastify/errors/fastifyError';
 import { ErrorHandler } from '../types/fastify.types';
+import { SessionRevokedError } from '@/core/accounts/errors/session.errors';
+import { AUTH_COOKIE } from '../constants/cookie.constants';
+import { i18n } from '@/infrastructure/i18n';
+import { setLocalizedResponseHeaders } from '@/infrastructure/i18n/i18n.helpers';
+import { resolveErrorCode } from '@/shared/error/error.codes';
 
 export const handleCustomError = (error: unknown) =>
 	match(error)
@@ -21,9 +26,26 @@ export const handleCustomError = (error: unknown) =>
 		.otherwise(unhandledError);
 
 export const errorHandler: ErrorHandler = async (error, request, reply) => {
-	const { statusCode, localeKey }: ErrorResponse = handleCustomError(error);
+	if (error instanceof SessionRevokedError) {
+		request.session.delete();
+		reply.clearCookie(AUTH_COOKIE);
+	}
 
-	const message = request.i18n.t(localeKey);
+	const { statusCode, localeKey, errors }: ErrorResponse = handleCustomError(error);
 
-	return reply.status(statusCode).send({ ok: false, localeKey, message });
+	const message = i18n.translate(request.locale, localeKey);
+	setLocalizedResponseHeaders(reply, request.locale);
+
+	return reply.status(statusCode).send({
+		ok: false,
+		code: resolveErrorCode(localeKey, statusCode),
+		localeKey,
+		message,
+		...(errors && {
+			errors: errors.map((fieldError) => ({
+				...fieldError,
+				message: i18n.translate(request.locale, fieldError.localeKey, fieldError.params),
+			})),
+		}),
+	});
 };
