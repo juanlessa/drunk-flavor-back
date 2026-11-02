@@ -1,10 +1,10 @@
 import { resolveIdentitiesRepository, resolveUsersRepository } from '@/core/accounts/infra/mongo/container';
 import { resolveDateProvider } from '@/shared/providers/date';
-import { resolveGoogleTokenVerifier } from '@/shared/providers/googleAuth';
+import { resolveGoogleIdentityProvider } from '@/shared/providers/googleAuth';
 import { ReauthenticateGoogleService } from './ReauthenticateGoogle.service';
 
 const service = new ReauthenticateGoogleService(
-	resolveGoogleTokenVerifier(),
+	resolveGoogleIdentityProvider(),
 	resolveUsersRepository(),
 	resolveIdentitiesRepository(),
 	resolveDateProvider(),

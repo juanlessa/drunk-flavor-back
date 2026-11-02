@@ -5,36 +5,44 @@ import type { NodeEnv } from './node';
 const REQUIRING_ENVS = ['production', 'development'] as const;
 const DEFAULTING_ENVS = ['testing', 'e2e'] as const;
 
-const GOOGLE_CLIENT_ID_DEFAULT = 'test-google-client-id.apps.googleusercontent.com';
-const VALID_CLIENT_ID = 'real-client-id.apps.googleusercontent.com';
+const VARIABLES = [
+	{
+		name: 'GOOGLE_CLIENT_ID',
+		testDefault: 'test-google-client-id.apps.googleusercontent.com',
+		valid: 'real-client-id.apps.googleusercontent.com',
+	},
+	{ name: 'GOOGLE_CLIENT_SECRET', testDefault: 'test-google-client-secret', valid: 'real-client-secret' },
+] as const;
+
+const VALID_SOURCE = Object.fromEntries(VARIABLES.map(({ name, valid }) => [name, valid]));
 
 const asSource = (env: Record<string, string>) => env as unknown as NodeJS.ProcessEnv;
+const without = (name: string) => Object.fromEntries(Object.entries(VALID_SOURCE).filter(([key]) => key !== name));
 
 describe('parseGoogleAuthEnv', () => {
-	describe.each(REQUIRING_ENVS)('requires GOOGLE_CLIENT_ID in "%s"', (nodeEnv: NodeEnv) => {
-		it('rejects an absent GOOGLE_CLIENT_ID', () => {
-			expect(() => parseGoogleAuthEnv(asSource({}), nodeEnv)).toThrow();
+	describe.each(VARIABLES)('$name', ({ name, testDefault, valid }) => {
+		describe.each(REQUIRING_ENVS)('in "%s"', (nodeEnv: NodeEnv) => {
+			it('rejects an absent value', () => {
+				expect(() => parseGoogleAuthEnv(asSource(without(name)), nodeEnv)).toThrow();
+			});
+
+			it('rejects an empty value', () => {
+				expect(() => parseGoogleAuthEnv(asSource({ ...VALID_SOURCE, [name]: '' }), nodeEnv)).toThrow();
+			});
+
+			it('accepts a non-empty value', () => {
+				expect(parseGoogleAuthEnv(asSource(VALID_SOURCE), nodeEnv)[name]).toBe(valid);
+			});
 		});
 
-		it('rejects an empty GOOGLE_CLIENT_ID', () => {
-			expect(() => parseGoogleAuthEnv(asSource({ GOOGLE_CLIENT_ID: '' }), nodeEnv)).toThrow();
-		});
+		describe.each(DEFAULTING_ENVS)('in "%s"', (nodeEnv: NodeEnv) => {
+			it('applies the placeholder default when absent', () => {
+				expect(parseGoogleAuthEnv(asSource({}), nodeEnv)[name]).toBe(testDefault);
+			});
 
-		it('accepts a non-empty GOOGLE_CLIENT_ID', () => {
-			const result = parseGoogleAuthEnv(asSource({ GOOGLE_CLIENT_ID: VALID_CLIENT_ID }), nodeEnv);
-			expect(result.GOOGLE_CLIENT_ID).toBe(VALID_CLIENT_ID);
-		});
-	});
-
-	describe.each(DEFAULTING_ENVS)('defaults GOOGLE_CLIENT_ID in "%s"', (nodeEnv: NodeEnv) => {
-		it('applies the placeholder default when absent', () => {
-			const result = parseGoogleAuthEnv(asSource({}), nodeEnv);
-			expect(result.GOOGLE_CLIENT_ID).toBe(GOOGLE_CLIENT_ID_DEFAULT);
-		});
-
-		it('still honors an explicit value', () => {
-			const result = parseGoogleAuthEnv(asSource({ GOOGLE_CLIENT_ID: VALID_CLIENT_ID }), nodeEnv);
-			expect(result.GOOGLE_CLIENT_ID).toBe(VALID_CLIENT_ID);
+			it('still honors an explicit value', () => {
+				expect(parseGoogleAuthEnv(asSource(VALID_SOURCE), nodeEnv)[name]).toBe(valid);
+			});
 		});
 	});
 });

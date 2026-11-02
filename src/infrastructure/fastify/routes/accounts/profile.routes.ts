@@ -1,6 +1,7 @@
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { pluginGenerator } from '../../helpers/fastify.helpers';
 import { requireRecentAuthentication } from '../../middlewares/requireRecentAuthentication';
+import { requireXmlHttpRequest } from '../../middlewares/requireXmlHttpRequest';
 import { verifyAndRenewToken } from '../../middlewares/verifyAndRenewToken';
 import { Routes } from '../../types/fastify.types';
 import { createPasswordController } from '@/core/accounts/useCases/profile/createPassword/createPassword.controller';
@@ -55,7 +56,7 @@ const routes: Routes = (server) => {
 		{
 			config: { rateLimit: { max: 5, timeWindow: ONE_MINUTE, ban: BAN_THRESHOLD } },
 			schema: { tags: ['Profile'], body: linkGoogleIdentitySchema },
-			preValidation: [verifyAndRenewToken, requireRecentAuthentication],
+			preValidation: [requireXmlHttpRequest, verifyAndRenewToken, requireRecentAuthentication],
 		},
 		linkGoogleIdentityController,
 	);
@@ -65,7 +66,7 @@ const routes: Routes = (server) => {
 		{
 			config: { rateLimit: { max: 5, timeWindow: ONE_MINUTE, ban: BAN_THRESHOLD } },
 			schema: { tags: ['Profile'], body: reauthenticateGoogleSchema },
-			preValidation: [verifyAndRenewToken],
+			preValidation: [requireXmlHttpRequest, verifyAndRenewToken],
 		},
 		reauthenticateGoogleController,
 	);

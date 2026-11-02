@@ -4,14 +4,15 @@ import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { IdentityModel } from '@/core/accounts/infra/mongo/entities/identity.model';
 import { CredentialModel } from '@/core/accounts/infra/mongo/entities/credential.model';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
-import { resetFakeGoogleTokenVerifier, setNextVerifiedGoogleIdentity } from '@/shared/providers/googleAuth';
+import { resetFakeGoogleIdentityProvider, setNextVerifiedGoogleIdentity } from '@/shared/providers/googleAuth';
+import { GOOGLE_POPUP_HEADERS } from '@/infrastructure/fastify/tests/accounts/helpers/authentication.helpers';
 import { VerifiedGoogleIdentity } from '@/shared/providers/googleAuth/googleAuth.dtos';
 import { AUTH_COOKIE } from '@/infrastructure/fastify/constants/cookie.constants';
 import { resolveRateLimitStore } from '@/infrastructure/fastify/rateLimitStore';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { app } from '@/infrastructure/fastify/app';
 
-const idToken = 'any-google-id-token';
+const code = 'any-google-authorization-code';
 const verifiedIdentity: VerifiedGoogleIdentity = {
 	subject: 'google-e2e-sub-123',
 	email: 'googleuser@example.com',
@@ -37,13 +38,13 @@ describe('Google Sign-In', () => {
 		await MongoConnection.Instance.emptyCollection(IdentityModel);
 		await MongoConnection.Instance.emptyCollection(CredentialModel);
 		await resolveRateLimitStore().reset();
-		resetFakeGoogleTokenVerifier();
+		resetFakeGoogleIdentityProvider();
 	});
-	afterEach(() => resetFakeGoogleTokenVerifier());
+	afterEach(() => resetFakeGoogleIdentityProvider());
 
 	it('creates a new account and authenticated session', async () => {
 		setNextVerifiedGoogleIdentity(verifiedIdentity);
-		const response = await request(app.server).post('/google').send({ idToken });
+		const response = await request(app.server).post('/google').set(GOOGLE_POPUP_HEADERS).send({ code });
 
 		expect(response.status).toBe(HTTP_STATUS.ok);
 		expect(hasAuthCookie(response.headers['set-cookie'])).toBe(true);
@@ -51,5 +52,14 @@ describe('Google Sign-In', () => {
 			status: 'active',
 			email_verified: true,
 		});
+	});
+
+	it('rejects a request without the X-Requested-With CSRF header', async () => {
+		setNextVerifiedGoogleIdentity(verifiedIdentity);
+		const response = await request(app.server).post('/google').send({ code });
+
+		expect(response.status).toBe(HTTP_STATUS.forbidden);
+		expect(hasAuthCookie(response.headers['set-cookie'])).toBe(false);
+		expect(await UserModel.countDocuments()).toBe(0);
 	});
 });

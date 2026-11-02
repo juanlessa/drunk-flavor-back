@@ -7,14 +7,14 @@ import { IdentitiesRepositoryInMemory } from '@/core/accounts/repositories/inMem
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
 import { ConflictError, UnauthorizedError } from '@/shared/error/error.lib';
 import { NativeDateProvider } from '@/shared/providers/date/implementations/NativeDate.provider';
-import { FakeGoogleTokenVerifier } from '@/shared/providers/googleAuth/fakes/FakeGoogleTokenVerifier';
+import { FakeGoogleIdentityProvider } from '@/shared/providers/googleAuth/fakes/FakeGoogleIdentityProvider';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { LinkGoogleIdentityService } from './LinkGoogleIdentity.service';
 import { SessionVersionMarkerStoreInMemory } from '@/core/accounts/stores/inMemory/SessionVersionMarker.store';
 
 let usersRepository: IUsersRepository;
 let identitiesRepository: IIdentitiesRepository;
-let verifier: FakeGoogleTokenVerifier;
+let googleIdentityProvider: FakeGoogleIdentityProvider;
 let service: LinkGoogleIdentityService;
 
 const seedAccount = () => usersRepository.create(createUserFactory({ email: 'local@example.com' }));
@@ -23,11 +23,11 @@ describe('Link Google Identity', () => {
 	beforeEach(() => {
 		usersRepository = new UsersRepositoryInMemory();
 		identitiesRepository = new IdentitiesRepositoryInMemory();
-		verifier = new FakeGoogleTokenVerifier();
+		googleIdentityProvider = new FakeGoogleIdentityProvider();
 		service = new LinkGoogleIdentityService(
 			usersRepository,
 			identitiesRepository,
-			verifier,
+			googleIdentityProvider,
 			new NativeDateProvider(),
 			new FakeTransactionManager(),
 			new SessionVersionMarkerStoreInMemory(),
@@ -37,7 +37,7 @@ describe('Link Google Identity', () => {
 	it('links a verified Google identity and revokes older sessions', async () => {
 		const user = await seedAccount();
 
-		const result = await service.execute({ userId: user.id, idToken: 'token' });
+		const result = await service.execute({ userId: user.id, authorizationCode: 'token' });
 
 		const identity = await identitiesRepository.findByProviderSub(IdentityProviders.google, 'fake-google-sub');
 		expect(identity?.userId).toBe(user.id);
@@ -46,12 +46,14 @@ describe('Link Google Identity', () => {
 
 	it('rejects an unverified Google identity', async () => {
 		const user = await seedAccount();
-		verifier.setNextIdentity({
+		googleIdentityProvider.setNextIdentity({
 			subject: 'fake-google-sub',
 			isEmailVerified: false,
 		});
 
-		await expect(service.execute({ userId: user.id, idToken: 'token' })).rejects.toBeInstanceOf(UnauthorizedError);
+		await expect(service.execute({ userId: user.id, authorizationCode: 'token' })).rejects.toBeInstanceOf(
+			UnauthorizedError,
+		);
 		expect(await identitiesRepository.listProvidersByUserId(user.id)).toEqual([]);
 	});
 
@@ -63,7 +65,9 @@ describe('Link Google Identity', () => {
 			providerSubject: 'fake-google-sub',
 		});
 
-		await expect(service.execute({ userId: user.id, idToken: 'token' })).rejects.toBeInstanceOf(ConflictError);
+		await expect(service.execute({ userId: user.id, authorizationCode: 'token' })).rejects.toBeInstanceOf(
+			ConflictError,
+		);
 	});
 
 	it('rejects connecting a second Google identity to the same user', async () => {
@@ -74,6 +78,8 @@ describe('Link Google Identity', () => {
 			providerSubject: 'another-google-sub',
 		});
 
-		await expect(service.execute({ userId: user.id, idToken: 'token' })).rejects.toBeInstanceOf(ConflictError);
+		await expect(service.execute({ userId: user.id, authorizationCode: 'token' })).rejects.toBeInstanceOf(
+			ConflictError,
+		);
 	});
 });

@@ -24,7 +24,7 @@ export const reauthenticateGoogleController: Controller<{ Body: ReauthenticateGo
 	try {
 		const result = await resolveReauthenticateGoogleService().execute({
 			userId: request.user.id,
-			idToken: request.body.idToken,
+			authorizationCode: request.body.code,
 		});
 
 		request.session.set(AUTH_SESSION, {

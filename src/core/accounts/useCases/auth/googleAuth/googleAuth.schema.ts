@@ -1,5 +1,6 @@
 import { z } from 'zod/v4';
 
+/** Authorization code returned by the Google popup (GIS code model), exchanged on the server. */
 export const googleAuthSchema = z.object({
-	idToken: z.string().min(1, { message: 'apiResponses.auth.googleTokenRequired' }),
+	code: z.string().min(1, { message: 'apiResponses.auth.googleCodeRequired' }),
 });

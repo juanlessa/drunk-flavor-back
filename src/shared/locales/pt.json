@@ -13,7 +13,8 @@
 			"routeNotFound": "Rota não encontrada",
 			"fileTooLarge": "O arquivo enviado é grande demais",
 			"tooManyParts": "A requisição contém arquivos ou campos demais",
-			"invalidMultipart": "A requisição multipart é inválida"
+			"invalidMultipart": "A requisição multipart é inválida",
+			"missingRequestedWithHeader": "A requisição não contém o header X-Requested-With"
 		},
 		"validation": {
 			"failed": "Um ou mais campos são inválidos",
@@ -43,7 +44,7 @@
 			"invalidResource": "Recurso inválido",
 			"tooManyRequests": "Muitas requisições. Tente novamente mais tarde.",
 			"googleEmailNotVerified": "O e-mail da sua conta Google não foi verificado.",
-			"googleTokenRequired": "O token de ID do Google é obrigatório.",
+			"googleCodeRequired": "O código de autorização do Google é obrigatório.",
 			"accountLinkRequired": "Já existe uma conta com este e-mail. Entre e conecte o Google pelo seu perfil."
 		},
 		"users": {

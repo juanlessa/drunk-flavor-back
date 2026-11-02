@@ -13,7 +13,8 @@
 			"routeNotFound": "Route not found",
 			"fileTooLarge": "The uploaded file is too large",
 			"tooManyParts": "The request contains too many files or fields",
-			"invalidMultipart": "The multipart request is invalid"
+			"invalidMultipart": "The multipart request is invalid",
+			"missingRequestedWithHeader": "The request is missing the X-Requested-With header"
 		},
 		"validation": {
 			"failed": "One or more fields are invalid",
@@ -43,7 +44,7 @@
 			"invalidResource": "Invalid resource",
 			"tooManyRequests": "Too many requests. Please try again later.",
 			"googleEmailNotVerified": "Your Google account email is not verified.",
-			"googleTokenRequired": "Google ID token is required.",
+			"googleCodeRequired": "Google authorization code is required.",
 			"accountLinkRequired": "An account with this email already exists. Sign in and connect Google from your profile."
 		},
 		"users": {

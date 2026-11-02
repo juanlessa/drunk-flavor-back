@@ -8,12 +8,12 @@ import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/U
 import { UnauthorizedError } from '@/shared/error/error.lib';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { NativeDateProvider } from '@/shared/providers/date/implementations/NativeDate.provider';
-import { FakeGoogleTokenVerifier } from '@/shared/providers/googleAuth/fakes/FakeGoogleTokenVerifier';
+import { FakeGoogleIdentityProvider } from '@/shared/providers/googleAuth/fakes/FakeGoogleIdentityProvider';
 import { ReauthenticateGoogleService } from './ReauthenticateGoogle.service';
 
 let usersRepository: IUsersRepository;
 let identitiesRepository: IIdentitiesRepository;
-let verifier: FakeGoogleTokenVerifier;
+let googleIdentityProvider: FakeGoogleIdentityProvider;
 let dateProvider: IDateProvider;
 let service: ReauthenticateGoogleService;
 
@@ -21,9 +21,14 @@ describe('Reauthenticate Google', () => {
 	beforeEach(() => {
 		usersRepository = new UsersRepositoryInMemory();
 		identitiesRepository = new IdentitiesRepositoryInMemory();
-		verifier = new FakeGoogleTokenVerifier();
+		googleIdentityProvider = new FakeGoogleIdentityProvider();
 		dateProvider = new NativeDateProvider();
-		service = new ReauthenticateGoogleService(verifier, usersRepository, identitiesRepository, dateProvider);
+		service = new ReauthenticateGoogleService(
+			googleIdentityProvider,
+			usersRepository,
+			identitiesRepository,
+			dateProvider,
+		);
 	});
 
 	it('accepts a recent token for the Google identity linked to the current user', async () => {
@@ -33,13 +38,13 @@ describe('Reauthenticate Google', () => {
 			provider: IdentityProviders.google,
 			providerSubject: 'fake-google-sub',
 		});
-		verifier.setNextIdentity({
+		googleIdentityProvider.setNextIdentity({
 			subject: 'fake-google-sub',
 			isEmailVerified: true,
 			issuedAt: new Date(),
 		});
 
-		const result = await service.execute({ userId: user.id, idToken: 'valid-token' });
+		const result = await service.execute({ userId: user.id, authorizationCode: 'valid-token' });
 
 		expect(result.method).toBe(IdentityProviders.google);
 		expect(result.authenticatedAt).toBeInstanceOf(Date);
@@ -52,13 +57,13 @@ describe('Reauthenticate Google', () => {
 			provider: IdentityProviders.google,
 			providerSubject: 'fake-google-sub',
 		});
-		verifier.setNextIdentity({
+		googleIdentityProvider.setNextIdentity({
 			subject: 'fake-google-sub',
 			isEmailVerified: true,
 			issuedAt: new Date(Date.now() - 10 * 60 * 1000),
 		});
 
-		await expect(service.execute({ userId: user.id, idToken: 'old-token' })).rejects.toBeInstanceOf(
+		await expect(service.execute({ userId: user.id, authorizationCode: 'old-token' })).rejects.toBeInstanceOf(
 			UnauthorizedError,
 		);
 	});
@@ -71,7 +76,7 @@ describe('Reauthenticate Google', () => {
 			providerSubject: 'fake-google-sub',
 		});
 
-		await expect(service.execute({ userId: user.id, idToken: 'valid-token' })).rejects.toBeInstanceOf(
+		await expect(service.execute({ userId: user.id, authorizationCode: 'valid-token' })).rejects.toBeInstanceOf(
 			UnauthorizedError,
 		);
 	});
@@ -79,7 +84,7 @@ describe('Reauthenticate Google', () => {
 	it('rejects an unlinked Google identity', async () => {
 		const user = await usersRepository.create(createUserFactory());
 
-		await expect(service.execute({ userId: user.id, idToken: 'valid-token' })).rejects.toBeInstanceOf(
+		await expect(service.execute({ userId: user.id, authorizationCode: 'valid-token' })).rejects.toBeInstanceOf(
 			UnauthorizedError,
 		);
 	});

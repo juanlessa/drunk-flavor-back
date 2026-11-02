@@ -6,7 +6,7 @@ export type LinkGoogleIdentityReqBody = z.infer<typeof linkGoogleIdentitySchema>
 
 export type LinkGoogleIdentity = {
 	userId: string;
-	idToken: string;
+	authorizationCode: string;
 };
 
 export type LinkGoogleIdentityResult = {

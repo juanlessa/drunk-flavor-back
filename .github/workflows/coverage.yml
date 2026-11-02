@@ -41,3 +41,5 @@ jobs:
                   vite-config-path: ./vitest-merge.config.ts
                   json-summary-path: ./coverage/merged/coverage-summary.json
                   json-final-path: ./coverage/merged/coverage-final.json
+                  # Only the totals table; per-file details made the comment exceed GitHub's size limit.
+                  file-coverage-mode: none

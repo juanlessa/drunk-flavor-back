@@ -2,7 +2,7 @@ import { GoogleAuth } from './googleAuth.dtos';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.repository';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
-import { IGoogleTokenVerifier } from '@/shared/providers/googleAuth/IGoogleTokenVerifier';
+import { IGoogleIdentityProvider } from '@/shared/providers/googleAuth/IGoogleIdentityProvider';
 import { VerifiedGoogleIdentity } from '@/shared/providers/googleAuth/googleAuth.dtos';
 import { ConflictError, UnauthorizedError } from '@/shared/error/error.lib';
 import { IdentityProviders } from '@/core/accounts/constants/identity.constants';
@@ -23,14 +23,14 @@ type GoogleAuthResult = {
 
 export class GoogleAuthService {
 	constructor(
-		private googleTokenVerifier: IGoogleTokenVerifier,
+		private googleIdentityProvider: IGoogleIdentityProvider,
 		private usersRepository: IUsersRepository,
 		private identitiesRepository: IIdentitiesRepository,
 		private transactionManager: ITransactionManager,
 	) {}
 
-	async execute({ idToken }: GoogleAuth): Promise<GoogleAuthResult> {
-		const googleProfile = await this.googleTokenVerifier.verify(idToken);
+	async execute({ authorizationCode }: GoogleAuth): Promise<GoogleAuthResult> {
+		const googleProfile = await this.googleIdentityProvider.authenticate(authorizationCode);
 		const authenticatedAt = new Date();
 
 		const linkedGoogleSignIn = await this.signInWithLinkedGoogleIdentity(googleProfile.subject, authenticatedAt);
@@ -103,7 +103,7 @@ export class GoogleAuthService {
 		if (!googleProfile.email) {
 			throw new UnauthorizedError('apiResponses.auth.invalidCredentials', {
 				path: 'GoogleAuth.service.missingEmail',
-				cause: 'verified google token without an email',
+				cause: 'verified Google identity without an email',
 			});
 		}
 

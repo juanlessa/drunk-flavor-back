@@ -6,10 +6,8 @@ import type { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { GoogleAuthReqBody } from './googleAuth.dtos';
 
 export const googleAuthController: Controller<{ Body: GoogleAuthReqBody }> = async (request, reply) => {
-	const { idToken } = request.body;
-
 	const service = resolveGoogleAuthService();
-	const { user } = await service.execute({ idToken });
+	const { user } = await service.execute({ authorizationCode: request.body.code });
 	const tokenPayload = toJwtUserPayload(user);
 	const accessToken = await reply.jwtSign(tokenPayload, { sign: { sub: user.id } });
 	const refreshToken = await reply.sessionJwtSign(tokenPayload, { sign: { sub: user.id } });

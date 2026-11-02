@@ -5,7 +5,7 @@ export type ReauthenticateGoogleReqBody = z.infer<typeof reauthenticateGoogleSch
 
 export type ReauthenticateGoogle = {
 	userId: string;
-	idToken: string;
+	authorizationCode: string;
 };
 
 export type GoogleReauthenticationResult = {
