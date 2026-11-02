@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
 import { IdentitiesRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Identities.repository';
-import { FakeGoogleTokenVerifier } from '@/shared/providers/googleAuth/fakes/FakeGoogleTokenVerifier';
+import { FakeGoogleIdentityProvider } from '@/shared/providers/googleAuth/fakes/FakeGoogleIdentityProvider';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.repository';
 import { ConflictError, UnauthorizedError } from '@/shared/error/error.lib';
@@ -14,10 +14,10 @@ import { GoogleAuthService } from './GoogleAuth.service';
 
 let usersRepository: UsersRepositoryInMemory;
 let identitiesRepository: IIdentitiesRepository;
-let verifier: FakeGoogleTokenVerifier;
+let googleIdentityProvider: FakeGoogleIdentityProvider;
 let service: GoogleAuthService;
 
-const idToken = 'any-google-id-token';
+const authorizationCode = 'any-google-authorization-code';
 
 const verifiedIdentity: VerifiedGoogleIdentity = {
 	subject: 'google-sub-123',
@@ -32,8 +32,13 @@ describe('Google Auth', () => {
 	beforeEach(() => {
 		usersRepository = new UsersRepositoryInMemory();
 		identitiesRepository = new IdentitiesRepositoryInMemory();
-		verifier = new FakeGoogleTokenVerifier();
-		service = new GoogleAuthService(verifier, usersRepository, identitiesRepository, new FakeTransactionManager());
+		googleIdentityProvider = new FakeGoogleIdentityProvider();
+		service = new GoogleAuthService(
+			googleIdentityProvider,
+			usersRepository,
+			identitiesRepository,
+			new FakeTransactionManager(),
+		);
 	});
 
 	it('signs in an existing linked identity', async () => {
@@ -52,9 +57,9 @@ describe('Google Auth', () => {
 			email: 'janedoe@example.com',
 			isEmailVerified: true,
 		});
-		verifier.setNextIdentity(verifiedIdentity);
+		googleIdentityProvider.setNextIdentity(verifiedIdentity);
 
-		const result = await service.execute({ idToken });
+		const result = await service.execute({ authorizationCode });
 
 		expect(result.user.id).toBe(user.id);
 		expect(result.user.role).toBe(Roles.member);
@@ -78,9 +83,9 @@ describe('Google Auth', () => {
 			providerSubject: verifiedIdentity.subject,
 		});
 		const touchLastLogin = vi.spyOn(identitiesRepository, 'touchLastLogin');
-		verifier.setNextIdentity(verifiedIdentity);
+		googleIdentityProvider.setNextIdentity(verifiedIdentity);
 
-		await expect(service.execute({ idToken })).rejects.toThrow('apiResponses.auth.invalidCredentials');
+		await expect(service.execute({ authorizationCode })).rejects.toThrow('apiResponses.auth.invalidCredentials');
 		expect(touchLastLogin).not.toHaveBeenCalled();
 	});
 
@@ -98,9 +103,9 @@ describe('Google Auth', () => {
 			provider: IdentityProviders.google,
 			providerSubject: verifiedIdentity.subject,
 		});
-		verifier.setNextIdentity(verifiedIdentity);
+		googleIdentityProvider.setNextIdentity(verifiedIdentity);
 
-		const result = await service.execute({ idToken });
+		const result = await service.execute({ authorizationCode });
 
 		expect(result.user).toMatchObject({ id: user.id, status: UserStatuses.incomplete_profile });
 	});
@@ -111,17 +116,17 @@ describe('Google Auth', () => {
 			provider: IdentityProviders.google,
 			providerSubject: verifiedIdentity.subject,
 		});
-		verifier.setNextIdentity(verifiedIdentity);
+		googleIdentityProvider.setNextIdentity(verifiedIdentity);
 
-		const execution = service.execute({ idToken });
+		const execution = service.execute({ authorizationCode });
 		await expect(execution).rejects.toBeInstanceOf(UnauthorizedError);
 		await expect(execution).rejects.toThrow('apiResponses.auth.invalidCredentials');
 	});
 
 	it('rejects a token whose email is not verified before create/link', async () => {
-		verifier.setNextIdentity({ ...verifiedIdentity, isEmailVerified: false });
+		googleIdentityProvider.setNextIdentity({ ...verifiedIdentity, isEmailVerified: false });
 
-		const execution = service.execute({ idToken });
+		const execution = service.execute({ authorizationCode });
 		await expect(execution).rejects.toBeInstanceOf(UnauthorizedError);
 		await expect(execution).rejects.toThrow('apiResponses.auth.googleEmailNotVerified');
 	});
@@ -135,9 +140,9 @@ describe('Google Auth', () => {
 			role: Roles.partner,
 			status: UserStatuses.active,
 		});
-		verifier.setNextIdentity(verifiedIdentity);
+		googleIdentityProvider.setNextIdentity(verifiedIdentity);
 
-		await expect(service.execute({ idToken })).rejects.toBeInstanceOf(ConflictError);
+		await expect(service.execute({ authorizationCode })).rejects.toBeInstanceOf(ConflictError);
 
 		const linked = await identitiesRepository.findByProviderSub(IdentityProviders.google, verifiedIdentity.subject);
 		expect(linked).toBeNull();
@@ -145,9 +150,9 @@ describe('Google Auth', () => {
 	});
 
 	it('creates a new active verified member and Google identity', async () => {
-		verifier.setNextIdentity(verifiedIdentity);
+		googleIdentityProvider.setNextIdentity(verifiedIdentity);
 
-		const result = await service.execute({ idToken });
+		const result = await service.execute({ authorizationCode });
 
 		const created = await usersRepository.findByEmail('janedoe@example.com');
 		expect(created).not.toBeNull();
@@ -168,9 +173,9 @@ describe('Google Auth', () => {
 
 	it('creates an incomplete profile without a surname when familyName is absent', async () => {
 		const { familyName: _omitted, ...withoutFamily } = verifiedIdentity;
-		verifier.setNextIdentity(withoutFamily);
+		googleIdentityProvider.setNextIdentity(withoutFamily);
 
-		const result = await service.execute({ idToken });
+		const result = await service.execute({ authorizationCode });
 
 		const created = await usersRepository.findByEmail('janedoe@example.com');
 		expect(created?.status).toBe(UserStatuses.incomplete_profile);
@@ -181,9 +186,9 @@ describe('Google Auth', () => {
 
 	it('creates an incomplete profile without a name when givenName is absent', async () => {
 		const { givenName: _omitted, ...withoutGiven } = verifiedIdentity;
-		verifier.setNextIdentity(withoutGiven);
+		googleIdentityProvider.setNextIdentity(withoutGiven);
 
-		const result = await service.execute({ idToken });
+		const result = await service.execute({ authorizationCode });
 
 		const created = await usersRepository.findByEmail('janedoe@example.com');
 		expect(created?.status).toBe(UserStatuses.incomplete_profile);
@@ -194,9 +199,9 @@ describe('Google Auth', () => {
 
 	it('rejects a verified Google token without an email', async () => {
 		const { email: _omitted, ...withoutEmail } = verifiedIdentity;
-		verifier.setNextIdentity(withoutEmail);
+		googleIdentityProvider.setNextIdentity(withoutEmail);
 
-		const execution = service.execute({ idToken });
+		const execution = service.execute({ authorizationCode });
 		await expect(execution).rejects.toBeInstanceOf(UnauthorizedError);
 		await expect(execution).rejects.toThrow('apiResponses.auth.invalidCredentials');
 	});
@@ -207,9 +212,9 @@ describe('Google Auth', () => {
 			await realCreate(data);
 			throw new IdentityProviderSubjectAlreadyExistsError();
 		};
-		verifier.setNextIdentity(verifiedIdentity);
+		googleIdentityProvider.setNextIdentity(verifiedIdentity);
 
-		const result = await service.execute({ idToken });
+		const result = await service.execute({ authorizationCode });
 
 		const identity = await identitiesRepository.findByProviderSub(
 			IdentityProviders.google,
@@ -224,9 +229,9 @@ describe('Google Auth', () => {
 		identitiesRepository.create = vi.fn(async () => {
 			throw raceError;
 		});
-		verifier.setNextIdentity(verifiedIdentity);
+		googleIdentityProvider.setNextIdentity(verifiedIdentity);
 
-		await expect(service.execute({ idToken })).rejects.toBe(raceError);
+		await expect(service.execute({ authorizationCode })).rejects.toBe(raceError);
 	});
 
 	it('rethrows a concurrent-identity error when the recovered identity is orphaned', async () => {
@@ -244,9 +249,11 @@ describe('Google Auth', () => {
 			}
 			return realFind(provider, providerSubject);
 		};
-		verifier.setNextIdentity(verifiedIdentity);
+		googleIdentityProvider.setNextIdentity(verifiedIdentity);
 
-		await expect(service.execute({ idToken })).rejects.toBeInstanceOf(IdentityProviderSubjectAlreadyExistsError);
+		await expect(service.execute({ authorizationCode })).rejects.toBeInstanceOf(
+			IdentityProviderSubjectAlreadyExistsError,
+		);
 	});
 
 	it('rejects a recovered concurrent identity whose user cannot hold a session', async () => {
@@ -276,9 +283,9 @@ describe('Google Auth', () => {
 		identitiesRepository.create = vi.fn(async () => {
 			throw new IdentityProviderSubjectAlreadyExistsError();
 		});
-		verifier.setNextIdentity(verifiedIdentity);
+		googleIdentityProvider.setNextIdentity(verifiedIdentity);
 
-		await expect(service.execute({ idToken })).rejects.toThrow('apiResponses.auth.invalidCredentials');
+		await expect(service.execute({ authorizationCode })).rejects.toThrow('apiResponses.auth.invalidCredentials');
 	});
 
 	it('does not swallow non-concurrency errors while creating a Google account', async () => {
@@ -286,8 +293,8 @@ describe('Google Auth', () => {
 		identitiesRepository.create = vi.fn(async () => {
 			throw expectedError;
 		});
-		verifier.setNextIdentity(verifiedIdentity);
+		googleIdentityProvider.setNextIdentity(verifiedIdentity);
 
-		await expect(service.execute({ idToken })).rejects.toBe(expectedError);
+		await expect(service.execute({ authorizationCode })).rejects.toBe(expectedError);
 	});
 });

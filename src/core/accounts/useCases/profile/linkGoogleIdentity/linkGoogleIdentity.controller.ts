@@ -7,7 +7,7 @@ import { LinkGoogleIdentityReqBody } from './linkGoogleIdentity.dtos';
 export const linkGoogleIdentityController: Controller<{ Body: LinkGoogleIdentityReqBody }> = async (request, reply) => {
 	const { user } = await resolveLinkGoogleIdentityService().execute({
 		userId: request.user.id,
-		idToken: request.body.idToken,
+		authorizationCode: request.body.code,
 	});
 	await rotateAuthenticationSession(request, reply, user);
 

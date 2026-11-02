@@ -4,7 +4,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.repository';
 import { UnauthorizedError } from '@/shared/error/error.lib';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
-import { IGoogleTokenVerifier } from '@/shared/providers/googleAuth/IGoogleTokenVerifier';
+import { IGoogleIdentityProvider } from '@/shared/providers/googleAuth/IGoogleIdentityProvider';
 import { GoogleReauthenticationResult, ReauthenticateGoogle } from './reauthenticateGoogle.dtos';
 import {
 	RECENT_AUTHENTICATION_WINDOW_MS,
@@ -13,14 +13,14 @@ import {
 
 export class ReauthenticateGoogleService {
 	constructor(
-		private googleTokenVerifier: IGoogleTokenVerifier,
+		private googleIdentityProvider: IGoogleIdentityProvider,
 		private usersRepository: IUsersRepository,
 		private identitiesRepository: IIdentitiesRepository,
 		private dateProvider: IDateProvider,
 	) {}
 
-	async execute({ userId, idToken }: ReauthenticateGoogle): Promise<GoogleReauthenticationResult> {
-		const googleIdentity = await this.googleTokenVerifier.verify(idToken);
+	async execute({ userId, authorizationCode }: ReauthenticateGoogle): Promise<GoogleReauthenticationResult> {
+		const googleIdentity = await this.googleIdentityProvider.authenticate(authorizationCode);
 		const user = await this.usersRepository.findById(userId);
 		const identity = await this.identitiesRepository.findByProviderSub(
 			IdentityProviders.google,
@@ -43,7 +43,7 @@ export class ReauthenticateGoogleService {
 			) {
 				throw new UnauthorizedError('apiResponses.profile.invalidReauthentication', {
 					path: 'ReauthenticateGoogle.service.freshness',
-					cause: 'Google ID token is not recent enough for reauthentication',
+					cause: 'Google authentication is not recent enough for reauthentication',
 				});
 			}
 		}

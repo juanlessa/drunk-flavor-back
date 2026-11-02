@@ -1,4 +1,4 @@
-import { IGoogleTokenVerifier } from '../IGoogleTokenVerifier';
+import { IGoogleIdentityProvider } from '../IGoogleIdentityProvider';
 import { VerifiedGoogleIdentity } from '../googleAuth.dtos';
 
 const DEFAULT_IDENTITY: VerifiedGoogleIdentity = {
@@ -11,12 +11,12 @@ const DEFAULT_IDENTITY: VerifiedGoogleIdentity = {
 };
 
 /**
- * Deterministic in-memory verifier for tests. It never touches the Google
- * network: `verify` resolves the queued identity or rejects with the queued
+ * Deterministic in-memory identity provider for tests. It never touches the Google
+ * network: `authenticate` resolves the queued identity or rejects with the queued
  * error, defaulting to a verified Google identity. Mirrors FakeTransactionManager
  * in spirit — a tiny, controllable stand-in for the real provider.
  */
-export class FakeGoogleTokenVerifier implements IGoogleTokenVerifier {
+export class FakeGoogleIdentityProvider implements IGoogleIdentityProvider {
 	private nextIdentity: VerifiedGoogleIdentity = { ...DEFAULT_IDENTITY };
 	private nextError: unknown = null;
 
@@ -34,7 +34,7 @@ export class FakeGoogleTokenVerifier implements IGoogleTokenVerifier {
 		this.nextError = null;
 	}
 
-	async verify(_idToken: string): Promise<VerifiedGoogleIdentity> {
+	async authenticate(_authorizationCode: string): Promise<VerifiedGoogleIdentity> {
 		if (this.nextError) {
 			const error = this.nextError;
 			this.nextError = null;
@@ -46,14 +46,14 @@ export class FakeGoogleTokenVerifier implements IGoogleTokenVerifier {
 
 /**
  * Module-level singleton driven by e2e specs that hit the resolver rather than
- * constructing the verifier directly. The exported setters let a test queue the
- * identity/error for the next POST /auth/google request.
+ * constructing the provider directly. The exported setters let a test queue the
+ * identity/error for the next Google request.
  */
-export const fakeGoogleTokenVerifier = new FakeGoogleTokenVerifier();
+export const fakeGoogleIdentityProvider = new FakeGoogleIdentityProvider();
 
 export const setNextVerifiedGoogleIdentity = (identity: VerifiedGoogleIdentity): void =>
-	fakeGoogleTokenVerifier.setNextIdentity(identity);
+	fakeGoogleIdentityProvider.setNextIdentity(identity);
 
-export const setNextGoogleTokenError = (error: unknown): void => fakeGoogleTokenVerifier.setNextError(error);
+export const setNextGoogleIdentityError = (error: unknown): void => fakeGoogleIdentityProvider.setNextError(error);
 
-export const resetFakeGoogleTokenVerifier = (): void => fakeGoogleTokenVerifier.reset();
+export const resetFakeGoogleIdentityProvider = (): void => fakeGoogleIdentityProvider.reset();

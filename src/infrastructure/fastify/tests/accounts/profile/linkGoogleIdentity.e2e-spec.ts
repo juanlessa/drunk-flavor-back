@@ -7,10 +7,13 @@ import { app } from '@/infrastructure/fastify/app';
 import { resolveRateLimitStore } from '@/infrastructure/fastify/rateLimitStore';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
-import { resetFakeGoogleTokenVerifier, setNextVerifiedGoogleIdentity } from '@/shared/providers/googleAuth';
-import { createAndAuthenticateUser } from '@/infrastructure/fastify/tests/accounts/helpers/authentication.helpers';
+import { resetFakeGoogleIdentityProvider, setNextVerifiedGoogleIdentity } from '@/shared/providers/googleAuth';
+import {
+	createAndAuthenticateUser,
+	GOOGLE_POPUP_HEADERS,
+} from '@/infrastructure/fastify/tests/accounts/helpers/authentication.helpers';
 
-const idToken = 'google-link-token';
+const code = 'google-link-code';
 const googleIdentity = {
 	subject: 'explicit-google-link-sub',
 	email: 'secondary-google@example.com',
@@ -33,14 +36,18 @@ describe('Link Google identity', () => {
 		await MongoConnection.Instance.emptyCollection(CredentialModel);
 		await MongoConnection.Instance.emptyCollection(IdentityModel);
 		await resolveRateLimitStore().reset();
-		resetFakeGoogleTokenVerifier();
+		resetFakeGoogleIdentityProvider();
 	});
 
 	it('connects Google after recent authentication and preserves both login methods', async () => {
 		const { cookies, user } = await createAndAuthenticateUser(app, { email: 'primary-local@example.com' });
 		setNextVerifiedGoogleIdentity(googleIdentity);
 
-		const linked = await request(app.server).post('/me/identities/google').set('Cookie', cookies).send({ idToken });
+		const linked = await request(app.server)
+			.post('/me/identities/google')
+			.set('Cookie', cookies)
+			.set(GOOGLE_POPUP_HEADERS)
+			.send({ code });
 
 		expect(linked.status).toBe(HTTP_STATUS.no_content);
 		const rotatedCookies = linked.headers['set-cookie'] as unknown as string[];
@@ -50,7 +57,9 @@ describe('Link Google identity', () => {
 			providers: ['google'],
 		});
 		setNextVerifiedGoogleIdentity(googleIdentity);
-		expect((await request(app.server).post('/google').send({ idToken })).status).toBe(HTTP_STATUS.ok);
+		expect((await request(app.server).post('/google').set(GOOGLE_POPUP_HEADERS).send({ code })).status).toBe(
+			HTTP_STATUS.ok,
+		);
 		expect(
 			(await request(app.server).post('/signin').send({ email: user.email, password: user.password })).status,
 		).toBe(HTTP_STATUS.ok);

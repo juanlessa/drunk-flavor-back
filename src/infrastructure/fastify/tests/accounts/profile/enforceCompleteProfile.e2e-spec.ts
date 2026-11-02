@@ -10,7 +10,8 @@ import { DrinkModel } from '@/core/drinks/infra/mongo/entities/drink.model';
 import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.model';
 import { UnitModel } from '@/core/drinks/infra/mongo/entities/unit.model';
 import { CommentModel } from '@/core/engagement/infra/mongo/entities/comment.model';
-import { resetFakeGoogleTokenVerifier, setNextVerifiedGoogleIdentity } from '@/shared/providers/googleAuth';
+import { resetFakeGoogleIdentityProvider, setNextVerifiedGoogleIdentity } from '@/shared/providers/googleAuth';
+import { GOOGLE_POPUP_HEADERS } from '@/infrastructure/fastify/tests/accounts/helpers/authentication.helpers';
 import { VerifiedGoogleIdentity } from '@/shared/providers/googleAuth/googleAuth.dtos';
 import { resolveRateLimitStore } from '@/infrastructure/fastify/rateLimitStore';
 import { createDrink } from '@/infrastructure/fastify/tests/drinks/helpers/drink.helpers';
@@ -21,7 +22,7 @@ interface ErrorBody {
 	message: string;
 }
 
-const idToken = 'any-google-id-token';
+const code = 'any-google-authorization-code';
 
 // A verified Google identity without `familyName` creates an `incomplete_profile` account.
 const incompleteIdentity: VerifiedGoogleIdentity = {
@@ -52,16 +53,16 @@ describe('enforceCompleteProfile gate', () => {
 		await MongoConnection.Instance.emptyCollection(DrinkModel);
 		await MongoConnection.Instance.emptyCollection(CommentModel);
 		await resolveRateLimitStore().reset();
-		resetFakeGoogleTokenVerifier();
+		resetFakeGoogleIdentityProvider();
 	});
 
 	afterEach(() => {
-		resetFakeGoogleTokenVerifier();
+		resetFakeGoogleIdentityProvider();
 	});
 
 	it('blocks a business route for an incomplete profile, then allows it after completion', async () => {
 		setNextVerifiedGoogleIdentity(incompleteIdentity);
-		const authResponse = await request(app.server).post('/google').send({ idToken });
+		const authResponse = await request(app.server).post('/google').set(GOOGLE_POPUP_HEADERS).send({ code });
 		expect(authResponse.status).toBe(200);
 		const cookies = authResponse.headers['set-cookie'];
 

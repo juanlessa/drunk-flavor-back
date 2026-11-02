@@ -3,7 +3,7 @@ import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { ConflictError, NotFoundError, UnauthorizedError } from '@/shared/error/error.lib';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
-import { IGoogleTokenVerifier } from '@/shared/providers/googleAuth/IGoogleTokenVerifier';
+import { IGoogleIdentityProvider } from '@/shared/providers/googleAuth/IGoogleIdentityProvider';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { LinkGoogleIdentity, LinkGoogleIdentityResult } from './linkGoogleIdentity.dtos';
 import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
@@ -13,14 +13,14 @@ export class LinkGoogleIdentityService {
 	constructor(
 		private usersRepository: IUsersRepository,
 		private identitiesRepository: IIdentitiesRepository,
-		private googleTokenVerifier: IGoogleTokenVerifier,
+		private googleIdentityProvider: IGoogleIdentityProvider,
 		private dateProvider: IDateProvider,
 		private transactionManager: ITransactionManager,
 		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
 	) {}
 
-	async execute({ userId, idToken }: LinkGoogleIdentity): Promise<LinkGoogleIdentityResult> {
-		const googleIdentity = await this.googleTokenVerifier.verify(idToken);
+	async execute({ userId, authorizationCode }: LinkGoogleIdentity): Promise<LinkGoogleIdentityResult> {
+		const googleIdentity = await this.googleIdentityProvider.authenticate(authorizationCode);
 		if (googleIdentity.isEmailVerified !== true) {
 			throw new UnauthorizedError('apiResponses.auth.googleEmailNotVerified', {
 				path: 'LinkGoogleIdentity.service.email',

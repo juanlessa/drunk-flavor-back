@@ -7,9 +7,10 @@ import { app } from '@/infrastructure/fastify/app';
 import { resolveRateLimitStore } from '@/infrastructure/fastify/rateLimitStore';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
-import { resetFakeGoogleTokenVerifier, setNextVerifiedGoogleIdentity } from '@/shared/providers/googleAuth';
+import { resetFakeGoogleIdentityProvider, setNextVerifiedGoogleIdentity } from '@/shared/providers/googleAuth';
+import { GOOGLE_POPUP_HEADERS } from '@/infrastructure/fastify/tests/accounts/helpers/authentication.helpers';
 
-const idToken = 'google-password-setup-token';
+const code = 'google-password-setup-code';
 const password = 'Created-password-123456';
 const googleIdentity = {
 	subject: 'google-password-setup-sub',
@@ -33,12 +34,12 @@ describe('Profile password methods', () => {
 		await MongoConnection.Instance.emptyCollection(IdentityModel);
 		await MongoConnection.Instance.emptyCollection(CredentialModel);
 		await resolveRateLimitStore().reset();
-		resetFakeGoogleTokenVerifier();
+		resetFakeGoogleIdentityProvider();
 	});
 
 	it('allows a Google-only account to add password login while preserving Google login', async () => {
 		setNextVerifiedGoogleIdentity(googleIdentity);
-		const googleLogin = await request(app.server).post('/google').send({ idToken });
+		const googleLogin = await request(app.server).post('/google').set(GOOGLE_POPUP_HEADERS).send({ code });
 		const cookies = googleLogin.headers['set-cookie'];
 		expect((await request(app.server).get('/me').set('Cookie', cookies)).body as ProfileResponseBody).toMatchObject(
 			{
@@ -48,8 +49,13 @@ describe('Profile password methods', () => {
 
 		setNextVerifiedGoogleIdentity(googleIdentity);
 		expect(
-			(await request(app.server).post('/me/reauthentication/google').set('Cookie', cookies).send({ idToken }))
-				.status,
+			(
+				await request(app.server)
+					.post('/me/reauthentication/google')
+					.set('Cookie', cookies)
+					.set(GOOGLE_POPUP_HEADERS)
+					.send({ code })
+			).status,
 		).toBe(HTTP_STATUS.no_content);
 		const createPassword = await request(app.server).post('/me/password').set('Cookie', cookies).send({ password });
 		expect(createPassword.status).toBe(HTTP_STATUS.no_content);

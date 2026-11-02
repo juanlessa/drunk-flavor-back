@@ -5,6 +5,13 @@ import { CreateUser } from '@/core/accounts/dtos/user.dtos';
 import { createUserFactory } from '@/core/accounts/factories/user.factories';
 import { resolveUsersRepository, resolveCredentialsRepository } from '@/core/accounts/infra/mongo/container';
 import { resolveHashProvider } from '@/shared/providers/cryptography';
+import {
+	REQUESTED_WITH_HEADER,
+	REQUESTED_WITH_VALUE,
+} from '@/infrastructure/fastify/middlewares/requireXmlHttpRequest';
+
+/** CSRF header the frontend sends with the authorization code from the Google popup. */
+export const GOOGLE_POPUP_HEADERS = { [REQUESTED_WITH_HEADER]: REQUESTED_WITH_VALUE };
 
 export const createUser = async (
 	_app: FastifyInstance,

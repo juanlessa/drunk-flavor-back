@@ -20,6 +20,7 @@ import { confirmEmailController } from '@/core/accounts/useCases/auth/confirmEma
 import { AppError } from '@/shared/error/error.lib';
 import { enforceRateLimit } from '../../middlewares/enforceRateLimit';
 import { recordRateLimitFailure } from '../../middlewares/recordRateLimitFailure';
+import { requireXmlHttpRequest } from '../../middlewares/requireXmlHttpRequest';
 
 const INVALID_CREDENTIALS_KEY = 'apiResponses.auth.invalidCredentials';
 const countInvalidCredentials = (error: unknown): boolean =>
@@ -60,12 +61,14 @@ const routes: Routes = (server) => {
 					shouldCountFailure: countInvalidCredentials,
 				},
 			},
+			preValidation: [requireXmlHttpRequest],
 			preHandler: [enforceRateLimit],
 			onError: [recordRateLimitFailure],
 			schema: {
 				tags: ['Auth'],
 				summary: 'Sign in with Google',
-				description: 'Authenticates the user with a Google ID token, creating or linking the account as needed',
+				description:
+					'Authenticates the user with an authorization code from the Google popup, creating the account as needed. Requires the X-Requested-With: XmlHttpRequest header.',
 				body: googleAuthSchema,
 			},
 		},

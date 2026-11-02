@@ -1,15 +1,17 @@
 import { env } from '@/env';
-import { IGoogleTokenVerifier } from './IGoogleTokenVerifier';
-import { GoogleAuthLibraryVerifier } from './implementations/GoogleAuthLibraryVerifier';
-import { fakeGoogleTokenVerifier } from './fakes/FakeGoogleTokenVerifier';
+import { IGoogleIdentityProvider } from './IGoogleIdentityProvider';
+import { GoogleAuthLibraryIdentityProvider } from './implementations/GoogleAuthLibraryIdentityProvider';
+import { fakeGoogleIdentityProvider } from './fakes/FakeGoogleIdentityProvider';
 
-const verifier: IGoogleTokenVerifier =
-	env.NODE_ENV === 'testing' || env.NODE_ENV === 'e2e' ? fakeGoogleTokenVerifier : new GoogleAuthLibraryVerifier();
+const provider: IGoogleIdentityProvider =
+	env.NODE_ENV === 'testing' || env.NODE_ENV === 'e2e'
+		? fakeGoogleIdentityProvider
+		: new GoogleAuthLibraryIdentityProvider();
 
-export const resolveGoogleTokenVerifier = () => verifier;
+export const resolveGoogleIdentityProvider = () => provider;
 
 export {
 	setNextVerifiedGoogleIdentity,
-	setNextGoogleTokenError,
-	resetFakeGoogleTokenVerifier,
-} from './fakes/FakeGoogleTokenVerifier';
+	setNextGoogleIdentityError,
+	resetFakeGoogleIdentityProvider,
+} from './fakes/FakeGoogleIdentityProvider';
