@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import './loadEnv';
 import { z } from 'zod/v4';
 import { type InstanceMode, type NodeEnv, parseControlEnv } from './control';
 import { type FlatRedisSchema, type RedisSchema, parseRedisEnv } from './redis';

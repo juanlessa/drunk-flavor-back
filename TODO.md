@@ -57,8 +57,8 @@
   `coverage.include` and is currently uncovered by any layer. The fix is future accounts integration specs that exercise
   those repositories/models, not hollow tests and not production changes.
 - No coverage thresholds/gates are configured. Reports emit statements/branches/functions/lines (v8 default) without a
-  failing gate. A non-gating threshold could later be added via per-suite `coverage.thresholds` in `vitest.config.ts` /
-  `vitest-integration.config.ts`, or a CI check reading `coverage/merged/lcov.info`.
+  failing gate. A non-gating threshold could later be added via `coverage.thresholds` in the root `vitest.config.ts`, or
+  a CI check reading `coverage/lcov.info`.
 - CI follow-up (non-gating): optionally add a coverage-artifact upload step to `unit-tests.yml` /
   `integration-tests.yml` (`actions/upload-artifact` with `continue-on-error: true`), keeping it non-required so it
   never destabilizes the existing test jobs.
@@ -79,7 +79,7 @@
 
 These engagement checks were removed from the e2e suite during an e2e cleanup because they required the real Mongo stack
 without needing the HTTP/app layer. They have been reintroduced in the dedicated integration layer (`*.int-spec.ts`, run
-by `vitest-integration.config.ts` against real Mongo/Redis via memory-server). Status per concern:
+by the `integration` project in `vitest.config.ts` against real Mongo/Redis via memory-server). Status per concern:
 
 - RESTORED (Mongo model int-specs): index/collection contracts. `rating.model.int-spec.ts` asserts the `ratings`
   collection with exactly [_id_, rating_created_id, rating_drink_created_id, rating_drink_user_unique,

@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import './loadEnv';
 import { parseNodeEnv } from './node';
 import { parseControlEnv } from './control';
 import { parseApiEnv } from './api';
