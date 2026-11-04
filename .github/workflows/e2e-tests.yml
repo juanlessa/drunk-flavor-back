@@ -82,9 +82,7 @@ jobs:
               run: npm ci
 
             - name: E2E tests
-              run: |
-                  npm run generate-secret-key
-                  npm run test:e2e
+              run: npm run test:e2e
               env:
                   LOGGER_ENABLED: false
                   MONGO_MODE: 'external'

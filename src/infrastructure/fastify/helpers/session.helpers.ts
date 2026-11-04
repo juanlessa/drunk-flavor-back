@@ -3,10 +3,12 @@ import path from 'node:path';
 import { parseNodeEnv } from '@/env/node';
 import { getRootPath } from '@/shared/helpers/getRootPath.helper';
 
-export const getSessionKeyFilePath = () => {
+const DUMMY_SESSION_KEY = 'VkPV76jK62ZYgLQyVe887sZTG+X3bHE9rnlVZBdPEtQ=';
+
+export const getSessionKey = (): string | Buffer => {
 	const { NODE_ENV } = parseNodeEnv();
-	if (['testing'].includes(NODE_ENV)) {
-		return '';
+	if (['testing', 'e2e'].includes(NODE_ENV)) {
+		return DUMMY_SESSION_KEY;
 	}
 	const root = getRootPath();
 
