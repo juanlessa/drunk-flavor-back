@@ -2,12 +2,11 @@ import './loadEnv';
 import { z } from 'zod/v4';
 import { type NodeEnv, parseNodeEnv } from './node';
 
-const CORS_OPTIONAL_ENVIRONMENTS: readonly NodeEnv[] = ['development', 'e2e', 'testing'];
+const CORS_OPTIONAL_ENVIRONMENTS: readonly NodeEnv[] = ['development', 'testing'];
 
 const CORS_DEFAULT_ORIGINS: Partial<Record<NodeEnv, string[]>> = {
 	development: ['http://localhost:3000'],
 	testing: ['http://localhost:3000'],
-	e2e: ['http://localhost:3000'],
 };
 
 const HTTP_PROTOCOL = /^https?$/; // http or https

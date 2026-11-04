@@ -8,10 +8,6 @@ const cookieSecretEnvMap = {
 		.string()
 		.min(1, { message: 'secret must be at least 1 character in testing environment if specified' })
 		.default('bad-cookie-secret-testing'),
-	e2e: z
-		.string()
-		.min(1, { message: 'secret must be at least 1 character in e2e environment if specified' })
-		.default('bad-cookie-secret-e2e'),
 	production: z.string().min(32, { message: 'secret must be at least 32 characters in production' }),
 } satisfies Record<NodeEnv, z.ZodType<string>>;
 
@@ -22,10 +18,6 @@ const accessTokenSecretEnvMap = {
 		.string()
 		.min(1, { message: 'secret must be at least 1 character in testing environment if specified' })
 		.default('bad-access-token-secret-testing'),
-	e2e: z
-		.string()
-		.min(1, { message: 'secret must be at least 1 character in e2e environment if specified' })
-		.default('bad-access-token-secret-e2e'),
 } satisfies Record<NodeEnv, z.ZodType<string>>;
 
 const refreshTokenSecretEnvMap = {
@@ -35,10 +27,6 @@ const refreshTokenSecretEnvMap = {
 		.string()
 		.min(1, { message: 'secret must be at least 1 character in testing environment if specified' })
 		.default('bad-refresh-token-secret-testing'),
-	e2e: z
-		.string()
-		.min(1, { message: 'secret must be at least 1 character in e2e environment if specified' })
-		.default('bad-refresh-token-secret-e2e'),
 } satisfies Record<NodeEnv, z.ZodType<string>>;
 
 const accessTokenExpiresInSecondsEnvMap = {
@@ -49,7 +37,6 @@ const accessTokenExpiresInSecondsEnvMap = {
 		.max(3600, { message: 'ACCESS_TOKEN_EXPIRES_IN_SECONDS must be at most 3600 (1 hour) in production' }),
 	development: z.coerce.number().int().positive(),
 	testing: z.coerce.number().int().positive().default(2),
-	e2e: z.coerce.number().int().positive().default(2),
 } satisfies Record<NodeEnv, z.ZodType<number>>;
 
 const refreshTokenExpiresInSecondsEnvMap = {
@@ -60,7 +47,6 @@ const refreshTokenExpiresInSecondsEnvMap = {
 		.max(2592000, { message: 'REFRESH_TOKEN_EXPIRES_IN_SECONDS must be at most 2592000 (30 days) in production' }),
 	development: z.coerce.number().int().positive(),
 	testing: z.coerce.number().int().positive().default(5),
-	e2e: z.coerce.number().int().positive().default(5),
 } satisfies Record<NodeEnv, z.ZodType<number>>;
 
 // VERIFICATION_TOKEN_* configures the single-use action tokens for email verification and password
@@ -73,7 +59,6 @@ const verificationTokenExpiresInSecondsEnvMap = {
 	}),
 	development: z.coerce.number().int().positive(),
 	testing: z.coerce.number().int().positive().default(5),
-	e2e: z.coerce.number().int().positive().default(5),
 } satisfies Record<NodeEnv, z.ZodType<number>>;
 
 // VERIFICATION_TOKEN_SIZE is the hex-character count of the generated token. It must be EVEN in every
@@ -101,12 +86,6 @@ const verificationTokenSizeEnvMap = {
 		.positive()
 		.refine(isEven, { message: 'VERIFICATION_TOKEN_SIZE must be an even number of hex characters' })
 		.default(16),
-	e2e: z.coerce
-		.number()
-		.int()
-		.positive()
-		.refine(isEven, { message: 'VERIFICATION_TOKEN_SIZE must be an even number of hex characters' })
-		.default(16),
 } satisfies Record<NodeEnv, z.ZodType<number>>;
 
 const passwordHashRoundsEnvMap = {
@@ -117,7 +96,6 @@ const passwordHashRoundsEnvMap = {
 		.max(15, { message: 'PASSWORD_HASH_ROUNDS must be at most 15 in production' }),
 	development: z.coerce.number().int().positive().default(8),
 	testing: z.coerce.number().int().positive().default(3),
-	e2e: z.coerce.number().int().positive().default(3),
 } satisfies Record<NodeEnv, z.ZodType<number>>;
 
 const DUMMY_PASSWORD_DEFAULT = 'timing-equalization-placeholder';
@@ -131,7 +109,6 @@ const dummyPasswordEnvMap = {
 	production: z.string().min(12, { message: 'DUMMY_PASSWORD must be at least 12 characters in production' }),
 	development: z.string().min(1).default(DUMMY_PASSWORD_DEFAULT),
 	testing: z.string().min(1).default(DUMMY_PASSWORD_DEFAULT),
-	e2e: z.string().min(1).default(DUMMY_PASSWORD_DEFAULT),
 } satisfies Record<NodeEnv, z.ZodType<string>>;
 
 export const buildAuthSchema = (nodeEnv: NodeEnv) =>

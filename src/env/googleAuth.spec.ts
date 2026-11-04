@@ -3,7 +3,7 @@ import { parseGoogleAuthEnv } from './googleAuth';
 import type { NodeEnv } from './node';
 
 const REQUIRING_ENVS = ['production', 'development'] as const;
-const DEFAULTING_ENVS = ['testing', 'e2e'] as const;
+const DEFAULTING_ENVS = ['testing'] as const;
 
 const VARIABLES = [
 	{

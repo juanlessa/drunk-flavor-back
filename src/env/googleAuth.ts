@@ -9,15 +9,14 @@ const GOOGLE_CLIENT_SECRET_DEFAULT = 'test-google-client-secret';
 // web client. The secret is used to exchange the authorization code returned by
 // the Google popup, and the client ID is the expected audience of the ID token
 // returned by that exchange. Both must be real, non-empty values in production
-// and development; testing/e2e default to fixed placeholders because those
-// environments never talk to Google (the identity provider is faked — see
+// and development; testing defaults to fixed placeholders because that
+// environment never talks to Google (the identity provider is faked — see
 // src/shared/providers/googleAuth/index.ts).
 const requiredInRealEnvironments = (name: string, testDefault: string) =>
 	({
 		production: z.string().min(1, { message: `${name} must be set in production` }),
 		development: z.string().min(1, { message: `${name} must be set in development` }),
 		testing: z.string().min(1).default(testDefault),
-		e2e: z.string().min(1).default(testDefault),
 	}) satisfies Record<NodeEnv, z.ZodType<string>>;
 
 const googleClientIdEnvMap = requiredInRealEnvironments('GOOGLE_CLIENT_ID', GOOGLE_CLIENT_ID_DEFAULT);

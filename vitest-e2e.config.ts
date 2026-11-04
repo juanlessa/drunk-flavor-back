@@ -8,7 +8,7 @@ export default defineConfig({
 	root: fileURLToPath(new URL('./', import.meta.url)),
 	test: {
 		env: {
-			NODE_ENV: 'e2e',
+			NODE_ENV: 'testing',
 			LOG_LEVEL: 'warn',
 		},
 		include: ['src/**/*.e2e-spec.ts'],

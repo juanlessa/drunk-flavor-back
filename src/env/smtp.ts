@@ -4,14 +4,14 @@ import { type InstanceMode, parseControlEnv } from './control';
 import { type NodeEnv, parseNodeEnv } from './node';
 
 /** Environments where the SMTP host is allowed to be empty. */
-const SMTP_HOST_OPTIONAL_ENVIRONMENTS: readonly NodeEnv[] = ['testing', 'e2e'];
+const SMTP_HOST_OPTIONAL_ENVIRONMENTS: readonly NodeEnv[] = ['testing'];
 
 /**
  * Environments where the SMTP credentials are allowed to be empty. Development
  * is included because local mail catchers such as MailDev accept connections
  * without authentication.
  */
-const SMTP_CREDENTIALS_OPTIONAL_ENVIRONMENTS: readonly NodeEnv[] = ['development', 'testing', 'e2e'];
+const SMTP_CREDENTIALS_OPTIONAL_ENVIRONMENTS: readonly NodeEnv[] = ['development', 'testing'];
 
 const SMTP_DEFAULT_DOMAIN = 'drunkflavor.com';
 const SMTP_DEFAULT_PORT = 465;
