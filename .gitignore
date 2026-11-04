@@ -3,7 +3,6 @@ secret-key
 secret_key
 *.log*
 .env
-.env.testing
 /dist/
 /build/
 /templates/
@@ -16,3 +15,4 @@ coverage
 tmp/*
 !tmp/.gitkeep
 .agents
+TODO.md

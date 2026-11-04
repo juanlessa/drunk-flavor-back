@@ -85,6 +85,32 @@ export default defineConfig({
 					pool: 'forks',
 				},
 			},
+			// E2E boots the full Fastify app against real (or managed) Mongo/Redis/SMTP.
+			// It is intentionally kept OUT of coverage: the coverage scripts run only the
+			// unit and integration projects (`--project unit --project integration`), so
+			// this project never contributes to the report even though `coverage` is a
+			// root-level, whole-process concern. Run it with `--project e2e`.
+			{
+				extends: true,
+				resolve: {
+					tsconfigPaths: true,
+				},
+				root: rootDir,
+				test: {
+					name: 'e2e',
+					env: {
+						NODE_ENV: 'testing',
+						LOG_LEVEL: 'warn',
+					},
+					include: ['src/**/*.e2e-spec.ts'],
+					environment: 'node',
+					globalSetup: ['./src/infrastructure/vitest/e2e/globalSetup.ts'],
+					setupFiles: ['./src/infrastructure/vitest/e2e/setup.ts'],
+					testTimeout: 30000,
+					fileParallelism: false,
+					pool: 'forks',
+				},
+			},
 		],
 	},
 });
