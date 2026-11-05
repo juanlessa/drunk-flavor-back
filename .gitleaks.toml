@@ -1,0 +1,23 @@
+# Gitleaks configuration.
+#
+# Inherits all of gitleaks' built-in rules and only adds a narrowly scoped
+# allowlist for one historical false positive.
+title = "drunk-flavor-back gitleaks config"
+
+[extend]
+useDefault = true
+
+# A single historical false positive. The commit below introduced a fixed dummy
+# session key used ONLY in the `testing` environment for @fastify/secure-session.
+# It is a public, non-secret placeholder with no security value and was later
+# replaced by a runtime-derived key (see
+# src/infrastructure/fastify/helpers/session.helpers.ts). The commit stays in
+# history, so PR scans keep flagging it; this allowlist clears that single
+# finding by pinning BOTH the commit AND the file (condition = "AND"), so a real
+# secret in that commit elsewhere, or in that file in any other commit, is still
+# caught.
+[allowlist]
+description = "Historical dummy test session key (not a real secret)."
+condition = "AND"
+commits = ["e37d7fcb1a84884e0565f6eded454e72da5109d4"]
+paths = ['''src/infrastructure/fastify/helpers/session\.helpers\.ts''']
