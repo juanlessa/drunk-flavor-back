@@ -3,6 +3,7 @@ import { CreateIngredient, FindIngredientByName, UpdateIngredient } from '@/core
 import { Ingredient, IngredientKinds } from '@/core/drinks/entities/ingredient.entity';
 import {
 	INGREDIENT_SEARCH_FIELDS,
+	INGREDIENT_SEARCH_OPTIONS,
 	buildTranslationsSearchKeys,
 	createNameSearchMatchers,
 } from '@/core/drinks/helpers/searchKeys.helpers';
@@ -16,7 +17,7 @@ import { filterItemsBySearchCriteria, paginateItems, sortItemsByFields } from '@
 import { QueryParams } from '@/shared/types/query.types';
 
 const searchMatchers = createNameSearchMatchers<Ingredient>((item) =>
-	buildTranslationsSearchKeys(item.translations, INGREDIENT_SEARCH_FIELDS, [item.brand]),
+	buildTranslationsSearchKeys(item.translations, INGREDIENT_SEARCH_FIELDS, [item.brand], INGREDIENT_SEARCH_OPTIONS),
 );
 
 export class IngredientsRepositoryInMemory implements IIngredientsRepository {

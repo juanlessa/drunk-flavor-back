@@ -3,7 +3,7 @@ import { Model, QueryFilter } from 'mongoose';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 import { QueryParams, SortOrder } from '@/shared/types/query.types';
 import { escapeRegExp } from '@/shared/helpers/regex.helpers';
-import { tokenizeSearchText } from '@/shared/helpers/search.helpers';
+import { tokenizeSearchTerm } from '@/shared/helpers/search.helpers';
 import { SEARCH_KEYS_FIELD } from '../constants/search.constants';
 
 /**
@@ -27,7 +27,7 @@ export const buildQuery = <T>(
 			if (term === undefined) continue;
 			if (field === SEARCH_KEYS_FIELD) {
 				// Every word of the term must be the prefix of one of the normalized search keys.
-				const tokens = tokenizeSearchText(term);
+				const tokens = tokenizeSearchTerm(term);
 				if (tokens.length > 0) {
 					searchConditions[field] = { $all: tokens.map((token) => new RegExp(`^${escapeRegExp(token)}`)) };
 				}

@@ -10,7 +10,11 @@ import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
 import { toMongoUpdateSet } from '@/infrastructure/mongo/helpers/mapper.helpers';
 import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
 import { SEARCH_KEYS_FIELD } from '@/infrastructure/mongo/constants/search.constants';
-import { INGREDIENT_SEARCH_FIELDS, buildTranslationsSearchKeys } from '@/core/drinks/helpers/searchKeys.helpers';
+import {
+	INGREDIENT_SEARCH_FIELDS,
+	INGREDIENT_SEARCH_OPTIONS,
+	buildTranslationsSearchKeys,
+} from '@/core/drinks/helpers/searchKeys.helpers';
 import { Languages, Language } from '@/core/drinks/types/translations';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
@@ -51,9 +55,12 @@ export class IngredientsRepository implements IIngredientsRepository {
 			const persistenceData = IngredientMapper.toPersistence(data);
 			const document = await IngredientModel.create({
 				...persistenceData,
-				search_keys: buildTranslationsSearchKeys(persistenceData.translations, INGREDIENT_SEARCH_FIELDS, [
-					persistenceData.brand,
-				]),
+				search_keys: buildTranslationsSearchKeys(
+					persistenceData.translations,
+					INGREDIENT_SEARCH_FIELDS,
+					[persistenceData.brand],
+					INGREDIENT_SEARCH_OPTIONS,
+				),
 			});
 			return IngredientMapper.toDomain(document);
 		} catch (error) {
@@ -79,6 +86,7 @@ export class IngredientsRepository implements IIngredientsRepository {
 				mergeTranslations(current.translations, persistenceData.translations, unsetFields),
 				INGREDIENT_SEARCH_FIELDS,
 				[data.brand === undefined ? current.brand : (data.brand ?? undefined)],
+				INGREDIENT_SEARCH_OPTIONS,
 			);
 		}
 		let document: IngredientPersistence | null;

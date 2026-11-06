@@ -3,6 +3,11 @@ import { buildSearchKeys, matchesSearchTerm } from '@/shared/helpers/search.help
 
 type PartialTranslations = Partial<Record<keyof Translations<unknown>, Record<string, unknown> | undefined>>;
 
+type TranslationsSearchKeysOptions = {
+	/** Translation fields whose stop words are left out (free-text fields such as descriptions). */
+	stopWordFields?: readonly string[];
+};
+
 /**
  * Builds the search keys of an entity from the given fields of every language,
  * plus any extra language-independent values (e.g. a unit symbol).
@@ -11,19 +16,29 @@ export const buildTranslationsSearchKeys = (
 	translations: PartialTranslations | undefined,
 	fields: readonly string[],
 	extraValues: readonly (string | null | undefined)[] = [],
+	{ stopWordFields = [] }: TranslationsSearchKeysOptions = {},
 ): string[] => {
 	const languages = Object.keys(Languages) as (keyof Translations<unknown>)[];
-	const values = languages.flatMap((language) =>
-		fields.map((field) => {
-			const value = translations?.[language]?.[field];
-			return typeof value === 'string' ? value : undefined;
-		}),
-	);
-	return buildSearchKeys([...values, ...extraValues]);
+	const valuesOf = (fieldList: readonly string[]) =>
+		languages.flatMap((language) =>
+			fieldList.map((field) => {
+				const value = translations?.[language]?.[field];
+				return typeof value === 'string' ? value : undefined;
+			}),
+		);
+	const regularFields = fields.filter((field) => !stopWordFields.includes(field));
+	const freeTextFields = fields.filter((field) => stopWordFields.includes(field));
+	return [
+		...new Set([
+			...buildSearchKeys([...valuesOf(regularFields), ...extraValues]),
+			...buildSearchKeys(valuesOf(freeTextFields), { ignoreStopWords: true }),
+		]),
+	];
 };
 
 export const NAME_SEARCH_FIELDS = ['name'] as const;
 export const INGREDIENT_SEARCH_FIELDS = ['name', 'description'] as const;
+export const INGREDIENT_SEARCH_OPTIONS = { stopWordFields: ['description'] } as const;
 export const UNIT_SEARCH_FIELDS = ['name', 'namePlural'] as const;
 export const UNIT_PERSISTENCE_SEARCH_FIELDS = ['name', 'name_plural'] as const;
 

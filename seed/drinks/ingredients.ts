@@ -1,6 +1,10 @@
 import { ObjectId } from 'mongodb';
 import { IngredientModel, IngredientPersistence } from '@/core/drinks/infra/mongo/entities/ingredient.model';
-import { INGREDIENT_SEARCH_FIELDS, buildTranslationsSearchKeys } from '@/core/drinks/helpers/searchKeys.helpers';
+import {
+	INGREDIENT_SEARCH_FIELDS,
+	INGREDIENT_SEARCH_OPTIONS,
+	buildTranslationsSearchKeys,
+} from '@/core/drinks/helpers/searchKeys.helpers';
 import { logger } from '@/shared/providers/logger';
 import { categoriesMap } from './categories';
 import { unitsMap } from './units';
@@ -473,9 +477,12 @@ export async function insertIngredients() {
 		await IngredientModel.insertMany(
 			[...ingredientsMap.values()].map((ingredient) => ({
 				...ingredient,
-				search_keys: buildTranslationsSearchKeys(ingredient.translations, INGREDIENT_SEARCH_FIELDS, [
-					ingredient.brand,
-				]),
+				search_keys: buildTranslationsSearchKeys(
+					ingredient.translations,
+					INGREDIENT_SEARCH_FIELDS,
+					[ingredient.brand],
+					INGREDIENT_SEARCH_OPTIONS,
+				),
 			})),
 		);
 		logger.info('Ingredients inserted successfully');
