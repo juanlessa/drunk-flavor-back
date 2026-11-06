@@ -42,6 +42,7 @@ const buildIngredient = (name: {
 	translations: { en: { name: name.en }, pt: { name: name.pt } },
 	category: buildCategory(),
 	unit: buildUnit(),
+	kind: 'generic',
 });
 
 describe('IngredientModel (integration)', () => {

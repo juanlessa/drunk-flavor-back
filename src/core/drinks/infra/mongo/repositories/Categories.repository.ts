@@ -10,7 +10,7 @@ import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
 import { CATEGORY_UNIQUE_INDEXES, CategoryModel, CategoryPersistence } from '../entities/category.model';
-import { findByTranslatedName } from '../helpers/translations.helpers';
+import { findByTranslatedName, getSortCollation } from '../helpers/translations.helpers';
 import { CategoryMapper } from '../mappers/category.mapper';
 
 export class CategoriesRepository implements ICategoriesRepository {
@@ -89,7 +89,10 @@ export class CategoriesRepository implements ICategoriesRepository {
 	}
 
 	async findAll(query: QueryParams): Promise<Category[]> {
-		const documents = await buildQuery<CategoryPersistence>(CategoryMapper.toPersistenceQuery(query), CategoryModel)
+		const persistenceQuery = CategoryMapper.toPersistenceQuery(query);
+		const documents = await buildQuery<CategoryPersistence>(persistenceQuery, CategoryModel, {
+			collation: getSortCollation(persistenceQuery.sort),
+		})
 			.lean<CategoryPersistence[]>()
 			.exec();
 		return documents.map(CategoryMapper.toDomain);

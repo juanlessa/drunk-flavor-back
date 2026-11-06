@@ -39,6 +39,7 @@ const buildIngredient = (): IngredientPersistence => ({
 	translations: { en: { name: 'Lime' }, pt: { name: 'Limão' } },
 	category: buildCategory(),
 	unit: buildUnit(),
+	kind: 'generic',
 	created_at: new Date(),
 	updated_at: new Date(),
 });

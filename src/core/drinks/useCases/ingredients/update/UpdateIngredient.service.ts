@@ -1,3 +1,4 @@
+import { IngredientKinds } from '@/core/drinks/entities/ingredient.entity';
 import { mapToTranslationsName } from '@/core/drinks/mappers/translations.mappers';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
@@ -12,7 +13,7 @@ export class UpdateIngredientService {
 		private unitsRepository: IUnitsRepository,
 	) {}
 
-	async execute({ id, translations, categoryId, unitId }: UpdateIngredientDTO): Promise<void> {
+	async execute({ id, translations, categoryId, unitId, kind, brand }: UpdateIngredientDTO): Promise<void> {
 		const ingredient = await this.ingredientsRepository.findById(id);
 		if (!ingredient) {
 			throw new NotFoundError('apiResponses.ingredients.notFound', { path: 'UpdateIngredient.service.1' });
@@ -33,6 +34,14 @@ export class UpdateIngredientService {
 				path: 'UpdateIngredient.service.4',
 			});
 		}
-		await this.ingredientsRepository.update({ id, translations, category, unit });
+		// A generic ingredient never keeps a brand.
+		await this.ingredientsRepository.update({
+			id,
+			translations,
+			category,
+			unit,
+			kind,
+			brand: kind === IngredientKinds.generic ? null : brand,
+		});
 	}
 }

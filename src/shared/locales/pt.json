@@ -124,7 +124,12 @@
 			"requiredCategory": "A categoria é obrigatória",
 			"invalidCategoryFormat": "Formato de categoria inválido",
 			"requiredUnit": "A unidade é obrigatória",
-			"invalidUnitFormat": "Formato de unidade inválido"
+			"invalidUnitFormat": "Formato de unidade inválido",
+			"invalidDescriptionFormat": "A descrição deve ter entre 1 e 120 caracteres",
+			"invalidKindFormat": "O tipo deve ser generic ou branded",
+			"requiredBrand": "A marca é obrigatória para ingredientes de marca",
+			"invalidBrandFormat": "A marca deve ter entre 1 e 60 caracteres",
+			"brandNotAllowed": "A marca só é permitida para ingredientes de marca"
 		},
 		"drinks": {
 			"alreadyExist": "O drink já existe",

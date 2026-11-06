@@ -124,7 +124,12 @@
 			"requiredCategory": "Category is required",
 			"invalidCategoryFormat": "Invalid category format",
 			"requiredUnit": "Unit is required",
-			"invalidUnitFormat": "Invalid unit format"
+			"invalidUnitFormat": "Invalid unit format",
+			"invalidDescriptionFormat": "Description must have between 1 and 120 characters",
+			"invalidKindFormat": "Kind must be generic or branded",
+			"requiredBrand": "Brand is required for branded ingredients",
+			"invalidBrandFormat": "Brand must have between 1 and 60 characters",
+			"brandNotAllowed": "Brand is only allowed for branded ingredients"
 		},
 		"drinks": {
 			"alreadyExist": "Drink already exists",

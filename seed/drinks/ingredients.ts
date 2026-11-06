@@ -1,10 +1,12 @@
 import { ObjectId } from 'mongodb';
 import { IngredientModel, IngredientPersistence } from '@/core/drinks/infra/mongo/entities/ingredient.model';
-import { NAME_SEARCH_FIELDS, buildTranslationsSearchKeys } from '@/core/drinks/helpers/searchKeys.helpers';
+import { INGREDIENT_SEARCH_FIELDS, buildTranslationsSearchKeys } from '@/core/drinks/helpers/searchKeys.helpers';
 import { logger } from '@/shared/providers/logger';
 import { categoriesMap } from './categories';
 import { unitsMap } from './units';
 
+// Seeds omit `kind` (defaults to generic) and may add a description or a brand.
+type SeedIngredient = Omit<IngredientPersistence, 'kind'> & Partial<Pick<IngredientPersistence, 'kind'>>;
 const ingredients = [
 	// Absinthe
 	{
@@ -33,8 +35,8 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'blue curacao' },
-			pt: { name: 'blue curaçao' },
+			en: { name: 'blue curacao', description: 'Orange liqueur colored blue' },
+			pt: { name: 'blue curaçao', description: 'Licor de laranja azul' },
 		},
 		category: categoriesMap.get('Liqueur')!,
 		unit: unitsMap.get('milliliter')!,
@@ -88,8 +90,8 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'triple sec' },
-			pt: { name: 'triple sec' },
+			en: { name: 'triple sec', description: 'Orange liqueur' },
+			pt: { name: 'triple sec', description: 'Licor de laranja' },
 		},
 		category: categoriesMap.get('Liqueur')!,
 		unit: unitsMap.get('milliliter')!,
@@ -361,8 +363,8 @@ const ingredients = [
 	{
 		_id: new ObjectId(),
 		translations: {
-			en: { name: 'grenadine' },
-			pt: { name: 'grenadine' },
+			en: { name: 'grenadine', description: 'Pomegranate syrup' },
+			pt: { name: 'grenadine', description: 'Xarope de romã' },
 		},
 		category: categoriesMap.get('Syrup')!,
 		unit: unitsMap.get('milliliter')!,
@@ -438,7 +440,7 @@ const ingredients = [
 		created_at: new Date(),
 		updated_at: new Date(),
 	},
-] as const satisfies readonly IngredientPersistence[];
+] as const satisfies readonly SeedIngredient[];
 
 type IngredientEnName = (typeof ingredients)[number]['translations']['en']['name'];
 
@@ -449,11 +451,12 @@ const normalizeIngredientName = (name: string): string => {
 	return `${lower.charAt(0).toLocaleUpperCase()}${lower.slice(1)}`;
 };
 
-const toIngredientDocument = (ingredient: IngredientPersistence): IngredientPersistence => ({
+const toIngredientDocument = (ingredient: SeedIngredient): IngredientPersistence => ({
 	...ingredient,
+	kind: ingredient.kind ?? 'generic',
 	translations: {
-		en: { name: normalizeIngredientName(ingredient.translations.en.name) },
-		pt: { name: normalizeIngredientName(ingredient.translations.pt.name) },
+		en: { ...ingredient.translations.en, name: normalizeIngredientName(ingredient.translations.en.name) },
+		pt: { ...ingredient.translations.pt, name: normalizeIngredientName(ingredient.translations.pt.name) },
 	},
 });
 
@@ -470,7 +473,9 @@ export async function insertIngredients() {
 		await IngredientModel.insertMany(
 			[...ingredientsMap.values()].map((ingredient) => ({
 				...ingredient,
-				search_keys: buildTranslationsSearchKeys(ingredient.translations, NAME_SEARCH_FIELDS),
+				search_keys: buildTranslationsSearchKeys(ingredient.translations, INGREDIENT_SEARCH_FIELDS, [
+					ingredient.brand,
+				]),
 			})),
 		);
 		logger.info('Ingredients inserted successfully');

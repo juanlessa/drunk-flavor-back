@@ -1,3 +1,4 @@
+import { CollationOptions } from 'mongodb';
 import { Model, QueryFilter } from 'mongoose';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 import { QueryParams, SortOrder } from '@/shared/types/query.types';
@@ -12,7 +13,11 @@ import { SEARCH_KEYS_FIELD } from '../constants/search.constants';
  * @param model - The Mongoose model to query.
  * @returns A Mongoose query.
  */
-export const buildQuery = <T>(queryParams: QueryParams, model: Model<T>) => {
+export const buildQuery = <T>(
+	queryParams: QueryParams,
+	model: Model<T>,
+	options: { collation?: CollationOptions } = {},
+) => {
 	const { limit = DEFAULT_QUERY_PARAMS.limit, page = DEFAULT_QUERY_PARAMS.page, search, sort } = queryParams;
 	const skip = (page - 1) * limit;
 
@@ -52,6 +57,10 @@ export const buildQuery = <T>(queryParams: QueryParams, model: Model<T>) => {
 			sortOptions._id = -1;
 		}
 		query = query.sort(sortOptions);
+	}
+
+	if (options.collation) {
+		query = query.collation(options.collation);
 	}
 
 	return query;

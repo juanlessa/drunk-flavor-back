@@ -23,6 +23,7 @@ export const buildTranslationsSearchKeys = (
 };
 
 export const NAME_SEARCH_FIELDS = ['name'] as const;
+export const INGREDIENT_SEARCH_FIELDS = ['name', 'description'] as const;
 export const UNIT_SEARCH_FIELDS = ['name', 'namePlural'] as const;
 export const UNIT_PERSISTENCE_SEARCH_FIELDS = ['name', 'name_plural'] as const;
 

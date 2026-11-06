@@ -31,6 +31,7 @@ const buildIngredient = (): Ingredient => ({
 	translations: { en: { name: 'Lime' }, pt: { name: 'Limão' } },
 	category: buildCategory(),
 	unit: buildUnit(),
+	kind: 'generic',
 	createdAt: new Date(),
 	updatedAt: new Date(),
 });

@@ -1,17 +1,49 @@
-import { CreateIngredient, FindIngredientByName, UpdateIngredient } from '@/core/drinks/dtos/ingredient.dtos';
+import {
+	CreateIngredient,
+	FindIngredientByName,
+	UpdateIngredient,
+	UpdateIngredientData,
+} from '@/core/drinks/dtos/ingredient.dtos';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
 import { toMongoUpdateSet } from '@/infrastructure/mongo/helpers/mapper.helpers';
 import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
 import { SEARCH_KEYS_FIELD } from '@/infrastructure/mongo/constants/search.constants';
-import { NAME_SEARCH_FIELDS, buildTranslationsSearchKeys } from '@/core/drinks/helpers/searchKeys.helpers';
-import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
+import { INGREDIENT_SEARCH_FIELDS, buildTranslationsSearchKeys } from '@/core/drinks/helpers/searchKeys.helpers';
+import { Languages, Language } from '@/core/drinks/types/translations';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
 import { INGREDIENT_UNIQUE_INDEXES, IngredientModel, IngredientPersistence } from '../entities/ingredient.model';
-import { findByTranslatedName } from '../helpers/translations.helpers';
+import { findByTranslatedName, getSortCollation } from '../helpers/translations.helpers';
 import { IngredientMapper } from '../mappers/ingredient.mapper';
+
+const LANGUAGES = Object.keys(Languages) as Language[];
+
+const descriptionPath = (language: Language) => `translations.${language}.description`;
+
+/** Persisted fields that an update explicitly removes (a `null` description or brand). */
+const getUnsetFields = (data: UpdateIngredientData): string[] => {
+	const descriptions = LANGUAGES.filter((language) => data.translations?.[language]?.description === null).map(
+		descriptionPath,
+	);
+	return data.brand === null ? [...descriptions, 'brand'] : descriptions;
+};
+
+/** Applies the translations patch to the current translations, dropping the removed descriptions. */
+const mergeTranslations = (
+	current: IngredientPersistence['translations'],
+	patch: Partial<IngredientPersistence['translations']> | undefined,
+	unsetFields: string[],
+): IngredientPersistence['translations'] =>
+	LANGUAGES.reduce<IngredientPersistence['translations']>(
+		(merged, language) => {
+			const translation = { ...current[language], ...patch?.[language] };
+			if (unsetFields.includes(descriptionPath(language))) delete translation.description;
+			return { ...merged, [language]: translation };
+		},
+		{} as IngredientPersistence['translations'],
+	);
 
 export class IngredientsRepository implements IIngredientsRepository {
 	async create(data: CreateIngredient): Promise<Ingredient> {
@@ -19,7 +51,9 @@ export class IngredientsRepository implements IIngredientsRepository {
 			const persistenceData = IngredientMapper.toPersistence(data);
 			const document = await IngredientModel.create({
 				...persistenceData,
-				search_keys: buildTranslationsSearchKeys(persistenceData.translations, NAME_SEARCH_FIELDS),
+				search_keys: buildTranslationsSearchKeys(persistenceData.translations, INGREDIENT_SEARCH_FIELDS, [
+					persistenceData.brand,
+				]),
 			});
 			return IngredientMapper.toDomain(document);
 		} catch (error) {
@@ -34,22 +68,29 @@ export class IngredientsRepository implements IIngredientsRepository {
 		if (!objectId) throw this.notFound('update');
 		const persistenceData = IngredientMapper.toPersistence(data);
 		const update = toMongoUpdateSet(persistenceData);
-		if (persistenceData.translations) {
+		const unsetFields = getUnsetFields(data);
+		if (persistenceData.translations || data.brand !== undefined) {
 			const current = await IngredientModel.findById(objectId)
-				.select('translations')
-				.lean<Pick<IngredientPersistence, 'translations'>>()
+				.select('translations brand')
+				.lean<Pick<IngredientPersistence, 'translations' | 'brand'>>()
 				.exec();
 			if (!current) throw this.notFound('update');
 			update[SEARCH_KEYS_FIELD] = buildTranslationsSearchKeys(
-				deepUpdate(persistenceData.translations, current.translations),
-				NAME_SEARCH_FIELDS,
+				mergeTranslations(current.translations, persistenceData.translations, unsetFields),
+				INGREDIENT_SEARCH_FIELDS,
+				[data.brand === undefined ? current.brand : (data.brand ?? undefined)],
 			);
 		}
 		let document: IngredientPersistence | null;
 		try {
 			document = await IngredientModel.findByIdAndUpdate(
 				objectId,
-				{ $set: update },
+				{
+					$set: update,
+					...(unsetFields.length > 0 && {
+						$unset: Object.fromEntries(unsetFields.map((field) => [field, 1])),
+					}),
+				},
 				{
 					returnDocument: 'after',
 					runValidators: true,
@@ -98,10 +139,10 @@ export class IngredientsRepository implements IIngredientsRepository {
 	}
 
 	async findAll(query: QueryParams): Promise<Ingredient[]> {
-		const documents = await buildQuery<IngredientPersistence>(
-			IngredientMapper.toPersistenceQuery(query),
-			IngredientModel,
-		)
+		const persistenceQuery = IngredientMapper.toPersistenceQuery(query);
+		const documents = await buildQuery<IngredientPersistence>(persistenceQuery, IngredientModel, {
+			collation: getSortCollation(persistenceQuery.sort),
+		})
 			.lean<IngredientPersistence[]>()
 			.exec();
 		return documents.map(IngredientMapper.toDomain);

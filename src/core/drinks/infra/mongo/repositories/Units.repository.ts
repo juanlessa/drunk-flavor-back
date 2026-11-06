@@ -10,7 +10,7 @@ import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
 import { UNIT_UNIQUE_INDEXES, UnitModel, UnitPersistence } from '../entities/unit.model';
-import { findByTranslatedName } from '../helpers/translations.helpers';
+import { findByTranslatedName, getSortCollation } from '../helpers/translations.helpers';
 import { UnitMapper } from '../mappers/unit.mapper';
 
 export class UnitsRepository implements IUnitsRepository {
@@ -92,7 +92,10 @@ export class UnitsRepository implements IUnitsRepository {
 	}
 
 	async findAll(query: QueryParams): Promise<Unit[]> {
-		const documents = await buildQuery<UnitPersistence>(UnitMapper.toPersistenceQuery(query), UnitModel)
+		const persistenceQuery = UnitMapper.toPersistenceQuery(query);
+		const documents = await buildQuery<UnitPersistence>(persistenceQuery, UnitModel, {
+			collation: getSortCollation(persistenceQuery.sort),
+		})
 			.lean<UnitPersistence[]>()
 			.exec();
 		return documents.map(UnitMapper.toDomain);

@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { CreateIngredient, FindIngredientByName, UpdateIngredient } from '@/core/drinks/dtos/ingredient.dtos';
-import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
+import { Ingredient, IngredientKinds } from '@/core/drinks/entities/ingredient.entity';
 import {
-	NAME_SEARCH_FIELDS,
+	INGREDIENT_SEARCH_FIELDS,
 	buildTranslationsSearchKeys,
 	createNameSearchMatchers,
 } from '@/core/drinks/helpers/searchKeys.helpers';
@@ -11,11 +11,12 @@ import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
+import { Languages, Language } from '@/core/drinks/types/translations';
 import { filterItemsBySearchCriteria, paginateItems, sortItemsByFields } from '@/shared/helpers/query.helpers';
 import { QueryParams } from '@/shared/types/query.types';
 
 const searchMatchers = createNameSearchMatchers<Ingredient>((item) =>
-	buildTranslationsSearchKeys(item.translations, NAME_SEARCH_FIELDS),
+	buildTranslationsSearchKeys(item.translations, INGREDIENT_SEARCH_FIELDS, [item.brand]),
 );
 
 export class IngredientsRepositoryInMemory implements IIngredientsRepository {
@@ -23,15 +24,29 @@ export class IngredientsRepositoryInMemory implements IIngredientsRepository {
 
 	async create(data: CreateIngredient): Promise<Ingredient> {
 		const now = new Date();
-		const record: Ingredient = { id: randomUUID(), ...data, createdAt: now, updatedAt: now };
+		const record: Ingredient = {
+			id: randomUUID(),
+			...data,
+			kind: data.kind ?? IngredientKinds.generic,
+			createdAt: now,
+			updatedAt: now,
+		};
 		this.collection.push(record);
 		return record;
 	}
 
-	async update({ id, ...data }: UpdateIngredient): Promise<Ingredient> {
+	async update({ id, brand, translations, kind, ...data }: UpdateIngredient): Promise<Ingredient> {
 		const index = this.collection.findIndex((record) => record.id === id);
 		if (index < 0) throw this.notFound('update');
-		const record = { ...deepUpdate<Ingredient>(data, this.collection[index]), updatedAt: new Date() };
+		const current = this.collection[index];
+		const record: Ingredient = {
+			...deepUpdate<Ingredient>(data, current),
+			translations: this.mergeTranslations(current.translations, translations),
+			kind: kind ?? current.kind,
+			updatedAt: new Date(),
+		};
+		if (brand === null) delete record.brand;
+		else if (brand !== undefined) record.brand = brand;
 		this.collection[index] = record;
 		return record;
 	}
@@ -59,6 +74,24 @@ export class IngredientsRepositoryInMemory implements IIngredientsRepository {
 		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);
 		if (query.sort) found = sortItemsByFields(found, query.sort);
 		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
+	}
+
+	/** Applies the translations patch per language; a `null` description removes the current one. */
+	private mergeTranslations(
+		current: Ingredient['translations'],
+		patch: UpdateIngredient['translations'],
+	): Ingredient['translations'] {
+		const languages = Object.keys(Languages) as Language[];
+		return languages.reduce<Ingredient['translations']>(
+			(merged, language) => {
+				const { description, ...fields } = patch?.[language] ?? {};
+				const translation = { ...current[language], ...fields };
+				if (description === null) delete translation.description;
+				else if (description !== undefined) translation.description = description;
+				return { ...merged, [language]: translation };
+			},
+			{} as Ingredient['translations'],
+		);
 	}
 
 	private notFound(operation: string): NotFoundError {

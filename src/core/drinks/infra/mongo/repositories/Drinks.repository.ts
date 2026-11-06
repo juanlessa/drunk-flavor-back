@@ -12,7 +12,7 @@ import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
 import { QueryFilter } from 'mongoose';
 import { DRINK_UNIQUE_INDEXES, DrinkModel, DrinkPersistence } from '../entities/drink.model';
-import { findByTranslatedName } from '../helpers/translations.helpers';
+import { findByTranslatedName, getSortCollation } from '../helpers/translations.helpers';
 import { DrinkMapper } from '../mappers/drink.mapper';
 
 export class DrinksRepository implements IDrinksRepository {
@@ -95,7 +95,10 @@ export class DrinksRepository implements IDrinksRepository {
 	}
 
 	async findAll(query: QueryParams): Promise<Drink[]> {
-		const documents = await buildQuery<DrinkPersistence>(DrinkMapper.toPersistenceQuery(query), DrinkModel)
+		const persistenceQuery = DrinkMapper.toPersistenceQuery(query);
+		const documents = await buildQuery<DrinkPersistence>(persistenceQuery, DrinkModel, {
+			collation: getSortCollation(persistenceQuery.sort),
+		})
 			.select('+ratings_sum')
 			.lean<DrinkPersistence[]>()
 			.exec();
