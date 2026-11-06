@@ -1,5 +1,6 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import {
+	CATEGORY_SEARCH_KEYS_INDEX,
 	CATEGORY_TRANSLATIONS_EN_NAME_UNIQUE_INDEX,
 	CATEGORY_TRANSLATIONS_PT_NAME_UNIQUE_INDEX,
 	CategoryModel,
@@ -33,7 +34,12 @@ describe('CategoryModel (integration)', () => {
 		const names = indexes.map((index) => index.name).sort();
 
 		expect(names).toEqual(
-			['_id_', CATEGORY_TRANSLATIONS_EN_NAME_UNIQUE_INDEX, CATEGORY_TRANSLATIONS_PT_NAME_UNIQUE_INDEX].sort(),
+			[
+				'_id_',
+				CATEGORY_SEARCH_KEYS_INDEX,
+				CATEGORY_TRANSLATIONS_EN_NAME_UNIQUE_INDEX,
+				CATEGORY_TRANSLATIONS_PT_NAME_UNIQUE_INDEX,
+			].sort(),
 		);
 
 		const enIndex = indexes.find((index) => index.name === CATEGORY_TRANSLATIONS_EN_NAME_UNIQUE_INDEX);

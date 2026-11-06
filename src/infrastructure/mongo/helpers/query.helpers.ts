@@ -2,6 +2,8 @@ import { Model, QueryFilter } from 'mongoose';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 import { QueryParams, SortOrder } from '@/shared/types/query.types';
 import { escapeRegExp } from '@/shared/helpers/regex.helpers';
+import { tokenizeSearchText } from '@/shared/helpers/search.helpers';
+import { SEARCH_KEYS_FIELD } from '../constants/search.constants';
 
 /**
  * Constructs a Mongoose query based on provided parameters.
@@ -14,12 +16,19 @@ export const buildQuery = <T>(queryParams: QueryParams, model: Model<T>) => {
 	const { limit = DEFAULT_QUERY_PARAMS.limit, page = DEFAULT_QUERY_PARAMS.page, search, sort } = queryParams;
 	const skip = (page - 1) * limit;
 
-	const searchConditions: Record<string, RegExp> = {};
+	const searchConditions: Record<string, RegExp | { $all: RegExp[] }> = {};
 	if (search) {
 		for (const [field, term] of Object.entries(search)) {
-			if (term !== undefined) {
-				searchConditions[field] = new RegExp(escapeRegExp(term), 'i');
+			if (term === undefined) continue;
+			if (field === SEARCH_KEYS_FIELD) {
+				// Every word of the term must be the prefix of one of the normalized search keys.
+				const tokens = tokenizeSearchText(term);
+				if (tokens.length > 0) {
+					searchConditions[field] = { $all: tokens.map((token) => new RegExp(`^${escapeRegExp(token)}`)) };
+				}
+				continue;
 			}
+			searchConditions[field] = new RegExp(escapeRegExp(term), 'i');
 		}
 	}
 

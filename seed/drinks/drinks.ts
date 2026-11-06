@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { DrinkModel, DrinkPersistence } from '@/core/drinks/infra/mongo/entities/drink.model';
+import { NAME_SEARCH_FIELDS, buildTranslationsSearchKeys } from '@/core/drinks/helpers/searchKeys.helpers';
 import { logger } from '@/shared/providers/logger';
 import { ingredientsMap } from './ingredients';
 
@@ -128,7 +129,12 @@ export const drinksMap = new Map<DrinkEnName, DrinkPersistence>(
 
 export async function insertDrinks() {
 	try {
-		await DrinkModel.insertMany(drinks);
+		await DrinkModel.insertMany(
+			drinks.map((drink) => ({
+				...drink,
+				search_keys: buildTranslationsSearchKeys(drink.translations, NAME_SEARCH_FIELDS),
+			})),
+		);
 		logger.info('Drinks inserted successfully');
 	} catch (error) {
 		logger.error({ err: error }, 'Error inserting drinks');

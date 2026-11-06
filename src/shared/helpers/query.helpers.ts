@@ -26,12 +26,19 @@ const compareValues = (a: unknown, b: unknown): number => {
  *
  * @param items - The array of items to filter.
  * @param search - An object containing search terms where the key is the field path and the value is the search term.
+ * @param customMatchers - Matchers that take over specific search keys instead of the default field path lookup.
  * @returns A new array of items that match the search criteria.
  */
-export const filterItemsBySearchCriteria = <T>(items: T[], search: Record<string, string | undefined>): T[] => {
+export const filterItemsBySearchCriteria = <T>(
+	items: T[],
+	search: Record<string, string | undefined>,
+	customMatchers: Record<string, (item: T, term: string) => boolean> = {},
+): T[] => {
 	return items.filter((item) => {
 		return Object.entries(search).every(([field, term]) => {
 			if (term === undefined) return true;
+			const customMatcher = customMatchers[field];
+			if (customMatcher) return customMatcher(item, term);
 			const fields = field.split('.');
 			let value: unknown = item;
 			for (const f of fields) {

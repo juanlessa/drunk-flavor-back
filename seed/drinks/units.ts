@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { UnitModel, UnitPersistence } from '@/core/drinks/infra/mongo/entities/unit.model';
+import { UNIT_PERSISTENCE_SEARCH_FIELDS, buildTranslationsSearchKeys } from '@/core/drinks/helpers/searchKeys.helpers';
 import { logger } from '@/shared/providers/logger';
 
 const units = [
@@ -38,7 +39,14 @@ export const unitsMap = new Map<UnitEnName, UnitPersistence>(
 
 export async function insertUnits() {
 	try {
-		await UnitModel.insertMany(units);
+		await UnitModel.insertMany(
+			units.map((unit) => ({
+				...unit,
+				search_keys: buildTranslationsSearchKeys(unit.translations, UNIT_PERSISTENCE_SEARCH_FIELDS, [
+					(unit as UnitPersistence).symbol,
+				]),
+			})),
+		);
 		logger.info('Units inserted successfully');
 	} catch (error) {
 		logger.error({ err: error }, 'Error inserting units');

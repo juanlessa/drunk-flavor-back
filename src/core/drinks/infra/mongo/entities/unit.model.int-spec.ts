@@ -1,5 +1,6 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import {
+	UNIT_SEARCH_KEYS_INDEX,
 	UNIT_TRANSLATIONS_EN_NAME_UNIQUE_INDEX,
 	UNIT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX,
 	UnitModel,
@@ -36,7 +37,12 @@ describe('UnitModel (integration)', () => {
 		const names = indexes.map((index) => index.name).sort();
 
 		expect(names).toEqual(
-			['_id_', UNIT_TRANSLATIONS_EN_NAME_UNIQUE_INDEX, UNIT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX].sort(),
+			[
+				'_id_',
+				UNIT_SEARCH_KEYS_INDEX,
+				UNIT_TRANSLATIONS_EN_NAME_UNIQUE_INDEX,
+				UNIT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX,
+			].sort(),
 		);
 		expect(names).not.toContain('translations.en.name_1');
 		expect(names).not.toContain('translations.pt.name_1');

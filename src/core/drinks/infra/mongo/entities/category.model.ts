@@ -1,7 +1,8 @@
 import mongoose, { Model, Schema, Types } from 'mongoose';
 import { Translations } from '@/core/drinks/types/translations';
-import { getTranslationsSchema } from '../helpers/translations.helpers';
+import { getNameUniqueIndexOptions, getTranslationsSchema } from '../helpers/translations.helpers';
 
+export const CATEGORY_SEARCH_KEYS_INDEX = 'category_search_keys';
 export const CATEGORY_TRANSLATIONS_EN_NAME_UNIQUE_INDEX = 'category_translations_en_name_unique';
 export const CATEGORY_TRANSLATIONS_PT_NAME_UNIQUE_INDEX = 'category_translations_pt_name_unique';
 export const CATEGORY_UNIQUE_INDEXES = [
@@ -14,12 +15,14 @@ const categoryTranslationSchema = new Schema({ name: { type: String, required: t
 const categorySchemaDefinition = {
 	translations: { type: getTranslationsSchema(categoryTranslationSchema), required: true },
 	is_alcoholic: { type: Boolean, required: true },
+	search_keys: { type: [String], default: undefined, select: false },
 } as const;
 
 export type CategoryPersistence = {
 	_id: Types.ObjectId;
 	translations: Translations<{ name: string }>;
 	is_alcoholic: boolean;
+	search_keys?: string[];
 	created_at: Date;
 	updated_at: Date;
 };
@@ -28,8 +31,15 @@ export const CategorySchema = new Schema<CategoryPersistence>(categorySchemaDefi
 	timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 });
 
-CategorySchema.index({ 'translations.en.name': 1 }, { unique: true, name: CATEGORY_TRANSLATIONS_EN_NAME_UNIQUE_INDEX });
-CategorySchema.index({ 'translations.pt.name': 1 }, { unique: true, name: CATEGORY_TRANSLATIONS_PT_NAME_UNIQUE_INDEX });
+CategorySchema.index(
+	{ 'translations.en.name': 1 },
+	getNameUniqueIndexOptions('en', CATEGORY_TRANSLATIONS_EN_NAME_UNIQUE_INDEX),
+);
+CategorySchema.index(
+	{ 'translations.pt.name': 1 },
+	getNameUniqueIndexOptions('pt', CATEGORY_TRANSLATIONS_PT_NAME_UNIQUE_INDEX),
+);
+CategorySchema.index({ search_keys: 1 }, { name: CATEGORY_SEARCH_KEYS_INDEX });
 
 export const CategoryModel =
 	(mongoose.models['categories'] as Model<CategoryPersistence> | undefined) ??

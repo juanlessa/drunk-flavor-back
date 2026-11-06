@@ -1,6 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { ObjectId } from 'mongodb';
 import {
+	INGREDIENT_SEARCH_KEYS_INDEX,
 	INGREDIENT_TRANSLATIONS_EN_NAME_UNIQUE_INDEX,
 	INGREDIENT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX,
 	IngredientModel,
@@ -61,7 +62,12 @@ describe('IngredientModel (integration)', () => {
 		const names = indexes.map((index) => index.name).sort();
 
 		expect(names).toEqual(
-			['_id_', INGREDIENT_TRANSLATIONS_EN_NAME_UNIQUE_INDEX, INGREDIENT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX].sort(),
+			[
+				'_id_',
+				INGREDIENT_SEARCH_KEYS_INDEX,
+				INGREDIENT_TRANSLATIONS_EN_NAME_UNIQUE_INDEX,
+				INGREDIENT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX,
+			].sort(),
 		);
 		expect(names).not.toContain('translations.en.name_1');
 		expect(names).not.toContain('translations.pt.name_1');

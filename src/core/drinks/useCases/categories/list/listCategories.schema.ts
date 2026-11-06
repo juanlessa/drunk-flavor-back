@@ -5,6 +5,7 @@ import { stringifiedJSONSchema } from '@/shared/schemas/stringified.schemas';
 import { z } from 'zod/v4';
 
 const searchSchema = z.object({
+	name: searchTermSchema,
 	...generateTranslationsFieldSchema(categoryTranslationSchema, ['name'], searchTermSchema).shape,
 });
 

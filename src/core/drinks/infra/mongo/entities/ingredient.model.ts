@@ -2,8 +2,9 @@ import mongoose, { Model, Schema, Types } from 'mongoose';
 import { Translations } from '@/core/drinks/types/translations';
 import { CategoryPersistence, CategorySchema } from './category.model';
 import { UnitPersistence, UnitSchema } from './unit.model';
-import { getTranslationsSchema } from '../helpers/translations.helpers';
+import { getNameUniqueIndexOptions, getTranslationsSchema } from '../helpers/translations.helpers';
 
+export const INGREDIENT_SEARCH_KEYS_INDEX = 'ingredient_search_keys';
 export const INGREDIENT_TRANSLATIONS_EN_NAME_UNIQUE_INDEX = 'ingredient_translations_en_name_unique';
 export const INGREDIENT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX = 'ingredient_translations_pt_name_unique';
 export const INGREDIENT_UNIQUE_INDEXES = [
@@ -17,6 +18,7 @@ const ingredientSchemaDefinition = {
 	translations: { type: getTranslationsSchema(IngredientTranslationSchema), required: true },
 	category: { type: CategorySchema, excludeIndexes: true, required: true },
 	unit: { type: UnitSchema, excludeIndexes: true, required: true },
+	search_keys: { type: [String], default: undefined, select: false },
 } as const;
 
 export type IngredientPersistence = {
@@ -24,6 +26,7 @@ export type IngredientPersistence = {
 	translations: Translations<{ name: string }>;
 	category: CategoryPersistence;
 	unit: UnitPersistence;
+	search_keys?: string[];
 	created_at: Date;
 	updated_at: Date;
 };
@@ -34,12 +37,13 @@ export const IngredientSchema = new Schema<IngredientPersistence>(ingredientSche
 
 IngredientSchema.index(
 	{ 'translations.en.name': 1 },
-	{ unique: true, name: INGREDIENT_TRANSLATIONS_EN_NAME_UNIQUE_INDEX },
+	getNameUniqueIndexOptions('en', INGREDIENT_TRANSLATIONS_EN_NAME_UNIQUE_INDEX),
 );
 IngredientSchema.index(
 	{ 'translations.pt.name': 1 },
-	{ unique: true, name: INGREDIENT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX },
+	getNameUniqueIndexOptions('pt', INGREDIENT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX),
 );
+IngredientSchema.index({ search_keys: 1 }, { name: INGREDIENT_SEARCH_KEYS_INDEX });
 
 export const IngredientModel =
 	(mongoose.models['ingredients'] as Model<IngredientPersistence> | undefined) ??

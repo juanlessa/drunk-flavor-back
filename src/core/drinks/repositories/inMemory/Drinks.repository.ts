@@ -1,6 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { CreateDrink, FindDrinkByName, UpdateDrink } from '@/core/drinks/dtos/drink.dtos';
 import { Drink } from '@/core/drinks/entities/drink.entity';
+import {
+	NAME_SEARCH_FIELDS,
+	buildTranslationsSearchKeys,
+	createNameSearchMatchers,
+} from '@/core/drinks/helpers/searchKeys.helpers';
 import { compareTranslationsName } from '@/core/drinks/helpers/translations.helpers';
 import type { ApplyRatingDelta, DrinkRatingSummary } from '@/core/drinks/public/IDrinksModule';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
@@ -9,6 +14,10 @@ import { NotFoundError } from '@/shared/error/error.lib';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { filterItemsBySearchCriteria, paginateItems, sortItemsByFields } from '@/shared/helpers/query.helpers';
 import { QueryParams } from '@/shared/types/query.types';
+
+const searchMatchers = createNameSearchMatchers<Drink>((item) =>
+	buildTranslationsSearchKeys(item.translations, NAME_SEARCH_FIELDS),
+);
 
 export class DrinksRepositoryInMemory implements IDrinksRepository {
 	collection: Drink[] = [];
@@ -54,7 +63,7 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 
 	async findAll(query: QueryParams): Promise<Drink[]> {
 		let found = [...this.collection];
-		if (query.search) found = filterItemsBySearchCriteria(found, query.search);
+		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);
 		if (query.sort) found = sortItemsByFields(found, query.sort);
 		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
 	}

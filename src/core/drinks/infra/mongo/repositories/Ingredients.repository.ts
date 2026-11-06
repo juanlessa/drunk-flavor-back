@@ -4,16 +4,23 @@ import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.
 import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
 import { toMongoUpdateSet } from '@/infrastructure/mongo/helpers/mapper.helpers';
 import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
+import { SEARCH_KEYS_FIELD } from '@/infrastructure/mongo/constants/search.constants';
+import { NAME_SEARCH_FIELDS, buildTranslationsSearchKeys } from '@/core/drinks/helpers/searchKeys.helpers';
+import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
 import { INGREDIENT_UNIQUE_INDEXES, IngredientModel, IngredientPersistence } from '../entities/ingredient.model';
-import { getNameCompareQuery } from '../helpers/translations.helpers';
+import { findByTranslatedName } from '../helpers/translations.helpers';
 import { IngredientMapper } from '../mappers/ingredient.mapper';
 
 export class IngredientsRepository implements IIngredientsRepository {
 	async create(data: CreateIngredient): Promise<Ingredient> {
 		try {
-			const document = await IngredientModel.create(IngredientMapper.toPersistence(data));
+			const persistenceData = IngredientMapper.toPersistence(data);
+			const document = await IngredientModel.create({
+				...persistenceData,
+				search_keys: buildTranslationsSearchKeys(persistenceData.translations, NAME_SEARCH_FIELDS),
+			});
 			return IngredientMapper.toDomain(document);
 		} catch (error) {
 			throw mapDuplicateKeyError(error, INGREDIENT_UNIQUE_INDEXES, 'apiResponses.ingredients.alreadyExist', {
@@ -25,11 +32,24 @@ export class IngredientsRepository implements IIngredientsRepository {
 	async update({ id, ...data }: UpdateIngredient): Promise<Ingredient> {
 		const objectId = IngredientMapper.toObjectId(id);
 		if (!objectId) throw this.notFound('update');
+		const persistenceData = IngredientMapper.toPersistence(data);
+		const update = toMongoUpdateSet(persistenceData);
+		if (persistenceData.translations) {
+			const current = await IngredientModel.findById(objectId)
+				.select('translations')
+				.lean<Pick<IngredientPersistence, 'translations'>>()
+				.exec();
+			if (!current) throw this.notFound('update');
+			update[SEARCH_KEYS_FIELD] = buildTranslationsSearchKeys(
+				deepUpdate(persistenceData.translations, current.translations),
+				NAME_SEARCH_FIELDS,
+			);
+		}
 		let document: IngredientPersistence | null;
 		try {
 			document = await IngredientModel.findByIdAndUpdate(
 				objectId,
-				{ $set: toMongoUpdateSet(IngredientMapper.toPersistence(data)) },
+				{ $set: update },
 				{
 					returnDocument: 'after',
 					runValidators: true,
@@ -55,9 +75,9 @@ export class IngredientsRepository implements IIngredientsRepository {
 	}
 
 	async findByName(data: FindIngredientByName): Promise<Ingredient | null> {
-		const document = await IngredientModel.findOne({ $or: getNameCompareQuery(data) })
-			.lean<IngredientPersistence>()
-			.exec();
+		const document = await findByTranslatedName(data, (filter, collation) =>
+			IngredientModel.findOne(filter).collation(collation).lean<IngredientPersistence>().exec(),
+		);
 		return document ? IngredientMapper.toDomain(document) : null;
 	}
 

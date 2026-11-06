@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { CategoryModel, CategoryPersistence } from '@/core/drinks/infra/mongo/entities/category.model';
+import { NAME_SEARCH_FIELDS, buildTranslationsSearchKeys } from '@/core/drinks/helpers/searchKeys.helpers';
 import { logger } from '@/shared/providers/logger';
 
 const categories = [
@@ -223,7 +224,12 @@ export const categoriesMap = new Map<CategoryEnName, CategoryPersistence>(
 
 export async function insertCategories() {
 	try {
-		await CategoryModel.insertMany(categories);
+		await CategoryModel.insertMany(
+			categories.map((category) => ({
+				...category,
+				search_keys: buildTranslationsSearchKeys(category.translations, NAME_SEARCH_FIELDS),
+			})),
+		);
 		logger.info('Categories inserted successfully');
 	} catch (error) {
 		logger.error({ err: error }, 'Error inserting categories');

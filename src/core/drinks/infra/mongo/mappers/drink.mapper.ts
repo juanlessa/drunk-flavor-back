@@ -4,6 +4,7 @@ import { DeepPartial } from '@/shared/types/utility.types';
 import {
 	mapObjectEntriesDeep,
 	mapQueryFields,
+	mapSearchQueryFields,
 	toDomainEntry,
 	toObjectId,
 	toPersistenceEntry,
@@ -22,6 +23,6 @@ export const DrinkMapper = {
 	},
 	toObjectId,
 	toPersistenceQuery(query: QueryParams): QueryParams {
-		return { ...query, sort: mapQueryFields(query.sort), search: mapQueryFields(query.search) };
+		return { ...query, sort: mapQueryFields(query.sort), search: mapSearchQueryFields(query.search) };
 	},
 };

@@ -4,16 +4,23 @@ import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.re
 import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
 import { toMongoUpdateSet } from '@/infrastructure/mongo/helpers/mapper.helpers';
 import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
+import { SEARCH_KEYS_FIELD } from '@/infrastructure/mongo/constants/search.constants';
+import { NAME_SEARCH_FIELDS, buildTranslationsSearchKeys } from '@/core/drinks/helpers/searchKeys.helpers';
+import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
 import { CATEGORY_UNIQUE_INDEXES, CategoryModel, CategoryPersistence } from '../entities/category.model';
-import { getNameCompareQuery } from '../helpers/translations.helpers';
+import { findByTranslatedName } from '../helpers/translations.helpers';
 import { CategoryMapper } from '../mappers/category.mapper';
 
 export class CategoriesRepository implements ICategoriesRepository {
 	async create(data: CreateCategory): Promise<Category> {
 		try {
-			const document = await CategoryModel.create(CategoryMapper.toPersistence(data));
+			const persistenceData = CategoryMapper.toPersistence(data);
+			const document = await CategoryModel.create({
+				...persistenceData,
+				search_keys: buildTranslationsSearchKeys(persistenceData.translations, NAME_SEARCH_FIELDS),
+			});
 			return CategoryMapper.toDomain(document);
 		} catch (error) {
 			throw mapDuplicateKeyError(error, CATEGORY_UNIQUE_INDEXES, 'apiResponses.categories.alreadyExist', {
@@ -25,11 +32,24 @@ export class CategoriesRepository implements ICategoriesRepository {
 	async update({ id, ...data }: UpdateCategory): Promise<Category> {
 		const objectId = CategoryMapper.toObjectId(id);
 		if (!objectId) throw this.notFound('update');
+		const persistenceData = CategoryMapper.toPersistence(data);
+		const update = toMongoUpdateSet(persistenceData);
+		if (persistenceData.translations) {
+			const current = await CategoryModel.findById(objectId)
+				.select('translations')
+				.lean<Pick<CategoryPersistence, 'translations'>>()
+				.exec();
+			if (!current) throw this.notFound('update');
+			update[SEARCH_KEYS_FIELD] = buildTranslationsSearchKeys(
+				deepUpdate(persistenceData.translations, current.translations),
+				NAME_SEARCH_FIELDS,
+			);
+		}
 		let document: CategoryPersistence | null;
 		try {
 			document = await CategoryModel.findByIdAndUpdate(
 				objectId,
-				{ $set: toMongoUpdateSet(CategoryMapper.toPersistence(data)) },
+				{ $set: update },
 				{
 					returnDocument: 'after',
 					runValidators: true,
@@ -55,9 +75,9 @@ export class CategoriesRepository implements ICategoriesRepository {
 	}
 
 	async findByName(data: FindCategoryByName): Promise<Category | null> {
-		const document = await CategoryModel.findOne({ $or: getNameCompareQuery(data) })
-			.lean<CategoryPersistence>()
-			.exec();
+		const document = await findByTranslatedName(data, (filter, collation) =>
+			CategoryModel.findOne(filter).collation(collation).lean<CategoryPersistence>().exec(),
+		);
 		return document ? CategoryMapper.toDomain(document) : null;
 	}
 
