@@ -280,8 +280,10 @@ npm run test:e2e -- src/infrastructure/fastify/tests/categories/getCategory.e2e-
   connection and REST API URL to the tests through Vitest's `provide`/`inject` (`smtpConnection`, `maildevApiUrl`), and
   stop it when the run ends. To use an already-running SMTP server (for example Mailpit in CI), set `SMTP_MODE=external`
   and configure the `SMTP_*` variables.
-- You can override any default testing environment variables by adding a `.env.testing` file in the project root,
-  following the structure of `.env.example`.
+- The test suites run with `NODE_ENV=testing` and do not read the `.env` file. They are self-contained: every variable
+  falls back to the `testing` default baked into the env schemas (managed Mongo/Redis/SMTP, placeholder auth secrets, a
+  fixed dummy session key). To override a default, export the variable in the environment before running the suite (as
+  the CI job does for `MONGO_MODE=external`, `SMTP_MODE=external` and the connection variables).
 
 ## Build
 

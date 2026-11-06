@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { parseApiEnv } from './api';
 
-const ALL_ENVS = ['development', 'testing', 'e2e', 'production'] as const;
-const DEFAULTING_ENVS = ['development', 'testing', 'e2e'] as const;
+const ALL_ENVS = ['development', 'testing', 'production'] as const;
+const DEFAULTING_ENVS = ['development', 'testing'] as const;
 
 // A minimal valid source so non-defaulting fields (API_ENV in production) parse.
 const baseFor = (overrides: Record<string, string | undefined> = {}) =>

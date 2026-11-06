@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { parseAuthEnv } from './auth';
 import type { NodeEnv } from './node';
 
-const ALL_ENVS = ['production', 'development', 'testing', 'e2e'] as const;
-const NON_PROD_ENVS = ['development', 'testing', 'e2e'] as const;
-const DEFAULTING_ENVS = ['testing', 'e2e'] as const;
+const ALL_ENVS = ['production', 'development', 'testing'] as const;
+const NON_PROD_ENVS = ['development', 'testing'] as const;
+const DEFAULTING_ENVS = ['testing'] as const;
 
 // A valid, strong production configuration used as a baseline that individual
 // tests override field by field. Secrets are >= 32 chars and distinct.
@@ -41,17 +41,6 @@ const EXPECTED_DEFAULTS = {
 		COOKIE_SECRET: 'bad-cookie-secret-testing',
 		ACCESS_TOKEN_SECRET: 'bad-access-token-secret-testing',
 		REFRESH_TOKEN_SECRET: 'bad-refresh-token-secret-testing',
-		ACCESS_TOKEN_EXPIRES_IN_SECONDS: 2,
-		REFRESH_TOKEN_EXPIRES_IN_SECONDS: 5,
-		VERIFICATION_TOKEN_EXPIRES_IN_SECONDS: 5,
-		VERIFICATION_TOKEN_SIZE: 16,
-		PASSWORD_HASH_ROUNDS: 3,
-		DUMMY_PASSWORD: 'timing-equalization-placeholder',
-	},
-	e2e: {
-		COOKIE_SECRET: 'bad-cookie-secret-e2e',
-		ACCESS_TOKEN_SECRET: 'bad-access-token-secret-e2e',
-		REFRESH_TOKEN_SECRET: 'bad-refresh-token-secret-e2e',
 		ACCESS_TOKEN_EXPIRES_IN_SECONDS: 2,
 		REFRESH_TOKEN_EXPIRES_IN_SECONDS: 5,
 		VERIFICATION_TOKEN_EXPIRES_IN_SECONDS: 5,

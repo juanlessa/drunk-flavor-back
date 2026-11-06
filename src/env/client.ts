@@ -1,10 +1,10 @@
-import 'dotenv/config';
+import './loadEnv';
 import { z } from 'zod/v4';
 import { type NodeEnv, parseNodeEnv } from './node';
 
 export const HTTP_PROTOCOL = /^https?$/;
 
-const CLIENT_OPTIONAL_ENVIRONMENTS: readonly NodeEnv[] = ['development', 'e2e', 'testing'];
+const CLIENT_OPTIONAL_ENVIRONMENTS: readonly NodeEnv[] = ['development', 'testing'];
 
 const CLIENT_BASE_URL_DEFAULT = 'http://localhost:3000';
 

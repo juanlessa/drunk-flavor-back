@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import './loadEnv';
 import { z } from 'zod/v4';
 import { type NodeEnv, parseNodeEnv } from './node';
 
@@ -8,7 +8,6 @@ const trustedProxyEnvMap = {
 	production: trustProxySchema,
 	development: trustProxySchema.default(false),
 	testing: trustProxySchema.default(false),
-	e2e: trustProxySchema.default(false),
 } satisfies Record<NodeEnv, z.ZodType<string | boolean>>;
 
 export const buildRateLimitSchema = (nodeEnv: NodeEnv) =>

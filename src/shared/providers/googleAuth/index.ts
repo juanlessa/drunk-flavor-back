@@ -4,9 +4,7 @@ import { GoogleAuthLibraryIdentityProvider } from './implementations/GoogleAuthL
 import { fakeGoogleIdentityProvider } from './fakes/FakeGoogleIdentityProvider';
 
 const provider: IGoogleIdentityProvider =
-	env.NODE_ENV === 'testing' || env.NODE_ENV === 'e2e'
-		? fakeGoogleIdentityProvider
-		: new GoogleAuthLibraryIdentityProvider();
+	env.NODE_ENV === 'testing' ? fakeGoogleIdentityProvider : new GoogleAuthLibraryIdentityProvider();
 
 export const resolveGoogleIdentityProvider = () => provider;
 

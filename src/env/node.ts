@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import './loadEnv';
 import { z } from 'zod/v4';
 
 /**
@@ -12,7 +12,7 @@ import { z } from 'zod/v4';
  * Values are declared once as a `const` tuple; both the union type and the
  * runtime options list are derived from it, so there is a single source of truth.
  */
-export const nodeEnvOptions = ['development', 'production', 'testing', 'e2e'] as const;
+export const nodeEnvOptions = ['development', 'production', 'testing'] as const;
 
 export type NodeEnv = (typeof nodeEnvOptions)[number];
 

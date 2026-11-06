@@ -6,7 +6,7 @@ describe('parseClientEnv', () => {
 		expect(() => parseClientEnv({ CLIENT_BASE_URL: undefined } as NodeJS.ProcessEnv, 'production')).toThrow();
 	});
 
-	it.each(['development', 'testing', 'e2e', 'production'] as const)(
+	it.each(['development', 'testing', 'production'] as const)(
 		'accepts a valid bare origin in "%s" environment',
 		(nodeEnv) => {
 			const result = parseClientEnv({ CLIENT_BASE_URL: 'https://app.example.com' }, nodeEnv);
@@ -14,7 +14,7 @@ describe('parseClientEnv', () => {
 		},
 	);
 
-	it.each(['development', 'testing', 'e2e'] as const)(
+	it.each(['development', 'testing'] as const)(
 		'defaults to http://localhost:3000 in the "%s" environment',
 		(nodeEnv) => {
 			const result = parseClientEnv({} as NodeJS.ProcessEnv, nodeEnv);
@@ -22,14 +22,14 @@ describe('parseClientEnv', () => {
 		},
 	);
 
-	it.each(['development', 'testing', 'e2e', 'production'] as const)(
+	it.each(['development', 'testing', 'production'] as const)(
 		'rejects a non-http protocol in the "%s" environment',
 		(nodeEnv) => {
 			expect(() => parseClientEnv({ CLIENT_BASE_URL: 'ftp://app.example.com' }, nodeEnv)).toThrow();
 		},
 	);
 
-	it.each(['development', 'testing', 'e2e'] as const)(
+	it.each(['development', 'testing'] as const)(
 		'rejects a value that is not a bare origin in the "%s" environment',
 		(nodeEnv) => {
 			expect(() => parseClientEnv({ CLIENT_BASE_URL: 'https://app.example.com/path' }, nodeEnv)).toThrow();

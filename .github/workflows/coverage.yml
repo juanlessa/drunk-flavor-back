@@ -31,15 +31,15 @@ jobs:
 
             - name: Merged unit + integration coverage
               continue-on-error: true
-              run: npm run test:coverage:all
+              run: npm run test:all:coverage
 
             - name: Report merged coverage on PR
               uses: davelosert/vitest-coverage-report-action@v2
               with:
                   name: 'Merged coverage (unit + integration)'
                   github-token: ${{ secrets.GITHUB_TOKEN }}
-                  vite-config-path: ./vitest-merge.config.ts
-                  json-summary-path: ./coverage/merged/coverage-summary.json
-                  json-final-path: ./coverage/merged/coverage-final.json
+                  vite-config-path: ./vitest.config.ts
+                  json-summary-path: ./coverage/coverage-summary.json
+                  json-final-path: ./coverage/coverage-final.json
                   # Only the totals table; per-file details made the comment exceed GitHub's size limit.
                   file-coverage-mode: none

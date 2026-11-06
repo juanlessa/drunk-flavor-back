@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import './loadEnv';
 import { z } from 'zod/v4';
 import { type NodeEnv, parseNodeEnv } from './node';
 
@@ -8,7 +8,7 @@ export type ApiEnv = (typeof apiEnvOptions)[number];
 
 export const HTTP_PROTOCOL = /^https?$/;
 
-const API_ENV_OPTIONAL_ENVIRONMENTS: readonly NodeEnv[] = ['development', 'e2e', 'testing'];
+const API_ENV_OPTIONAL_ENVIRONMENTS: readonly NodeEnv[] = ['development', 'testing'];
 
 const API_ENV_DEFAULT: ApiEnv = 'development';
 const API_DEFAULT_HOST = '0.0.0.0';

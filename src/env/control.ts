@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import './loadEnv';
 import { z } from 'zod/v4';
 import { type NodeEnv, parseNodeEnv } from './node';
 
@@ -14,7 +14,6 @@ export type InstanceMode = (typeof instanceModeOptions)[number];
 const STORAGE_TYPE_DEFAULTS: Record<NodeEnv, StorageType> = {
 	development: 'local',
 	testing: 'local',
-	e2e: 'local',
 	production: 's3',
 };
 
@@ -22,21 +21,18 @@ const MONGO_MODE_DEFAULTS: Record<NodeEnv, InstanceMode> = {
 	development: 'external',
 	production: 'external',
 	testing: 'managed',
-	e2e: 'managed',
 };
 
 const REDIS_MODE_DEFAULTS: Record<NodeEnv, InstanceMode> = {
 	development: 'external',
 	production: 'external',
 	testing: 'managed',
-	e2e: 'managed',
 };
 
 const SMTP_MODE_DEFAULTS: Record<NodeEnv, InstanceMode> = {
 	development: 'external',
 	production: 'external',
 	testing: 'managed',
-	e2e: 'managed',
 };
 
 export const buildControlSchema = (nodeEnv: NodeEnv) =>

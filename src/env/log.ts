@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import './loadEnv';
 import { z } from 'zod/v4';
 import { type NodeEnv, parseNodeEnv } from './node';
 
@@ -9,28 +9,24 @@ export type LogLevel = (typeof logLevelOptions)[number];
 const LOG_LEVEL_DEFAULTS: Record<NodeEnv, LogLevel> = {
 	development: 'debug',
 	testing: 'warn',
-	e2e: 'warn',
 	production: 'info',
 };
 
 const LOG_ENABLED_DEFAULTS: Record<NodeEnv, boolean> = {
 	development: true,
 	testing: true,
-	e2e: true,
 	production: true,
 };
 
 const LOG_ENABLE_PRETTY_DEFAULTS: Record<NodeEnv, boolean> = {
 	development: true,
 	testing: true,
-	e2e: true,
 	production: false,
 };
 
 const LOG_PID_HOSTNAME_DEFAULTS: Record<NodeEnv, boolean> = {
 	development: false,
 	testing: false,
-	e2e: false,
 	production: true,
 };
 

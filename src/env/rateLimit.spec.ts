@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseRateLimitEnv } from './rateLimit';
 
-const NON_PROD_ENVS = ['development', 'testing', 'e2e'] as const;
+const NON_PROD_ENVS = ['development', 'testing'] as const;
 
 const empty = () => ({}) as NodeJS.ProcessEnv;
 
