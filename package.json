@@ -53,7 +53,7 @@
 		"@fastify/multipart": "10.1.4",
 		"@fastify/rate-limit": "11.2.2",
 		"@fastify/secure-session": "8.4.2",
-		"@fastify/static": "10.1.8",
+		"@fastify/static": "10.1.10",
 		"@fastify/swagger": "9.9.3",
 		"@fastify/swagger-ui": "6.1.2",
 		"bcrypt": "6.0.0",
