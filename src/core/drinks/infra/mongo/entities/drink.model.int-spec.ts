@@ -54,7 +54,6 @@ const buildDrink = (name: { en: string; pt: string }, overrides?: Record<string,
 		ingredients: [
 			{
 				ingredient,
-				role: 'ingredient' as const,
 				amount: { type: 'exact' as const, quantity: 60, unit: ingredient.units[0] },
 				optional: false,
 			},

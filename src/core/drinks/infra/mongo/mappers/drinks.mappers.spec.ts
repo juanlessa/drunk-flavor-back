@@ -55,11 +55,11 @@ const buildDrinkPersistence = (): DrinkPersistence => {
 		ingredients: [
 			{
 				ingredient,
-				role: 'ingredient',
 				amount: { type: 'exact', quantity: 60, unit: ingredient.units[0] },
 				optional: false,
 			},
 		],
+		garnishes: [{ ingredient, amount: { type: 'none' } }],
 		avg_rating: 4,
 		ratings_count: 2,
 		ratings_sum: 8,
@@ -159,7 +159,6 @@ describe('Drink domain persistence mappers', () => {
 			ratingsSum: 8,
 			ingredients: [
 				{
-					role: 'ingredient',
 					optional: false,
 					amount: { type: 'exact', quantity: 60, unit: { allowDecimal: true } },
 					ingredient: {
@@ -182,7 +181,6 @@ describe('Drink domain persistence mappers', () => {
 			ratings_sum: 8,
 			ingredients: [
 				{
-					role: 'ingredient',
 					optional: false,
 					amount: { type: 'exact', quantity: 60, unit: { allow_decimal: true } },
 					ingredient: {

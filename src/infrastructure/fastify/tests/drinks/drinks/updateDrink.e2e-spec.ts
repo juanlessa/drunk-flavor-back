@@ -43,16 +43,16 @@ describe('Update Drink', () => {
 		const ingredients = [
 			{
 				ingredientId,
-				role: 'ingredient',
 				amount: { type: 'exact', quantity: 60, unitId: ingredient.units[0].id },
 				optional: false,
 			},
 		];
+		const garnishes = [{ ingredientId, amount: { type: 'none' } }];
 
 		const response = await request(app.server)
 			.patch('/drinks')
 			.set('Cookie', cookies)
-			.send({ id, translations, ingredients });
+			.send({ id, translations, ingredients, garnishes });
 
 		expect(response.status).toBe(HTTP_STATUS.no_content);
 	});

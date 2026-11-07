@@ -1,8 +1,5 @@
-import {
-	DrinkIngredientAmountTypes,
-	DrinkIngredientQualifiers,
-	DrinkIngredientRoles,
-} from '@/core/drinks/constants/drink.constants';
+import { DrinkIngredientAmountTypes, DrinkIngredientQualifiers } from '@/core/drinks/constants/drink.constants';
+import { findDuplicateKeyIndexes, getRecipeItemKey, hasRequiredIngredient } from '@/core/drinks/helpers/recipe.helpers';
 import { getObjectIdSchema } from '@/infrastructure/mongo/schemas/helpers/objectId.helpers';
 import { LocaleKey } from '@/shared/types/locale.types';
 import { z } from 'zod/v4';
@@ -75,54 +72,72 @@ export const drinkIngredientAmountValidation = z.discriminatedUnion(
 	{ error: 'apiResponses.drinks.invalidAmountTypeFormat' satisfies LocaleKey },
 );
 
-export const drinkIngredientValidation = z.object({
+const drinkRecipeItemShape = {
 	ingredientId: drinkIngredientIdValidation,
-	role: z
-		.enum(DrinkIngredientRoles, { error: 'apiResponses.drinks.invalidRoleFormat' satisfies LocaleKey })
-		.default(DrinkIngredientRoles.ingredient),
 	amount: drinkIngredientAmountValidation,
+};
+
+export const drinkIngredientValidation = z.object({
+	...drinkRecipeItemShape,
 	optional: z.boolean({ error: 'apiResponses.drinks.invalidOptionalFormat' satisfies LocaleKey }).default(false),
 });
+
+// A garnish is always optional by nature, so it carries no `optional` flag.
+export const drinkGarnishValidation = z.object(drinkRecipeItemShape);
+
+type RecipeItemInput = z.infer<typeof drinkGarnishValidation>;
+
+/** The unit a line is measured in, if any (`none` and a unitless qualitative have none). */
+const getAmountUnitId = ({ amount }: RecipeItemInput): string | undefined =>
+	'unitId' in amount ? amount.unitId : undefined;
+
+/** A qualitative hint with a quantity must name its unit. */
+const refineQualitativeHasUnit = (items: RecipeItemInput[], ctx: z.RefinementCtx) => {
+	items.forEach(({ amount }, index) => {
+		if (
+			amount.type === DrinkIngredientAmountTypes.qualitative &&
+			amount.quantity !== undefined &&
+			amount.unitId === undefined
+		) {
+			ctx.addIssue({
+				code: 'custom',
+				message: 'apiResponses.drinks.requiredAmountUnit' satisfies LocaleKey,
+				path: [index, 'amount', 'unitId'],
+			});
+		}
+	});
+};
+
+/**
+ * An ingredient may repeat within a list only with different units. The rule itself lives in the
+ * domain (`recipe.helpers`) and is reused here to report the offending line with its path.
+ */
+const refineUniqueIngredientUnit = (items: RecipeItemInput[], ctx: z.RefinementCtx) => {
+	const keys = items.map((item) => getRecipeItemKey(item.ingredientId, getAmountUnitId(item)));
+	findDuplicateKeyIndexes(keys).forEach((index) => {
+		ctx.addIssue({
+			code: 'custom',
+			message: 'apiResponses.drinks.duplicateIngredientUnit' satisfies LocaleKey,
+			path: [index, 'ingredientId'],
+		});
+	});
+};
 
 export const drinkIngredientsValidation = z
 	.array(drinkIngredientValidation)
 	.min(1, { error: 'apiResponses.drinks.requiredIngredients' satisfies LocaleKey })
-	// A qualitative hint with a quantity must name its unit.
-	.superRefine((ingredients, ctx) => {
-		ingredients.forEach((line, index) => {
-			if (
-				line.amount.type === DrinkIngredientAmountTypes.qualitative &&
-				line.amount.quantity !== undefined &&
-				line.amount.unitId === undefined
-			) {
-				ctx.addIssue({
-					code: 'custom',
-					message: 'apiResponses.drinks.requiredAmountUnit' satisfies LocaleKey,
-					path: [index, 'amount', 'unitId'],
-				});
-			}
-		});
-	})
-	// The same ingredient may repeat only with a different role.
-	.superRefine((ingredients, ctx) => {
-		const seen = new Set<string>();
-		ingredients.forEach((line, index) => {
-			const key = `${line.ingredientId}:${line.role}`;
-			if (seen.has(key)) {
-				ctx.addIssue({
-					code: 'custom',
-					message: 'apiResponses.drinks.duplicateIngredientRole' satisfies LocaleKey,
-					path: [index, 'ingredientId'],
-				});
-			}
-			seen.add(key);
-		});
-	})
-	// A recipe needs at least one required, non-garnish ingredient.
-	.refine(
-		(ingredients) => ingredients.some((line) => line.role === DrinkIngredientRoles.ingredient && !line.optional),
-		{ error: 'apiResponses.drinks.requiredMainIngredient' satisfies LocaleKey },
-	);
+	.superRefine(refineQualitativeHasUnit)
+	.superRefine(refineUniqueIngredientUnit)
+	// A recipe needs at least one ingredient that is not optional.
+	.refine((ingredients) => hasRequiredIngredient(ingredients), {
+		error: 'apiResponses.drinks.requiredMainIngredient' satisfies LocaleKey,
+	});
+
+// Garnishes are optional: the list may be empty.
+export const drinkGarnishesValidation = z
+	.array(drinkGarnishValidation)
+	.superRefine(refineQualitativeHasUnit)
+	.superRefine(refineUniqueIngredientUnit);
 
 // schemas
 export const drinkTranslationSchema = z.object({

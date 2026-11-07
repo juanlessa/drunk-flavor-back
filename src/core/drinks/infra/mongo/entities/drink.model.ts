@@ -1,10 +1,6 @@
 import mongoose, { Model, Schema, Types } from 'mongoose';
-import {
-	DrinkIngredientAmountTypes,
-	DrinkIngredientQualifiers,
-	DrinkIngredientRoles,
-} from '@/core/drinks/constants/drink.constants';
-import { DrinkIngredientAmount, DrinkIngredientRole } from '@/core/drinks/entities/drink.entity';
+import { DrinkIngredientAmountTypes, DrinkIngredientQualifiers } from '@/core/drinks/constants/drink.constants';
+import { DrinkIngredientAmount } from '@/core/drinks/entities/drink.entity';
 import { Translations } from '@/core/drinks/types/translations';
 import { IngredientPersistence, IngredientSchema } from './ingredient.model';
 import { UnitPersistence, UnitSchema } from './unit.model';
@@ -51,20 +47,21 @@ export const DrinkIngredientAmountSchema = new Schema(
 	{ _id: false },
 );
 
+const drinkRecipeItemDefinition = {
+	ingredient: { type: IngredientSchema, excludeIndexes: true, required: true },
+	amount: { type: DrinkIngredientAmountSchema, required: true },
+} as const;
+
 export const DrinkIngredientSchema = new Schema(
 	{
-		ingredient: { type: IngredientSchema, excludeIndexes: true, required: true },
-		role: {
-			type: String,
-			enum: Object.values(DrinkIngredientRoles),
-			required: true,
-			default: DrinkIngredientRoles.ingredient,
-		},
-		amount: { type: DrinkIngredientAmountSchema, required: true },
+		...drinkRecipeItemDefinition,
 		optional: { type: Boolean, required: true, default: false },
 	},
 	{ _id: false },
 );
+
+// A garnish is always optional by nature, so it has no `optional` flag.
+export const DrinkGarnishSchema = new Schema(drinkRecipeItemDefinition, { _id: false });
 
 const drinkSchemaDefinition = {
 	translations: { type: getTranslationsSchema(DrinkTranslationSchema), required: true },
@@ -72,6 +69,7 @@ const drinkSchemaDefinition = {
 	thumbnail: { type: FileMetadataSchema, default: undefined },
 	search_keys: { type: [String], default: undefined, select: false },
 	ingredients: { type: [DrinkIngredientSchema], required: true },
+	garnishes: { type: [DrinkGarnishSchema], required: true, default: () => [] },
 	avg_rating: { type: Number, required: true, default: 0, min: 0, max: 5 },
 	ratings_count: {
 		type: Number,
@@ -97,10 +95,12 @@ export type DrinkIngredientAmountPersistence = {
 	unit?: UnitPersistence;
 };
 
-export type DrinkIngredientPersistence = {
+export type DrinkGarnishPersistence = {
 	ingredient: IngredientPersistence;
-	role: DrinkIngredientRole;
 	amount: DrinkIngredientAmountPersistence;
+};
+
+export type DrinkIngredientPersistence = DrinkGarnishPersistence & {
 	optional: boolean;
 };
 
@@ -111,6 +111,7 @@ export type DrinkPersistence = {
 	thumbnail?: FileMetadata;
 	search_keys?: string[];
 	ingredients: DrinkIngredientPersistence[];
+	garnishes: DrinkGarnishPersistence[];
 	avg_rating: number;
 	ratings_count: number;
 	ratings_sum: number;

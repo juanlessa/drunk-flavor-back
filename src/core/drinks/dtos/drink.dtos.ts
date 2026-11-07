@@ -1,8 +1,8 @@
 import {
 	Drink,
+	DrinkGarnish,
 	DrinkIngredient,
 	DrinkIngredientQualifier,
-	DrinkIngredientRole,
 	DrinkTranslation,
 } from '@/core/drinks/entities/drink.entity';
 import { DrinkIngredientAmountTypes } from '@/core/drinks/constants/drink.constants';
@@ -23,20 +23,28 @@ export type DrinkIngredientAmountInput =
 	  }
 	| { type: typeof DrinkIngredientAmountTypes.none };
 
-export type DrinkIngredientInput = {
+/** What an ingredient line and a garnish line have in common as they arrive from the API. */
+export type DrinkRecipeItemInput = {
 	ingredientId: string;
-	role: DrinkIngredientRole;
 	amount: DrinkIngredientAmountInput;
+};
+
+export type DrinkIngredientInput = DrinkRecipeItemInput & {
 	optional: boolean;
 };
+
+/** A garnish is always optional by nature, so it has no `optional` flag. */
+export type DrinkGarnishInput = DrinkRecipeItemInput;
 
 export type CreateDrink = {
 	translations: Translations<DrinkTranslation>;
 	ingredients: DrinkIngredient[];
+	/** Defaults to no garnishes when omitted. */
+	garnishes?: DrinkGarnish[];
 };
 
 export type UpdateDrink = { id: string } & DeepPartial<
-	Pick<Drink, 'translations' | 'ingredients' | 'cover' | 'thumbnail'>
+	Pick<Drink, 'translations' | 'ingredients' | 'garnishes' | 'cover' | 'thumbnail'>
 >;
 
 export type UpdateDrinkCover = {

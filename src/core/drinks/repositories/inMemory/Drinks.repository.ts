@@ -27,6 +27,7 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 		const record: Drink = {
 			id: randomUUID(),
 			...data,
+			garnishes: data.garnishes ?? [],
 			cover: undefined,
 			thumbnail: undefined,
 			avgRating: 0,

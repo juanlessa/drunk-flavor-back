@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { DeepPartial } from '@/shared/types/utility.types';
-import { DrinkIngredientAmountTypes, DrinkIngredientRoles } from '@/core/drinks/constants/drink.constants';
+import { DrinkIngredientAmountTypes } from '@/core/drinks/constants/drink.constants';
 import { DrinkIngredientInput } from '@/core/drinks/dtos/drink.dtos';
 import { Drink, DrinkIngredient } from '@/core/drinks/entities/drink.entity';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
@@ -15,7 +15,6 @@ export const createDrinkIngredientInputFactory = (
 	overrides?: Partial<DrinkIngredientInput> & { unitId?: string },
 ): DrinkIngredientInput => ({
 	ingredientId,
-	role: overrides?.role ?? DrinkIngredientRoles.ingredient,
 	amount: overrides?.amount ?? {
 		type: DrinkIngredientAmountTypes.exact,
 		quantity: 60,
@@ -33,7 +32,6 @@ export const createDrinkIngredientFactory = (
 	overrides?: Partial<Omit<DrinkIngredient, 'ingredient'>> & { quantity?: number },
 ): DrinkIngredient => ({
 	ingredient,
-	role: overrides?.role ?? DrinkIngredientRoles.ingredient,
 	amount: overrides?.amount ?? {
 		type: DrinkIngredientAmountTypes.exact,
 		quantity: overrides?.quantity ?? 60,
@@ -54,6 +52,7 @@ export const createDrinkFactory = (drink?: DeepPartial<CreateDrinkDTO>): CreateD
 		},
 	},
 	ingredients: (drink?.ingredients ?? []) as CreateDrinkDTO['ingredients'],
+	garnishes: (drink?.garnishes ?? []) as NonNullable<CreateDrinkDTO['garnishes']>,
 });
 
 export const createPersistedDrinkFactory = (drink?: DeepPartial<Drink>): Drink => ({
@@ -71,6 +70,7 @@ export const createPersistedDrinkFactory = (drink?: DeepPartial<Drink>): Drink =
 	cover: drink?.cover,
 	thumbnail: drink?.thumbnail,
 	ingredients: (drink?.ingredients?.filter((ingredient) => ingredient !== undefined) as Drink['ingredients']) ?? [],
+	garnishes: (drink?.garnishes?.filter((garnish) => garnish !== undefined) as Drink['garnishes']) ?? [],
 	avgRating: drink?.avgRating ?? 0,
 	ratingsCount: drink?.ratingsCount ?? 0,
 	ratingsSum: drink?.ratingsSum ?? 0,

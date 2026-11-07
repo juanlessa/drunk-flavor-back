@@ -1,4 +1,5 @@
 import {
+	drinkGarnishesValidation,
 	drinkIdValidation,
 	drinkIngredientsValidation,
 	drinkTranslationSchema,
@@ -10,4 +11,5 @@ export const updateDrinkSchema = z.object({
 	id: drinkIdValidation,
 	translations: generateTranslationsSchema(drinkTranslationSchema),
 	ingredients: drinkIngredientsValidation,
+	garnishes: drinkGarnishesValidation,
 });

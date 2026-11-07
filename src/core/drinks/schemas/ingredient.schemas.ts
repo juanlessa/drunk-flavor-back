@@ -1,4 +1,5 @@
 import { IngredientKinds } from '@/core/drinks/constants/ingredient.constants';
+import { getIngredientBrandIssue } from '@/core/drinks/helpers/ingredient.helpers';
 import { getObjectIdSchema } from '@/infrastructure/mongo/schemas/helpers/objectId.helpers';
 import { LocaleKey } from '@/shared/types/locale.types';
 import { z } from 'zod/v4';
@@ -60,26 +61,19 @@ export const ingredientBrandValidation = z
 
 /**
  * Cross-field rule: a brand is required for `branded` ingredients and only allowed for them.
- * A `null` brand (update only) means "remove the brand" and is accepted for any kind.
+ *
+ * When the request does not state the kind (update only), the schema cannot know which one the
+ * ingredient currently has, so it leaves the decision to the domain, which checks the kind and
+ * brand the ingredient will end up with. On create the kind always has a value (it defaults to
+ * `generic`), so the rule is checked there.
  */
 export const refineIngredientBrand = (
 	{ kind, brand }: { kind?: string; brand?: string | null },
 	ctx: z.RefinementCtx,
 ) => {
-	if (kind === IngredientKinds.branded && typeof brand !== 'string') {
-		ctx.addIssue({
-			code: 'custom',
-			message: 'apiResponses.ingredients.requiredBrand' satisfies LocaleKey,
-			path: ['brand'],
-		});
-	}
-	if (kind !== IngredientKinds.branded && typeof brand === 'string') {
-		ctx.addIssue({
-			code: 'custom',
-			message: 'apiResponses.ingredients.brandNotAllowed' satisfies LocaleKey,
-			path: ['brand'],
-		});
-	}
+	if (kind === undefined) return;
+	const issue = getIngredientBrandIssue(kind, brand);
+	if (issue) ctx.addIssue({ code: 'custom', message: issue, path: ['brand'] });
 };
 
 // schemas

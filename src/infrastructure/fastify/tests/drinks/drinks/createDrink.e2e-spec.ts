@@ -35,9 +35,7 @@ describe('Create Drink', () => {
 		const { id: ingredientId, unitId } = await createIngredient();
 
 		const { translations } = createDrinkFactory();
-		const ingredients = [
-			{ ingredientId, role: 'ingredient', amount: { type: 'exact', quantity: 60, unitId }, optional: false },
-		];
+		const ingredients = [{ ingredientId, amount: { type: 'exact', quantity: 60, unitId }, optional: false }];
 
 		const response = await request(app.server)
 			.post('/drinks')

@@ -1,8 +1,4 @@
-import {
-	DrinkIngredientAmountTypes,
-	DrinkIngredientQualifiers,
-	DrinkIngredientRoles,
-} from '@/core/drinks/constants/drink.constants';
+import { DrinkIngredientAmountTypes, DrinkIngredientQualifiers } from '@/core/drinks/constants/drink.constants';
 import { Translations } from '@/core/drinks/types/translations';
 import { EntityMetadata } from '@/shared/types/entity.types';
 import { FileMetadata } from '@/shared/types/file.types';
@@ -13,8 +9,6 @@ export type DrinkTranslation = {
 	name: string;
 	method: string;
 };
-
-export type DrinkIngredientRole = (typeof DrinkIngredientRoles)[keyof typeof DrinkIngredientRoles];
 
 export type DrinkIngredientQualifier = (typeof DrinkIngredientQualifiers)[keyof typeof DrinkIngredientQualifiers];
 
@@ -38,18 +32,27 @@ export type DrinkIngredientAmount =
 	  }
 	| { type: typeof DrinkIngredientAmountTypes.none };
 
-export type DrinkIngredient = {
+/** What a recipe line shares between the ingredients and the garnishes. */
+export type DrinkRecipeItem = {
 	ingredient: Ingredient;
-	role: DrinkIngredientRole;
 	amount: DrinkIngredientAmount;
+};
+
+/** A component of the recipe. It may be optional (e.g. a finishing foam). */
+export type DrinkIngredient = DrinkRecipeItem & {
 	optional: boolean;
 };
+
+/** A finishing touch (e.g. a lime wedge, a mint sprig). Always optional by nature. */
+export type DrinkGarnish = DrinkRecipeItem;
 
 export type Drink = EntityMetadata & {
 	translations: Translations<DrinkTranslation>;
 	cover?: FileMetadata;
 	thumbnail?: FileMetadata;
 	ingredients: DrinkIngredient[];
+	/** Garnishes are listed apart from the ingredients and may be empty. */
+	garnishes: DrinkGarnish[];
 	avgRating: number;
 	ratingsCount: number;
 	ratingsSum: number;

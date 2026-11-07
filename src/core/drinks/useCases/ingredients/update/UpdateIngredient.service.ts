@@ -1,4 +1,5 @@
 import { IngredientKinds } from '@/core/drinks/constants/ingredient.constants';
+import { assertIngredientBrand } from '@/core/drinks/helpers/ingredient.helpers';
 import { resolveIngredientUnits } from '@/core/drinks/mappers/ingredientUnits.mappers';
 import { mapToTranslationsName } from '@/core/drinks/mappers/translations.mappers';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
@@ -31,14 +32,20 @@ export class UpdateIngredientService {
 		}
 		const units = await resolveIngredientUnits(unitIds, this.unitsRepository, 'UpdateIngredient.service.4');
 
-		// A generic ingredient never keeps a brand.
+		// The kind and brand the ingredient will have after this update: an omitted value keeps the
+		// current one, and a generic ingredient never keeps a brand.
+		const finalKind = kind ?? ingredient.kind;
+		const keptBrand = finalKind === IngredientKinds.generic ? undefined : ingredient.brand;
+		const finalBrand = brand === undefined ? keptBrand : brand;
+		assertIngredientBrand(finalKind, finalBrand, 'UpdateIngredient.service.5');
+
 		await this.ingredientsRepository.update({
 			id,
 			translations,
 			category,
 			units,
 			kind,
-			brand: kind === IngredientKinds.generic ? null : brand,
+			brand: finalKind === IngredientKinds.generic ? null : brand,
 		});
 	}
 }

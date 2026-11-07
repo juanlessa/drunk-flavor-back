@@ -154,14 +154,13 @@
 			"invalidQuantityFormat": "Quantity must be greater than 0",
 			"requiredIngredients": "Drink must have at least 1 ingredient",
 			"someIngredientsNotExist": "Some ingredients don't exist",
-			"invalidRoleFormat": "Role must be ingredient or garnish",
 			"invalidAmountTypeFormat": "Amount type must be exact, qualitative or none",
 			"invalidQualifierFormat": "Qualifier must be top_up, to_taste or as_needed",
 			"invalidOptionalFormat": "Optional must be a boolean",
 			"requiredAmountUnit": "A unit is required for this amount",
 			"amountUnitNotAllowed": "The selected unit is not allowed for this ingredient",
 			"amountNotMeasurable": "This ingredient is not measurable, so it cannot have an exact amount",
-			"duplicateIngredientRole": "The same ingredient cannot repeat with the same role",
+			"duplicateIngredientUnit": "The same ingredient cannot repeat with the same unit or without a unit",
 			"requiredMainIngredient": "Drink must have at least 1 required ingredient"
 		},
 		"ratings": {

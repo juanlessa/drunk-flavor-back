@@ -1,13 +1,9 @@
 import { CreateDrinkDTO } from '@/core/drinks/useCases/drinks/create/createDrink.dtos';
 import { resolveCreateDrinkService } from '@/core/drinks/useCases/drinks/create/createDrink.container';
-import { DrinkIngredientInput } from '@/core/drinks/dtos/drink.dtos';
+import { DrinkGarnishInput, DrinkIngredientInput } from '@/core/drinks/dtos/drink.dtos';
 import { Translations } from '@/core/drinks/types/translations';
 import { DrinkTranslation } from '@/core/drinks/entities/drink.entity';
-import {
-	DrinkIngredientAmountTypes,
-	DrinkIngredientQualifiers,
-	DrinkIngredientRoles,
-} from '@/core/drinks/constants/drink.constants';
+import { DrinkIngredientAmountTypes, DrinkIngredientQualifiers } from '@/core/drinks/constants/drink.constants';
 import { logger } from '@/shared/providers/logger';
 import { ingredientsMap } from './ingredients';
 
@@ -28,16 +24,22 @@ type SeedQualitativeAmount = {
 };
 type SeedNoneAmount = { type: typeof DrinkIngredientAmountTypes.none };
 
-type SeedDrinkIngredient = {
+type SeedAmount = SeedExactAmount | SeedQualitativeAmount | SeedNoneAmount;
+
+type SeedRecipeItem = {
 	ingredient: string;
-	role?: (typeof DrinkIngredientRoles)[keyof typeof DrinkIngredientRoles];
-	amount: SeedExactAmount | SeedQualitativeAmount | SeedNoneAmount;
-	optional?: boolean;
+	amount: SeedAmount;
 };
+
+type SeedDrinkIngredient = SeedRecipeItem & { optional?: boolean };
+
+/** A garnish is always optional by nature, so it has no `optional` flag. */
+type SeedDrinkGarnish = SeedRecipeItem;
 
 type SeedDrink = {
 	translations: Translations<DrinkTranslation>;
 	ingredients: readonly SeedDrinkIngredient[];
+	garnishes?: readonly SeedDrinkGarnish[];
 };
 
 const exact = (quantity: number, unit = 'milliliter'): SeedExactAmount => ({
@@ -67,17 +69,11 @@ const drinks = [
 				ingredient: 'Sparkling water',
 				amount: { type: DrinkIngredientAmountTypes.qualitative, qualifier: DrinkIngredientQualifiers.topUp },
 			},
-			// Garnishes: the mint sprig and the lime wedge. Lime appears both as juice and as a garnish.
-			{
-				ingredient: 'Mint',
-				role: DrinkIngredientRoles.garnish,
-				amount: exact(1, 'sprig'),
-			},
-			{
-				ingredient: 'Lime',
-				role: DrinkIngredientRoles.garnish,
-				amount: exact(1, 'wedge'),
-			},
+		],
+		// Mint appears again as a garnish; the same ingredient may sit in both lists.
+		garnishes: [
+			{ ingredient: 'Mint', amount: exact(1, 'sprig') },
+			{ ingredient: 'Lime', amount: exact(1, 'wedge') },
 		],
 	},
 	{
@@ -103,18 +99,14 @@ const drinks = [
 					unit: 'milliliter',
 				},
 			},
-			// Not measurable and optional: a finishing foam.
+			// Not measurable and optional: the foam is an ingredient, not a decoration.
 			{
 				ingredient: 'Ginger foam',
 				amount: { type: DrinkIngredientAmountTypes.none },
 				optional: true,
 			},
-			{
-				ingredient: 'Lime',
-				role: DrinkIngredientRoles.garnish,
-				amount: exact(1, 'wedge'),
-			},
 		],
+		garnishes: [{ ingredient: 'Lime', amount: exact(1, 'wedge') }],
 	},
 	{
 		translations: {
@@ -131,12 +123,8 @@ const drinks = [
 			{ ingredient: 'Silver rum', amount: exact(60) },
 			{ ingredient: 'Coconut liqueur', amount: exact(30) },
 			{ ingredient: 'Pineapple juice', amount: exact(90) },
-			{
-				ingredient: 'Pineapple',
-				role: DrinkIngredientRoles.garnish,
-				amount: exact(1, 'slice'),
-			},
 		],
+		garnishes: [{ ingredient: 'Pineapple', amount: exact(1, 'slice') }],
 	},
 	{
 		translations: {
@@ -154,16 +142,27 @@ const drinks = [
 			{ ingredient: 'Peach liqueur', amount: exact(30) },
 			{ ingredient: 'Orange juice', amount: exact(90) },
 			{ ingredient: 'Grenadine', amount: exact(10) },
-			{
-				ingredient: 'Orange',
-				role: DrinkIngredientRoles.garnish,
-				amount: exact(1, 'slice'),
-			},
 		],
+		garnishes: [{ ingredient: 'Orange', amount: exact(1, 'slice') }],
 	},
 ] as const satisfies readonly SeedDrink[];
 
-const toAmountInput = (amount: SeedDrinkIngredient['amount']): DrinkIngredientInput['amount'] => {
+/** Resolves a unit English name to the id stored on the already-seeded ingredient that uses it. */
+const resolveUnitId = (unitName: string): string => {
+	for (const ingredient of ingredientsMap.values()) {
+		const unit = ingredient.units.find((candidate) => candidate.translations.en.name === unitName);
+		if (unit) return unit.id;
+	}
+	throw new Error(`Missing seeded unit: ${unitName}`);
+};
+
+const resolveIngredientId = (name: string): string => {
+	const ingredient = ingredientsMap.get(name as Parameters<typeof ingredientsMap.get>[0]);
+	if (!ingredient) throw new Error(`Missing seeded ingredient: ${name}`);
+	return ingredient.id;
+};
+
+const toAmountInput = (amount: SeedAmount): DrinkIngredientInput['amount'] => {
 	switch (amount.type) {
 		case DrinkIngredientAmountTypes.exact:
 			return { type: amount.type, quantity: amount.quantity, unitId: resolveUnitId(amount.unit) };
@@ -179,29 +178,17 @@ const toAmountInput = (amount: SeedDrinkIngredient['amount']): DrinkIngredientIn
 	}
 };
 
-/** Resolves a unit English name to the id stored on the already-seeded ingredient that uses it. */
-const resolveUnitId = (unitName: string): string => {
-	for (const ingredient of ingredientsMap.values()) {
-		const unit = ingredient.units.find((candidate) => candidate.translations.en.name === unitName);
-		if (unit) return unit.id;
-	}
-	throw new Error(`Missing seeded unit: ${unitName}`);
-};
-
 const toCreateDrink = (drink: SeedDrink): CreateDrinkDTO => ({
 	translations: drink.translations,
-	ingredients: drink.ingredients.map((line): DrinkIngredientInput => {
-		const ingredient = ingredientsMap.get(
-			line.ingredient as (typeof drinks)[number]['ingredients'][number]['ingredient'],
-		);
-		if (!ingredient) throw new Error(`Missing seeded ingredient: ${line.ingredient}`);
-		return {
-			ingredientId: ingredient.id,
-			role: line.role ?? DrinkIngredientRoles.ingredient,
-			amount: toAmountInput(line.amount),
-			optional: line.optional ?? false,
-		};
-	}),
+	ingredients: drink.ingredients.map((line): DrinkIngredientInput => ({
+		ingredientId: resolveIngredientId(line.ingredient),
+		amount: toAmountInput(line.amount),
+		optional: line.optional ?? false,
+	})),
+	garnishes: (drink.garnishes ?? []).map((line): DrinkGarnishInput => ({
+		ingredientId: resolveIngredientId(line.ingredient),
+		amount: toAmountInput(line.amount),
+	})),
 });
 
 export async function insertDrinks() {

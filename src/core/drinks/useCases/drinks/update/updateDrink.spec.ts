@@ -72,6 +72,7 @@ describe('Update Drink', () => {
 			id: createdDrink.id,
 			translations: updatedTranslations,
 			ingredients: [createDrinkIngredientInputFactory(ingredient.id, { unitId: unit.id })],
+			garnishes: [],
 		});
 
 		const findUpdatedDrink = (await drinksRepository.findById(createdDrink.id)) as Drink;
@@ -87,6 +88,7 @@ describe('Update Drink', () => {
 				id: new ObjectId().toString(),
 				translations: updatedTranslations,
 				ingredients: [createDrinkIngredientInputFactory(ingredient.id, { unitId: unit.id })],
+				garnishes: [],
 			}),
 		).rejects.toBeInstanceOf(NotFoundError);
 	});
@@ -102,6 +104,7 @@ describe('Update Drink', () => {
 				id: createdDrink.id,
 				translations: updatedTranslations,
 				ingredients: [createDrinkIngredientInputFactory(ingredient.id, { unitId: unit.id })],
+				garnishes: [],
 			}),
 		).rejects.toBeInstanceOf(ConflictError);
 	});
@@ -112,6 +115,7 @@ describe('Update Drink', () => {
 				id: createdDrink.id,
 				translations: updatedTranslations,
 				ingredients: [createDrinkIngredientInputFactory(new ObjectId().toString(), { unitId: unit.id })],
+				garnishes: [],
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});

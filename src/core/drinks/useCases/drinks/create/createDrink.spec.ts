@@ -80,7 +80,6 @@ describe('Create Drink', () => {
 		const [line] = created.ingredients;
 
 		expect(line.amount).toEqual({ type: 'exact', quantity: 60, unit: createdUnit });
-		expect(line.role).toBe('ingredient');
 		expect(line.optional).toBe(false);
 	});
 

@@ -1,4 +1,6 @@
+import { IngredientKinds } from '@/core/drinks/constants/ingredient.constants';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
+import { assertIngredientBrand } from '@/core/drinks/helpers/ingredient.helpers';
 import { resolveIngredientUnits } from '@/core/drinks/mappers/ingredientUnits.mappers';
 import { mapToTranslationsName } from '@/core/drinks/mappers/translations.mappers';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
@@ -15,6 +17,7 @@ export class CreateIngredientService {
 	) {}
 
 	async execute({ translations, categoryId, unitIds, kind, brand }: CreateIngredientDTO): Promise<Ingredient> {
+		assertIngredientBrand(kind ?? IngredientKinds.generic, brand, 'CreateIngredient.service.0');
 		const translationsName = mapToTranslationsName(translations);
 		const ingredientAlreadyExists = await this.ingredientsRepository.findByName(translationsName);
 		if (ingredientAlreadyExists) {
