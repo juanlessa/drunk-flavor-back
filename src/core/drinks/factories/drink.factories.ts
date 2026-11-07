@@ -2,8 +2,9 @@ import { randomUUID } from 'node:crypto';
 import { DeepPartial } from '@/shared/types/utility.types';
 import { DrinkIngredientAmountTypes } from '@/core/drinks/constants/drink.constants';
 import { DrinkIngredientInput } from '@/core/drinks/dtos/drink.dtos';
-import { Drink, DrinkIngredient } from '@/core/drinks/entities/drink.entity';
+import { Drink, DrinkIngredient, DrinkTranslation } from '@/core/drinks/entities/drink.entity';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
+import { Translations } from '@/core/drinks/types/translations';
 import { CreateDrinkDTO } from '../useCases/drinks/create/createDrink.dtos';
 
 /**
@@ -40,7 +41,9 @@ export const createDrinkIngredientFactory = (
 	optional: overrides?.optional ?? false,
 });
 
-export const createDrinkFactory = (drink?: DeepPartial<CreateDrinkDTO>): CreateDrinkDTO => ({
+/** A create request whose translations always carry the method, as a hand-written drink does. */
+type CreateDrinkWithMethodDTO = Omit<CreateDrinkDTO, 'translations'> & { translations: Translations<DrinkTranslation> };
+export const createDrinkFactory = (drink?: DeepPartial<CreateDrinkDTO>): CreateDrinkWithMethodDTO => ({
 	translations: {
 		en: {
 			name: drink?.translations?.en?.name || 'Tequila sunrise',

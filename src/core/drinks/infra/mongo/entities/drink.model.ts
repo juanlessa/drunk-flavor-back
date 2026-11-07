@@ -70,6 +70,8 @@ const drinkSchemaDefinition = {
 	search_keys: { type: [String], default: undefined, select: false },
 	ingredients: { type: [DrinkIngredientSchema], required: true },
 	garnishes: { type: [DrinkGarnishSchema], required: true, default: () => [] },
+	// The preparation module validates the plan before it gets here, so it is stored as it is.
+	preparation: { type: Schema.Types.Mixed, required: false },
 	avg_rating: { type: Number, required: true, default: 0, min: 0, max: 5 },
 	ratings_count: {
 		type: Number,
@@ -112,6 +114,7 @@ export type DrinkPersistence = {
 	search_keys?: string[];
 	ingredients: DrinkIngredientPersistence[];
 	garnishes: DrinkGarnishPersistence[];
+	preparation?: Record<string, unknown>;
 	avg_rating: number;
 	ratings_count: number;
 	ratings_sum: number;

@@ -1,6 +1,7 @@
 import { DrinkIngredientAmountTypes, DrinkIngredientQualifiers } from '@/core/drinks/constants/drink.constants';
 import { findDuplicateKeyIndexes, getRecipeItemKey, hasRequiredIngredient } from '@/core/drinks/helpers/recipe.helpers';
 import { getObjectIdSchema } from '@/infrastructure/mongo/schemas/helpers/objectId.helpers';
+import { Language, Languages } from '@/core/drinks/types/translations';
 import { LocaleKey } from '@/shared/types/locale.types';
 import { z } from 'zod/v4';
 
@@ -144,3 +145,39 @@ export const drinkTranslationSchema = z.object({
 	name: drinkNameValidation,
 	method: drinkMethodValidation,
 });
+
+/**
+ * What a drink translation looks like in a request: the method may be left out because a preparation plan
+ * writes it. `requireMethodOrPreparation` closes that gap at the level of the whole request.
+ */
+export const drinkTranslationInputSchema = z.object({
+	name: drinkNameValidation,
+	method: drinkMethodValidation.optional(),
+});
+
+/**
+ * Edge rule of a request that carries translations and an optional preparation plan: without a plan every
+ * language must bring its own method. With a plan the methods are written from it, so sending one is rejected.
+ */
+export const requireMethodOrPreparation = (
+	{ translations, preparation }: { translations: Record<Language, { method?: string }>; preparation?: unknown },
+	ctx: z.RefinementCtx,
+): void => {
+	(Object.values(Languages) as Language[]).forEach((language) => {
+		const hasMethod = translations[language].method !== undefined;
+		if (preparation === undefined && !hasMethod) {
+			ctx.addIssue({
+				code: 'custom',
+				message: 'apiResponses.drinks.requiredMethod' satisfies LocaleKey,
+				path: ['translations', language, 'method'],
+			});
+		}
+		if (preparation !== undefined && hasMethod) {
+			ctx.addIssue({
+				code: 'custom',
+				message: 'apiResponses.drinks.methodWithPreparation' satisfies LocaleKey,
+				path: ['translations', language, 'method'],
+			});
+		}
+	});
+};

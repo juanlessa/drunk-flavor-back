@@ -40,10 +40,16 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 		return record;
 	}
 
-	async update({ id, ...data }: UpdateDrink): Promise<Drink> {
+	async update({ id, preparation, ...data }: UpdateDrink): Promise<Drink> {
 		const index = this.collection.findIndex((record) => record.id === id);
 		if (index < 0) throw this.notFound('update');
-		const record = { ...deepUpdate<Drink>(data, this.collection[index]), updatedAt: new Date() };
+		const { preparation: currentPreparation, ...current } = this.collection[index];
+		const nextPreparation = preparation === undefined ? currentPreparation : (preparation ?? undefined);
+		const record: Drink = {
+			...deepUpdate<Drink>(data, current as Drink),
+			...(nextPreparation ? { preparation: nextPreparation } : {}),
+			updatedAt: new Date(),
+		};
 		this.collection[index] = record;
 		return record;
 	}

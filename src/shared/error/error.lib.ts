@@ -1,5 +1,5 @@
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
-import { AppErrorOptions } from './error.dtos';
+import { AppErrorOptions, FieldError } from './error.dtos';
 import { logger } from '@/shared/providers/logger';
 import { LocaleKey } from '../types/locale.types';
 
@@ -32,6 +32,19 @@ export class ValidationError extends AppError {
 			status: HTTP_STATUS.bad_request,
 			type: 'Bad Request, Failed Validation.',
 		});
+	}
+}
+
+/**
+ * A request that was understood but rejected for several specific fields, found by the domain (not by the request
+ * schema). It is answered like a schema failure: the root says validation failed and `errors` lists each field.
+ */
+export class FieldValidationError extends ValidationError {
+	public errors: FieldError[];
+
+	constructor(errors: FieldError[], options: AppErrorOptions) {
+		super('apiResponses.validation.failed', options);
+		this.errors = errors;
 	}
 }
 

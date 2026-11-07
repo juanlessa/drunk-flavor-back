@@ -4,6 +4,8 @@ import { Routes } from '../../types/fastify.types';
 import { verifyAndRenewToken } from '../../middlewares/verifyAndRenewToken';
 import { createDrinkSchema } from '@/core/drinks/useCases/drinks/create/createDrink.schema';
 import { createDrinkController } from '@/core/drinks/useCases/drinks/create/createDrink.controller';
+import { generateMethodSchema } from '@/core/drinks/useCases/drinks/generateMethod/generateMethod.schema';
+import { generateMethodController } from '@/core/drinks/useCases/drinks/generateMethod/generateMethod.controller';
 import { getDrinkSchema } from '@/core/drinks/useCases/drinks/get/getDrink.schema';
 import { getDrinkController } from '@/core/drinks/useCases/drinks/get/getDrink.controller';
 import { listDrinksSchema } from '@/core/drinks/useCases/drinks/list/listDrinks.schema';
@@ -32,6 +34,17 @@ const routes: Routes = (server) => {
 		createDrinkController,
 	);
 
+	server.withTypeProvider<ZodTypeProvider>().post(
+		'/drinks/method',
+		{
+			schema: {
+				tags: ['Drinks'],
+				body: generateMethodSchema,
+			},
+			preValidation: [verifyAndRenewToken, enforceCompleteProfile, verifyPermissions('create', 'Drink')],
+		},
+		generateMethodController,
+	);
 	server.withTypeProvider<ZodTypeProvider>().get(
 		'/drinks/:id',
 		{

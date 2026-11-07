@@ -1,4 +1,5 @@
 import { DrinkIngredientAmountTypes, DrinkIngredientQualifiers } from '@/core/drinks/constants/drink.constants';
+import type { PreparationPlan } from '@/core/drinks/modules/preparation';
 import { Translations } from '@/core/drinks/types/translations';
 import { EntityMetadata } from '@/shared/types/entity.types';
 import { FileMetadata } from '@/shared/types/file.types';
@@ -53,6 +54,11 @@ export type Drink = EntityMetadata & {
 	ingredients: DrinkIngredient[];
 	/** Garnishes are listed apart from the ingredients and may be empty. */
 	garnishes: DrinkGarnish[];
+	/**
+	 * How the drink is prepared, as data. When present, the `method` of every language was written from it.
+	 * Absent for drinks whose method was written by hand.
+	 */
+	preparation?: PreparationPlan;
 	avgRating: number;
 	ratingsCount: number;
 	ratingsSum: number;

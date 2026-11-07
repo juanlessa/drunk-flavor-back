@@ -31,10 +31,10 @@ export class DrinksRepository implements IDrinksRepository {
 		}
 	}
 
-	async update({ id, ...data }: UpdateDrink): Promise<Drink> {
+	async update({ id, preparation, ...data }: UpdateDrink): Promise<Drink> {
 		const objectId = DrinkMapper.toObjectId(id);
 		if (!objectId) throw this.notFound('update');
-		const persistenceData = DrinkMapper.toPersistence(data);
+		const persistenceData = DrinkMapper.toPersistence({ ...data, preparation: preparation ?? undefined });
 		const update = toMongoUpdateSet(persistenceData);
 		if (persistenceData.translations) {
 			const current = await DrinkModel.findById(objectId)
@@ -51,7 +51,8 @@ export class DrinksRepository implements IDrinksRepository {
 		try {
 			document = await DrinkModel.findByIdAndUpdate(
 				objectId,
-				{ $set: update },
+				// `null` removes the stored plan; a plan replaces it through the `$set` paths.
+				preparation === null ? { $set: update, $unset: { preparation: '' } } : { $set: update },
 				{
 					returnDocument: 'after',
 					runValidators: true,
