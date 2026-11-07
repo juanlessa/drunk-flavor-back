@@ -40,10 +40,10 @@ describe('Create Ingredient', () => {
 	});
 
 	it('should be able to create a new ingredient', async () => {
-		await service.execute({
+		const returned = await service.execute({
 			translations,
 			categoryId: createdCategory.id,
-			unitId: createdUnit.id,
+			unitIds: [createdUnit.id],
 		});
 
 		const createdIngredient = (await ingredientsRepository.findByName(translations)) as Ingredient;
@@ -51,21 +51,34 @@ describe('Create Ingredient', () => {
 		expect(createdIngredient).toHaveProperty('id');
 		expect(createdIngredient.translations).toEqual(translations);
 		expect(createdIngredient.category).toEqual(createdCategory);
-		expect(createdIngredient.unit).toEqual(createdUnit);
+		expect(createdIngredient.units).toEqual([createdUnit]);
+		expect(returned.id).toEqual(createdIngredient.id);
+	});
+
+	it('should be able to create a not measurable ingredient with no units', async () => {
+		await service.execute({
+			translations,
+			categoryId: createdCategory.id,
+			unitIds: [],
+		});
+
+		const createdIngredient = (await ingredientsRepository.findByName(translations)) as Ingredient;
+
+		expect(createdIngredient.units).toEqual([]);
 	});
 
 	it('should not be able to create an ingredient with an existing name', async () => {
 		await ingredientsRepository.create({
 			translations,
 			category: createdCategory,
-			unit: createdUnit,
+			units: [createdUnit],
 		});
 
 		await expect(
 			service.execute({
 				translations,
 				categoryId: createdCategory.id,
-				unitId: createdUnit.id,
+				unitIds: [createdUnit.id],
 			}),
 		).rejects.toBeInstanceOf(ConflictError);
 	});
@@ -75,7 +88,7 @@ describe('Create Ingredient', () => {
 			service.execute({
 				translations,
 				categoryId: new ObjectId().toString(),
-				unitId: createdUnit.id,
+				unitIds: [createdUnit.id],
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});
@@ -85,7 +98,7 @@ describe('Create Ingredient', () => {
 			service.execute({
 				translations,
 				categoryId: createdCategory.id,
-				unitId: new ObjectId().toString(),
+				unitIds: [new ObjectId().toString()],
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});

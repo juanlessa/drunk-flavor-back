@@ -49,22 +49,22 @@ describe('List Ingredients', () => {
 		await ingredientsRepository.create({
 			translations: translationsIngredient1,
 			category: category1,
-			unit,
+			units: [unit],
 		});
 		await ingredientsRepository.create({
 			translations: translationsIngredient2,
 			category: category1,
-			unit,
+			units: [unit],
 		});
 		await ingredientsRepository.create({
 			translations: translationsIngredient3,
 			category: category2,
-			unit,
+			units: [unit],
 		});
 		await ingredientsRepository.create({
 			translations: translationsIngredient4,
 			category: category2,
-			unit,
+			units: [unit],
 		});
 	});
 

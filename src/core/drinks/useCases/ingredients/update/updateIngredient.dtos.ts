@@ -9,7 +9,8 @@ export type UpdateIngredientDTO = {
 	id: string;
 	translations: Translations<UpdateIngredientTranslation>;
 	categoryId: string;
-	unitId: string;
+	/** Full replacement of the allowed units, in display order. */
+	unitIds: string[];
 	/** Omitted keeps the current kind and brand. */
 	kind?: IngredientKind;
 	/** Omitted keeps the current brand; `null` removes it. */

@@ -1,490 +1,286 @@
-import { ObjectId } from 'mongodb';
-import { IngredientModel, IngredientPersistence } from '@/core/drinks/infra/mongo/entities/ingredient.model';
-import {
-	INGREDIENT_SEARCH_FIELDS,
-	INGREDIENT_SEARCH_OPTIONS,
-	buildTranslationsSearchKeys,
-} from '@/core/drinks/helpers/searchKeys.helpers';
+import { CreateIngredientDTO } from '@/core/drinks/useCases/ingredients/create/createIngredient.dtos';
+import { resolveCreateIngredientService } from '@/core/drinks/useCases/ingredients/create/createIngredient.container';
+import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { logger } from '@/shared/providers/logger';
 import { categoriesMap } from './categories';
 import { unitsMap } from './units';
 
-// Seeds omit `kind` (defaults to generic) and may add a description or a brand.
-type SeedIngredient = Omit<IngredientPersistence, 'kind'> & Partial<Pick<IngredientPersistence, 'kind'>>;
+/**
+ * Seed ingredients described by category and unit English names. The names are resolved to ids
+ * from the created categories/units when the seed runs. `units` lists the allowed units in display
+ * order; an empty list means the ingredient is not measurable (e.g. a foam).
+ */
+type SeedIngredient = {
+	translations: CreateIngredientDTO['translations'];
+	category: string;
+	units: readonly string[];
+	kind?: CreateIngredientDTO['kind'];
+	brand?: string;
+};
+
 const ingredients = [
 	// Absinthe
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'absinthe' },
-			pt: { name: 'absinto' },
-		},
-		category: categoriesMap.get('Absinthe')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Absinthe' }, pt: { name: 'Absinto' } },
+		category: 'Absinthe',
+		units: ['milliliter'],
 	},
 	// Liqueur
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'amaretto' },
-			pt: { name: 'amaretto' },
-		},
-		category: categoriesMap.get('Liqueur')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Amaretto' }, pt: { name: 'Amaretto' } },
+		category: 'Liqueur',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
 		translations: {
-			en: { name: 'blue curacao', description: 'Orange liqueur colored blue' },
-			pt: { name: 'blue curaçao', description: 'Licor de laranja azul' },
+			en: { name: 'Blue curacao', description: 'Orange liqueur colored blue' },
+			pt: { name: 'Blue curaçao', description: 'Licor de laranja azul' },
 		},
-		category: categoriesMap.get('Liqueur')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		category: 'Liqueur',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'coconut liqueur' },
-			pt: { name: 'batida de coco' },
-		},
-		category: categoriesMap.get('Liqueur')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Coconut liqueur' }, pt: { name: 'Batida de coco' } },
+		category: 'Liqueur',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'coffee liqueur' },
-			pt: { name: 'licor de café' },
-		},
-		category: categoriesMap.get('Liqueur')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Coffee liqueur' }, pt: { name: 'Licor de café' } },
+		category: 'Liqueur',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'limoncello' },
-			pt: { name: 'limoncello' },
-		},
-		category: categoriesMap.get('Liqueur')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Limoncello' }, pt: { name: 'Limoncello' } },
+		category: 'Liqueur',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'peach liqueur' },
-			pt: { name: 'licor de pêssego' },
-		},
-		category: categoriesMap.get('Liqueur')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Peach liqueur' }, pt: { name: 'Licor de pêssego' } },
+		category: 'Liqueur',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
 		translations: {
-			en: { name: 'triple sec', description: 'Orange liqueur' },
-			pt: { name: 'triple sec', description: 'Licor de laranja' },
+			en: { name: 'Triple sec', description: 'Orange liqueur' },
+			pt: { name: 'Triple sec', description: 'Licor de laranja' },
 		},
-		category: categoriesMap.get('Liqueur')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		category: 'Liqueur',
+		units: ['milliliter'],
+	},
+	// A branded ingredient example: the recipe needs this specific product.
+	{
+		translations: {
+			en: { name: 'Licor 43', description: 'Spanish vanilla and citrus liqueur' },
+			pt: { name: 'Licor 43', description: 'Licor espanhol de baunilha e frutas cítricas' },
+		},
+		category: 'Liqueur',
+		units: ['milliliter'],
+		kind: 'branded',
+		brand: 'Licor 43',
 	},
 	// Tequila
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'añejo tequila' },
-			pt: { name: 'tequila añejo' },
-		},
-		category: categoriesMap.get('Tequila')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Añejo tequila' }, pt: { name: 'Tequila añejo' } },
+		category: 'Tequila',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'blanco tequila' },
-			pt: { name: 'tequila blanco' },
-		},
-		category: categoriesMap.get('Tequila')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Blanco tequila' }, pt: { name: 'Tequila blanco' } },
+		category: 'Tequila',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'reposado tequila' },
-			pt: { name: 'tequila reposado' },
-		},
-		category: categoriesMap.get('Tequila')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Reposado tequila' }, pt: { name: 'Tequila reposado' } },
+		category: 'Tequila',
+		units: ['milliliter'],
 	},
 	// Vermouth
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'bianco vermouth' },
-			pt: { name: 'vermute bianco' },
-		},
-		category: categoriesMap.get('Vermouth')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Bianco vermouth' }, pt: { name: 'Vermute bianco' } },
+		category: 'Vermouth',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'dry vermouth' },
-			pt: { name: 'vermute seco' },
-		},
-		category: categoriesMap.get('Vermouth')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Dry vermouth' }, pt: { name: 'Vermute seco' } },
+		category: 'Vermouth',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'rosso vermouth' },
-			pt: { name: 'vermute rosso' },
-		},
-		category: categoriesMap.get('Vermouth')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Rosso vermouth' }, pt: { name: 'Vermute rosso' } },
+		category: 'Vermouth',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'sweet vermouth' },
-			pt: { name: 'vermute doce' },
-		},
-		category: categoriesMap.get('Vermouth')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Sweet vermouth' }, pt: { name: 'Vermute doce' } },
+		category: 'Vermouth',
+		units: ['milliliter'],
 	},
-	// whisky
+	// Whisky
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Bourbon whisky' },
-			pt: { name: 'whisky bourbon' },
-		},
-		category: categoriesMap.get('Whisky')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Bourbon whisky' }, pt: { name: 'Whisky bourbon' } },
+		category: 'Whisky',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Irish whisky' },
-			pt: { name: 'whisky irlandês' },
-		},
-		category: categoriesMap.get('Whisky')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Irish whisky' }, pt: { name: 'Whisky irlandês' } },
+		category: 'Whisky',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Japanese whisky' },
-			pt: { name: 'whisky japonês' },
-		},
-		category: categoriesMap.get('Whisky')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Japanese whisky' }, pt: { name: 'Whisky japonês' } },
+		category: 'Whisky',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Tennessee whiskey' },
-			pt: { name: 'whisky Tennessee' },
-		},
-		category: categoriesMap.get('Whisky')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Tennessee whiskey' }, pt: { name: 'Whisky tennessee' } },
+		category: 'Whisky',
+		units: ['milliliter'],
 	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'whisky' },
-			pt: { name: 'whisky' },
-		},
-		category: categoriesMap.get('Whisky')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
+	{ translations: { en: { name: 'Whisky' }, pt: { name: 'Whisky' } }, category: 'Whisky', units: ['milliliter'] },
 	// Juice
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'lime juice' },
-			pt: { name: 'suco de limão' },
-		},
-		category: categoriesMap.get('Juice')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Lime juice' }, pt: { name: 'Suco de limão' } },
+		category: 'Juice',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'orange juice' },
-			pt: { name: 'suco de laranja' },
-		},
-		category: categoriesMap.get('Juice')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Orange juice' }, pt: { name: 'Suco de laranja' } },
+		category: 'Juice',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'pineapple juice' },
-			pt: { name: 'suco de abacaxi' },
-		},
-		category: categoriesMap.get('Juice')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Pineapple juice' }, pt: { name: 'Suco de abacaxi' } },
+		category: 'Juice',
+		units: ['milliliter'],
+	},
+	// Fruit (whole fruit used as slices or wedges, mostly as garnish)
+	{
+		translations: { en: { name: 'Lime' }, pt: { name: 'Limão' } },
+		category: 'Fruit',
+		units: ['slice', 'wedge'],
+	},
+	{
+		translations: { en: { name: 'Orange' }, pt: { name: 'Laranja' } },
+		category: 'Fruit',
+		units: ['slice', 'wedge', 'twist'],
+	},
+	{
+		translations: { en: { name: 'Pineapple' }, pt: { name: 'Abacaxi' } },
+		category: 'Fruit',
+		units: ['slice'],
 	},
 	// Mezcal
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'mezcal' },
-			pt: { name: 'mezcal' },
-		},
-		category: categoriesMap.get('Mezcal')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
+	{ translations: { en: { name: 'Mezcal' }, pt: { name: 'Mezcal' } }, category: 'Mezcal', units: ['milliliter'] },
 	// Wine
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'red wine' },
-			pt: { name: 'vinho tinto' },
-		},
-		category: categoriesMap.get('Wine')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Red wine' }, pt: { name: 'Vinho tinto' } },
+		category: 'Wine',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'rosé wine' },
-			pt: { name: 'vinho rosé' },
-		},
-		category: categoriesMap.get('Wine')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Rosé wine' }, pt: { name: 'Vinho rosé' } },
+		category: 'Wine',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'white wine' },
-			pt: { name: 'vinho branco' },
-		},
-		category: categoriesMap.get('Wine')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'White wine' }, pt: { name: 'Vinho branco' } },
+		category: 'Wine',
+		units: ['milliliter'],
 	},
 	// Rum
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'rum' },
-			pt: { name: 'rum' },
-		},
-		category: categoriesMap.get('Rum')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'silver rum' },
-			pt: { name: 'rum prata' },
-		},
-		category: categoriesMap.get('Rum')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
+	{ translations: { en: { name: 'Rum' }, pt: { name: 'Rum' } }, category: 'Rum', units: ['milliliter'] },
+	{ translations: { en: { name: 'Silver rum' }, pt: { name: 'Rum prata' } }, category: 'Rum', units: ['milliliter'] },
 	// Vodka
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'vodka' },
-			pt: { name: 'vodka' },
-		},
-		category: categoriesMap.get('Vodka')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
+	{ translations: { en: { name: 'Vodka' }, pt: { name: 'Vodka' } }, category: 'Vodka', units: ['milliliter'] },
 	// Syrup
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'agave syrup' },
-			pt: { name: 'xarope de agave' },
-		},
-		category: categoriesMap.get('Syrup')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Agave syrup' }, pt: { name: 'Xarope de agave' } },
+		category: 'Syrup',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
 		translations: {
-			en: { name: 'grenadine', description: 'Pomegranate syrup' },
-			pt: { name: 'grenadine', description: 'Xarope de romã' },
+			en: { name: 'Grenadine', description: 'Pomegranate syrup' },
+			pt: { name: 'Grenadine', description: 'Xarope de romã' },
 		},
-		category: categoriesMap.get('Syrup')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'honey syrup' },
-			pt: { name: 'xarope de mel' },
-		},
-		category: categoriesMap.get('Syrup')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		category: 'Syrup',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'rich simple syrup' },
-			pt: { name: 'xarope enriquecido' },
-		},
-		category: categoriesMap.get('Syrup')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Honey syrup' }, pt: { name: 'Xarope de mel' } },
+		category: 'Syrup',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'simple syrup' },
-			pt: { name: 'xarope simples' },
-		},
-		category: categoriesMap.get('Syrup')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Rich simple syrup' }, pt: { name: 'Xarope enriquecido' } },
+		category: 'Syrup',
+		units: ['milliliter'],
+	},
+	{
+		translations: { en: { name: 'Simple syrup' }, pt: { name: 'Xarope simples' } },
+		category: 'Syrup',
+		units: ['milliliter'],
 	},
 	// Herb
+	{ translations: { en: { name: 'Mint' }, pt: { name: 'Hortelã' } }, category: 'Herb', units: ['leaf', 'sprig'] },
+	// Soda
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'mint' },
-			pt: { name: 'hortelã' },
-		},
-		category: categoriesMap.get('Herb')!,
-		unit: unitsMap.get('leaf')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Ginger beer' }, pt: { name: 'Cerveja de gengibre' } },
+		category: 'Soda',
+		units: ['milliliter'],
+	},
+	{
+		translations: { en: { name: 'Tonic water' }, pt: { name: 'Água tônica' } },
+		category: 'Soda',
+		units: ['milliliter'],
 	},
 	// Water
 	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'coconut water' },
-			pt: { name: 'água de coco' },
-		},
-		category: categoriesMap.get('Water')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		translations: { en: { name: 'Coconut water' }, pt: { name: 'Água de coco' } },
+		category: 'Water',
+		units: ['milliliter'],
 	},
 	{
-		_id: new ObjectId(),
+		translations: { en: { name: 'Sparkling water' }, pt: { name: 'Água com gás' } },
+		category: 'Water',
+		units: ['milliliter'],
+	},
+	// Foam (not measurable: no units)
+	{
 		translations: {
-			en: { name: 'sparkling water' },
-			pt: { name: 'água com gás' },
+			en: { name: 'Ginger foam', description: 'Airy ginger foam' },
+			pt: { name: 'Espuma de gengibre', description: 'Espuma aerada de gengibre' },
 		},
-		category: categoriesMap.get('Water')!,
-		unit: unitsMap.get('milliliter')!,
-		created_at: new Date(),
-		updated_at: new Date(),
+		category: 'Foam',
+		units: [],
 	},
 ] as const satisfies readonly SeedIngredient[];
 
 type IngredientEnName = (typeof ingredients)[number]['translations']['en']['name'];
 
-// Mirrors `ingredientNameValidation` (trim, lowercase, capitalize the first letter) so seeded
-// names match what the API stores for ingredients created through POST /ingredients.
-const normalizeIngredientName = (name: string): string => {
-	const lower = name.trim().toLowerCase();
-	return `${lower.charAt(0).toLocaleUpperCase()}${lower.slice(1)}`;
-};
-
-const toIngredientDocument = (ingredient: SeedIngredient): IngredientPersistence => ({
-	...ingredient,
-	kind: ingredient.kind ?? 'generic',
-	translations: {
-		en: { ...ingredient.translations.en, name: normalizeIngredientName(ingredient.translations.en.name) },
-		pt: { ...ingredient.translations.pt, name: normalizeIngredientName(ingredient.translations.pt.name) },
-	},
-});
-
-// Keyed by the raw English name (stable lookup key for drinks.ts); values are the normalized documents.
-export const ingredientsMap = new Map<IngredientEnName, IngredientPersistence>(
-	ingredients.map<[IngredientEnName, IngredientPersistence]>((ingredient) => [
-		ingredient.translations.en.name,
-		toIngredientDocument(ingredient),
-	]),
-);
+/** Created ingredients keyed by their raw English name, for drinks.ts to reference. */
+export const ingredientsMap = new Map<IngredientEnName, Ingredient>();
 
 export async function insertIngredients() {
 	try {
-		await IngredientModel.insertMany(
-			[...ingredientsMap.values()].map((ingredient) => ({
-				...ingredient,
-				search_keys: buildTranslationsSearchKeys(
-					ingredient.translations,
-					INGREDIENT_SEARCH_FIELDS,
-					[ingredient.brand],
-					INGREDIENT_SEARCH_OPTIONS,
-				),
-			})),
-		);
+		const service = resolveCreateIngredientService();
+		for (const ingredient of ingredients) {
+			const category = categoriesMap.get(ingredient.category);
+			if (!category) throw new Error(`Missing seeded category: ${ingredient.category}`);
+			const unitIds = ingredient.units.map((unitName) => {
+				const unit = unitsMap.get(unitName);
+				if (!unit) throw new Error(`Missing seeded unit: ${unitName}`);
+				return unit.id;
+			});
+			const created = await service.execute({
+				translations: ingredient.translations,
+				categoryId: category.id,
+				unitIds,
+				...('kind' in ingredient ? { kind: ingredient.kind } : {}),
+				...('brand' in ingredient ? { brand: ingredient.brand } : {}),
+			});
+			ingredientsMap.set(ingredient.translations.en.name, created);
+		}
 		logger.info('Ingredients inserted successfully');
 	} catch (error) {
 		logger.error({ err: error }, 'Error inserting ingredients');

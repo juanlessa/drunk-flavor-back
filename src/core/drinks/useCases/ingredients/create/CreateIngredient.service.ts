@@ -1,3 +1,5 @@
+import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
+import { resolveIngredientUnits } from '@/core/drinks/mappers/ingredientUnits.mappers';
 import { mapToTranslationsName } from '@/core/drinks/mappers/translations.mappers';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
@@ -12,33 +14,26 @@ export class CreateIngredientService {
 		private unitsRepository: IUnitsRepository,
 	) {}
 
-	async execute({ translations, categoryId, unitId, kind, brand }: CreateIngredientDTO) {
+	async execute({ translations, categoryId, unitIds, kind, brand }: CreateIngredientDTO): Promise<Ingredient> {
 		const translationsName = mapToTranslationsName(translations);
-		const ingredientALreadyExists = await this.ingredientsRepository.findByName(translationsName);
-		if (ingredientALreadyExists) {
+		const ingredientAlreadyExists = await this.ingredientsRepository.findByName(translationsName);
+		if (ingredientAlreadyExists) {
 			throw new ConflictError('apiResponses.ingredients.alreadyExist', { path: 'CreateIngredient.service.1' });
 		}
 
 		const categoryExists = await this.categoriesRepository.findById(categoryId);
-
 		if (!categoryExists) {
 			throw new BadRequestError('apiResponses.ingredients.invalidCategoryFormat', {
 				path: 'CreateIngredient.service.2',
 			});
 		}
 
-		const unitExists = await this.unitsRepository.findById(unitId);
+		const units = await resolveIngredientUnits(unitIds, this.unitsRepository, 'CreateIngredient.service.3');
 
-		if (!unitExists) {
-			throw new BadRequestError('apiResponses.ingredients.invalidUnitFormat', {
-				path: 'CreateIngredient.service.3',
-			});
-		}
-
-		await this.ingredientsRepository.create({
+		return this.ingredientsRepository.create({
 			translations,
 			category: categoryExists,
-			unit: unitExists,
+			units,
 			kind,
 			brand,
 		});

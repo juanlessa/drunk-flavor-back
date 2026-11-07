@@ -1,235 +1,47 @@
-import { ObjectId } from 'mongodb';
-import { CategoryModel, CategoryPersistence } from '@/core/drinks/infra/mongo/entities/category.model';
-import { NAME_SEARCH_FIELDS, buildTranslationsSearchKeys } from '@/core/drinks/helpers/searchKeys.helpers';
+import { CreateCategoryDTO } from '@/core/drinks/useCases/categories/create/createCategory.dtos';
+import { resolveCreateCategoryService } from '@/core/drinks/useCases/categories/create/createCategory.container';
+import { Category } from '@/core/drinks/entities/category.entity';
 import { logger } from '@/shared/providers/logger';
 
 const categories = [
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Absinthe' },
-			pt: { name: 'Absinto' },
-		},
-		is_alcoholic: true,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Amaro' },
-			pt: { name: 'Amaro' },
-		},
-		is_alcoholic: true,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Bitter' },
-			pt: { name: 'Bitter' },
-		},
-		is_alcoholic: true,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Cachaça' },
-			pt: { name: 'Cachaça' },
-		},
-		is_alcoholic: true,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Coffee' },
-			pt: { name: 'Café' },
-		},
-		is_alcoholic: false,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Gin' },
-			pt: { name: 'Gin' },
-		},
-		is_alcoholic: true,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Herb' },
-			pt: { name: 'Erva' },
-		},
-		is_alcoholic: false,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Juice' },
-			pt: { name: 'Suco' },
-		},
-		is_alcoholic: false,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Liqueur' },
-			pt: { name: 'Licor' },
-		},
-		is_alcoholic: true,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Mezcal' },
-			pt: { name: 'Mezcal' },
-		},
-		is_alcoholic: true,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Rum' },
-			pt: { name: 'Rum' },
-		},
-		is_alcoholic: true,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Sake' },
-			pt: { name: 'Saquê' },
-		},
-		is_alcoholic: true,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Spice' },
-			pt: { name: 'Especiaria' },
-		},
-		is_alcoholic: false,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Syrup' },
-			pt: { name: 'Xarope' },
-		},
-		is_alcoholic: false,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Tea' },
-			pt: { name: 'Chá' },
-		},
-		is_alcoholic: false,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Tequila' },
-			pt: { name: 'Tequila' },
-		},
-		is_alcoholic: true,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Vermouth' },
-			pt: { name: 'Vermute' },
-		},
-		is_alcoholic: true,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Vodka' },
-			pt: { name: 'Vodka' },
-		},
-		is_alcoholic: true,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Water' },
-			pt: { name: 'Água' },
-		},
-		is_alcoholic: false,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Whisky' },
-			pt: { name: 'Whisky' },
-		},
-		is_alcoholic: true,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-	{
-		_id: new ObjectId(),
-		translations: {
-			en: { name: 'Wine' },
-			pt: { name: 'Vinho' },
-		},
-		is_alcoholic: true,
-		created_at: new Date(),
-		updated_at: new Date(),
-	},
-] as const satisfies readonly CategoryPersistence[];
+	{ translations: { en: { name: 'Absinthe' }, pt: { name: 'Absinto' } }, isAlcoholic: true },
+	{ translations: { en: { name: 'Amaro' }, pt: { name: 'Amaro' } }, isAlcoholic: true },
+	{ translations: { en: { name: 'Bitter' }, pt: { name: 'Bitter' } }, isAlcoholic: true },
+	{ translations: { en: { name: 'Cachaça' }, pt: { name: 'Cachaça' } }, isAlcoholic: true },
+	{ translations: { en: { name: 'Coffee' }, pt: { name: 'Café' } }, isAlcoholic: false },
+	{ translations: { en: { name: 'Foam' }, pt: { name: 'Espuma' } }, isAlcoholic: false },
+	{ translations: { en: { name: 'Fruit' }, pt: { name: 'Fruta' } }, isAlcoholic: false },
+	{ translations: { en: { name: 'Gin' }, pt: { name: 'Gin' } }, isAlcoholic: true },
+	{ translations: { en: { name: 'Herb' }, pt: { name: 'Erva' } }, isAlcoholic: false },
+	{ translations: { en: { name: 'Juice' }, pt: { name: 'Suco' } }, isAlcoholic: false },
+	{ translations: { en: { name: 'Liqueur' }, pt: { name: 'Licor' } }, isAlcoholic: true },
+	{ translations: { en: { name: 'Mezcal' }, pt: { name: 'Mezcal' } }, isAlcoholic: true },
+	{ translations: { en: { name: 'Rum' }, pt: { name: 'Rum' } }, isAlcoholic: true },
+	{ translations: { en: { name: 'Sake' }, pt: { name: 'Saquê' } }, isAlcoholic: true },
+	{ translations: { en: { name: 'Soda' }, pt: { name: 'Refrigerante' } }, isAlcoholic: false },
+	{ translations: { en: { name: 'Spice' }, pt: { name: 'Especiaria' } }, isAlcoholic: false },
+	{ translations: { en: { name: 'Syrup' }, pt: { name: 'Xarope' } }, isAlcoholic: false },
+	{ translations: { en: { name: 'Tea' }, pt: { name: 'Chá' } }, isAlcoholic: false },
+	{ translations: { en: { name: 'Tequila' }, pt: { name: 'Tequila' } }, isAlcoholic: true },
+	{ translations: { en: { name: 'Vermouth' }, pt: { name: 'Vermute' } }, isAlcoholic: true },
+	{ translations: { en: { name: 'Vodka' }, pt: { name: 'Vodka' } }, isAlcoholic: true },
+	{ translations: { en: { name: 'Water' }, pt: { name: 'Água' } }, isAlcoholic: false },
+	{ translations: { en: { name: 'Whisky' }, pt: { name: 'Whisky' } }, isAlcoholic: true },
+	{ translations: { en: { name: 'Wine' }, pt: { name: 'Vinho' } }, isAlcoholic: true },
+] as const satisfies readonly CreateCategoryDTO[];
 
 type CategoryEnName = (typeof categories)[number]['translations']['en']['name'];
 
-export const categoriesMap = new Map<CategoryEnName, CategoryPersistence>(
-	categories.map<[CategoryEnName, CategoryPersistence]>((category) => [category.translations.en.name, category]),
-);
+/** Created categories keyed by their English name, for ingredients.ts to reference. */
+export const categoriesMap = new Map<CategoryEnName, Category>();
 
 export async function insertCategories() {
 	try {
-		await CategoryModel.insertMany(
-			categories.map((category) => ({
-				...category,
-				search_keys: buildTranslationsSearchKeys(category.translations, NAME_SEARCH_FIELDS),
-			})),
-		);
+		const service = resolveCreateCategoryService();
+		for (const category of categories) {
+			const created = await service.execute(category);
+			categoriesMap.set(category.translations.en.name, created);
+		}
 		logger.info('Categories inserted successfully');
 	} catch (error) {
 		logger.error({ err: error }, 'Error inserting categories');

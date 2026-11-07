@@ -1,52 +1,82 @@
-import { ObjectId } from 'mongodb';
-import { UnitModel, UnitPersistence } from '@/core/drinks/infra/mongo/entities/unit.model';
-import { UNIT_PERSISTENCE_SEARCH_FIELDS, buildTranslationsSearchKeys } from '@/core/drinks/helpers/searchKeys.helpers';
+import { CreateUnitDTO } from '@/core/drinks/useCases/units/create/createUnit.dtos';
+import { resolveCreateUnitService } from '@/core/drinks/useCases/units/create/createUnit.container';
+import { Unit } from '@/core/drinks/entities/unit.entity';
 import { logger } from '@/shared/providers/logger';
 
 const units = [
 	{
-		_id: new ObjectId(),
 		translations: {
-			en: { name: 'milliliter', name_plural: 'milliliters' },
-			pt: { name: 'mililitro', name_plural: 'mililitros' },
+			en: { name: 'milliliter', namePlural: 'milliliters' },
+			pt: { name: 'mililitro', namePlural: 'mililitros' },
 		},
 		symbol: 'ml',
-		space_before_symbol: false,
-		allow_decimal: true,
+		spaceBeforeSymbol: false,
+		allowDecimal: true,
 		kind: 'volume',
-		created_at: new Date(),
-		updated_at: new Date(),
 	},
 	{
-		_id: new ObjectId(),
 		translations: {
-			en: { name: 'leaf', name_plural: 'leaves' },
-			pt: { name: 'folha', name_plural: 'folhas' },
+			en: { name: 'dash', namePlural: 'dashes' },
+			pt: { name: 'dash', namePlural: 'dashes' },
 		},
-		space_before_symbol: true,
-		allow_decimal: false,
-		kind: 'count',
-		created_at: new Date(),
-		updated_at: new Date(),
+		allowDecimal: false,
+		kind: 'informal',
 	},
-] as const satisfies readonly UnitPersistence[];
+	{
+		translations: {
+			en: { name: 'leaf', namePlural: 'leaves' },
+			pt: { name: 'folha', namePlural: 'folhas' },
+		},
+		spaceBeforeSymbol: true,
+		allowDecimal: false,
+		kind: 'count',
+	},
+	{
+		translations: {
+			en: { name: 'sprig', namePlural: 'sprigs' },
+			pt: { name: 'ramo', namePlural: 'ramos' },
+		},
+		allowDecimal: false,
+		kind: 'count',
+	},
+	{
+		translations: {
+			en: { name: 'slice', namePlural: 'slices' },
+			pt: { name: 'fatia', namePlural: 'fatias' },
+		},
+		allowDecimal: false,
+		kind: 'count',
+	},
+	{
+		translations: {
+			en: { name: 'wedge', namePlural: 'wedges' },
+			pt: { name: 'gomo', namePlural: 'gomos' },
+		},
+		allowDecimal: false,
+		kind: 'count',
+	},
+	{
+		translations: {
+			en: { name: 'twist', namePlural: 'twists' },
+			pt: { name: 'twist', namePlural: 'twists' },
+		},
+		allowDecimal: false,
+		kind: 'count',
+	},
+] as const satisfies readonly CreateUnitDTO[];
 
 type UnitEnName = (typeof units)[number]['translations']['en']['name'];
 
-export const unitsMap = new Map<UnitEnName, UnitPersistence>(
-	units.map<[UnitEnName, UnitPersistence]>((unit) => [unit.translations.en.name, unit]),
-);
+/** Created units keyed by their English singular name, for ingredients.ts to reference. */
+export const unitsMap = new Map<UnitEnName, Unit>();
 
 export async function insertUnits() {
 	try {
-		await UnitModel.insertMany(
-			units.map((unit) => ({
-				...unit,
-				search_keys: buildTranslationsSearchKeys(unit.translations, UNIT_PERSISTENCE_SEARCH_FIELDS, [
-					(unit as UnitPersistence).symbol,
-				]),
-			})),
-		);
+		const service = resolveCreateUnitService();
+		for (const unit of units) {
+			const created = await service.execute(unit);
+			unitsMap.set(unit.translations.en.name, created);
+		}
 		logger.info('Units inserted successfully');
 	} catch (error) {
 		logger.error({ err: error }, 'Error inserting units');

@@ -5,6 +5,7 @@ import { Category } from '@/core/drinks/entities/category.entity';
 import { Unit } from '@/core/drinks/entities/unit.entity';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { NotFoundError } from '@/shared/error/error.lib';
+import { createDrinkIngredientFactory } from '@/core/drinks/factories/drink.factories';
 
 const buildCategory = (): Category => ({
 	id: new ObjectId().toString(),
@@ -30,7 +31,7 @@ const buildIngredient = (): Ingredient => ({
 	id: new ObjectId().toString(),
 	translations: { en: { name: 'Lime' }, pt: { name: 'Limão' } },
 	category: buildCategory(),
-	unit: buildUnit(),
+	units: [buildUnit()],
 	kind: 'generic',
 	createdAt: new Date(),
 	updatedAt: new Date(),
@@ -49,7 +50,7 @@ describe('DrinksRepositoryInMemory', () => {
 				en: { name: 'Caipirinha', method: 'Muddle and stir' },
 				pt: { name: 'Caipirinha', method: 'Macere e mexa' },
 			},
-			ingredients: [{ ingredient: buildIngredient(), quantity: 60 }],
+			ingredients: [createDrinkIngredientFactory(buildIngredient())],
 		});
 
 		expect(created.cover).toBeUndefined();

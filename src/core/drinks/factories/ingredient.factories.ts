@@ -7,5 +7,5 @@ export const createIngredientFactory = (ingredient?: DeepPartial<CreateIngredien
 		pt: { name: ingredient?.translations?.pt?.name || 'Xarope' },
 	},
 	categoryId: ingredient?.categoryId || '',
-	unitId: ingredient?.unitId || '',
+	unitIds: (ingredient?.unitIds as string[] | undefined) ?? [],
 });

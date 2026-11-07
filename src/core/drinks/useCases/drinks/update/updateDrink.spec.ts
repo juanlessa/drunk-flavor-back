@@ -11,8 +11,13 @@ import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
-import { createDrinkFactory } from '@/core/drinks/factories/drink.factories';
+import {
+	createDrinkFactory,
+	createDrinkIngredientFactory,
+	createDrinkIngredientInputFactory,
+} from '@/core/drinks/factories/drink.factories';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
+import { Unit } from '@/core/drinks/entities/unit.entity';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { DrinksRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Drinks.repository';
 import { Drink } from '@/core/drinks/entities/drink.entity';
@@ -36,7 +41,10 @@ const { translations: updatedTranslations } = createDrinkFactory({
 });
 
 let ingredient: Ingredient;
+let unit: Unit;
 let createdDrink: Drink;
+
+const amount = (quantity: number) => ({ type: 'exact' as const, quantity, unit });
 
 describe('Update Drink', () => {
 	beforeEach(async () => {
@@ -47,15 +55,15 @@ describe('Update Drink', () => {
 		service = new UpdateDrinkService(drinksRepository, ingredientsRepository);
 
 		const category = await categoriesRepository.create({ translations: categoryTranslations, isAlcoholic: false });
-		const unit = await unitsRepository.create(createUnitFactory());
+		unit = await unitsRepository.create(createUnitFactory());
 		ingredient = await ingredientsRepository.create({
 			translations: translationsIngredient,
 			category: category,
-			unit,
+			units: [unit],
 		});
 		createdDrink = await drinksRepository.create({
 			translations,
-			ingredients: [{ quantity: 30, ingredient }],
+			ingredients: [createDrinkIngredientFactory(ingredient, { amount: amount(30) })],
 		});
 	});
 
@@ -63,14 +71,14 @@ describe('Update Drink', () => {
 		await service.execute({
 			id: createdDrink.id,
 			translations: updatedTranslations,
-			ingredients: [{ quantity: 60, ingredientId: ingredient.id }],
+			ingredients: [createDrinkIngredientInputFactory(ingredient.id, { unitId: unit.id })],
 		});
 
 		const findUpdatedDrink = (await drinksRepository.findById(createdDrink.id)) as Drink;
 
 		expect(findUpdatedDrink.translations).toEqual(updatedTranslations);
 		expect(findUpdatedDrink.ingredients.length).toEqual(1);
-		expect(findUpdatedDrink.ingredients[0].quantity).toEqual(60);
+		expect(findUpdatedDrink.ingredients[0].amount).toEqual({ type: 'exact', quantity: 60, unit });
 	});
 
 	it('should not be able to update a nonexistent drink', async () => {
@@ -78,7 +86,7 @@ describe('Update Drink', () => {
 			service.execute({
 				id: new ObjectId().toString(),
 				translations: updatedTranslations,
-				ingredients: [{ quantity: 60, ingredientId: ingredient.id }],
+				ingredients: [createDrinkIngredientInputFactory(ingredient.id, { unitId: unit.id })],
 			}),
 		).rejects.toBeInstanceOf(NotFoundError);
 	});
@@ -86,14 +94,14 @@ describe('Update Drink', () => {
 	it('should not be able to update a drink name to an existing name', async () => {
 		await drinksRepository.create({
 			translations: updatedTranslations,
-			ingredients: [{ quantity: 30, ingredient }],
+			ingredients: [createDrinkIngredientFactory(ingredient, { amount: amount(30) })],
 		});
 
 		await expect(
 			service.execute({
 				id: createdDrink.id,
 				translations: updatedTranslations,
-				ingredients: [{ quantity: 60, ingredientId: ingredient.id }],
+				ingredients: [createDrinkIngredientInputFactory(ingredient.id, { unitId: unit.id })],
 			}),
 		).rejects.toBeInstanceOf(ConflictError);
 	});
@@ -103,7 +111,7 @@ describe('Update Drink', () => {
 			service.execute({
 				id: createdDrink.id,
 				translations: updatedTranslations,
-				ingredients: [{ quantity: 60, ingredientId: new ObjectId().toString() }],
+				ingredients: [createDrinkIngredientInputFactory(new ObjectId().toString(), { unitId: unit.id })],
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});

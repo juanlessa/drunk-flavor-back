@@ -1,6 +1,7 @@
 import mongoose, { Model, Schema, Types } from 'mongoose';
 import { Translations } from '@/core/drinks/types/translations';
-import { IngredientKind, IngredientKinds } from '@/core/drinks/entities/ingredient.entity';
+import { IngredientKinds } from '@/core/drinks/constants/ingredient.constants';
+import { IngredientKind } from '@/core/drinks/entities/ingredient.entity';
 import { CategoryPersistence, CategorySchema } from './category.model';
 import { UnitPersistence, UnitSchema } from './unit.model';
 import { getNameUniqueIndexOptions, getTranslationsSchema } from '../helpers/translations.helpers';
@@ -24,7 +25,8 @@ export const IngredientTranslationSchema = new Schema(
 const ingredientSchemaDefinition = {
 	translations: { type: getTranslationsSchema(IngredientTranslationSchema), required: true },
 	category: { type: CategorySchema, excludeIndexes: true, required: true },
-	unit: { type: UnitSchema, excludeIndexes: true, required: true },
+	// Allowed units in display order; empty means not measurable.
+	units: { type: [UnitSchema], excludeIndexes: true, required: true, default: () => [] },
 	kind: { type: String, enum: Object.values(IngredientKinds), required: true, default: IngredientKinds.generic },
 	brand: { type: String, required: false },
 	search_keys: { type: [String], default: undefined, select: false },
@@ -34,7 +36,7 @@ export type IngredientPersistence = {
 	_id: Types.ObjectId;
 	translations: Translations<{ name: string; description?: string }>;
 	category: CategoryPersistence;
-	unit: UnitPersistence;
+	units: UnitPersistence[];
 	kind: IngredientKind;
 	brand?: string;
 	search_keys?: string[];

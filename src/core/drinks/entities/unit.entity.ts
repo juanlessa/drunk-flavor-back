@@ -1,12 +1,6 @@
+import { UnitKinds } from '@/core/drinks/constants/unit.constants';
 import { Translations } from '@/core/drinks/types/translations';
 import { EntityMetadata } from '@/shared/types/entity.types';
-
-export const UnitKinds = {
-	volume: 'volume',
-	mass: 'mass',
-	count: 'count',
-	informal: 'informal',
-} as const;
 
 export type UnitKind = (typeof UnitKinds)[keyof typeof UnitKinds];
 

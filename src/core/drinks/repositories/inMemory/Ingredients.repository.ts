@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { CreateIngredient, FindIngredientByName, UpdateIngredient } from '@/core/drinks/dtos/ingredient.dtos';
-import { Ingredient, IngredientKinds } from '@/core/drinks/entities/ingredient.entity';
+import { IngredientKinds } from '@/core/drinks/constants/ingredient.constants';
+import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import {
 	INGREDIENT_SEARCH_FIELDS,
 	INGREDIENT_SEARCH_OPTIONS,

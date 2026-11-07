@@ -1,6 +1,13 @@
 import mongoose, { Model, Schema, Types } from 'mongoose';
+import {
+	DrinkIngredientAmountTypes,
+	DrinkIngredientQualifiers,
+	DrinkIngredientRoles,
+} from '@/core/drinks/constants/drink.constants';
+import { DrinkIngredientAmount, DrinkIngredientRole } from '@/core/drinks/entities/drink.entity';
 import { Translations } from '@/core/drinks/types/translations';
 import { IngredientPersistence, IngredientSchema } from './ingredient.model';
+import { UnitPersistence, UnitSchema } from './unit.model';
 import { getNameUniqueIndexOptions, getTranslationsSchema } from '../helpers/translations.helpers';
 import { FileMetadata } from '@/shared/types/file.types';
 
@@ -29,10 +36,32 @@ export const DrinkTranslationSchema = new Schema(
 	{ _id: false },
 );
 
+export const DrinkIngredientAmountSchema = new Schema(
+	{
+		type: {
+			type: String,
+			enum: Object.values(DrinkIngredientAmountTypes),
+			required: true,
+		},
+		quantity: { type: Number, required: false },
+		qualifier: { type: String, enum: Object.values(DrinkIngredientQualifiers), required: false },
+		// Snapshot of one of the ingredient's units; absent for `none` and optional for `qualitative`.
+		unit: { type: UnitSchema, excludeIndexes: true, required: false },
+	},
+	{ _id: false },
+);
+
 export const DrinkIngredientSchema = new Schema(
 	{
-		quantity: { type: Number, required: true },
 		ingredient: { type: IngredientSchema, excludeIndexes: true, required: true },
+		role: {
+			type: String,
+			enum: Object.values(DrinkIngredientRoles),
+			required: true,
+			default: DrinkIngredientRoles.ingredient,
+		},
+		amount: { type: DrinkIngredientAmountSchema, required: true },
+		optional: { type: Boolean, required: true, default: false },
 	},
 	{ _id: false },
 );
@@ -61,13 +90,27 @@ const drinkSchemaDefinition = {
 	},
 } as const;
 
+export type DrinkIngredientAmountPersistence = {
+	type: DrinkIngredientAmount['type'];
+	quantity?: number;
+	qualifier?: (typeof DrinkIngredientQualifiers)[keyof typeof DrinkIngredientQualifiers];
+	unit?: UnitPersistence;
+};
+
+export type DrinkIngredientPersistence = {
+	ingredient: IngredientPersistence;
+	role: DrinkIngredientRole;
+	amount: DrinkIngredientAmountPersistence;
+	optional: boolean;
+};
+
 export type DrinkPersistence = {
 	_id: Types.ObjectId;
 	translations: Translations<{ name: string; method: string }>;
 	cover?: FileMetadata;
 	thumbnail?: FileMetadata;
 	search_keys?: string[];
-	ingredients: { quantity: number; ingredient: IngredientPersistence }[];
+	ingredients: DrinkIngredientPersistence[];
 	avg_rating: number;
 	ratings_count: number;
 	ratings_sum: number;

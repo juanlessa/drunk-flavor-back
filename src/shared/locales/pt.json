@@ -129,7 +129,9 @@
 			"invalidKindFormat": "O tipo deve ser generic ou branded",
 			"requiredBrand": "A marca é obrigatória para ingredientes de marca",
 			"invalidBrandFormat": "A marca deve ter entre 1 e 60 caracteres",
-			"brandNotAllowed": "A marca só é permitida para ingredientes de marca"
+			"brandNotAllowed": "A marca só é permitida para ingredientes de marca",
+			"duplicateUnit": "A mesma unidade não pode ser listada duas vezes",
+			"someUnitsNotExist": "Algumas unidades não existem"
 		},
 		"drinks": {
 			"alreadyExist": "O drink já existe",
@@ -151,7 +153,16 @@
 			"requiredQuantity": "A quantidade é obrigatória",
 			"invalidQuantityFormat": "A quantidade deve ser maior que 0",
 			"requiredIngredients": "O drink deve ter pelo menos 1 ingrediente",
-			"someIngredientsNotExist": "Alguns ingredientes não existem"
+			"someIngredientsNotExist": "Alguns ingredientes não existem",
+			"invalidRoleFormat": "O papel deve ser ingredient ou garnish",
+			"invalidAmountTypeFormat": "O tipo de quantidade deve ser exact, qualitative ou none",
+			"invalidQualifierFormat": "O qualificador deve ser top_up, to_taste ou as_needed",
+			"invalidOptionalFormat": "O campo opcional deve ser booleano",
+			"requiredAmountUnit": "A unidade é obrigatória para esta quantidade",
+			"amountUnitNotAllowed": "A unidade selecionada não é permitida para este ingrediente",
+			"amountNotMeasurable": "Este ingrediente não é mensurável, então não pode ter uma quantidade exata",
+			"duplicateIngredientRole": "O mesmo ingrediente não pode repetir com o mesmo papel",
+			"requiredMainIngredient": "O drink deve ter pelo menos 1 ingrediente obrigatório"
 		},
 		"ratings": {
 			"notFound": "Avaliação não encontrada",

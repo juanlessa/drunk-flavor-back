@@ -4,7 +4,7 @@ import {
 	ingredientCategoryIdValidation,
 	ingredientIdValidation,
 	ingredientKindValidation,
-	ingredientUnitIdValidation,
+	ingredientUnitIdsValidation,
 	ingredientUpdateTranslationSchema,
 	refineIngredientBrand,
 } from '@/core/drinks/schemas/ingredient.schemas';
@@ -15,7 +15,7 @@ export const updateIngredientSchema = z
 		id: ingredientIdValidation,
 		translations: generateTranslationsSchema(ingredientUpdateTranslationSchema),
 		categoryId: ingredientCategoryIdValidation,
-		unitId: ingredientUnitIdValidation,
+		unitIds: ingredientUnitIdsValidation,
 		// Omitted keeps the current kind and brand. A `generic` kind removes the brand.
 		kind: ingredientKindValidation.optional(),
 		// Omitted keeps the current brand; `null` removes it.

@@ -7,7 +7,8 @@ import { DeepPartial } from '@/shared/types/utility.types';
 export type CreateIngredient = {
 	translations: Translations<IngredientTranslation>;
 	category: Category;
-	unit: Unit;
+	/** Allowed units in display order; empty means not measurable. */
+	units: Unit[];
 	/** Defaults to `generic` when omitted. */
 	kind?: IngredientKind;
 	brand?: string;
@@ -25,7 +26,7 @@ export type UpdateIngredientData = {
 } & DeepPartial<{
 	translations: Translations<UpdateIngredientTranslation>;
 	category: Category;
-	unit: Unit;
+	units: Unit[];
 	kind: IngredientKind;
 }>;
 

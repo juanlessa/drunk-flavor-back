@@ -10,7 +10,7 @@ import { NotFoundError } from '@/shared/error/error.lib';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
-import { createDrinkFactory } from '@/core/drinks/factories/drink.factories';
+import { createDrinkFactory, createDrinkIngredientFactory } from '@/core/drinks/factories/drink.factories';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
@@ -56,11 +56,11 @@ describe('Delete Drink', () => {
 		createdIngredient = await ingredientsRepository.create({
 			translations: ingredientTranslations,
 			category: createdCategory,
-			unit: createdUnit,
+			units: [createdUnit],
 		});
 		createdDrink = await drinksRepository.create({
 			translations,
-			ingredients: [{ ingredient: createdIngredient, quantity: 60 }],
+			ingredients: [createDrinkIngredientFactory(createdIngredient, { quantity: 60 })],
 		});
 	});
 

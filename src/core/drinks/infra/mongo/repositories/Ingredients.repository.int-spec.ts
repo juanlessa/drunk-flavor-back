@@ -30,7 +30,7 @@ const buildUnit = (): Unit => ({
 const buildIngredient = (name: { en: string; pt: string }): CreateIngredient => ({
 	translations: { en: { name: name.en }, pt: { name: name.pt } },
 	category: buildCategory(),
-	unit: buildUnit(),
+	units: [buildUnit()],
 });
 
 let repository: IngredientsRepository;
@@ -48,13 +48,13 @@ describe('IngredientsRepository (integration)', () => {
 		await IngredientModel.deleteMany({});
 	});
 
-	it('returns lean documents without __v and reads embedded category/unit', async () => {
+	it('returns lean documents without __v and reads embedded category/units', async () => {
 		const created = await repository.create(buildIngredient({ en: 'Lime', pt: 'Limão' }));
 
 		const byId = await repository.findById(created.id);
 		expect(byId as Record<string, unknown>).not.toHaveProperty('__v');
 		expect(byId?.category.translations.en.name).toBe('Syrup');
-		expect(byId?.unit.translations.en.name).toBe('milliliter');
+		expect(byId?.units[0].translations.en.name).toBe('milliliter');
 	});
 
 	it('finds by name across languages and returns null on no match', async () => {

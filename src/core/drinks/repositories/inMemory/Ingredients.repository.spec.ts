@@ -33,7 +33,7 @@ const createIngredient = (
 	repository.create({
 		translations: { en: { name: name.en }, pt: { name: name.pt } },
 		category: buildCategory(),
-		unit: buildUnit(),
+		units: [buildUnit()],
 	});
 
 let repository: IngredientsRepositoryInMemory;

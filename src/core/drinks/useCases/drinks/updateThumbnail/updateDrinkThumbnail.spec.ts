@@ -10,7 +10,7 @@ import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
-import { createDrinkFactory } from '@/core/drinks/factories/drink.factories';
+import { createDrinkFactory, createDrinkIngredientFactory } from '@/core/drinks/factories/drink.factories';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { DrinksRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Drinks.repository';
@@ -65,11 +65,11 @@ describe('Update Drink', () => {
 		ingredient = await ingredientsRepository.create({
 			translations: translationsIngredient,
 			category: category,
-			unit,
+			units: [unit],
 		});
 		createdDrink = await drinksRepository.create({
 			translations,
-			ingredients: [{ quantity: 30, ingredient }],
+			ingredients: [createDrinkIngredientFactory(ingredient, { quantity: 30 })],
 		});
 	});
 

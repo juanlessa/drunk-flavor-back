@@ -41,7 +41,7 @@ const buildIngredient = (name: {
 }): Omit<IngredientPersistence, '_id' | 'created_at' | 'updated_at'> => ({
 	translations: { en: { name: name.en }, pt: { name: name.pt } },
 	category: buildCategory(),
-	unit: buildUnit(),
+	units: [buildUnit()],
 	kind: 'generic',
 });
 
@@ -75,18 +75,18 @@ describe('IngredientModel (integration)', () => {
 
 		// No index should be keyed on an embedded category/unit name path.
 		const leaked = indexes.filter((index) =>
-			Object.keys(index.key).some((key) => key.startsWith('category.') || key.startsWith('unit.')),
+			Object.keys(index.key).some((key) => key.startsWith('category.') || key.startsWith('units.')),
 		);
 		expect(leaked).toEqual([]);
 	});
 
-	it('reads back the embedded category and unit subdocuments intact', async () => {
+	it('reads back the embedded category and units subdocuments intact', async () => {
 		const created = await IngredientModel.create(buildIngredient({ en: 'Lime', pt: 'Limão' }));
 		const reloaded = await IngredientModel.findById(created._id).lean();
 
 		expect(reloaded?.category?.translations.en.name).toBe('Syrup');
-		expect(reloaded?.unit?.translations.en.name).toBe('milliliter');
-		expect(reloaded?.unit?.kind).toBe('volume');
+		expect(reloaded?.units?.[0]?.translations.en.name).toBe('milliliter');
+		expect(reloaded?.units?.[0]?.kind).toBe('volume');
 	});
 
 	it('rejects duplicate translations.en.name and translations.pt.name with 11000', async () => {

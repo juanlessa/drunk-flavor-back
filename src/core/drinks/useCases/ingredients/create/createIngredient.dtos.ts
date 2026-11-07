@@ -7,7 +7,8 @@ export type CreateIngredientReqBody = z.infer<typeof createIngredientSchema>;
 export type CreateIngredientDTO = {
 	translations: Translations<IngredientTranslation>;
 	categoryId: string;
-	unitId: string;
+	/** Allowed units in display order; empty means not measurable. */
+	unitIds: string[];
 	/** Defaults to `generic` when omitted. */
 	kind?: IngredientKind;
 	brand?: string;

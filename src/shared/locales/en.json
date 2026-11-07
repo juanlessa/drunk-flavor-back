@@ -129,7 +129,9 @@
 			"invalidKindFormat": "Kind must be generic or branded",
 			"requiredBrand": "Brand is required for branded ingredients",
 			"invalidBrandFormat": "Brand must have between 1 and 60 characters",
-			"brandNotAllowed": "Brand is only allowed for branded ingredients"
+			"brandNotAllowed": "Brand is only allowed for branded ingredients",
+			"duplicateUnit": "The same unit cannot be listed twice",
+			"someUnitsNotExist": "Some units don't exist"
 		},
 		"drinks": {
 			"alreadyExist": "Drink already exists",
@@ -151,7 +153,16 @@
 			"requiredQuantity": "Quantity is required",
 			"invalidQuantityFormat": "Quantity must be greater than 0",
 			"requiredIngredients": "Drink must have at least 1 ingredient",
-			"someIngredientsNotExist": "Some ingredients don't exist"
+			"someIngredientsNotExist": "Some ingredients don't exist",
+			"invalidRoleFormat": "Role must be ingredient or garnish",
+			"invalidAmountTypeFormat": "Amount type must be exact, qualitative or none",
+			"invalidQualifierFormat": "Qualifier must be top_up, to_taste or as_needed",
+			"invalidOptionalFormat": "Optional must be a boolean",
+			"requiredAmountUnit": "A unit is required for this amount",
+			"amountUnitNotAllowed": "The selected unit is not allowed for this ingredient",
+			"amountNotMeasurable": "This ingredient is not measurable, so it cannot have an exact amount",
+			"duplicateIngredientRole": "The same ingredient cannot repeat with the same role",
+			"requiredMainIngredient": "Drink must have at least 1 required ingredient"
 		},
 		"ratings": {
 			"notFound": "Rating not found",

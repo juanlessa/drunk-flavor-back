@@ -32,10 +32,12 @@ describe('Create Drink', () => {
 
 	it('Should be able to create a drink', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
-		const { id: ingredientId } = await createIngredient();
+		const { id: ingredientId, unitId } = await createIngredient();
 
 		const { translations } = createDrinkFactory();
-		const ingredients = [{ ingredientId, quantity: 60 }];
+		const ingredients = [
+			{ ingredientId, role: 'ingredient', amount: { type: 'exact', quantity: 60, unitId }, optional: false },
+		];
 
 		const response = await request(app.server)
 			.post('/drinks')

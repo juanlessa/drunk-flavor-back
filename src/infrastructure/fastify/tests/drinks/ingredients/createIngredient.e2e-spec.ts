@@ -32,7 +32,7 @@ describe('Create Ingredient', () => {
 		const response = await request(app.server)
 			.post('/ingredients')
 			.set('Cookie', cookies)
-			.send({ translations, categoryId, unitId });
+			.send({ translations, categoryId, unitIds: [unitId] });
 
 		expect(response.status).toBe(HTTP_STATUS.created);
 	});

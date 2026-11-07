@@ -1,6 +1,6 @@
 import mongoose, { Model, Schema, Types } from 'mongoose';
 import { Translations } from '@/core/drinks/types/translations';
-import { UnitKinds } from '@/core/drinks/entities/unit.entity';
+import { UnitKinds } from '@/core/drinks/constants/unit.constants';
 import { getNameUniqueIndexOptions, getTranslationsSchema } from '../helpers/translations.helpers';
 
 export const UNIT_SEARCH_KEYS_INDEX = 'unit_search_keys';

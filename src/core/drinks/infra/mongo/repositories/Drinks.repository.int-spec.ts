@@ -6,6 +6,7 @@ import { CreateDrink } from '@/core/drinks/dtos/drink.dtos';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { Category } from '@/core/drinks/entities/category.entity';
 import { Unit } from '@/core/drinks/entities/unit.entity';
+import { createDrinkIngredientFactory } from '@/core/drinks/factories/drink.factories';
 import { ConflictError, NotFoundError } from '@/shared/error/error.lib';
 
 const buildCategory = (): Category => ({
@@ -32,7 +33,7 @@ const buildIngredient = (): Ingredient => ({
 	id: new ObjectId().toString(),
 	translations: { en: { name: 'Lime' }, pt: { name: 'Limão' } },
 	category: buildCategory(),
-	unit: buildUnit(),
+	units: [buildUnit()],
 	kind: 'generic',
 	createdAt: new Date(),
 	updatedAt: new Date(),
@@ -43,7 +44,7 @@ const buildDrink = (name: { en: string; pt: string }): CreateDrink => ({
 		en: { name: name.en, method: 'Stir' },
 		pt: { name: name.pt, method: 'Mexa' },
 	},
-	ingredients: [{ ingredient: buildIngredient(), quantity: 60 }],
+	ingredients: [createDrinkIngredientFactory(buildIngredient())],
 });
 
 let repository: DrinksRepository;
@@ -73,15 +74,15 @@ describe('DrinksRepository (integration)', () => {
 		expect(listed as Record<string, unknown>).not.toHaveProperty('__v');
 	});
 
-	it('round-trips a drink with nested ingredient embedding category and unit', async () => {
+	it('round-trips a drink with nested ingredient embedding category and units', async () => {
 		const created = await repository.create(buildDrink({ en: 'Mojito', pt: 'Mojito BR' }));
 		const byId = await repository.findById(created.id);
 
 		expect(byId?.ingredients).toHaveLength(1);
-		expect(byId?.ingredients[0].quantity).toBe(60);
+		expect(byId?.ingredients[0].amount).toMatchObject({ type: 'exact', quantity: 60 });
 		expect(byId?.ingredients[0].ingredient.translations.en.name).toBe('Lime');
 		expect(byId?.ingredients[0].ingredient.category.translations.en.name).toBe('Syrup');
-		expect(byId?.ingredients[0].ingredient.unit.translations.en.name).toBe('milliliter');
+		expect(byId?.ingredients[0].ingredient.units[0].translations.en.name).toBe('milliliter');
 	});
 
 	it('finds by name across languages and returns null on no match', async () => {

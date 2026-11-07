@@ -59,7 +59,7 @@ describe('Update Ingredient', () => {
 		createdIngredient = await ingredientsRepository.create({
 			translations,
 			category: createdCategory,
-			unit: createdUnit,
+			units: [createdUnit],
 		});
 	});
 
@@ -68,14 +68,27 @@ describe('Update Ingredient', () => {
 			id: createdIngredient.id,
 			translations: updatedTranslations,
 			categoryId: updatedCategory.id,
-			unitId: updatedUnit.id,
+			unitIds: [updatedUnit.id],
 		});
 
 		const findUpdatedIngredient = (await ingredientsRepository.findById(createdIngredient.id)) as Ingredient;
 
 		expect(findUpdatedIngredient.translations).toEqual(updatedTranslations);
 		expect(findUpdatedIngredient.category).toEqual(updatedCategory);
-		expect(findUpdatedIngredient.unit).toEqual(updatedUnit);
+		expect(findUpdatedIngredient.units).toEqual([updatedUnit]);
+	});
+
+	it('should be able to update an ingredient to be not measurable with no units', async () => {
+		await service.execute({
+			id: createdIngredient.id,
+			translations: updatedTranslations,
+			categoryId: updatedCategory.id,
+			unitIds: [],
+		});
+
+		const findUpdatedIngredient = (await ingredientsRepository.findById(createdIngredient.id)) as Ingredient;
+
+		expect(findUpdatedIngredient.units).toEqual([]);
 	});
 
 	it('should not be able to update a nonexistent ingredient', async () => {
@@ -84,7 +97,7 @@ describe('Update Ingredient', () => {
 				id: new ObjectId().toString(),
 				translations: updatedTranslations,
 				categoryId: updatedCategory.id,
-				unitId: updatedUnit.id,
+				unitIds: [updatedUnit.id],
 			}),
 		).rejects.toBeInstanceOf(NotFoundError);
 	});
@@ -93,7 +106,7 @@ describe('Update Ingredient', () => {
 		await ingredientsRepository.create({
 			translations: updatedTranslations,
 			category: updatedCategory,
-			unit: updatedUnit,
+			units: [updatedUnit],
 		});
 
 		await expect(
@@ -101,7 +114,7 @@ describe('Update Ingredient', () => {
 				id: createdIngredient.id,
 				translations: updatedTranslations,
 				categoryId: updatedCategory.id,
-				unitId: updatedUnit.id,
+				unitIds: [updatedUnit.id],
 			}),
 		).rejects.toBeInstanceOf(ConflictError);
 	});
@@ -111,7 +124,7 @@ describe('Update Ingredient', () => {
 				id: createdIngredient.id,
 				translations: updatedTranslations,
 				categoryId: new ObjectId().toString(),
-				unitId: updatedUnit.id,
+				unitIds: [updatedUnit.id],
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});
@@ -121,7 +134,7 @@ describe('Update Ingredient', () => {
 				id: createdIngredient.id,
 				translations: updatedTranslations,
 				categoryId: updatedCategory.id,
-				unitId: new ObjectId().toString(),
+				unitIds: [new ObjectId().toString()],
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});

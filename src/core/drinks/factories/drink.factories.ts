@@ -1,7 +1,46 @@
 import { randomUUID } from 'node:crypto';
 import { DeepPartial } from '@/shared/types/utility.types';
-import { Drink } from '@/core/drinks/entities/drink.entity';
+import { DrinkIngredientAmountTypes, DrinkIngredientRoles } from '@/core/drinks/constants/drink.constants';
+import { DrinkIngredientInput } from '@/core/drinks/dtos/drink.dtos';
+import { Drink, DrinkIngredient } from '@/core/drinks/entities/drink.entity';
+import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { CreateDrinkDTO } from '../useCases/drinks/create/createDrink.dtos';
+
+/**
+ * Builds a drink ingredient request line with an exact amount. `unitId` defaults to the
+ * ingredient's first unit, matching how a client usually picks a unit.
+ */
+export const createDrinkIngredientInputFactory = (
+	ingredientId: string,
+	overrides?: Partial<DrinkIngredientInput> & { unitId?: string },
+): DrinkIngredientInput => ({
+	ingredientId,
+	role: overrides?.role ?? DrinkIngredientRoles.ingredient,
+	amount: overrides?.amount ?? {
+		type: DrinkIngredientAmountTypes.exact,
+		quantity: 60,
+		unitId: overrides?.unitId ?? '',
+	},
+	optional: overrides?.optional ?? false,
+});
+
+/**
+ * Builds a persisted drink ingredient line with an exact amount from a full ingredient.
+ * The amount defaults to `quantity` (60) in the ingredient's first unit; pass `amount` to override.
+ */
+export const createDrinkIngredientFactory = (
+	ingredient: Ingredient,
+	overrides?: Partial<Omit<DrinkIngredient, 'ingredient'>> & { quantity?: number },
+): DrinkIngredient => ({
+	ingredient,
+	role: overrides?.role ?? DrinkIngredientRoles.ingredient,
+	amount: overrides?.amount ?? {
+		type: DrinkIngredientAmountTypes.exact,
+		quantity: overrides?.quantity ?? 60,
+		unit: ingredient.units[0],
+	},
+	optional: overrides?.optional ?? false,
+});
 
 export const createDrinkFactory = (drink?: DeepPartial<CreateDrinkDTO>): CreateDrinkDTO => ({
 	translations: {

@@ -41,7 +41,7 @@ describe('Get Ingredient', () => {
 		const createdIngredient = await ingredientsRepository.create({
 			translations,
 			category: createdCategory,
-			unit: createdUnit,
+			units: [createdUnit],
 		});
 
 		const ingredientFound = await service.execute({ id: createdIngredient.id });
@@ -49,7 +49,7 @@ describe('Get Ingredient', () => {
 		expect(ingredientFound.id).toEqual(createdIngredient.id);
 		expect(ingredientFound.translations).toEqual(createdIngredient.translations);
 		expect(ingredientFound.category).toEqual(createdCategory);
-		expect(ingredientFound.unit).toEqual(createdUnit);
+		expect(ingredientFound.units[0]).toEqual(createdUnit);
 	});
 
 	it('should not be able to find a nonexistent ingredient', async () => {

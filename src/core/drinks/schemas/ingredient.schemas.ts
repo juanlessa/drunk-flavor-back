@@ -1,4 +1,4 @@
-import { IngredientKinds } from '@/core/drinks/entities/ingredient.entity';
+import { IngredientKinds } from '@/core/drinks/constants/ingredient.constants';
 import { getObjectIdSchema } from '@/infrastructure/mongo/schemas/helpers/objectId.helpers';
 import { LocaleKey } from '@/shared/types/locale.types';
 import { z } from 'zod/v4';
@@ -29,6 +29,16 @@ export const ingredientUnitIdValidation = getObjectIdSchema({
 	invalid: 'apiResponses.ingredients.invalidUnitFormat',
 });
 
+/**
+ * Allowed units in display order. An empty list means the ingredient is not measurable.
+ * The same unit may not appear twice.
+ */
+export const ingredientUnitIdsValidation = z
+	.array(ingredientUnitIdValidation, { error: 'apiResponses.ingredients.invalidUnitFormat' satisfies LocaleKey })
+	.refine((ids) => new Set(ids).size === ids.length, {
+		error: 'apiResponses.ingredients.duplicateUnit' satisfies LocaleKey,
+	});
+
 export const ingredientDescriptionValidation = z
 	.string({ error: 'apiResponses.ingredients.invalidDescriptionFormat' satisfies LocaleKey })
 	.trim()
@@ -37,7 +47,7 @@ export const ingredientDescriptionValidation = z
 		error: 'apiResponses.ingredients.invalidDescriptionFormat' satisfies LocaleKey,
 	});
 
-export const ingredientKindValidation = z.enum([IngredientKinds.generic, IngredientKinds.branded], {
+export const ingredientKindValidation = z.enum(IngredientKinds, {
 	error: 'apiResponses.ingredients.invalidKindFormat' satisfies LocaleKey,
 });
 
