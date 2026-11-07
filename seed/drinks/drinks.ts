@@ -1,9 +1,8 @@
 import { CreateDrinkDTO } from '@/core/drinks/useCases/drinks/create/createDrink.dtos';
 import { resolveCreateDrinkService } from '@/core/drinks/useCases/drinks/create/createDrink.container';
 import { DrinkGarnishInput, DrinkIngredientInput } from '@/core/drinks/dtos/drink.dtos';
-import { Translations } from '@/core/drinks/types/translations';
-import { DrinkTranslation } from '@/core/drinks/entities/drink.entity';
-import { DrinkIngredientAmountTypes, DrinkIngredientQualifiers } from '@/core/drinks/constants/drink.constants';
+import { PreparationPlan } from '@/core/drinks/modules/preparation';
+import { DrinkIngredientAmountTypes } from '@/core/drinks/constants/drink.constants';
 import { logger } from '@/shared/providers/logger';
 import { ingredientsMap } from './ingredients';
 
@@ -16,30 +15,41 @@ type SeedExactAmount = {
 	quantity: number;
 	unit: string;
 };
-type SeedQualitativeAmount = {
-	type: typeof DrinkIngredientAmountTypes.qualitative;
-	qualifier: (typeof DrinkIngredientQualifiers)[keyof typeof DrinkIngredientQualifiers];
-	quantity?: number;
-	unit?: string;
-};
 type SeedNoneAmount = { type: typeof DrinkIngredientAmountTypes.none };
-
-type SeedAmount = SeedExactAmount | SeedQualitativeAmount | SeedNoneAmount;
+type SeedAmount = SeedExactAmount | SeedNoneAmount;
 
 type SeedRecipeItem = {
 	ingredient: string;
 	amount: SeedAmount;
 };
-
 type SeedDrinkIngredient = SeedRecipeItem & { optional?: boolean };
-
 /** A garnish is always optional by nature, so it has no `optional` flag. */
 type SeedDrinkGarnish = SeedRecipeItem;
 
+/** A reference to a recipe line from a preparation plan, by English names; resolved to ids when the seed runs. */
+type SeedRef = {
+	list: 'ingredients' | 'garnishes';
+	ingredient: string;
+	unit?: string;
+	withUnit?: boolean;
+};
+
+/** The preparation plan with every reference to a recipe line written as a `SeedRef`. */
+type WithSeedRefs<T> = T extends { list: string; ingredientId: string }
+	? SeedRef
+	: T extends (infer Item)[]
+		? WithSeedRefs<Item>[]
+		: T extends object
+			? { [Key in keyof T]: WithSeedRefs<T[Key]> }
+			: T;
+type SeedPlan = WithSeedRefs<PreparationPlan>;
+
 type SeedDrink = {
-	translations: Translations<DrinkTranslation>;
+	names: { en: string; pt: string };
 	ingredients: readonly SeedDrinkIngredient[];
 	garnishes?: readonly SeedDrinkGarnish[];
+	/** The method of both languages is written from the plan. */
+	preparation: SeedPlan;
 };
 
 const exact = (quantity: number, unit = 'milliliter'): SeedExactAmount => ({
@@ -47,105 +57,218 @@ const exact = (quantity: number, unit = 'milliliter'): SeedExactAmount => ({
 	quantity,
 	unit,
 });
+const none: SeedNoneAmount = { type: DrinkIngredientAmountTypes.none };
 
-const drinks = [
+// Plan helpers: the recipe lines of these drinks are measured in milliliters unless said otherwise.
+const ml = (ingredient: string): SeedRef => ({ list: 'ingredients', ingredient, unit: 'milliliter' });
+const leaves = (ingredient: string): SeedRef => ({ list: 'ingredients', ingredient, unit: 'leaf', withUnit: true });
+const garnish = (ingredient: string, unit?: string): SeedRef => ({
+	list: 'garnishes',
+	ingredient,
+	...(unit === undefined ? {} : { unit, withUnit: true }),
+});
+
+const SHAKE_SECONDS = 15;
+
+const drinks: readonly SeedDrink[] = [
 	{
-		translations: {
-			en: {
-				name: 'Mojito',
-				method: 'In a glass, muddle the mint leaves and lime juice together. Add the rich simple syrup and rum, then fill the glass with ice. Top with sparkling water and stir gently. Garnish with a mint sprig and a lime wedge.',
-			},
-			pt: {
-				name: 'Mojito',
-				method: 'Em um copo, macere as folhas de hortelã com o suco de limão. Adicione o xarope enriquecido e o rum, depois encha o copo com gelo. Complete com água com gás e misture suavemente. Decore com um ramo de hortelã e um gomo de limão.',
-			},
-		},
+		names: { en: 'Carajillo', pt: 'Carajillo' },
 		ingredients: [
-			{ ingredient: 'Silver rum', amount: exact(60) },
-			{ ingredient: 'Lime juice', amount: exact(30) },
-			{ ingredient: 'Rich simple syrup', amount: exact(30) },
-			{ ingredient: 'Mint', amount: exact(8, 'leaf') },
-			{
-				ingredient: 'Sparkling water',
-				amount: { type: DrinkIngredientAmountTypes.qualitative, qualifier: DrinkIngredientQualifiers.topUp },
-			},
+			{ ingredient: 'Licor 43', amount: exact(75) },
+			{ ingredient: 'Espresso', amount: exact(75) },
 		],
-		// Mint appears again as a garnish; the same ingredient may sit in both lists.
-		garnishes: [
-			{ ingredient: 'Mint', amount: exact(1, 'sprig') },
-			{ ingredient: 'Lime', amount: exact(1, 'wedge') },
-		],
+		preparation: {
+			mixingVessel: 'shaker',
+			servingGlass: 'rocks',
+			actions: [
+				{ type: 'add_ice', target: 'mixing', kind: 'cubes' },
+				{ type: 'add', target: 'mixing', items: [ml('Licor 43'), ml('Espresso')] },
+				{ type: 'shake', intensity: 'vigorous', seconds: SHAKE_SECONDS },
+				{ type: 'add_ice', target: 'serving', kind: 'cubes' },
+				{ type: 'strain', kind: 'single', overIce: true },
+				{
+					type: 'custom',
+					text: {
+						en: 'Let the foam settle on top before serving.',
+						pt: 'Deixe a espuma assentar no topo antes de servir.',
+					},
+				},
+			],
+		},
 	},
 	{
-		translations: {
-			en: {
-				name: 'Moscow Mule',
-				method: 'Fill a mug with ice. Add the vodka and lime juice, then top with ginger beer. Stir gently. Optionally crown with ginger foam and garnish with a lime wedge.',
-			},
-			pt: {
-				name: 'Moscow Mule',
-				method: 'Encha uma caneca com gelo. Adicione a vodka e o suco de limão, depois complete com cerveja de gengibre. Misture suavemente. Opcionalmente, coroe com espuma de gengibre e decore com um gomo de limão.',
-			},
-		},
+		names: { en: 'Basil smash', pt: 'Basil smash' },
 		ingredients: [
-			{ ingredient: 'Vodka', amount: exact(50) },
-			{ ingredient: 'Lime juice', amount: exact(15) },
-			{
-				ingredient: 'Ginger beer',
-				amount: {
-					type: DrinkIngredientAmountTypes.qualitative,
-					qualifier: DrinkIngredientQualifiers.topUp,
-					quantity: 120,
-					unit: 'milliliter',
+			{ ingredient: 'Gin', amount: exact(60) },
+			{ ingredient: 'Lime juice', amount: exact(25) },
+			{ ingredient: 'Simple syrup', amount: exact(20) },
+			{ ingredient: 'Basil', amount: exact(10, 'leaf') },
+			{ ingredient: 'Tonic water', amount: exact(107) },
+		],
+		garnishes: [{ ingredient: 'Basil', amount: exact(3, 'leaf') }],
+		preparation: {
+			mixingVessel: 'shaker',
+			servingGlass: 'highball',
+			actions: [
+				{ type: 'add', target: 'mixing', items: [leaves('Basil'), ml('Lime juice')] },
+				{ type: 'muddle', intensity: 'gentle' },
+				{ type: 'add', target: 'mixing', items: [ml('Gin'), ml('Simple syrup')] },
+				{ type: 'add_ice', target: 'mixing', kind: 'cubes' },
+				{ type: 'shake', intensity: 'vigorous', seconds: SHAKE_SECONDS },
+				{ type: 'add_ice', target: 'serving', kind: 'cubes' },
+				{ type: 'strain', kind: 'double', overIce: true },
+				{ type: 'top', item: ml('Tonic water') },
+				{
+					type: 'custom',
+					text: {
+						en: 'Gently stir from bottom to top to combine.',
+						pt: 'Mexa gentilmente de baixo para cima para integrar.',
+					},
 				},
-			},
-			// Not measurable and optional: the foam is an ingredient, not a decoration.
-			{
-				ingredient: 'Ginger foam',
-				amount: { type: DrinkIngredientAmountTypes.none },
-				optional: true,
-			},
+				{ type: 'garnish', items: [garnish('Basil', 'leaf')] },
+			],
+		},
+	},
+	{
+		names: { en: 'Jorge amado', pt: 'Jorge amado' },
+		ingredients: [
+			{ ingredient: 'Gabriela cachaça (clove and cinnamon)', amount: exact(60) },
+			{ ingredient: 'Passion fruit purée', amount: exact(40) },
+			{ ingredient: 'Lime juice', amount: exact(20) },
+			{ ingredient: 'Simple syrup', amount: exact(10) },
 		],
 		garnishes: [{ ingredient: 'Lime', amount: exact(1, 'wedge') }],
+		preparation: {
+			mixingVessel: 'shaker',
+			servingGlass: 'rocks',
+			actions: [
+				{
+					type: 'add',
+					target: 'mixing',
+					items: [
+						ml('Passion fruit purée'),
+						ml('Lime juice'),
+						ml('Simple syrup'),
+						ml('Gabriela cachaça (clove and cinnamon)'),
+					],
+				},
+				{ type: 'add_ice', target: 'mixing', kind: 'cubes' },
+				{ type: 'shake', intensity: 'vigorous', seconds: SHAKE_SECONDS },
+				// Poured whole, seeds included, without a strainer.
+				{ type: 'strain', kind: 'none' },
+				{ type: 'garnish', items: [garnish('Lime', 'wedge')], style: 'rim_perch' },
+			],
+		},
 	},
 	{
-		translations: {
-			en: {
-				name: 'Piña colada',
-				method: 'Blend the rum, coconut liqueur, and pineapple juice with ice until smooth. Pour into a chilled glass and garnish with a pineapple slice.',
-			},
-			pt: {
-				name: 'Piña colada',
-				method: 'Bata o rum, o licor de coco e o suco de abacaxi com gelo até ficar homogêneo. Despeje em um copo gelado e decore com uma fatia de abacaxi.',
-			},
-		},
-		ingredients: [
-			{ ingredient: 'Silver rum', amount: exact(60) },
-			{ ingredient: 'Coconut liqueur', amount: exact(30) },
-			{ ingredient: 'Pineapple juice', amount: exact(90) },
-		],
-		garnishes: [{ ingredient: 'Pineapple', amount: exact(1, 'slice') }],
-	},
-	{
-		translations: {
-			en: {
-				name: 'Sex on the Beach',
-				method: 'In a shaker, combine the vodka, peach liqueur, orange juice and ice. Shake well and strain into a glass filled with ice. Add the grenadine and garnish with an orange slice.',
-			},
-			pt: {
-				name: 'Sex on the Beach',
-				method: 'Em uma coqueteleira, misture a vodka, o licor de pêssego, o suco de laranja e gelo. Agite bem e coe em um copo cheio de gelo. Adicione o grenadine e decore com uma fatia de laranja.',
-			},
-		},
+		names: { en: 'Sex on the beach', pt: 'Sex on the beach' },
 		ingredients: [
 			{ ingredient: 'Vodka', amount: exact(60) },
 			{ ingredient: 'Peach liqueur', amount: exact(30) },
 			{ ingredient: 'Orange juice', amount: exact(90) },
 			{ ingredient: 'Grenadine', amount: exact(10) },
 		],
-		garnishes: [{ ingredient: 'Orange', amount: exact(1, 'slice') }],
+		garnishes: [
+			{ ingredient: 'Cherry', amount: none },
+			{ ingredient: 'Mint', amount: exact(1, 'sprig') },
+		],
+		preparation: {
+			// Built in the glass.
+			mixingVessel: 'serving_glass',
+			servingGlass: 'hurricane',
+			actions: [
+				{ type: 'add_ice', target: 'mixing', kind: 'cubes' },
+				{ type: 'add', target: 'mixing', items: [ml('Vodka'), ml('Peach liqueur'), ml('Orange juice')] },
+				{ type: 'stir', intensity: 'gentle' },
+				{
+					type: 'custom',
+					items: [ml('Grenadine')],
+					into: 'serving',
+					text: {
+						en: 'Slowly pour the grenadine down the inside wall of the glass or over the back of a bar spoon, so it sinks to the bottom and forms the layered gradient.',
+						pt: 'Despeje o grenadine lentamente pelas laterais do copo ou pelo dorso da colher de bar, para que ele desça até o fundo e forme o gradiente em camadas.',
+					},
+				},
+				{ type: 'garnish', items: [garnish('Cherry'), garnish('Mint', 'sprig')] },
+			],
+		},
 	},
-] as const satisfies readonly SeedDrink[];
+	{
+		names: { en: 'Passion fruit margarita', pt: 'Margarita de maracujá' },
+		ingredients: [
+			{ ingredient: 'Tequila', amount: exact(50) },
+			{ ingredient: 'Triple sec', amount: exact(25) },
+			{ ingredient: 'Passion fruit purée', amount: exact(30) },
+			{ ingredient: 'Lime juice', amount: exact(20) },
+			{ ingredient: 'Simple syrup', amount: exact(10) },
+		],
+		garnishes: [
+			{ ingredient: 'Chili salt', amount: none },
+			{ ingredient: 'Passion fruit', amount: none },
+		],
+		preparation: {
+			mixingVessel: 'shaker',
+			servingGlass: 'coupe',
+			actions: [
+				{
+					type: 'add',
+					target: 'mixing',
+					items: [
+						ml('Tequila'),
+						ml('Triple sec'),
+						ml('Passion fruit purée'),
+						ml('Lime juice'),
+						ml('Simple syrup'),
+					],
+				},
+				{ type: 'add_ice', target: 'mixing', kind: 'cubes' },
+				{ type: 'shake', intensity: 'vigorous', seconds: SHAKE_SECONDS },
+				{ type: 'prepare_glass', mode: 'rim', item: garnish('Chili salt'), coverage: 'half' },
+				{ type: 'add_ice', target: 'serving', kind: 'cubes' },
+				{ type: 'strain', kind: 'single', overIce: true },
+				{
+					type: 'custom',
+					items: [garnish('Passion fruit')],
+					into: 'serving',
+					text: {
+						en: 'Finish by placing half a fresh passion fruit on top.',
+						pt: 'Finalize apoiando meio maracujá fresco por cima.',
+					},
+				},
+			],
+		},
+	},
+	{
+		names: { en: 'Watermelon kiss', pt: 'Watermelon kiss' },
+		ingredients: [
+			{ ingredient: 'Tequila', amount: exact(50) },
+			{ ingredient: 'Limoncello', amount: exact(30) },
+			{ ingredient: 'Watermelon juice', amount: exact(90) },
+			{ ingredient: 'Simple syrup', amount: exact(10) },
+		],
+		garnishes: [
+			{ ingredient: 'Watermelon', amount: exact(1, 'wedge') },
+			{ ingredient: 'Mint', amount: exact(1, 'sprig') },
+		],
+		preparation: {
+			mixingVessel: 'shaker',
+			servingGlass: 'highball',
+			actions: [
+				{
+					type: 'add',
+					target: 'mixing',
+					items: [ml('Tequila'), ml('Limoncello'), ml('Watermelon juice'), ml('Simple syrup')],
+				},
+				{ type: 'add_ice', target: 'mixing', kind: 'cubes' },
+				{ type: 'shake', intensity: 'vigorous', seconds: SHAKE_SECONDS },
+				{ type: 'add_ice', target: 'serving', kind: 'cubes' },
+				{ type: 'strain', kind: 'double', overIce: true },
+				{ type: 'garnish', items: [garnish('Watermelon', 'wedge')], style: 'rim_perch' },
+				{ type: 'garnish', items: [garnish('Mint', 'sprig')] },
+			],
+		},
+	},
+];
 
 /** Resolves a unit English name to the id stored on the already-seeded ingredient that uses it. */
 const resolveUnitId = (unitName: string): string => {
@@ -166,20 +289,33 @@ const toAmountInput = (amount: SeedAmount): DrinkIngredientInput['amount'] => {
 	switch (amount.type) {
 		case DrinkIngredientAmountTypes.exact:
 			return { type: amount.type, quantity: amount.quantity, unitId: resolveUnitId(amount.unit) };
-		case DrinkIngredientAmountTypes.qualitative:
-			return {
-				type: amount.type,
-				qualifier: amount.qualifier,
-				...(amount.quantity === undefined ? {} : { quantity: amount.quantity }),
-				...(amount.unit === undefined ? {} : { unitId: resolveUnitId(amount.unit) }),
-			};
 		case DrinkIngredientAmountTypes.none:
 			return { type: amount.type };
 	}
 };
 
+const isSeedRef = (value: unknown): value is SeedRef =>
+	typeof value === 'object' && value !== null && 'list' in value && 'ingredient' in value;
+
+/** Replaces every `SeedRef` of a plan (at any depth) by a reference made of ids. */
+const resolvePlanRefs = (value: unknown): unknown => {
+	if (isSeedRef(value)) {
+		return {
+			list: value.list,
+			ingredientId: resolveIngredientId(value.ingredient),
+			...(value.unit === undefined ? {} : { unitId: resolveUnitId(value.unit) }),
+			...(value.withUnit === undefined ? {} : { withUnit: value.withUnit }),
+		};
+	}
+	if (Array.isArray(value)) return value.map(resolvePlanRefs);
+	if (typeof value === 'object' && value !== null) {
+		return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, resolvePlanRefs(entry)]));
+	}
+	return value;
+};
+
 const toCreateDrink = (drink: SeedDrink): CreateDrinkDTO => ({
-	translations: drink.translations,
+	translations: { en: { name: drink.names.en }, pt: { name: drink.names.pt } },
 	ingredients: drink.ingredients.map((line): DrinkIngredientInput => ({
 		ingredientId: resolveIngredientId(line.ingredient),
 		amount: toAmountInput(line.amount),
@@ -189,6 +325,7 @@ const toCreateDrink = (drink: SeedDrink): CreateDrinkDTO => ({
 		ingredientId: resolveIngredientId(line.ingredient),
 		amount: toAmountInput(line.amount),
 	})),
+	preparation: resolvePlanRefs(drink.preparation) as PreparationPlan,
 });
 
 export async function insertDrinks() {

@@ -16,6 +16,16 @@ const units = [
 	},
 	{
 		translations: {
+			en: { name: 'gram', namePlural: 'grams' },
+			pt: { name: 'grama', namePlural: 'gramas', gender: 'feminine' },
+		},
+		symbol: 'g',
+		spaceBeforeSymbol: false,
+		allowDecimal: true,
+		kind: 'mass',
+	},
+	{
+		translations: {
 			en: { name: 'dash', namePlural: 'dashes' },
 			pt: { name: 'dash', namePlural: 'dashes', gender: 'masculine' },
 		},
@@ -59,6 +69,14 @@ const units = [
 		translations: {
 			en: { name: 'twist', namePlural: 'twists' },
 			pt: { name: 'twist', namePlural: 'twists', gender: 'masculine' },
+		},
+		allowDecimal: false,
+		kind: 'count',
+	},
+	{
+		translations: {
+			en: { name: 'bean', namePlural: 'beans' },
+			pt: { name: 'grão', namePlural: 'grãos', gender: 'masculine' },
 		},
 		allowDecimal: false,
 		kind: 'count',
