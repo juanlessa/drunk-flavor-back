@@ -87,6 +87,17 @@ describe('UnitModel (integration)', () => {
 		});
 	});
 
+	it('rejects a name that only differs by case or accents in either language with 11000', async () => {
+		await UnitModel.create(buildUnit({ en: 'milliliter', pt: 'mililitro' }));
+
+		await expect(UnitModel.create(buildUnit({ en: 'MILLILITER', pt: 'outro' }))).rejects.toMatchObject({
+			code: 11000,
+		});
+		await expect(UnitModel.create(buildUnit({ en: 'other', pt: 'MILILÍTRO' }))).rejects.toMatchObject({
+			code: 11000,
+		});
+	});
+
 	it('preserves created_at and advances updated_at on update', async () => {
 		const created = await UnitModel.create(buildUnit({ en: 'milliliter', pt: 'mililitro' }));
 		const originalCreatedAt = created.created_at.getTime();

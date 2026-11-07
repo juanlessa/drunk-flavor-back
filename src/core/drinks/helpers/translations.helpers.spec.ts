@@ -25,6 +25,12 @@ describe('compareTranslationsName', () => {
 		expect(compareTranslationsName(translations, { pt: { name: 'Lima' } })).toBe(false);
 	});
 
+	it('ignores case and diacritics, like the unique name indexes do', () => {
+		expect(compareTranslationsName(translations, { pt: { name: 'LIMAO' } })).toBe(true);
+		expect(compareTranslationsName(translations, { en: { name: '  lime ' } })).toBe(true);
+		expect(compareTranslationsName(translations, { pt: { name: 'Lima' } })).toBe(false);
+	});
+
 	it('ignores an undefined name so it never produces a false positive', () => {
 		expect(compareTranslationsName(translations, {})).toBe(false);
 		expect(compareTranslationsName(translations, { en: {} })).toBe(false);

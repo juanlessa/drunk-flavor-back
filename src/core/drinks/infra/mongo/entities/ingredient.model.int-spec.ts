@@ -89,6 +89,16 @@ describe('IngredientModel (integration)', () => {
 		expect(reloaded?.units?.[0]?.kind).toBe('volume');
 	});
 
+	it('defaults the units to an empty list, which means the ingredient is not measurable', async () => {
+		const created = await IngredientModel.create({
+			...buildIngredient({ en: 'Foam', pt: 'Espuma' }),
+			units: undefined,
+		});
+		const reloaded = await IngredientModel.findById(created._id).lean();
+
+		expect(reloaded?.units).toEqual([]);
+	});
+
 	it('rejects duplicate translations.en.name and translations.pt.name with 11000', async () => {
 		await IngredientModel.create(buildIngredient({ en: 'Lime', pt: 'Limão' }));
 
@@ -96,6 +106,17 @@ describe('IngredientModel (integration)', () => {
 			code: 11000,
 		});
 		await expect(IngredientModel.create(buildIngredient({ en: 'Other', pt: 'Limão' }))).rejects.toMatchObject({
+			code: 11000,
+		});
+	});
+
+	it('rejects a name that only differs by case or accents in either language with 11000', async () => {
+		await IngredientModel.create(buildIngredient({ en: 'Lime', pt: 'Limão' }));
+
+		await expect(IngredientModel.create(buildIngredient({ en: 'LIME', pt: 'Outro' }))).rejects.toMatchObject({
+			code: 11000,
+		});
+		await expect(IngredientModel.create(buildIngredient({ en: 'Other', pt: 'LIMAO' }))).rejects.toMatchObject({
 			code: 11000,
 		});
 	});

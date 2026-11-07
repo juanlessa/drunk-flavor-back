@@ -141,6 +141,17 @@ describe('DrinkModel (integration)', () => {
 		});
 	});
 
+	it('rejects a name that only differs by case or accents in either language with 11000', async () => {
+		await DrinkModel.create(buildDrink({ en: 'Margarita', pt: 'Margarita BR' }));
+
+		await expect(DrinkModel.create(buildDrink({ en: 'MARGARITA', pt: 'Outro' }))).rejects.toMatchObject({
+			code: 11000,
+		});
+		await expect(DrinkModel.create(buildDrink({ en: 'Other', pt: 'MARGARÍTA BR' }))).rejects.toMatchObject({
+			code: 11000,
+		});
+	});
+
 	it('preserves created_at and advances updated_at on update', async () => {
 		const created = await DrinkModel.create(buildDrink({ en: 'Gimlet', pt: 'Gimlet BR' }));
 		const originalCreatedAt = created.created_at.getTime();

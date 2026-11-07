@@ -66,6 +66,17 @@ describe('CategoryModel (integration)', () => {
 		});
 	});
 
+	it('rejects a name that only differs by case or accents in either language with 11000', async () => {
+		await CategoryModel.create(buildCategory({ en: 'Syrup', pt: 'Xarope' }));
+
+		await expect(CategoryModel.create(buildCategory({ en: 'SYRUP', pt: 'Outro' }))).rejects.toMatchObject({
+			code: 11000,
+		});
+		await expect(CategoryModel.create(buildCategory({ en: 'Other', pt: 'XARÓPE' }))).rejects.toMatchObject({
+			code: 11000,
+		});
+	});
+
 	it('allows distinct names in both languages', async () => {
 		await CategoryModel.create(buildCategory({ en: 'Citrus', pt: 'Cítrico' }));
 		await expect(CategoryModel.create(buildCategory({ en: 'Herbal', pt: 'Herbal' }))).resolves.toBeDefined();

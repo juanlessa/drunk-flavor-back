@@ -210,4 +210,205 @@ describe('DrinksRepository (integration)', () => {
 		await repository.create(buildDrink({ en: 'Caipirinha', pt: 'Caipirinha BR' }));
 		await expect(repository.findAll({})).resolves.toHaveLength(1);
 	});
+
+	describe('ingredients and garnishes', () => {
+		it('creates a drink without garnishes by default', async () => {
+			const created = await repository.create(buildDrink({ en: 'Plain', pt: 'Simples' }));
+
+			expect(created.garnishes).toEqual([]);
+			expect((await repository.findById(created.id))?.garnishes).toEqual([]);
+		});
+
+		it('round-trips the garnishes apart from the ingredients, with the unit snapshots intact', async () => {
+			const lime = buildIngredient();
+			const mint = { ...buildIngredient(), id: new ObjectId().toString() };
+			const created = await repository.create({
+				...buildDrink({ en: 'Mojito', pt: 'Mojito BR' }),
+				ingredients: [createDrinkIngredientFactory(mint)],
+				garnishes: [
+					{ ingredient: lime, amount: { type: 'exact', quantity: 2, unit: lime.units[0] } },
+					{ ingredient: mint, amount: { type: 'none' } },
+				],
+			});
+
+			const byId = await repository.findById(created.id);
+
+			expect(byId?.ingredients).toHaveLength(1);
+			expect(byId?.garnishes).toHaveLength(2);
+			expect(byId?.garnishes[0].ingredient.id).toBe(lime.id);
+			expect(byId?.garnishes[0].amount).toMatchObject({ type: 'exact', quantity: 2 });
+			expect(byId?.garnishes[1].amount).toEqual({ type: 'none' });
+			expect(byId?.garnishes[0]).not.toHaveProperty('optional');
+			const garnishAmount = byId?.garnishes[0].amount;
+			expect(garnishAmount && 'unit' in garnishAmount ? garnishAmount.unit?.id : undefined).toBe(
+				lime.units[0].id,
+			);
+		});
+
+		it('keeps the optional flag of each ingredient', async () => {
+			const created = await repository.create({
+				...buildDrink({ en: 'Mule', pt: 'Mule BR' }),
+				ingredients: [
+					createDrinkIngredientFactory(buildIngredient()),
+					{
+						...createDrinkIngredientFactory(buildIngredient(), { amount: { type: 'none' } }),
+						optional: true,
+					},
+				],
+			});
+
+			const byId = await repository.findById(created.id);
+
+			expect(byId?.ingredients.map(({ optional }) => optional)).toEqual([false, true]);
+		});
+
+		it('round-trips the qualitative amounts with and without an approximate hint', async () => {
+			const ingredient = buildIngredient();
+			const created = await repository.create({
+				...buildDrink({ en: 'Tonic', pt: 'Tônica' }),
+				ingredients: [
+					{
+						ingredient,
+						amount: { type: 'qualitative', qualifier: 'top_up', quantity: 120, unit: ingredient.units[0] },
+						optional: false,
+					},
+					{ ingredient, amount: { type: 'qualitative', qualifier: 'to_taste' }, optional: false },
+				],
+			});
+
+			const [withHint, withoutHint] = (await repository.findById(created.id))?.ingredients ?? [];
+
+			expect(withHint.amount).toMatchObject({ type: 'qualitative', qualifier: 'top_up', quantity: 120 });
+			expect(withHint.amount).toHaveProperty('unit');
+			expect(withoutHint.amount).toEqual({ type: 'qualitative', qualifier: 'to_taste' });
+		});
+
+		it('replaces the ingredients and the garnishes on update, and clears the garnishes with an empty list', async () => {
+			const created = await repository.create({
+				...buildDrink({ en: 'Mojito', pt: 'Mojito BR' }),
+				garnishes: [{ ingredient: buildIngredient(), amount: { type: 'none' } }],
+			});
+			const next = buildIngredient();
+
+			const replaced = await repository.update({
+				id: created.id,
+				ingredients: [createDrinkIngredientFactory(next, { quantity: 10 })],
+				garnishes: [{ ingredient: next, amount: { type: 'qualitative', qualifier: 'as_needed' } }],
+			});
+			const cleared = await repository.update({ id: created.id, garnishes: [] });
+
+			expect(replaced.ingredients).toHaveLength(1);
+			expect(replaced.ingredients[0].ingredient.id).toBe(next.id);
+			expect(replaced.garnishes).toHaveLength(1);
+			expect(cleared.garnishes).toEqual([]);
+			expect(cleared.ingredients).toHaveLength(1);
+		});
+
+		it('does not touch the garnishes when an update leaves them out', async () => {
+			const garnish = { ingredient: buildIngredient(), amount: { type: 'none' as const } };
+			const created = await repository.create({
+				...buildDrink({ en: 'Mojito', pt: 'Mojito BR' }),
+				garnishes: [garnish],
+			});
+
+			const updated = await repository.update({ id: created.id, translations: { en: { name: 'Mojito 2' } } });
+
+			expect(updated.garnishes).toHaveLength(1);
+		});
+	});
+
+	describe('search keys', () => {
+		const rawSearchKeys = async (id: string) =>
+			(await DrinkModel.findById(id).select('+search_keys').lean())?.search_keys;
+
+		it('are built from the names of both languages and are not exposed on the drink', async () => {
+			const created = await repository.create(buildDrink({ en: 'Pina colada', pt: 'Piña colada' }));
+
+			expect(await rawSearchKeys(created.id)).toEqual(['pina', 'colada']);
+			expect(created).not.toHaveProperty('searchKeys');
+			expect(await repository.findById(created.id)).not.toHaveProperty('searchKeys');
+		});
+
+		it('are recalculated when a name changes', async () => {
+			const created = await repository.create(buildDrink({ en: 'Mojito', pt: 'Mojito BR' }));
+
+			await repository.update({ id: created.id, translations: { en: { name: 'Cosmopolitan' } } });
+
+			const keys = (await rawSearchKeys(created.id)) ?? [];
+			expect(keys).toEqual(expect.arrayContaining(['cosmopolitan', 'mojito', 'br']));
+			expect(keys).toHaveLength(3);
+		});
+
+		it('are left alone by an update that does not change the names', async () => {
+			const created = await repository.create(buildDrink({ en: 'Mojito', pt: 'Mojito BR' }));
+			const before = await rawSearchKeys(created.id);
+
+			await repository.update({ id: created.id, garnishes: [] });
+
+			expect(await rawSearchKeys(created.id)).toEqual(before);
+		});
+
+		it('make findAll ignore accents, case and the language, and sort by the alphabet of the language', async () => {
+			await repository.create(buildDrink({ en: 'Zombie', pt: 'Zumbi' }));
+			await repository.create(buildDrink({ en: 'Aperol spritz', pt: 'Ápice' }));
+			await repository.create(buildDrink({ en: 'Pina colada', pt: 'Piña colada' }));
+
+			const found = await repository.findAll({ search: { name: 'PINA' } });
+			const byEnglishName = await repository.findAll({ search: { name: 'spritz' } });
+			const sorted = await repository.findAll({ sort: { 'translations.pt.name': 1 } });
+
+			expect(found.map(({ translations }) => translations.pt.name)).toEqual(['Piña colada']);
+			expect(byEnglishName.map(({ translations }) => translations.pt.name)).toEqual(['Ápice']);
+			expect(sorted.map(({ translations }) => translations.pt.name)).toEqual(['Ápice', 'Piña colada', 'Zumbi']);
+		});
+
+		it('find a drink by name ignoring accents and case', async () => {
+			await repository.create(buildDrink({ en: 'Pina colada', pt: 'Piña colada' }));
+
+			expect(await repository.findByName({ pt: { name: 'PINA COLADA' } })).not.toBeNull();
+			expect(await repository.findByName({ en: { name: 'piña colada' } })).not.toBeNull();
+			expect(await repository.findByName({ en: { name: 'Colada' } })).toBeNull();
+		});
+
+		it('reject a name that only differs by accents or case', async () => {
+			await repository.create(buildDrink({ en: 'Pina colada', pt: 'Piña colada' }));
+
+			await expect(repository.create(buildDrink({ en: 'PIÑA COLADA', pt: 'Outro' }))).rejects.toBeInstanceOf(
+				ConflictError,
+			);
+		});
+	});
+
+	describe('ids and missing documents', () => {
+		const invalidId = 'not-an-object-id';
+
+		it('treats an id that is not an object id as a document that does not exist', async () => {
+			expect(await repository.findById(invalidId)).toBeNull();
+			await expect(repository.update({ id: invalidId, garnishes: [] })).rejects.toBeInstanceOf(NotFoundError);
+			await expect(repository.delete(invalidId)).rejects.toBeInstanceOf(NotFoundError);
+		});
+
+		it('returns null for an id that is valid but does not exist', async () => {
+			expect(await repository.findById(new ObjectId().toString())).toBeNull();
+		});
+
+		it.each([
+			{ title: 'without touching the names', data: { garnishes: [] } },
+			{ title: 'while changing the names', data: { translations: { en: { name: 'Other' } } } },
+		])('throws NotFoundError when updating a missing document {{title}}', async ({ data }) => {
+			await expect(repository.update({ id: new ObjectId().toString(), ...data })).rejects.toBeInstanceOf(
+				NotFoundError,
+			);
+		});
+
+		it('deletes the document and returns it', async () => {
+			const created = await repository.create(buildDrink({ en: 'Caipirinha', pt: 'Caipirinha BR' }));
+
+			const deleted = await repository.delete(created.id);
+
+			expect(deleted.id).toBe(created.id);
+			expect(await repository.findById(created.id)).toBeNull();
+			await expect(repository.delete(created.id)).rejects.toBeInstanceOf(NotFoundError);
+		});
+	});
 });

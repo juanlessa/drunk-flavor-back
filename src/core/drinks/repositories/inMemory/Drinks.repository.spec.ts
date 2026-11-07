@@ -163,4 +163,49 @@ describe('DrinksRepositoryInMemory', () => {
 
 		expect(sortedPage.map((drink) => drink.translations.en.name)).toEqual(['Alpha', 'Beta']);
 	});
+
+	it('creates a drink without garnishes by default and keeps the ones given', async () => {
+		const ingredient = buildIngredient();
+		const plain = await repository.create({
+			translations: { en: { name: 'Plain', method: 'm' }, pt: { name: 'Simples', method: 'm' } },
+			ingredients: [createDrinkIngredientFactory(ingredient)],
+		});
+		const garnished = await repository.create({
+			translations: { en: { name: 'Garnished', method: 'm' }, pt: { name: 'Decorado', method: 'm' } },
+			ingredients: [createDrinkIngredientFactory(ingredient)],
+			garnishes: [{ ingredient, amount: { type: 'none' } }],
+		});
+
+		expect(plain.garnishes).toEqual([]);
+		expect(garnished.garnishes).toEqual([{ ingredient, amount: { type: 'none' } }]);
+	});
+
+	it('replaces the ingredients and the garnishes on update, and clears the garnishes with an empty list', async () => {
+		const ingredient = buildIngredient();
+		const created = await repository.create({
+			translations: { en: { name: 'Mojito', method: 'm' }, pt: { name: 'Mojito', method: 'm' } },
+			ingredients: [createDrinkIngredientFactory(ingredient)],
+			garnishes: [{ ingredient, amount: { type: 'none' } }],
+		});
+
+		const replaced = await repository.update({
+			id: created.id,
+			garnishes: [{ ingredient, amount: { type: 'qualitative', qualifier: 'to_taste' } }],
+		});
+		const cleared = await repository.update({ id: created.id, garnishes: [] });
+
+		expect(replaced.garnishes).toEqual([{ ingredient, amount: { type: 'qualitative', qualifier: 'to_taste' } }]);
+		expect(cleared.garnishes).toEqual([]);
+		expect(cleared.ingredients).toHaveLength(1);
+	});
+
+	it('finds a drink by name ignoring accents and case', async () => {
+		await repository.create({
+			translations: { en: { name: 'Pina colada', method: 'm' }, pt: { name: 'Piña colada', method: 'm' } },
+			ingredients: [],
+		});
+
+		expect(await repository.findByName({ pt: { name: 'PINA COLADA' } })).not.toBeNull();
+		expect(await repository.findAll({ search: { name: 'pina' } })).toHaveLength(1);
+	});
 });
