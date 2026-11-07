@@ -1,6 +1,7 @@
 import { IngredientKinds } from '@/core/drinks/constants/ingredient.constants';
 import { Translations } from '@/core/drinks/types/translations';
 import { EntityMetadata } from '@/shared/types/entity.types';
+import { Gender } from '@/shared/types/gender.types';
 import { Category } from './category.entity';
 import { Unit } from './unit.entity';
 
@@ -10,6 +11,8 @@ export type IngredientTranslation = {
 	name: string;
 	/** Short complement to the name, e.g. "Orange liqueur" for "Triple sec". */
 	description?: string;
+	/** Grammatical gender of the name in this language. Not every language needs it (e.g. English). */
+	gender?: Gender;
 };
 
 export type Ingredient = EntityMetadata & {

@@ -21,48 +21,48 @@ type SeedIngredient = {
 const ingredients = [
 	// Absinthe
 	{
-		translations: { en: { name: 'Absinthe' }, pt: { name: 'Absinto' } },
+		translations: { en: { name: 'Absinthe' }, pt: { name: 'Absinto', gender: 'masculine' } },
 		category: 'Absinthe',
 		units: ['milliliter'],
 	},
 	// Liqueur
 	{
-		translations: { en: { name: 'Amaretto' }, pt: { name: 'Amaretto' } },
+		translations: { en: { name: 'Amaretto' }, pt: { name: 'Amaretto', gender: 'masculine' } },
 		category: 'Liqueur',
 		units: ['milliliter'],
 	},
 	{
 		translations: {
 			en: { name: 'Blue curacao', description: 'Orange liqueur colored blue' },
-			pt: { name: 'Blue curaçao', description: 'Licor de laranja azul' },
+			pt: { name: 'Blue curaçao', gender: 'masculine', description: 'Licor de laranja azul' },
 		},
 		category: 'Liqueur',
 		units: ['milliliter'],
 	},
 	{
-		translations: { en: { name: 'Coconut liqueur' }, pt: { name: 'Batida de coco' } },
+		translations: { en: { name: 'Coconut liqueur' }, pt: { name: 'Batida de coco', gender: 'feminine' } },
 		category: 'Liqueur',
 		units: ['milliliter'],
 	},
 	{
-		translations: { en: { name: 'Coffee liqueur' }, pt: { name: 'Licor de café' } },
+		translations: { en: { name: 'Coffee liqueur' }, pt: { name: 'Licor de café', gender: 'masculine' } },
 		category: 'Liqueur',
 		units: ['milliliter'],
 	},
 	{
-		translations: { en: { name: 'Limoncello' }, pt: { name: 'Limoncello' } },
+		translations: { en: { name: 'Limoncello' }, pt: { name: 'Limoncello', gender: 'masculine' } },
 		category: 'Liqueur',
 		units: ['milliliter'],
 	},
 	{
-		translations: { en: { name: 'Peach liqueur' }, pt: { name: 'Licor de pêssego' } },
+		translations: { en: { name: 'Peach liqueur' }, pt: { name: 'Licor de pêssego', gender: 'masculine' } },
 		category: 'Liqueur',
 		units: ['milliliter'],
 	},
 	{
 		translations: {
 			en: { name: 'Triple sec', description: 'Orange liqueur' },
-			pt: { name: 'Triple sec', description: 'Licor de laranja' },
+			pt: { name: 'Triple sec', gender: 'masculine', description: 'Licor de laranja' },
 		},
 		category: 'Liqueur',
 		units: ['milliliter'],
@@ -71,7 +71,7 @@ const ingredients = [
 	{
 		translations: {
 			en: { name: 'Licor 43', description: 'Spanish vanilla and citrus liqueur' },
-			pt: { name: 'Licor 43', description: 'Licor espanhol de baunilha e frutas cítricas' },
+			pt: { name: 'Licor 43', gender: 'masculine', description: 'Licor espanhol de baunilha e frutas cítricas' },
 		},
 		category: 'Liqueur',
 		units: ['milliliter'],
@@ -80,168 +80,192 @@ const ingredients = [
 	},
 	// Tequila
 	{
-		translations: { en: { name: 'Añejo tequila' }, pt: { name: 'Tequila añejo' } },
+		translations: { en: { name: 'Añejo tequila' }, pt: { name: 'Tequila añejo', gender: 'feminine' } },
 		category: 'Tequila',
 		units: ['milliliter'],
 	},
 	{
-		translations: { en: { name: 'Blanco tequila' }, pt: { name: 'Tequila blanco' } },
+		translations: { en: { name: 'Blanco tequila' }, pt: { name: 'Tequila blanco', gender: 'feminine' } },
 		category: 'Tequila',
 		units: ['milliliter'],
 	},
 	{
-		translations: { en: { name: 'Reposado tequila' }, pt: { name: 'Tequila reposado' } },
+		translations: { en: { name: 'Reposado tequila' }, pt: { name: 'Tequila reposado', gender: 'feminine' } },
 		category: 'Tequila',
 		units: ['milliliter'],
 	},
 	// Vermouth
 	{
-		translations: { en: { name: 'Bianco vermouth' }, pt: { name: 'Vermute bianco' } },
+		translations: { en: { name: 'Bianco vermouth' }, pt: { name: 'Vermute bianco', gender: 'masculine' } },
 		category: 'Vermouth',
 		units: ['milliliter'],
 	},
 	{
-		translations: { en: { name: 'Dry vermouth' }, pt: { name: 'Vermute seco' } },
+		translations: { en: { name: 'Dry vermouth' }, pt: { name: 'Vermute seco', gender: 'masculine' } },
 		category: 'Vermouth',
 		units: ['milliliter'],
 	},
 	{
-		translations: { en: { name: 'Rosso vermouth' }, pt: { name: 'Vermute rosso' } },
+		translations: { en: { name: 'Rosso vermouth' }, pt: { name: 'Vermute rosso', gender: 'masculine' } },
 		category: 'Vermouth',
 		units: ['milliliter'],
 	},
 	{
-		translations: { en: { name: 'Sweet vermouth' }, pt: { name: 'Vermute doce' } },
+		translations: { en: { name: 'Sweet vermouth' }, pt: { name: 'Vermute doce', gender: 'masculine' } },
 		category: 'Vermouth',
 		units: ['milliliter'],
 	},
 	// Whisky
 	{
-		translations: { en: { name: 'Bourbon whisky' }, pt: { name: 'Whisky bourbon' } },
+		translations: { en: { name: 'Bourbon whisky' }, pt: { name: 'Whisky bourbon', gender: 'masculine' } },
 		category: 'Whisky',
 		units: ['milliliter'],
 	},
 	{
-		translations: { en: { name: 'Irish whisky' }, pt: { name: 'Whisky irlandês' } },
+		translations: { en: { name: 'Irish whisky' }, pt: { name: 'Whisky irlandês', gender: 'masculine' } },
 		category: 'Whisky',
 		units: ['milliliter'],
 	},
 	{
-		translations: { en: { name: 'Japanese whisky' }, pt: { name: 'Whisky japonês' } },
+		translations: { en: { name: 'Japanese whisky' }, pt: { name: 'Whisky japonês', gender: 'masculine' } },
 		category: 'Whisky',
 		units: ['milliliter'],
 	},
 	{
-		translations: { en: { name: 'Tennessee whiskey' }, pt: { name: 'Whisky tennessee' } },
+		translations: { en: { name: 'Tennessee whiskey' }, pt: { name: 'Whisky tennessee', gender: 'masculine' } },
 		category: 'Whisky',
 		units: ['milliliter'],
 	},
-	{ translations: { en: { name: 'Whisky' }, pt: { name: 'Whisky' } }, category: 'Whisky', units: ['milliliter'] },
+	{
+		translations: { en: { name: 'Whisky' }, pt: { name: 'Whisky', gender: 'masculine' } },
+		category: 'Whisky',
+		units: ['milliliter'],
+	},
 	// Juice
 	{
-		translations: { en: { name: 'Lime juice' }, pt: { name: 'Suco de limão' } },
+		translations: { en: { name: 'Lime juice' }, pt: { name: 'Suco de limão', gender: 'masculine' } },
 		category: 'Juice',
 		units: ['milliliter'],
 	},
 	{
-		translations: { en: { name: 'Orange juice' }, pt: { name: 'Suco de laranja' } },
+		translations: { en: { name: 'Orange juice' }, pt: { name: 'Suco de laranja', gender: 'masculine' } },
 		category: 'Juice',
 		units: ['milliliter'],
 	},
 	{
-		translations: { en: { name: 'Pineapple juice' }, pt: { name: 'Suco de abacaxi' } },
+		translations: { en: { name: 'Pineapple juice' }, pt: { name: 'Suco de abacaxi', gender: 'masculine' } },
 		category: 'Juice',
 		units: ['milliliter'],
 	},
 	// Fruit (whole fruit used as slices or wedges, mostly as garnish)
 	{
-		translations: { en: { name: 'Lime' }, pt: { name: 'Limão' } },
+		translations: { en: { name: 'Lime' }, pt: { name: 'Limão', gender: 'masculine' } },
 		category: 'Fruit',
 		units: ['slice', 'wedge'],
 	},
 	{
-		translations: { en: { name: 'Orange' }, pt: { name: 'Laranja' } },
+		translations: { en: { name: 'Orange' }, pt: { name: 'Laranja', gender: 'feminine' } },
 		category: 'Fruit',
 		units: ['slice', 'wedge', 'twist'],
 	},
 	{
-		translations: { en: { name: 'Pineapple' }, pt: { name: 'Abacaxi' } },
+		translations: { en: { name: 'Pineapple' }, pt: { name: 'Abacaxi', gender: 'masculine' } },
 		category: 'Fruit',
 		units: ['slice'],
 	},
 	// Mezcal
-	{ translations: { en: { name: 'Mezcal' }, pt: { name: 'Mezcal' } }, category: 'Mezcal', units: ['milliliter'] },
+	{
+		translations: { en: { name: 'Mezcal' }, pt: { name: 'Mezcal', gender: 'masculine' } },
+		category: 'Mezcal',
+		units: ['milliliter'],
+	},
 	// Wine
 	{
-		translations: { en: { name: 'Red wine' }, pt: { name: 'Vinho tinto' } },
+		translations: { en: { name: 'Red wine' }, pt: { name: 'Vinho tinto', gender: 'masculine' } },
 		category: 'Wine',
 		units: ['milliliter'],
 	},
 	{
-		translations: { en: { name: 'Rosé wine' }, pt: { name: 'Vinho rosé' } },
+		translations: { en: { name: 'Rosé wine' }, pt: { name: 'Vinho rosé', gender: 'masculine' } },
 		category: 'Wine',
 		units: ['milliliter'],
 	},
 	{
-		translations: { en: { name: 'White wine' }, pt: { name: 'Vinho branco' } },
+		translations: { en: { name: 'White wine' }, pt: { name: 'Vinho branco', gender: 'masculine' } },
 		category: 'Wine',
 		units: ['milliliter'],
 	},
 	// Rum
-	{ translations: { en: { name: 'Rum' }, pt: { name: 'Rum' } }, category: 'Rum', units: ['milliliter'] },
-	{ translations: { en: { name: 'Silver rum' }, pt: { name: 'Rum prata' } }, category: 'Rum', units: ['milliliter'] },
+	{
+		translations: { en: { name: 'Rum' }, pt: { name: 'Rum', gender: 'masculine' } },
+		category: 'Rum',
+		units: ['milliliter'],
+	},
+	{
+		translations: { en: { name: 'Silver rum' }, pt: { name: 'Rum prata', gender: 'masculine' } },
+		category: 'Rum',
+		units: ['milliliter'],
+	},
 	// Vodka
-	{ translations: { en: { name: 'Vodka' }, pt: { name: 'Vodka' } }, category: 'Vodka', units: ['milliliter'] },
+	{
+		translations: { en: { name: 'Vodka' }, pt: { name: 'Vodka', gender: 'feminine' } },
+		category: 'Vodka',
+		units: ['milliliter'],
+	},
 	// Syrup
 	{
-		translations: { en: { name: 'Agave syrup' }, pt: { name: 'Xarope de agave' } },
+		translations: { en: { name: 'Agave syrup' }, pt: { name: 'Xarope de agave', gender: 'masculine' } },
 		category: 'Syrup',
 		units: ['milliliter'],
 	},
 	{
 		translations: {
 			en: { name: 'Grenadine', description: 'Pomegranate syrup' },
-			pt: { name: 'Grenadine', description: 'Xarope de romã' },
+			pt: { name: 'Grenadine', gender: 'masculine', description: 'Xarope de romã' },
 		},
 		category: 'Syrup',
 		units: ['milliliter'],
 	},
 	{
-		translations: { en: { name: 'Honey syrup' }, pt: { name: 'Xarope de mel' } },
+		translations: { en: { name: 'Honey syrup' }, pt: { name: 'Xarope de mel', gender: 'masculine' } },
 		category: 'Syrup',
 		units: ['milliliter'],
 	},
 	{
-		translations: { en: { name: 'Rich simple syrup' }, pt: { name: 'Xarope enriquecido' } },
+		translations: { en: { name: 'Rich simple syrup' }, pt: { name: 'Xarope enriquecido', gender: 'masculine' } },
 		category: 'Syrup',
 		units: ['milliliter'],
 	},
 	{
-		translations: { en: { name: 'Simple syrup' }, pt: { name: 'Xarope simples' } },
+		translations: { en: { name: 'Simple syrup' }, pt: { name: 'Xarope simples', gender: 'masculine' } },
 		category: 'Syrup',
 		units: ['milliliter'],
 	},
 	// Herb
-	{ translations: { en: { name: 'Mint' }, pt: { name: 'Hortelã' } }, category: 'Herb', units: ['leaf', 'sprig'] },
+	{
+		translations: { en: { name: 'Mint' }, pt: { name: 'Hortelã', gender: 'feminine' } },
+		category: 'Herb',
+		units: ['leaf', 'sprig'],
+	},
 	// Soda
 	{
-		translations: { en: { name: 'Ginger beer' }, pt: { name: 'Cerveja de gengibre' } },
+		translations: { en: { name: 'Ginger beer' }, pt: { name: 'Cerveja de gengibre', gender: 'feminine' } },
 		category: 'Soda',
 		units: ['milliliter'],
 	},
 	{
-		translations: { en: { name: 'Tonic water' }, pt: { name: 'Água tônica' } },
+		translations: { en: { name: 'Tonic water' }, pt: { name: 'Água tônica', gender: 'feminine' } },
 		category: 'Soda',
 		units: ['milliliter'],
 	},
 	// Water
 	{
-		translations: { en: { name: 'Coconut water' }, pt: { name: 'Água de coco' } },
+		translations: { en: { name: 'Coconut water' }, pt: { name: 'Água de coco', gender: 'feminine' } },
 		category: 'Water',
 		units: ['milliliter'],
 	},
 	{
-		translations: { en: { name: 'Sparkling water' }, pt: { name: 'Água com gás' } },
+		translations: { en: { name: 'Sparkling water' }, pt: { name: 'Água com gás', gender: 'feminine' } },
 		category: 'Water',
 		units: ['milliliter'],
 	},
@@ -249,7 +273,7 @@ const ingredients = [
 	{
 		translations: {
 			en: { name: 'Ginger foam', description: 'Airy ginger foam' },
-			pt: { name: 'Espuma de gengibre', description: 'Espuma aerada de gengibre' },
+			pt: { name: 'Espuma de gengibre', gender: 'feminine', description: 'Espuma aerada de gengibre' },
 		},
 		category: 'Foam',
 		units: [],

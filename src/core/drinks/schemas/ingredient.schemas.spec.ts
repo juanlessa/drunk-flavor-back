@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 const id = () => new ObjectId().toString();
 
-const names = { en: { name: 'Gabriela' }, pt: { name: 'Gabriela' } };
+const names = { en: { name: 'Gabriela' }, pt: { name: 'Gabriela', gender: 'feminine' } };
 
 const create = (extra: object = {}) =>
 	createIngredientSchema.safeParse({ translations: names, categoryId: id(), unitIds: [id()], ...extra });
@@ -20,7 +20,10 @@ const update = (extra: object = {}) =>
 	});
 
 const withDescription = (en: unknown, pt: unknown = 'Descrição') => ({
-	translations: { en: { name: 'Lime', description: en }, pt: { name: 'Limão', description: pt } },
+	translations: {
+		en: { name: 'Lime', description: en },
+		pt: { name: 'Limão', gender: 'masculine', description: pt },
+	},
 });
 
 const issuesOf = (result: ReturnType<typeof create>) =>
@@ -56,7 +59,7 @@ describe('Ingredient schemas', () => {
 
 		it('can be removed on update with null, and is kept when omitted', () => {
 			const removed = update({
-				translations: { en: { name: 'Lime', description: null }, pt: { name: 'Limão' } },
+				translations: { en: { name: 'Lime', description: null }, pt: { name: 'Limão', gender: 'masculine' } },
 			});
 
 			expect(removed.success && removed.data.translations.en.description).toBeNull();

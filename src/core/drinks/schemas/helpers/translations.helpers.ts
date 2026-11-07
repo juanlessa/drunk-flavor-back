@@ -1,5 +1,7 @@
 import { z } from 'zod/v4';
-import { Languages, Translations } from '@/core/drinks/types/translations';
+import { Language, Languages, Translations } from '@/core/drinks/types/translations';
+import { Gender } from '@/shared/types/gender.types';
+import { LocaleKey } from '@/shared/types/locale.types';
 
 /**
  * Generates a Zod schema for translations.
@@ -45,3 +47,23 @@ export const generateTranslationsFieldSchema = <
 
 	return z.object(fieldsSchema);
 };
+
+/**
+ * Builds a `superRefine` callback for a translations object that requires the grammatical gender
+ * in the given languages. Languages that are not listed keep the gender optional.
+ *
+ * @example
+ * generateTranslationsSchema(unitTranslationSchema).superRefine(requireGenderFor(Languages.pt));
+ */
+export const requireGenderFor =
+	(...languages: Language[]) =>
+	(translations: Partial<Record<Language, { gender?: Gender }>>, ctx: z.RefinementCtx): void => {
+		languages.forEach((language) => {
+			if (translations[language]?.gender !== undefined) return;
+			ctx.addIssue({
+				code: 'custom',
+				message: 'apiResponses.validation.requiredGender' satisfies LocaleKey,
+				path: [language, 'gender'],
+			});
+		});
+	};

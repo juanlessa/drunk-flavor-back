@@ -1,5 +1,6 @@
 import mongoose, { Model, Schema, Types } from 'mongoose';
 import { Translations } from '@/core/drinks/types/translations';
+import { Gender } from '@/shared/types/gender.types';
 import { IngredientKinds } from '@/core/drinks/constants/ingredient.constants';
 import { IngredientKind } from '@/core/drinks/entities/ingredient.entity';
 import { CategoryPersistence, CategorySchema } from './category.model';
@@ -18,6 +19,7 @@ export const IngredientTranslationSchema = new Schema(
 	{
 		name: { type: String, required: true },
 		description: { type: String, required: false },
+		gender: { type: String, required: false },
 	},
 	{ _id: false },
 );
@@ -34,7 +36,7 @@ const ingredientSchemaDefinition = {
 
 export type IngredientPersistence = {
 	_id: Types.ObjectId;
-	translations: Translations<{ name: string; description?: string }>;
+	translations: Translations<{ name: string; description?: string; gender?: Gender }>;
 	category: CategoryPersistence;
 	units: UnitPersistence[];
 	kind: IngredientKind;

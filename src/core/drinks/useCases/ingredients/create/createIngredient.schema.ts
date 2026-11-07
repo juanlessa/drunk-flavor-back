@@ -1,5 +1,6 @@
 import { IngredientKinds } from '@/core/drinks/constants/ingredient.constants';
-import { generateTranslationsSchema } from '@/core/drinks/schemas/helpers/translations.helpers';
+import { generateTranslationsSchema, requireGenderFor } from '@/core/drinks/schemas/helpers/translations.helpers';
+import { Languages } from '@/core/drinks/types/translations';
 import {
 	ingredientBrandValidation,
 	ingredientCategoryIdValidation,
@@ -12,7 +13,9 @@ import { z } from 'zod/v4';
 
 export const createIngredientSchema = z
 	.object({
-		translations: generateTranslationsSchema(ingredientTranslationSchema),
+		translations: generateTranslationsSchema(ingredientTranslationSchema).superRefine(
+			requireGenderFor(Languages.pt),
+		),
 		categoryId: ingredientCategoryIdValidation,
 		unitIds: ingredientUnitIdsValidation,
 		kind: ingredientKindValidation.default(IngredientKinds.generic),

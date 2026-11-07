@@ -18,7 +18,9 @@
 		},
 		"validation": {
 			"failed": "One or more fields are invalid",
-			"invalidValue": "Invalid value"
+			"invalidValue": "Invalid value",
+			"invalidGender": "Gender must be masculine or feminine",
+			"requiredGender": "Gender is required for this language"
 		},
 		"auth": {
 			"badRequestErrorMessage": "Format is Authorization: Bearer [token]",

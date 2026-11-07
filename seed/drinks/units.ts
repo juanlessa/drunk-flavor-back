@@ -7,7 +7,7 @@ const units = [
 	{
 		translations: {
 			en: { name: 'milliliter', namePlural: 'milliliters' },
-			pt: { name: 'mililitro', namePlural: 'mililitros' },
+			pt: { name: 'mililitro', namePlural: 'mililitros', gender: 'masculine' },
 		},
 		symbol: 'ml',
 		spaceBeforeSymbol: false,
@@ -17,7 +17,7 @@ const units = [
 	{
 		translations: {
 			en: { name: 'dash', namePlural: 'dashes' },
-			pt: { name: 'dash', namePlural: 'dashes' },
+			pt: { name: 'dash', namePlural: 'dashes', gender: 'masculine' },
 		},
 		allowDecimal: false,
 		kind: 'informal',
@@ -25,7 +25,7 @@ const units = [
 	{
 		translations: {
 			en: { name: 'leaf', namePlural: 'leaves' },
-			pt: { name: 'folha', namePlural: 'folhas' },
+			pt: { name: 'folha', namePlural: 'folhas', gender: 'feminine' },
 		},
 		spaceBeforeSymbol: true,
 		allowDecimal: false,
@@ -34,7 +34,7 @@ const units = [
 	{
 		translations: {
 			en: { name: 'sprig', namePlural: 'sprigs' },
-			pt: { name: 'ramo', namePlural: 'ramos' },
+			pt: { name: 'ramo', namePlural: 'ramos', gender: 'masculine' },
 		},
 		allowDecimal: false,
 		kind: 'count',
@@ -42,7 +42,7 @@ const units = [
 	{
 		translations: {
 			en: { name: 'slice', namePlural: 'slices' },
-			pt: { name: 'fatia', namePlural: 'fatias' },
+			pt: { name: 'fatia', namePlural: 'fatias', gender: 'feminine' },
 		},
 		allowDecimal: false,
 		kind: 'count',
@@ -50,7 +50,7 @@ const units = [
 	{
 		translations: {
 			en: { name: 'wedge', namePlural: 'wedges' },
-			pt: { name: 'gomo', namePlural: 'gomos' },
+			pt: { name: 'gomo', namePlural: 'gomos', gender: 'masculine' },
 		},
 		allowDecimal: false,
 		kind: 'count',
@@ -58,7 +58,7 @@ const units = [
 	{
 		translations: {
 			en: { name: 'twist', namePlural: 'twists' },
-			pt: { name: 'twist', namePlural: 'twists' },
+			pt: { name: 'twist', namePlural: 'twists', gender: 'masculine' },
 		},
 		allowDecimal: false,
 		kind: 'count',

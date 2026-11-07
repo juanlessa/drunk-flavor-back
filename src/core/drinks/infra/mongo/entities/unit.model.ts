@@ -1,5 +1,6 @@
 import mongoose, { Model, Schema, Types } from 'mongoose';
 import { Translations } from '@/core/drinks/types/translations';
+import { Gender } from '@/shared/types/gender.types';
 import { UnitKinds } from '@/core/drinks/constants/unit.constants';
 import { getNameUniqueIndexOptions, getTranslationsSchema } from '../helpers/translations.helpers';
 
@@ -15,6 +16,7 @@ const unitTranslationSchema = new Schema(
 	{
 		name: { type: String, required: true },
 		name_plural: { type: String, required: true },
+		gender: { type: String, required: false },
 	},
 	{ _id: false },
 );
@@ -30,7 +32,7 @@ const unitSchemaDefinition = {
 
 export type UnitPersistence = {
 	_id: Types.ObjectId;
-	translations: Translations<{ name: string; name_plural: string }>;
+	translations: Translations<{ name: string; name_plural: string; gender?: Gender }>;
 	symbol?: string;
 	space_before_symbol?: boolean;
 	allow_decimal: boolean;

@@ -1,4 +1,5 @@
-import { generateTranslationsSchema } from '@/core/drinks/schemas/helpers/translations.helpers';
+import { generateTranslationsSchema, requireGenderFor } from '@/core/drinks/schemas/helpers/translations.helpers';
+import { Languages } from '@/core/drinks/types/translations';
 import {
 	unitAllowDecimalValidation,
 	unitKindValidation,
@@ -9,7 +10,7 @@ import {
 import { z } from 'zod/v4';
 
 export const createUnitSchema = z.object({
-	translations: generateTranslationsSchema(unitTranslationSchema),
+	translations: generateTranslationsSchema(unitTranslationSchema).superRefine(requireGenderFor(Languages.pt)),
 	symbol: unitSymbolValidation.optional(),
 	spaceBeforeSymbol: unitSpaceBeforeSymbolValidation.optional(),
 	allowDecimal: unitAllowDecimalValidation,

@@ -1,6 +1,7 @@
 import { IngredientKinds } from '@/core/drinks/constants/ingredient.constants';
 import { getIngredientBrandIssue } from '@/core/drinks/helpers/ingredient.helpers';
 import { getObjectIdSchema } from '@/infrastructure/mongo/schemas/helpers/objectId.helpers';
+import { genderValidation } from '@/shared/schemas/gender.schemas';
 import { LocaleKey } from '@/shared/types/locale.types';
 import { z } from 'zod/v4';
 
@@ -77,13 +78,16 @@ export const refineIngredientBrand = (
 };
 
 // schemas
+// The gender is optional per language; use `requireGenderFor` on the translations to require it where needed.
 export const ingredientTranslationSchema = z.object({
 	name: ingredientNameValidation,
 	description: ingredientDescriptionValidation.optional(),
+	gender: genderValidation.optional(),
 });
 
 // On update, omitting the description keeps it and `null` removes it.
 export const ingredientUpdateTranslationSchema = z.object({
 	name: ingredientNameValidation,
 	description: ingredientDescriptionValidation.nullable().optional(),
+	gender: genderValidation.optional(),
 });

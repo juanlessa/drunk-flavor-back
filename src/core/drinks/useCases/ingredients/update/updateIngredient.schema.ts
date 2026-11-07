@@ -1,4 +1,5 @@
-import { generateTranslationsSchema } from '@/core/drinks/schemas/helpers/translations.helpers';
+import { generateTranslationsSchema, requireGenderFor } from '@/core/drinks/schemas/helpers/translations.helpers';
+import { Languages } from '@/core/drinks/types/translations';
 import {
 	ingredientBrandValidation,
 	ingredientCategoryIdValidation,
@@ -13,7 +14,9 @@ import { z } from 'zod/v4';
 export const updateIngredientSchema = z
 	.object({
 		id: ingredientIdValidation,
-		translations: generateTranslationsSchema(ingredientUpdateTranslationSchema),
+		translations: generateTranslationsSchema(ingredientUpdateTranslationSchema).superRefine(
+			requireGenderFor(Languages.pt),
+		),
 		categoryId: ingredientCategoryIdValidation,
 		unitIds: ingredientUnitIdsValidation,
 		// Omitted keeps the current kind and brand. A `generic` kind removes the brand.

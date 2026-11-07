@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 const validUnit = {
 	translations: {
 		en: { name: '  MILLILITER  ', namePlural: '  MILLILITERS  ' },
-		pt: { name: '  MILILITRO  ', namePlural: '  MILILITROS  ' },
+		pt: { name: '  MILILITRO  ', namePlural: '  MILILITROS  ', gender: 'masculine' },
 	},
 	symbol: '  mL  ',
 	spaceBeforeSymbol: false,

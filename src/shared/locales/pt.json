@@ -18,7 +18,9 @@
 		},
 		"validation": {
 			"failed": "Um ou mais campos são inválidos",
-			"invalidValue": "Valor inválido"
+			"invalidValue": "Valor inválido",
+			"invalidGender": "O gênero deve ser masculine ou feminine",
+			"requiredGender": "O gênero é obrigatório para este idioma"
 		},
 		"auth": {
 			"badRequestErrorMessage": "O formato deve ser Authorization: Bearer [token]",

@@ -1,10 +1,14 @@
 import { CreateIngredientDTO } from '@/core/drinks/useCases/ingredients/create/createIngredient.dtos';
+import { Genders } from '@/shared/constants/gender.constants';
 import { DeepPartial } from '@/shared/types/utility.types';
 
 export const createIngredientFactory = (ingredient?: DeepPartial<CreateIngredientDTO>): CreateIngredientDTO => ({
 	translations: {
 		en: { name: ingredient?.translations?.en?.name || 'Syrup' },
-		pt: { name: ingredient?.translations?.pt?.name || 'Xarope' },
+		pt: {
+			name: ingredient?.translations?.pt?.name || 'Xarope',
+			gender: ingredient?.translations?.pt?.gender ?? Genders.masculine,
+		},
 	},
 	categoryId: ingredient?.categoryId || '',
 	unitIds: (ingredient?.unitIds as string[] | undefined) ?? [],
