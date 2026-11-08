@@ -18,4 +18,5 @@ export type Unit = EntityMetadata & {
 	spaceBeforeSymbol?: boolean;
 	allowDecimal: boolean;
 	kind: UnitKind;
+	useIngredientName?: boolean;
 };

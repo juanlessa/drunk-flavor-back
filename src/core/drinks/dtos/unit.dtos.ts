@@ -8,6 +8,7 @@ export type CreateUnit = {
 	spaceBeforeSymbol?: boolean;
 	allowDecimal: boolean;
 	kind: UnitKind;
+	useIngredientName?: boolean;
 };
 
 export type UpdateUnit = { id: string; symbol?: string | null } & DeepPartial<Omit<CreateUnit, 'symbol'>>;

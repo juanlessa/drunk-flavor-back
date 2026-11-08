@@ -18,6 +18,7 @@ export const INGREDIENT_UNIQUE_INDEXES = [
 export const IngredientTranslationSchema = new Schema(
 	{
 		name: { type: String, required: true },
+		name_plural: { type: String, required: false },
 		description: { type: String, required: false },
 		gender: { type: String, required: false },
 	},
@@ -36,7 +37,7 @@ const ingredientSchemaDefinition = {
 
 export type IngredientPersistence = {
 	_id: Types.ObjectId;
-	translations: Translations<{ name: string; description?: string; gender?: Gender }>;
+	translations: Translations<{ name: string; name_plural?: string; description?: string; gender?: Gender }>;
 	category: CategoryPersistence;
 	units: UnitPersistence[];
 	kind: IngredientKind;

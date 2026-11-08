@@ -34,4 +34,28 @@ describe('Update Unit', () => {
 
 		expect(response.status).toBe(HTTP_STATUS.no_content);
 	});
+
+	it('Should be able to turn a count unit into one written with the ingredient name', async () => {
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
+		const { id } = await createUnit({ kind: 'count', allowDecimal: false });
+		const data = createUnitFactory({ kind: 'count', allowDecimal: false, useIngredientName: true });
+		const response = await request(app.server)
+			.patch('/units')
+			.set('Cookie', cookies)
+			.send({ id, ...data });
+		expect(response.status).toBe(HTTP_STATUS.no_content);
+		const saved = await request(app.server).get(`/units/${id}`);
+		expect(saved.body).toMatchObject({ useIngredientName: true });
+	});
+
+	it('Should not be able to give a symbol to a unit written with the ingredient name', async () => {
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
+		const { id } = await createUnit({ kind: 'count', allowDecimal: false, useIngredientName: true });
+		const data = createUnitFactory({ kind: 'count', allowDecimal: false, symbol: 'u' });
+		const response = await request(app.server)
+			.patch('/units')
+			.set('Cookie', cookies)
+			.send({ id, ...data });
+		expect(response.status).toBe(HTTP_STATUS.bad_request);
+	});
 });

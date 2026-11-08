@@ -99,6 +99,19 @@ describe('UnitsRepositoryInMemory', () => {
 			expect(removed).not.toHaveProperty('symbol');
 		});
 
+		it('sets, keeps and turns off the flag that writes the unit with the ingredient name', async () => {
+			const created = await repository.create(buildUnit(leaf, { kind: 'count', allowDecimal: false }));
+			expect(created).not.toHaveProperty('useIngredientName');
+
+			const enabled = await repository.update({ id: created.id, useIngredientName: true });
+			const untouched = await repository.update({ id: created.id, allowDecimal: false });
+			const disabled = await repository.update({ id: created.id, useIngredientName: false });
+
+			expect(enabled.useIngredientName).toBe(true);
+			expect(untouched.useIngredientName).toBe(true);
+			expect(disabled.useIngredientName).toBe(false);
+		});
+
 		it('sets the spacing of the symbol and keeps false', async () => {
 			const created = await repository.create(buildUnit(milliliter, { spaceBeforeSymbol: true }));
 

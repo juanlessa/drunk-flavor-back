@@ -28,13 +28,14 @@ export class UnitsRepositoryInMemory implements IUnitsRepository {
 		return record;
 	}
 
-	async update({ id, symbol, spaceBeforeSymbol, ...data }: UpdateUnit): Promise<Unit> {
+	async update({ id, symbol, spaceBeforeSymbol, useIngredientName, ...data }: UpdateUnit): Promise<Unit> {
 		const index = this.collection.findIndex((record) => record.id === id);
 		if (index < 0) throw this.notFound('update');
 		const record = { ...deepUpdate<Unit>(data, this.collection[index]), updatedAt: new Date() };
 		if (symbol === null) delete record.symbol;
 		else if (symbol !== undefined) record.symbol = symbol;
 		if (spaceBeforeSymbol !== undefined) record.spaceBeforeSymbol = spaceBeforeSymbol;
+		if (useIngredientName !== undefined) record.useIngredientName = useIngredientName;
 		this.collection[index] = record;
 		return record;
 	}

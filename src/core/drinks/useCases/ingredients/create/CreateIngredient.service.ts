@@ -1,6 +1,6 @@
 import { IngredientKinds } from '@/core/drinks/constants/ingredient.constants';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
-import { assertIngredientBrand } from '@/core/drinks/helpers/ingredient.helpers';
+import { assertIngredientBrand, assertIngredientNamePlural } from '@/core/drinks/helpers/ingredient.helpers';
 import { resolveIngredientUnits } from '@/core/drinks/mappers/ingredientUnits.mappers';
 import { mapToTranslationsName } from '@/core/drinks/mappers/translations.mappers';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
@@ -32,6 +32,11 @@ export class CreateIngredientService {
 		}
 
 		const units = await resolveIngredientUnits(unitIds, this.unitsRepository, 'CreateIngredient.service.3');
+		assertIngredientNamePlural(
+			units,
+			{ en: translations.en.namePlural, pt: translations.pt.namePlural },
+			'CreateIngredient.service.4',
+		);
 
 		return this.ingredientsRepository.create({
 			translations,

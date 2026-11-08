@@ -139,6 +139,117 @@ describe('Update Ingredient', () => {
 		).rejects.toBeInstanceOf(BadRequestError);
 	});
 
+	describe('plural name and units written with the ingredient name', () => {
+		let eachUnit: Unit;
+		let lime: Ingredient;
+		const fetchLime = async () => (await ingredientsRepository.findById(lime.id)) as Ingredient;
+		const input = (
+			translations: Parameters<UpdateIngredientService['execute']>[0]['translations'],
+			unitIds: string[],
+		) => ({ id: lime.id, translations, categoryId: createdCategory.id, unitIds });
+
+		beforeEach(async () => {
+			eachUnit = await unitsRepository.create(
+				createUnitFactory({
+					translations: {
+						en: { name: 'unit', namePlural: 'units' },
+						pt: { name: 'unidade', namePlural: 'unidades' },
+					},
+					kind: 'count',
+					allowDecimal: false,
+					useIngredientName: true,
+				}),
+			);
+			lime = await ingredientsRepository.create({
+				translations: {
+					en: { name: 'Lime', namePlural: 'Limes' },
+					pt: { name: 'Limão', namePlural: 'Limões' },
+				},
+				category: createdCategory,
+				units: [eachUnit, createdUnit],
+			});
+		});
+
+		it('sets and replaces the plural name of each language', async () => {
+			await service.execute(
+				input(
+					{ en: { name: 'Lime', namePlural: 'Lime fruits' }, pt: { name: 'Limão', namePlural: 'Limões' } },
+					[eachUnit.id],
+				),
+			);
+			const updated = await fetchLime();
+			expect(updated.translations.en.namePlural).toBe('Lime fruits');
+			expect(updated.translations.pt.namePlural).toBe('Limões');
+		});
+
+		it('keeps the plural name when it is omitted, even while the unit needs it', async () => {
+			await service.execute(
+				input({ en: { name: 'Lime' }, pt: { name: 'Limão' } }, [eachUnit.id, createdUnit.id]),
+			);
+			const updated = await fetchLime();
+			expect(updated.translations.en.namePlural).toBe('Limes');
+			expect(updated.translations.pt.namePlural).toBe('Limões');
+		});
+
+		it('rejects removing a plural name while a unit is written with the ingredient name', async () => {
+			await expect(
+				service.execute(
+					input({ en: { name: 'Lime', namePlural: null }, pt: { name: 'Limão' } }, [
+						eachUnit.id,
+						createdUnit.id,
+					]),
+				),
+			).rejects.toBeInstanceOf(BadRequestError);
+			expect((await fetchLime()).translations.en.namePlural).toBe('Limes');
+		});
+
+		it('removes the plural names once the unit written with the ingredient name is dropped', async () => {
+			await service.execute(
+				input({ en: { name: 'Lime', namePlural: null }, pt: { name: 'Limão', namePlural: null } }, [
+					createdUnit.id,
+				]),
+			);
+			const updated = await fetchLime();
+			expect(updated.translations.en).not.toHaveProperty('namePlural');
+			expect(updated.translations.pt).not.toHaveProperty('namePlural');
+			expect(updated.units).toEqual([createdUnit]);
+		});
+
+		it('rejects adding the unit written with the ingredient name to an ingredient with no plural name', async () => {
+			const gin = await ingredientsRepository.create({
+				translations: { en: { name: 'Gin' }, pt: { name: 'Gin' } },
+				category: createdCategory,
+				units: [createdUnit],
+			});
+			await expect(
+				service.execute({
+					id: gin.id,
+					translations: { en: { name: 'Gin' }, pt: { name: 'Gin' } },
+					categoryId: createdCategory.id,
+					unitIds: [createdUnit.id, eachUnit.id],
+				}),
+			).rejects.toBeInstanceOf(BadRequestError);
+			expect(((await ingredientsRepository.findById(gin.id)) as Ingredient).units).toEqual([createdUnit]);
+		});
+
+		it('accepts adding the unit written with the ingredient name together with the plural names', async () => {
+			const gin = await ingredientsRepository.create({
+				translations: { en: { name: 'Gin' }, pt: { name: 'Gin' } },
+				category: createdCategory,
+				units: [createdUnit],
+			});
+			await service.execute({
+				id: gin.id,
+				translations: { en: { name: 'Gin', namePlural: 'Gins' }, pt: { name: 'Gin', namePlural: 'Gins' } },
+				categoryId: createdCategory.id,
+				unitIds: [eachUnit.id, createdUnit.id],
+			});
+			const updated = (await ingredientsRepository.findById(gin.id)) as Ingredient;
+			expect(updated.units.map(({ id }) => id)).toEqual([eachUnit.id, createdUnit.id]);
+			expect(updated.translations.en.namePlural).toBe('Gins');
+		});
+	});
+
 	describe('description, kind, brand and units', () => {
 		const baseInput = () => ({ categoryId: createdCategory.id, unitIds: [createdUnit.id] });
 		const names = (en: string, pt = en) => ({ en: { name: en }, pt: { name: pt } });

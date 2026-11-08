@@ -27,6 +27,7 @@ const unitSchemaDefinition = {
 	space_before_symbol: { type: Boolean, required: false },
 	allow_decimal: { type: Boolean, required: true },
 	kind: { type: String, enum: Object.values(UnitKinds), required: true },
+	use_ingredient_name: { type: Boolean, required: false },
 	search_keys: { type: [String], default: undefined, select: false },
 } as const;
 
@@ -37,6 +38,7 @@ export type UnitPersistence = {
 	space_before_symbol?: boolean;
 	allow_decimal: boolean;
 	kind: (typeof UnitKinds)[keyof typeof UnitKinds];
+	use_ingredient_name?: boolean;
 	search_keys?: string[];
 	created_at: Date;
 	updated_at: Date;

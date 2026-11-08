@@ -200,6 +200,68 @@ describe('IngredientsRepository (integration)', () => {
 			expect((await repository.findById(created.id))?.units).toEqual([]);
 		});
 
+		describe('plural name', () => {
+			const eachUnit = (): Unit => ({
+				...buildUnit(),
+				translations: {
+					en: { name: 'unit', namePlural: 'units' },
+					pt: { name: 'unidade', namePlural: 'unidades' },
+				},
+				kind: 'count',
+				allowDecimal: false,
+				useIngredientName: true,
+			});
+			const createLime = (units: Unit[] = [eachUnit()]) =>
+				repository.create({
+					translations: {
+						en: { name: 'Lime', namePlural: 'Limes' },
+						pt: { name: 'Limão', namePlural: 'Limões' },
+					},
+					category: buildCategory(),
+					units,
+				});
+
+			it('persists the plural name of each language and the flag of the embedded unit', async () => {
+				const created = await createLime();
+				const byId = await repository.findById(created.id);
+
+				expect(byId?.translations.en.namePlural).toBe('Limes');
+				expect(byId?.translations.pt.namePlural).toBe('Limões');
+				expect(byId?.units[0]?.useIngredientName).toBe(true);
+				const raw = await IngredientModel.collection.findOne({ _id: new ObjectId(created.id) });
+				expect((raw?.translations as { en: Record<string, unknown> }).en['name_plural']).toBe('Limes');
+			});
+
+			it('leaves the plural name out of an ingredient that does not have one', async () => {
+				const created = await repository.create(buildIngredient({ en: 'Gin', pt: 'Gin' }));
+				expect((await repository.findById(created.id))?.translations.en).not.toHaveProperty('namePlural');
+			});
+
+			it('replaces it in one language and keeps it in the other', async () => {
+				const created = await createLime();
+				const updated = await repository.update({
+					id: created.id,
+					translations: { en: { name: 'Lime', namePlural: 'Lime fruits' } },
+				});
+
+				expect(updated.translations.en.namePlural).toBe('Lime fruits');
+				expect(updated.translations.pt.namePlural).toBe('Limões');
+			});
+
+			it('removes it with null, in the document too', async () => {
+				const created = await createLime();
+				const updated = await repository.update({
+					id: created.id,
+					translations: { pt: { name: 'Limão', namePlural: null } },
+				});
+
+				expect(updated.translations.pt).toEqual({ name: 'Limão' });
+				expect(updated.translations.en.namePlural).toBe('Limes');
+				const raw = await IngredientModel.collection.findOne({ _id: new ObjectId(created.id) });
+				expect((raw?.translations as { pt: object }).pt).not.toHaveProperty('name_plural');
+			});
+		});
+
 		it('keeps the description of the languages that are not in the update', async () => {
 			const created = await createDescribed();
 

@@ -1,4 +1,5 @@
 import { UnitKinds } from '@/core/drinks/constants/unit.constants';
+import { getUnitIngredientNameIssue } from '@/core/drinks/helpers/unit.helpers';
 import { getObjectIdSchema } from '@/infrastructure/mongo/schemas/helpers/objectId.helpers';
 import { genderValidation } from '@/shared/schemas/gender.schemas';
 import { LocaleKey } from '@/shared/types/locale.types';
@@ -37,6 +38,24 @@ export const unitAllowDecimalValidation = z.boolean({
 export const unitKindValidation = z.enum(UnitKinds, {
 	error: 'apiResponses.units.invalidKindFormat' satisfies LocaleKey,
 });
+
+export const unitUseIngredientNameValidation = z.boolean({
+	error: 'apiResponses.units.invalidUseIngredientNameFormat' satisfies LocaleKey,
+});
+
+/**
+ * Cross-field rule: a unit written with the name of the ingredient must be a `count` unit without a symbol.
+ *
+ * On update an omitted symbol keeps the current one, which the schema cannot see, so it only checks the
+ * symbol when the request sends one. The domain checks the symbol the unit will end up with.
+ */
+export const refineUnitIngredientName = (
+	unit: { useIngredientName?: boolean; kind?: string; symbol?: string | null },
+	ctx: z.RefinementCtx,
+) => {
+	const issue = getUnitIngredientNameIssue(unit);
+	if (issue) ctx.addIssue({ code: 'custom', message: issue.message, path: [issue.field] });
+};
 
 // The gender is optional per language; use `requireGenderFor` on the translations to require it where needed.
 export const unitTranslationSchema = z.object({

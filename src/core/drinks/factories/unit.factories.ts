@@ -18,4 +18,5 @@ export const createUnitFactory = (unit?: DeepPartial<CreateUnit>): CreateUnit =>
 	...(unit?.spaceBeforeSymbol === undefined ? {} : { spaceBeforeSymbol: unit.spaceBeforeSymbol }),
 	allowDecimal: unit?.allowDecimal ?? true,
 	kind: unit?.kind || 'volume',
+	...(unit?.useIngredientName === undefined ? {} : { useIngredientName: unit.useIngredientName }),
 });
