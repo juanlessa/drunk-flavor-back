@@ -5,6 +5,7 @@ import { Category } from '@/core/drinks/entities/category.entity';
 import { Unit } from '@/core/drinks/entities/unit.entity';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { NotFoundError } from '@/shared/error/error.lib';
+import { PreparationPlan } from '@/core/drinks/modules/preparation';
 import { createDrinkIngredientFactory } from '@/core/drinks/factories/drink.factories';
 
 const buildCategory = (): Category => ({
@@ -207,5 +208,46 @@ describe('DrinksRepositoryInMemory', () => {
 
 		expect(await repository.findByName({ pt: { name: 'PINA COLADA' } })).not.toBeNull();
 		expect(await repository.findAll({ search: { name: 'pina' } })).toHaveLength(1);
+	});
+	describe('preparation plan', () => {
+		const plan: PreparationPlan = {
+			mixingVessel: 'shaker',
+			servingGlass: 'coupe',
+			actions: [{ type: 'prepare_glass', mode: 'chill' }],
+		};
+		const otherPlan: PreparationPlan = { ...plan, servingGlass: 'rocks' };
+		const translations = { en: { name: 'Sour', method: 'm' }, pt: { name: 'Sour', method: 'm' } };
+
+		it('keeps the plan given on create, and has none by default', async () => {
+			const withPlan = await repository.create({ translations, ingredients: [], preparation: plan });
+			const withoutPlan = await repository.create({
+				translations: { en: { name: 'Fizz', method: 'm' }, pt: { name: 'Fizz', method: 'm' } },
+				ingredients: [],
+			});
+
+			expect(withPlan.preparation).toEqual(plan);
+			expect(withoutPlan.preparation).toBeUndefined();
+		});
+
+		it('sets the plan of a drink that had none, and replaces a stored plan', async () => {
+			const created = await repository.create({ translations, ingredients: [] });
+
+			const set = await repository.update({ id: created.id, preparation: plan });
+			const replaced = await repository.update({ id: created.id, preparation: otherPlan });
+
+			expect(set.preparation).toEqual(plan);
+			expect(replaced.preparation).toEqual(otherPlan);
+		});
+
+		it('keeps the stored plan when an update leaves it out, and removes it with null', async () => {
+			const created = await repository.create({ translations, ingredients: [], preparation: plan });
+
+			const untouched = await repository.update({ id: created.id, garnishes: [] });
+			const removed = await repository.update({ id: created.id, preparation: null });
+
+			expect(untouched.preparation).toEqual(plan);
+			expect(removed.preparation).toBeUndefined();
+			expect(removed).not.toHaveProperty('preparation');
+		});
 	});
 });

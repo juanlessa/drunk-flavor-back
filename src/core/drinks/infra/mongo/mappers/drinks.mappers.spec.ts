@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { PreparationPlan } from '@/core/drinks/modules/preparation';
 import { Types } from 'mongoose';
 import { CategoryPersistence } from '../entities/category.model';
 import { DrinkPersistence } from '../entities/drink.model';
@@ -211,5 +212,41 @@ describe('Drink domain persistence mappers', () => {
 			search: { avg_rating: '4' },
 			sort: { ratings_count: -1 },
 		});
+	});
+	it('maps the keys of a preparation plan at any depth in both directions', () => {
+		const plan: PreparationPlan = {
+			mixingVessel: 'shaker',
+			servingGlass: 'coupe',
+			actions: [
+				{
+					type: 'add',
+					target: 'mixing',
+					items: [{ list: 'ingredients', ingredientId: 'gin', unitId: 'ml', withUnit: true }],
+				},
+				{ type: 'strain', kind: 'single', overIce: true },
+			],
+		};
+
+		const persisted = DrinkMapper.toPersistence({ preparation: plan });
+		const drink = DrinkMapper.toDomain({ ...buildDrinkPersistence(), preparation: persisted.preparation });
+
+		expect(persisted.preparation).toEqual({
+			mixing_vessel: 'shaker',
+			serving_glass: 'coupe',
+			actions: [
+				{
+					type: 'add',
+					target: 'mixing',
+					items: [{ list: 'ingredients', ingredient_id: 'gin', unit_id: 'ml', with_unit: true }],
+				},
+				{ type: 'strain', kind: 'single', over_ice: true },
+			],
+		});
+		expect(drink.preparation).toEqual(plan);
+	});
+
+	it('leaves the plan out when the drink has none', () => {
+		expect(DrinkMapper.toPersistence({ translations: { en: { name: 'Sour' } } })).not.toHaveProperty('preparation');
+		expect(DrinkMapper.toDomain(buildDrinkPersistence())).not.toHaveProperty('preparation');
 	});
 });

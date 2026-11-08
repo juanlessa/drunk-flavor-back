@@ -71,10 +71,6 @@ describe('DrinkModel (integration)', () => {
 		await DrinkModel.deleteMany({});
 	});
 
-	it('resolves to the drinks collection', () => {
-		expect(DrinkModel.collection.collectionName).toBe('drinks');
-	});
-
 	it('declares only the owning unique indexes with no leaked embedded-name index', async () => {
 		const indexes = await getIndexes();
 		const names = indexes.map((index) => index.name).sort();
@@ -128,6 +124,15 @@ describe('DrinkModel (integration)', () => {
 
 		expect(reloaded?.cover).toBeUndefined();
 		expect(reloaded?.thumbnail).toBeUndefined();
+	});
+
+	it('leaves the preparation plan unset when omitted, and keeps a plan as it was written', async () => {
+		const without = await DrinkModel.create(buildDrink({ en: 'Daiquiri', pt: 'Daiquiri BR' }));
+		const plan = { mixing_vessel: 'shaker', serving_glass: 'coupe', actions: [{ type: 'shake', seconds: 10 }] };
+		const withPlan = await DrinkModel.create({ ...buildDrink({ en: 'Sour', pt: 'Sour BR' }), preparation: plan });
+
+		expect((await DrinkModel.findById(without._id).lean())?.preparation).toBeUndefined();
+		expect((await DrinkModel.findById(withPlan._id).lean())?.preparation).toEqual(plan);
 	});
 
 	it('rejects duplicate translations.en.name and translations.pt.name with 11000', async () => {

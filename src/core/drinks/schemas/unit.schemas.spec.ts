@@ -79,4 +79,26 @@ describe('Unit schemas', () => {
 			sort: { 'translations.pt.name': -1 },
 		});
 	});
+	describe('gender', () => {
+		const withGender = (gender: unknown) => ({
+			...validUnit,
+			translations: { ...validUnit.translations, pt: { ...validUnit.translations.pt, gender } },
+		});
+
+		it.each(['masculine', 'feminine'])('accepts the %s gender in portuguese', (gender) => {
+			expect(createUnitSchema.safeParse(withGender(gender)).success).toBe(true);
+		});
+
+		it('requires the gender in portuguese, but not in english', () => {
+			const result = createUnitSchema.safeParse(withGender(undefined));
+			expect(!result.success && result.error.issues.map(({ path, message }) => ({ path, message }))).toEqual([
+				{ path: ['translations', 'pt', 'gender'], message: 'apiResponses.validation.requiredGender' },
+			]);
+			expect(createUnitSchema.safeParse(validUnit).success).toBe(true);
+		});
+
+		it('rejects a gender that does not exist', () => {
+			expect(createUnitSchema.safeParse(withGender('neuter')).success).toBe(false);
+		});
+	});
 });

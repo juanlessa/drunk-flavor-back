@@ -162,4 +162,25 @@ describe('Ingredient schemas', () => {
 			expect(update({ brand: 'a'.repeat(61) }).success).toBe(false);
 		});
 	});
+	describe('gender', () => {
+		const withGender = (gender: unknown) => ({
+			translations: { en: { name: 'Lime' }, pt: { name: 'Limão', gender } },
+		});
+
+		it.each(['masculine', 'feminine'])('accepts the %s gender in portuguese', (gender) => {
+			expect(create(withGender(gender)).success).toBe(true);
+			expect(update(withGender(gender)).success).toBe(true);
+		});
+
+		it('requires the gender in portuguese, but not in english', () => {
+			expect(issuesOf(create(withGender(undefined)))).toEqual([
+				{ path: ['translations', 'pt', 'gender'], message: 'apiResponses.validation.requiredGender' },
+			]);
+			expect(create(withGender('feminine')).success).toBe(true);
+		});
+
+		it('rejects a gender that does not exist', () => {
+			expect(create(withGender('neuter')).success).toBe(false);
+		});
+	});
 });

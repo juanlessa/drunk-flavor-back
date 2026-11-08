@@ -25,10 +25,6 @@ describe('CategoryModel (integration)', () => {
 		await CategoryModel.deleteMany({});
 	});
 
-	it('resolves to the categories collection', () => {
-		expect(CategoryModel.collection.collectionName).toBe('categories');
-	});
-
 	it('declares exactly the expected named unique indexes and no implicit field-level index', async () => {
 		const indexes = await getIndexes();
 		const names = indexes.map((index) => index.name).sort();

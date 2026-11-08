@@ -7,6 +7,7 @@ import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { Category } from '@/core/drinks/entities/category.entity';
 import { Unit } from '@/core/drinks/entities/unit.entity';
 import { createDrinkIngredientFactory } from '@/core/drinks/factories/drink.factories';
+import { PreparationPlan } from '@/core/drinks/modules/preparation';
 import { ConflictError, NotFoundError } from '@/shared/error/error.lib';
 
 const buildCategory = (): Category => ({
@@ -45,6 +46,27 @@ const buildDrink = (name: { en: string; pt: string }): CreateDrink => ({
 		pt: { name: name.pt, method: 'Mexa' },
 	},
 	ingredients: [createDrinkIngredientFactory(buildIngredient())],
+});
+
+// A plan with keys that need renaming at every depth: lists of actions, references and optional fields.
+const buildPlan = (): PreparationPlan => ({
+	mixingVessel: 'shaker',
+	servingGlass: 'nick_and_nora',
+	actions: [
+		{ type: 'prepare_glass', mode: 'rim', item: { list: 'garnishes', ingredientId: 'salt' }, coverage: 'half' },
+		{
+			type: 'add',
+			target: 'mixing',
+			items: [{ list: 'ingredients', ingredientId: 'gin', unitId: 'ml', withUnit: true }],
+		},
+		{ type: 'add_ice', target: 'mixing', kind: 'large_cube' },
+		{ type: 'strain', kind: 'double', to: 'serving', overIce: true },
+		{
+			type: 'custom',
+			text: { en: 'Serve.', pt: 'Sirva.' },
+			items: [{ list: 'garnishes', ingredientId: 'cherry' }],
+		},
+	],
 });
 
 let repository: DrinksRepository;
@@ -409,6 +431,93 @@ describe('DrinksRepository (integration)', () => {
 			expect(deleted.id).toBe(created.id);
 			expect(await repository.findById(created.id)).toBeNull();
 			await expect(repository.delete(created.id)).rejects.toBeInstanceOf(NotFoundError);
+		});
+	});
+	describe('preparation plan', () => {
+		const rawPlan = async (id: string) => (await DrinkModel.findById(id).lean())?.preparation;
+
+		it('stores the plan with snake_case keys at every depth and reads it back unchanged', async () => {
+			const plan = buildPlan();
+
+			const created = await repository.create({
+				...buildDrink({ en: 'Sour', pt: 'Sour BR' }),
+				preparation: plan,
+			});
+			const reloaded = await repository.findById(created.id);
+
+			expect(created.preparation).toEqual(plan);
+			expect(reloaded?.preparation).toEqual(plan);
+			expect(await rawPlan(created.id)).toMatchObject({
+				mixing_vessel: 'shaker',
+				serving_glass: 'nick_and_nora',
+				actions: [
+					{ item: { ingredient_id: 'salt' } },
+					{ items: [{ ingredient_id: 'gin', unit_id: 'ml', with_unit: true }] },
+					{ kind: 'large_cube' },
+					{ over_ice: true },
+					{ items: [{ ingredient_id: 'cherry' }] },
+				],
+			});
+		});
+
+		it('has no plan when the drink was created without one', async () => {
+			const created = await repository.create(buildDrink({ en: 'Fizz', pt: 'Fizz BR' }));
+
+			expect(created.preparation).toBeUndefined();
+			expect(await rawPlan(created.id)).toBeUndefined();
+		});
+
+		it('sets the plan of a drink that had none', async () => {
+			const created = await repository.create(buildDrink({ en: 'Fizz', pt: 'Fizz BR' }));
+
+			const updated = await repository.update({ id: created.id, preparation: buildPlan() });
+
+			expect(updated.preparation).toEqual(buildPlan());
+		});
+
+		it('replaces the stored plan, leaving nothing of the old actions behind', async () => {
+			const created = await repository.create({
+				...buildDrink({ en: 'Sour', pt: 'Sour BR' }),
+				preparation: buildPlan(),
+			});
+			const replacement: PreparationPlan = {
+				mixingVessel: 'mixing_glass',
+				servingGlass: 'rocks',
+				actions: [{ type: 'stir', seconds: 20 }],
+			};
+
+			const updated = await repository.update({ id: created.id, preparation: replacement });
+
+			expect(updated.preparation).toEqual(replacement);
+			expect(await rawPlan(created.id)).toEqual({
+				mixing_vessel: 'mixing_glass',
+				serving_glass: 'rocks',
+				actions: [{ type: 'stir', seconds: 20 }],
+			});
+		});
+
+		it('removes the plan from the document with null', async () => {
+			const created = await repository.create({
+				...buildDrink({ en: 'Sour', pt: 'Sour BR' }),
+				preparation: buildPlan(),
+			});
+
+			const updated = await repository.update({ id: created.id, preparation: null });
+
+			expect(updated.preparation).toBeUndefined();
+			expect(await rawPlan(created.id)).toBeUndefined();
+			expect(await DrinkModel.countDocuments({ _id: created.id, preparation: { $exists: true } })).toBe(0);
+		});
+
+		it('keeps the plan when an update leaves it out', async () => {
+			const created = await repository.create({
+				...buildDrink({ en: 'Sour', pt: 'Sour BR' }),
+				preparation: buildPlan(),
+			});
+
+			const updated = await repository.update({ id: created.id, translations: { en: { name: 'Sour 2' } } });
+
+			expect(updated.preparation).toEqual(buildPlan());
 		});
 	});
 });

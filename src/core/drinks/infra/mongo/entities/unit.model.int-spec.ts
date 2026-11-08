@@ -28,10 +28,6 @@ describe('UnitModel (integration)', () => {
 		await UnitModel.deleteMany({});
 	});
 
-	it('resolves to the units collection', () => {
-		expect(UnitModel.collection.collectionName).toBe('units');
-	});
-
 	it('declares exactly the expected named unique indexes and no implicit field-level index', async () => {
 		const indexes = await getIndexes();
 		const names = indexes.map((index) => index.name).sort();

@@ -28,6 +28,12 @@ const hint = (ingredientId: string, unitId: string) => ({
 
 const create = (ingredients: unknown[], garnishes?: unknown[]) =>
 	createDrinkSchema.safeParse({ translations, ingredients, ...(garnishes === undefined ? {} : { garnishes }) });
+const preparation = {
+	mixingVessel: 'serving_glass',
+	servingGlass: 'rocks',
+	actions: [{ type: 'add', target: 'mixing', items: [{ list: 'ingredients', ingredientId: lime, unitId: ml }] }],
+};
+const names = { en: { name: 'Mojito' }, pt: { name: 'Mojito' } };
 
 const update = (ingredients: unknown[], garnishes?: unknown[]) =>
 	updateDrinkSchema.safeParse({
@@ -200,6 +206,52 @@ describe('Drink schemas', () => {
 			expect(issuesOf(result)).toEqual([
 				{ path: ['garnishes', 1, 'ingredientId'], message: 'apiResponses.drinks.duplicateIngredientUnit' },
 			]);
+		});
+	});
+
+	describe('method and preparation', () => {
+		const recipe = [exact(lime, ml)];
+		const createWith = (body: object) => createDrinkSchema.safeParse({ ingredients: recipe, ...body });
+		const updateWith = (body: object) =>
+			updateDrinkSchema.safeParse({ id: id(), ingredients: recipe, garnishes: [], ...body });
+
+		it.each([
+			{ title: 'create', parse: createWith },
+			{ title: 'update', parse: updateWith },
+		])('accepts the methods without a plan on $title', ({ parse }) => {
+			expect(parse({ translations }).success).toBe(true);
+		});
+
+		it.each([
+			{ title: 'create', parse: createWith },
+			{ title: 'update', parse: updateWith },
+		])('accepts a plan without the methods on $title', ({ parse }) => {
+			const result = parse({ translations: names, preparation });
+			expect(result.success && result.data.preparation).toBeDefined();
+		});
+
+		it('asks for the method of each language when there is no plan', () => {
+			expect(issuesOf(createWith({ translations: names }))).toEqual([
+				{ path: ['translations', 'en', 'method'], message: 'apiResponses.drinks.requiredMethod' },
+				{ path: ['translations', 'pt', 'method'], message: 'apiResponses.drinks.requiredMethod' },
+			]);
+			expect(issuesOf(createWith({ translations: { ...names, en: translations.en } }))).toEqual([
+				{ path: ['translations', 'pt', 'method'], message: 'apiResponses.drinks.requiredMethod' },
+			]);
+		});
+
+		it('rejects a method sent together with a plan', () => {
+			expect(issuesOf(createWith({ translations, preparation }))).toEqual([
+				{ path: ['translations', 'en', 'method'], message: 'apiResponses.drinks.methodWithPreparation' },
+				{ path: ['translations', 'pt', 'method'], message: 'apiResponses.drinks.methodWithPreparation' },
+			]);
+			expect(updateWith({ translations, preparation }).success).toBe(false);
+		});
+
+		it('rejects a plan that has the wrong format', () => {
+			expect(createWith({ translations: names, preparation: { ...preparation, actions: [] } }).success).toBe(
+				false,
+			);
 		});
 	});
 

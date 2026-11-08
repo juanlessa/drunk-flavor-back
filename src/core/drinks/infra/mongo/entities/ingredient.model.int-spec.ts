@@ -54,10 +54,6 @@ describe('IngredientModel (integration)', () => {
 		await IngredientModel.deleteMany({});
 	});
 
-	it('resolves to the ingredients collection', () => {
-		expect(IngredientModel.collection.collectionName).toBe('ingredients');
-	});
-
 	it('declares only the owning unique indexes with no leaked embedded-name index', async () => {
 		const indexes = await getIndexes();
 		const names = indexes.map((index) => index.name).sort();

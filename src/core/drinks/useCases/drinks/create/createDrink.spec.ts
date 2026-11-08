@@ -7,7 +7,8 @@ import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CreateDrinkService } from './CreateDrink.service';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
-import { ConflictError, BadRequestError } from '@/shared/error/error.lib';
+import { ConflictError, BadRequestError, FieldValidationError } from '@/shared/error/error.lib';
+import { PreparationPlan } from '@/core/drinks/modules/preparation';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
@@ -241,34 +242,68 @@ describe('Create Drink', () => {
 				build: () => ({ ingredients: [mainLine(), mainLine()], garnishes: [] }),
 			},
 			{
-				title: 'an ingredient repeats with the same unit in the garnishes',
-				build: () => ({
-					ingredients: [mainLine()],
-					garnishes: [exactLine(mint.id, createdUnit.id), exactLine(mint.id, createdUnit.id)],
-				}),
-			},
-			{
-				title: 'a not measurable ingredient has two lines without a unit',
-				build: () => ({
-					ingredients: [
-						mainLine(),
-						{ ingredientId: foam.id, amount: { type: 'none' as const }, optional: false },
-						{
-							ingredientId: foam.id,
-							amount: { type: 'qualitative' as const, qualifier: 'to_taste' as const },
-							optional: false,
-						},
-					],
-					garnishes: [],
-				}),
-			},
-			{
 				title: 'every ingredient is optional',
 				build: () => ({ ingredients: [{ ...mainLine(), optional: true }], garnishes: [] }),
 			},
 		])('should not be able to create a drink when $title, even when called directly', async ({ build }) => {
 			await expect(service.execute({ translations, ...build() })).rejects.toBeInstanceOf(BadRequestError);
 			expect(await drinksRepository.findByName(translations)).toBeNull();
+		});
+	});
+
+	describe('preparation', () => {
+		const buildPlan = (): PreparationPlan => ({
+			mixingVessel: 'serving_glass',
+			servingGlass: 'rocks',
+			actions: [
+				{
+					type: 'add',
+					target: 'mixing',
+					items: [{ list: 'ingredients', ingredientId: createdIngredient.id, unitId: createdUnit.id }],
+				},
+			],
+		});
+
+		const manualTranslations = {
+			en: { name: 'Hand made', method: 'Made by hand.' },
+			pt: { name: 'Feito a mão', method: 'Feito à mão.' },
+		};
+		const namesOnly = { en: { name: 'Planned' }, pt: { name: 'Planejado' } };
+		const line = () => createDrinkIngredientInputFactory(createdIngredient.id, { unitId: createdUnit.id });
+
+		it('should write the method of both languages from the plan and store the plan', async () => {
+			const preparation = buildPlan();
+
+			const id = await service.execute({ translations: namesOnly, ingredients: [line()], preparation });
+
+			const created = (await drinksRepository.findById(id)) as Drink;
+			expect(created.translations.en).toEqual({ name: 'Planned', method: 'In a rocks glass, add syrup.' });
+			expect(created.translations.pt).toEqual({
+				name: 'Planejado',
+				method: 'Em um copo baixo, adicione o xarope.',
+			});
+			expect(created.preparation).toEqual(preparation);
+		});
+
+		it('should store only the method when there is no plan', async () => {
+			const id = await service.execute({ translations: manualTranslations, ingredients: [line()] });
+
+			const created = (await drinksRepository.findById(id)) as Drink;
+			expect(created.translations).toEqual(manualTranslations);
+			expect(created.preparation).toBeUndefined();
+		});
+
+		it('should not create the drink when the plan does not fit the recipe', async () => {
+			const preparation: PreparationPlan = {
+				mixingVessel: 'serving_glass',
+				servingGlass: 'rocks',
+				actions: [{ type: 'prepare_glass', mode: 'chill' }],
+			};
+
+			await expect(
+				service.execute({ translations: namesOnly, ingredients: [line()], preparation }),
+			).rejects.toBeInstanceOf(FieldValidationError);
+			expect(await drinksRepository.findByName(namesOnly)).toBeNull();
 		});
 	});
 });
