@@ -40,10 +40,10 @@ describe('Create Ingredient', () => {
 	});
 
 	it('should be able to create a new ingredient', async () => {
-		await service.execute({
+		const returned = await service.execute({
 			translations,
 			categoryId: createdCategory.id,
-			unitId: createdUnit.id,
+			unitIds: [createdUnit.id],
 		});
 
 		const createdIngredient = (await ingredientsRepository.findByName(translations)) as Ingredient;
@@ -51,21 +51,34 @@ describe('Create Ingredient', () => {
 		expect(createdIngredient).toHaveProperty('id');
 		expect(createdIngredient.translations).toEqual(translations);
 		expect(createdIngredient.category).toEqual(createdCategory);
-		expect(createdIngredient.unit).toEqual(createdUnit);
+		expect(createdIngredient.units).toEqual([createdUnit]);
+		expect(returned.id).toEqual(createdIngredient.id);
+	});
+
+	it('should be able to create a not measurable ingredient with no units', async () => {
+		await service.execute({
+			translations,
+			categoryId: createdCategory.id,
+			unitIds: [],
+		});
+
+		const createdIngredient = (await ingredientsRepository.findByName(translations)) as Ingredient;
+
+		expect(createdIngredient.units).toEqual([]);
 	});
 
 	it('should not be able to create an ingredient with an existing name', async () => {
 		await ingredientsRepository.create({
 			translations,
 			category: createdCategory,
-			unit: createdUnit,
+			units: [createdUnit],
 		});
 
 		await expect(
 			service.execute({
 				translations,
 				categoryId: createdCategory.id,
-				unitId: createdUnit.id,
+				unitIds: [createdUnit.id],
 			}),
 		).rejects.toBeInstanceOf(ConflictError);
 	});
@@ -75,7 +88,7 @@ describe('Create Ingredient', () => {
 			service.execute({
 				translations,
 				categoryId: new ObjectId().toString(),
-				unitId: createdUnit.id,
+				unitIds: [createdUnit.id],
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});
@@ -85,8 +98,81 @@ describe('Create Ingredient', () => {
 			service.execute({
 				translations,
 				categoryId: createdCategory.id,
-				unitId: new ObjectId().toString(),
+				unitIds: [new ObjectId().toString()],
 			}),
 		).rejects.toBeInstanceOf(BadRequestError);
+	});
+
+	describe('kind, brand, description and units', () => {
+		const names = (en: string, pt = en) => ({ en: { name: en }, pt: { name: pt } });
+
+		it('should create a generic ingredient without a brand by default', async () => {
+			await service.execute({ translations, categoryId: createdCategory.id, unitIds: [createdUnit.id] });
+
+			const created = (await ingredientsRepository.findByName(translations)) as Ingredient;
+
+			expect(created.kind).toBe('generic');
+			expect(created.brand).toBeUndefined();
+		});
+
+		it('should be able to create a branded ingredient with its brand', async () => {
+			await service.execute({
+				translations: names('Licor 43'),
+				categoryId: createdCategory.id,
+				unitIds: [createdUnit.id],
+				kind: 'branded',
+				brand: 'Licor 43',
+			});
+
+			const created = (await ingredientsRepository.findByName(names('Licor 43'))) as Ingredient;
+
+			expect(created.kind).toBe('branded');
+			expect(created.brand).toBe('Licor 43');
+		});
+
+		it('should keep the description of each language', async () => {
+			const described = {
+				en: { name: 'Triple sec', description: 'Orange liqueur' },
+				pt: { name: 'Triple sec', description: 'Licor de laranja' },
+			};
+
+			await service.execute({ translations: described, categoryId: createdCategory.id, unitIds: [] });
+
+			const created = (await ingredientsRepository.findByName(described)) as Ingredient;
+
+			expect(created.translations).toEqual(described);
+		});
+
+		it('should keep the order of the units', async () => {
+			const slice = await unitsRepository.create(
+				createUnitFactory({
+					translations: {
+						en: { name: 'slice', namePlural: 'slices' },
+						pt: { name: 'fatia', namePlural: 'fatias' },
+					},
+				}),
+			);
+
+			await service.execute({
+				translations,
+				categoryId: createdCategory.id,
+				unitIds: [slice.id, createdUnit.id],
+			});
+
+			const created = (await ingredientsRepository.findByName(translations)) as Ingredient;
+
+			expect(created.units.map(({ id }) => id)).toEqual([slice.id, createdUnit.id]);
+		});
+
+		it.each([
+			{ title: 'a branded ingredient has no brand', extra: { kind: 'branded' as const } },
+			{ title: 'a generic ingredient has a brand', extra: { kind: 'generic' as const, brand: 'Bols' } },
+			{ title: 'a brand comes without a kind', extra: { brand: 'Bols' } },
+		])('should not be able to create an ingredient when $title', async ({ extra }) => {
+			await expect(
+				service.execute({ translations, categoryId: createdCategory.id, unitIds: [createdUnit.id], ...extra }),
+			).rejects.toBeInstanceOf(BadRequestError);
+			expect(await ingredientsRepository.findByName(translations)).toBeNull();
+		});
 	});
 });

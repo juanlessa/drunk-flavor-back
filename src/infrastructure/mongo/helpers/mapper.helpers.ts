@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
 import { MONGO_INTERNAL_FIELDS } from '../constants/mapper.constants';
+import { SEARCH_KEYS_FIELD, SEARCH_NAME_FIELD } from '../constants/search.constants';
 import { DeepMapOptions, EntryMapper, NullHandling } from '../types/mapper.types';
 
 export const isPlainObject = (value: unknown): value is Record<string, unknown> => {
@@ -123,5 +124,19 @@ export const mapQueryFields = <T>(fields: Record<string, T> | undefined): Record
 	fields
 		? Object.fromEntries(
 				Object.entries(fields).map(([field, value]) => [field === 'id' ? '_id' : toSnakeCase(field), value]),
+			)
+		: undefined;
+
+/**
+ * Maps search fields to persistence names, resolving the domain `name` search field
+ * to the normalized search keys field.
+ */
+export const mapSearchQueryFields = <T>(fields: Record<string, T> | undefined): Record<string, T> | undefined =>
+	fields
+		? Object.fromEntries(
+				Object.entries(fields).map(([field, value]) => [
+					field === SEARCH_NAME_FIELD ? SEARCH_KEYS_FIELD : field === 'id' ? '_id' : toSnakeCase(field),
+					value,
+				]),
 			)
 		: undefined;

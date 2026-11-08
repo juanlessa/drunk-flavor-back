@@ -7,8 +7,8 @@ import { createUnit } from './unit.helpers';
 
 export const createIngredient = async (ingredientOptions?: DeepPartial<CreateIngredient>) => {
 	const { category, id: categoryId } = await createCategory(ingredientOptions?.category);
-	const { unit, id: unitId } = await createUnit(ingredientOptions?.unit);
+	const { unit, id: unitId } = await createUnit(ingredientOptions?.units?.[0]);
 	const { translations } = createIngredientFactory({ translations: ingredientOptions?.translations });
-	const ingredient = await resolveIngredientsRepository().create({ translations, category, unit });
+	const ingredient = await resolveIngredientsRepository().create({ translations, category, units: [unit] });
 	return { translations, categoryId, category, unitId, unit, id: ingredient.id, ingredient };
 };

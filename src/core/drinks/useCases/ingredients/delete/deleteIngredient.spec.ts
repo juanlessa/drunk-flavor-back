@@ -41,7 +41,7 @@ describe('Delete Ingredient', () => {
 		const createdIngredient = await ingredientsRepository.create({
 			translations,
 			category: createdCategory,
-			unit: createdUnit,
+			units: [createdUnit],
 		});
 
 		await service.execute({ id: createdIngredient.id });

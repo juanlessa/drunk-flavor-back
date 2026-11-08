@@ -1,6 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { CreateUnit, FindUnitByName, UpdateUnit } from '@/core/drinks/dtos/unit.dtos';
 import { Unit } from '@/core/drinks/entities/unit.entity';
+import {
+	UNIT_SEARCH_FIELDS,
+	buildTranslationsSearchKeys,
+	createNameSearchMatchers,
+} from '@/core/drinks/helpers/searchKeys.helpers';
 import { compareTranslationsName } from '@/core/drinks/helpers/translations.helpers';
 import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
@@ -8,6 +13,10 @@ import { NotFoundError } from '@/shared/error/error.lib';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { filterItemsBySearchCriteria, paginateItems, sortItemsByFields } from '@/shared/helpers/query.helpers';
 import { QueryParams } from '@/shared/types/query.types';
+
+const searchMatchers = createNameSearchMatchers<Unit>((item) =>
+	buildTranslationsSearchKeys(item.translations, UNIT_SEARCH_FIELDS, [item.symbol]),
+);
 
 export class UnitsRepositoryInMemory implements IUnitsRepository {
 	collection: Unit[] = [];
@@ -46,7 +55,7 @@ export class UnitsRepositoryInMemory implements IUnitsRepository {
 
 	async findAll(query: QueryParams): Promise<Unit[]> {
 		let found = [...this.collection];
-		if (query.search) found = filterItemsBySearchCriteria(found, query.search);
+		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);
 		if (query.sort) found = sortItemsByFields(found, query.sort);
 		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
 	}

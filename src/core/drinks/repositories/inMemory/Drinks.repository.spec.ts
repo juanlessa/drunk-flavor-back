@@ -5,6 +5,8 @@ import { Category } from '@/core/drinks/entities/category.entity';
 import { Unit } from '@/core/drinks/entities/unit.entity';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { NotFoundError } from '@/shared/error/error.lib';
+import { PreparationPlan } from '@/core/drinks/modules/preparation';
+import { createDrinkIngredientFactory } from '@/core/drinks/factories/drink.factories';
 
 const buildCategory = (): Category => ({
 	id: new ObjectId().toString(),
@@ -30,7 +32,8 @@ const buildIngredient = (): Ingredient => ({
 	id: new ObjectId().toString(),
 	translations: { en: { name: 'Lime' }, pt: { name: 'Limão' } },
 	category: buildCategory(),
-	unit: buildUnit(),
+	units: [buildUnit()],
+	kind: 'generic',
 	createdAt: new Date(),
 	updatedAt: new Date(),
 });
@@ -48,7 +51,7 @@ describe('DrinksRepositoryInMemory', () => {
 				en: { name: 'Caipirinha', method: 'Muddle and stir' },
 				pt: { name: 'Caipirinha', method: 'Macere e mexa' },
 			},
-			ingredients: [{ ingredient: buildIngredient(), quantity: 60 }],
+			ingredients: [createDrinkIngredientFactory(buildIngredient())],
 		});
 
 		expect(created.cover).toBeUndefined();
@@ -160,5 +163,91 @@ describe('DrinksRepositoryInMemory', () => {
 		});
 
 		expect(sortedPage.map((drink) => drink.translations.en.name)).toEqual(['Alpha', 'Beta']);
+	});
+
+	it('creates a drink without garnishes by default and keeps the ones given', async () => {
+		const ingredient = buildIngredient();
+		const plain = await repository.create({
+			translations: { en: { name: 'Plain', method: 'm' }, pt: { name: 'Simples', method: 'm' } },
+			ingredients: [createDrinkIngredientFactory(ingredient)],
+		});
+		const garnished = await repository.create({
+			translations: { en: { name: 'Garnished', method: 'm' }, pt: { name: 'Decorado', method: 'm' } },
+			ingredients: [createDrinkIngredientFactory(ingredient)],
+			garnishes: [{ ingredient, amount: { type: 'none' } }],
+		});
+
+		expect(plain.garnishes).toEqual([]);
+		expect(garnished.garnishes).toEqual([{ ingredient, amount: { type: 'none' } }]);
+	});
+
+	it('replaces the ingredients and the garnishes on update, and clears the garnishes with an empty list', async () => {
+		const ingredient = buildIngredient();
+		const created = await repository.create({
+			translations: { en: { name: 'Mojito', method: 'm' }, pt: { name: 'Mojito', method: 'm' } },
+			ingredients: [createDrinkIngredientFactory(ingredient)],
+			garnishes: [{ ingredient, amount: { type: 'none' } }],
+		});
+
+		const replaced = await repository.update({
+			id: created.id,
+			garnishes: [{ ingredient, amount: { type: 'qualitative', qualifier: 'to_taste' } }],
+		});
+		const cleared = await repository.update({ id: created.id, garnishes: [] });
+
+		expect(replaced.garnishes).toEqual([{ ingredient, amount: { type: 'qualitative', qualifier: 'to_taste' } }]);
+		expect(cleared.garnishes).toEqual([]);
+		expect(cleared.ingredients).toHaveLength(1);
+	});
+
+	it('finds a drink by name ignoring accents and case', async () => {
+		await repository.create({
+			translations: { en: { name: 'Pina colada', method: 'm' }, pt: { name: 'Piña colada', method: 'm' } },
+			ingredients: [],
+		});
+
+		expect(await repository.findByName({ pt: { name: 'PINA COLADA' } })).not.toBeNull();
+		expect(await repository.findAll({ search: { name: 'pina' } })).toHaveLength(1);
+	});
+	describe('preparation plan', () => {
+		const plan: PreparationPlan = {
+			mixingVessel: 'shaker',
+			servingGlass: 'coupe',
+			actions: [{ type: 'prepare_glass', mode: 'chill' }],
+		};
+		const otherPlan: PreparationPlan = { ...plan, servingGlass: 'rocks' };
+		const translations = { en: { name: 'Sour', method: 'm' }, pt: { name: 'Sour', method: 'm' } };
+
+		it('keeps the plan given on create, and has none by default', async () => {
+			const withPlan = await repository.create({ translations, ingredients: [], preparation: plan });
+			const withoutPlan = await repository.create({
+				translations: { en: { name: 'Fizz', method: 'm' }, pt: { name: 'Fizz', method: 'm' } },
+				ingredients: [],
+			});
+
+			expect(withPlan.preparation).toEqual(plan);
+			expect(withoutPlan.preparation).toBeUndefined();
+		});
+
+		it('sets the plan of a drink that had none, and replaces a stored plan', async () => {
+			const created = await repository.create({ translations, ingredients: [] });
+
+			const set = await repository.update({ id: created.id, preparation: plan });
+			const replaced = await repository.update({ id: created.id, preparation: otherPlan });
+
+			expect(set.preparation).toEqual(plan);
+			expect(replaced.preparation).toEqual(otherPlan);
+		});
+
+		it('keeps the stored plan when an update leaves it out, and removes it with null', async () => {
+			const created = await repository.create({ translations, ingredients: [], preparation: plan });
+
+			const untouched = await repository.update({ id: created.id, garnishes: [] });
+			const removed = await repository.update({ id: created.id, preparation: null });
+
+			expect(untouched.preparation).toEqual(plan);
+			expect(removed.preparation).toBeUndefined();
+			expect(removed).not.toHaveProperty('preparation');
+		});
 	});
 });

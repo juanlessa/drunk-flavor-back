@@ -4,6 +4,7 @@ import { Types } from 'mongoose';
 import {
 	mapObjectEntriesDeep,
 	mapQueryFields,
+	mapSearchQueryFields,
 	requireObjectId,
 	toCamelCase,
 	toDomainEntry,
@@ -101,6 +102,15 @@ describe('Mongo mapper helpers', () => {
 			created_at: 1,
 			email_verified: 'desc',
 		});
+	});
+
+	it('maps the name search field to the search keys and the other search fields to persistence names', () => {
+		expect(mapSearchQueryFields({ name: 'limao', isAlcoholic: 'true', id: 'abc' })).toEqual({
+			search_keys: 'limao',
+			is_alcoholic: 'true',
+			_id: 'abc',
+		});
+		expect(mapSearchQueryFields(undefined)).toBeUndefined();
 	});
 
 	it('flattens nested update fields while preserving arrays and non-plain values', () => {

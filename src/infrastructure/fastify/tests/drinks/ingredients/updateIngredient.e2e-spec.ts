@@ -35,7 +35,7 @@ describe('Update Ingredient', () => {
 		const response = await request(app.server)
 			.patch('/ingredients')
 			.set('Cookie', cookies)
-			.send({ id, translations, categoryId, unitId });
+			.send({ id, translations, categoryId, unitIds: [unitId] });
 
 		expect(response.status).toBe(HTTP_STATUS.no_content);
 	});

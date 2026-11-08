@@ -5,6 +5,7 @@ import { z } from 'zod/v4';
 import { drinkTranslationSchema } from '@/core/drinks/schemas/drink.schemas';
 
 const searchSchema = z.object({
+	name: searchTermSchema,
 	...generateTranslationsFieldSchema(drinkTranslationSchema, ['name'], searchTermSchema).shape,
 });
 

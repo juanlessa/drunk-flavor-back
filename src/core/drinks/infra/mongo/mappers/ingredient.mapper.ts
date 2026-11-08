@@ -1,9 +1,11 @@
+import { UpdateIngredientData } from '@/core/drinks/dtos/ingredient.dtos';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { QueryParams } from '@/shared/types/query.types';
 import { DeepPartial } from '@/shared/types/utility.types';
 import {
 	mapObjectEntriesDeep,
 	mapQueryFields,
+	mapSearchQueryFields,
 	toDomainEntry,
 	toObjectId,
 	toPersistenceEntry,
@@ -17,13 +19,13 @@ export const IngredientMapper = {
 			nullHandling: 'toUndefined',
 		}) as Ingredient;
 	},
-	toPersistence(data: DeepPartial<Ingredient>): Partial<IngredientPersistence> {
+	toPersistence(data: DeepPartial<Ingredient> | UpdateIngredientData): Partial<IngredientPersistence> {
 		return mapObjectEntriesDeep(data as Record<string, unknown>, toPersistenceEntry, {
 			nullHandling: 'omit',
 		}) as Partial<IngredientPersistence>;
 	},
 	toObjectId,
 	toPersistenceQuery(query: QueryParams): QueryParams {
-		return { ...query, sort: mapQueryFields(query.sort), search: mapQueryFields(query.search) };
+		return { ...query, sort: mapQueryFields(query.sort), search: mapSearchQueryFields(query.search) };
 	},
 };

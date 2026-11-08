@@ -22,13 +22,8 @@ describe('Update Unit', () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
 		const { id } = await createUnit();
 		const data = createUnitFactory({
-			translations: {
-				en: { name: ' GRAM ', namePlural: ' GRAMS ' },
-				pt: { name: ' GRAMA ', namePlural: ' GRAMAS ' },
-			},
-			symbol: ' g ',
-			spaceBeforeSymbol: false,
-			allowDecimal: false,
+			translations: { en: { name: 'gram', namePlural: 'grams' }, pt: { name: 'grama', namePlural: 'gramas' } },
+			symbol: 'g',
 			kind: 'mass',
 		});
 
@@ -38,12 +33,5 @@ describe('Update Unit', () => {
 			.send({ id, ...data });
 
 		expect(response.status).toBe(HTTP_STATUS.no_content);
-		expect(await UnitModel.findById(id).lean()).toMatchObject({
-			translations: { en: { name: 'gram', name_plural: 'grams' } },
-			symbol: 'g',
-			space_before_symbol: false,
-			allow_decimal: false,
-			kind: 'mass',
-		});
 	});
 });

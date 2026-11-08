@@ -7,7 +7,7 @@ import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
-import { createDrinkFactory } from '@/core/drinks/factories/drink.factories';
+import { createDrinkFactory, createDrinkIngredientFactory } from '@/core/drinks/factories/drink.factories';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
@@ -62,26 +62,26 @@ describe('List Drinks', () => {
 		const ingredient1 = await ingredientsRepository.create({
 			translations: translationsIngredient1,
 			category: category1,
-			unit,
+			units: [unit],
 		});
 		const ingredient2 = await ingredientsRepository.create({
 			translations: translationsIngredient2,
 			category: category1,
-			unit,
+			units: [unit],
 		});
 		createdDrink1 = await drinksRepository.create({
 			translations: translationsDrink1,
-			ingredients: [{ ingredient: ingredient1, quantity: 60 }],
+			ingredients: [createDrinkIngredientFactory(ingredient1, { quantity: 60 })],
 		});
 		await drinksRepository.create({
 			translations: translationsDrink2,
-			ingredients: [{ ingredient: ingredient2, quantity: 60 }],
+			ingredients: [createDrinkIngredientFactory(ingredient2, { quantity: 60 })],
 		});
 		await drinksRepository.create({
 			translations: translationsDrink3,
 			ingredients: [
-				{ ingredient: ingredient1, quantity: 30 },
-				{ ingredient: ingredient2, quantity: 30 },
+				createDrinkIngredientFactory(ingredient1, { quantity: 30 }),
+				createDrinkIngredientFactory(ingredient2, { quantity: 30 }),
 			],
 		});
 	});

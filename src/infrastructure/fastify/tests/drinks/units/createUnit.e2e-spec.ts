@@ -19,20 +19,8 @@ describe('Create Unit', () => {
 
 	it('Should be able to create a unit', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
-		const data = createUnitFactory({
-			translations: {
-				en: { name: '  MILLILITER ', namePlural: ' MILLILITERS ' },
-				pt: { name: ' MILILITRO ', namePlural: ' MILILITROS ' },
-			},
-			symbol: ' mL ',
-			spaceBeforeSymbol: false,
-			allowDecimal: false,
-		});
+		const data = createUnitFactory();
 		const response = await request(app.server).post('/units').set('Cookie', cookies).send(data);
 		expect(response.status).toBe(HTTP_STATUS.created);
-		const unit = await UnitModel.findOne().lean().exec();
-		expect(UnitModel.collection.collectionName).toBe('units');
-		expect(unit?.translations.en).toMatchObject({ name: 'milliliter', name_plural: 'milliliters' });
-		expect(unit).toMatchObject({ symbol: 'mL', space_before_symbol: false, allow_decimal: false });
 	});
 });

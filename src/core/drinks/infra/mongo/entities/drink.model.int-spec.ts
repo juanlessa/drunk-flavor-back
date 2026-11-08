@@ -1,6 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { ObjectId } from 'mongodb';
 import {
+	DRINK_SEARCH_KEYS_INDEX,
 	DRINK_TRANSLATIONS_EN_NAME_UNIQUE_INDEX,
 	DRINK_TRANSLATIONS_PT_NAME_UNIQUE_INDEX,
 	DrinkModel,
@@ -37,19 +38,29 @@ const buildIngredient = (): IngredientPersistence => ({
 	_id: new ObjectId(),
 	translations: { en: { name: 'Lime' }, pt: { name: 'Limão' } },
 	category: buildCategory(),
-	unit: buildUnit(),
+	units: [buildUnit()],
+	kind: 'generic',
 	created_at: new Date(),
 	updated_at: new Date(),
 });
 
-const buildDrink = (name: { en: string; pt: string }, overrides?: Record<string, unknown>) => ({
-	translations: {
-		en: { name: name.en, method: 'Stir' },
-		pt: { name: name.pt, method: 'Mexa' },
-	},
-	ingredients: [{ ingredient: buildIngredient(), quantity: 60 }],
-	...overrides,
-});
+const buildDrink = (name: { en: string; pt: string }, overrides?: Record<string, unknown>) => {
+	const ingredient = buildIngredient();
+	return {
+		translations: {
+			en: { name: name.en, method: 'Stir' },
+			pt: { name: name.pt, method: 'Mexa' },
+		},
+		ingredients: [
+			{
+				ingredient,
+				amount: { type: 'exact' as const, quantity: 60, unit: ingredient.units[0] },
+				optional: false,
+			},
+		],
+		...overrides,
+	};
+};
 
 describe('DrinkModel (integration)', () => {
 	beforeAll(async () => {
@@ -60,16 +71,17 @@ describe('DrinkModel (integration)', () => {
 		await DrinkModel.deleteMany({});
 	});
 
-	it('resolves to the drinks collection', () => {
-		expect(DrinkModel.collection.collectionName).toBe('drinks');
-	});
-
 	it('declares only the owning unique indexes with no leaked embedded-name index', async () => {
 		const indexes = await getIndexes();
 		const names = indexes.map((index) => index.name).sort();
 
 		expect(names).toEqual(
-			['_id_', DRINK_TRANSLATIONS_EN_NAME_UNIQUE_INDEX, DRINK_TRANSLATIONS_PT_NAME_UNIQUE_INDEX].sort(),
+			[
+				'_id_',
+				DRINK_SEARCH_KEYS_INDEX,
+				DRINK_TRANSLATIONS_EN_NAME_UNIQUE_INDEX,
+				DRINK_TRANSLATIONS_PT_NAME_UNIQUE_INDEX,
+			].sort(),
 		);
 		expect(names).not.toContain('translations.en.name_1');
 		expect(names).not.toContain('translations.pt.name_1');
@@ -83,10 +95,11 @@ describe('DrinkModel (integration)', () => {
 		const reloaded = await DrinkModel.findById(created._id).lean();
 
 		expect(reloaded?.ingredients).toHaveLength(1);
-		expect(reloaded?.ingredients[0].quantity).toBe(60);
+		expect(reloaded?.ingredients[0].amount.quantity).toBe(60);
+		expect(reloaded?.ingredients[0].amount.unit?.translations.en.name).toBe('milliliter');
 		expect(reloaded?.ingredients[0].ingredient.translations.en.name).toBe('Lime');
 		expect(reloaded?.ingredients[0].ingredient.category.translations.en.name).toBe('Syrup');
-		expect(reloaded?.ingredients[0].ingredient.unit.translations.en.name).toBe('milliliter');
+		expect(reloaded?.ingredients[0].ingredient.units[0].translations.en.name).toBe('milliliter');
 	});
 
 	it('defaults avg_rating to 0 and rejects out-of-range values', async () => {
@@ -113,6 +126,15 @@ describe('DrinkModel (integration)', () => {
 		expect(reloaded?.thumbnail).toBeUndefined();
 	});
 
+	it('leaves the preparation plan unset when omitted, and keeps a plan as it was written', async () => {
+		const without = await DrinkModel.create(buildDrink({ en: 'Daiquiri', pt: 'Daiquiri BR' }));
+		const plan = { mixing_vessel: 'shaker', serving_glass: 'coupe', actions: [{ type: 'shake', seconds: 10 }] };
+		const withPlan = await DrinkModel.create({ ...buildDrink({ en: 'Sour', pt: 'Sour BR' }), preparation: plan });
+
+		expect((await DrinkModel.findById(without._id).lean())?.preparation).toBeUndefined();
+		expect((await DrinkModel.findById(withPlan._id).lean())?.preparation).toEqual(plan);
+	});
+
 	it('rejects duplicate translations.en.name and translations.pt.name with 11000', async () => {
 		await DrinkModel.create(buildDrink({ en: 'Margarita', pt: 'Margarita BR' }));
 
@@ -120,6 +142,17 @@ describe('DrinkModel (integration)', () => {
 			code: 11000,
 		});
 		await expect(DrinkModel.create(buildDrink({ en: 'Other', pt: 'Margarita BR' }))).rejects.toMatchObject({
+			code: 11000,
+		});
+	});
+
+	it('rejects a name that only differs by case or accents in either language with 11000', async () => {
+		await DrinkModel.create(buildDrink({ en: 'Margarita', pt: 'Margarita BR' }));
+
+		await expect(DrinkModel.create(buildDrink({ en: 'MARGARITA', pt: 'Outro' }))).rejects.toMatchObject({
+			code: 11000,
+		});
+		await expect(DrinkModel.create(buildDrink({ en: 'Other', pt: 'MARGARÍTA BR' }))).rejects.toMatchObject({
 			code: 11000,
 		});
 	});

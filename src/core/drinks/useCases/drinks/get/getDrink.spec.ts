@@ -11,7 +11,7 @@ import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 import { createIngredientFactory } from '@/core/drinks/factories/ingredient.factories';
 import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
-import { createDrinkFactory } from '@/core/drinks/factories/drink.factories';
+import { createDrinkFactory, createDrinkIngredientFactory } from '@/core/drinks/factories/drink.factories';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { DrinksRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Drinks.repository';
@@ -51,7 +51,7 @@ describe('Get Drink', () => {
 		ingredient = await ingredientsRepository.create({
 			translations: translationsIngredient,
 			category: category,
-			unit,
+			units: [unit],
 		});
 	});
 
@@ -62,7 +62,7 @@ describe('Get Drink', () => {
 	it('should be able to find a drink', async () => {
 		const createdDrink = await drinksRepository.create({
 			translations,
-			ingredients: [{ ingredient: ingredient, quantity: 30 }],
+			ingredients: [createDrinkIngredientFactory(ingredient, { quantity: 30 })],
 		});
 
 		const drinkFound = await service.execute({ id: createdDrink.id });
@@ -80,7 +80,7 @@ describe('Get Drink', () => {
 	it('should be able to add the cover and thumbnail url to a found drink', async () => {
 		const createdDrink = await drinksRepository.create({
 			translations,
-			ingredients: [{ ingredient: ingredient, quantity: 30 }],
+			ingredients: [createDrinkIngredientFactory(ingredient, { quantity: 30 })],
 		});
 		await drinksRepository.update({
 			id: createdDrink.id,

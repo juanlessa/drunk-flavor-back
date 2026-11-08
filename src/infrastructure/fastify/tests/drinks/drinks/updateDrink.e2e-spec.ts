@@ -32,7 +32,7 @@ describe('Update Drink', () => {
 
 	it('Should be able to update a drink', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
-		const { id, ingredientId } = await createDrink();
+		const { id, ingredientId, ingredient } = await createDrink();
 
 		const { translations } = createDrinkFactory({
 			translations: {
@@ -40,12 +40,19 @@ describe('Update Drink', () => {
 				pt: { name: 'cosmopolitan', method: 'modo de preparo' },
 			},
 		});
-		const ingredients = [{ ingredientId, quantity: 60 }];
+		const ingredients = [
+			{
+				ingredientId,
+				amount: { type: 'exact', quantity: 60, unitId: ingredient.units[0].id },
+				optional: false,
+			},
+		];
+		const garnishes = [{ ingredientId, amount: { type: 'none' } }];
 
 		const response = await request(app.server)
 			.patch('/drinks')
 			.set('Cookie', cookies)
-			.send({ id, translations, ingredients });
+			.send({ id, translations, ingredients, garnishes });
 
 		expect(response.status).toBe(HTTP_STATUS.no_content);
 	});

@@ -1,6 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { CreateDrink, FindDrinkByName, UpdateDrink } from '@/core/drinks/dtos/drink.dtos';
 import { Drink } from '@/core/drinks/entities/drink.entity';
+import {
+	NAME_SEARCH_FIELDS,
+	buildTranslationsSearchKeys,
+	createNameSearchMatchers,
+} from '@/core/drinks/helpers/searchKeys.helpers';
 import { compareTranslationsName } from '@/core/drinks/helpers/translations.helpers';
 import type { ApplyRatingDelta, DrinkRatingSummary } from '@/core/drinks/public/IDrinksModule';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
@@ -10,6 +15,10 @@ import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { filterItemsBySearchCriteria, paginateItems, sortItemsByFields } from '@/shared/helpers/query.helpers';
 import { QueryParams } from '@/shared/types/query.types';
 
+const searchMatchers = createNameSearchMatchers<Drink>((item) =>
+	buildTranslationsSearchKeys(item.translations, NAME_SEARCH_FIELDS),
+);
+
 export class DrinksRepositoryInMemory implements IDrinksRepository {
 	collection: Drink[] = [];
 
@@ -18,6 +27,7 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 		const record: Drink = {
 			id: randomUUID(),
 			...data,
+			garnishes: data.garnishes ?? [],
 			cover: undefined,
 			thumbnail: undefined,
 			avgRating: 0,
@@ -30,10 +40,16 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 		return record;
 	}
 
-	async update({ id, ...data }: UpdateDrink): Promise<Drink> {
+	async update({ id, preparation, ...data }: UpdateDrink): Promise<Drink> {
 		const index = this.collection.findIndex((record) => record.id === id);
 		if (index < 0) throw this.notFound('update');
-		const record = { ...deepUpdate<Drink>(data, this.collection[index]), updatedAt: new Date() };
+		const { preparation: currentPreparation, ...current } = this.collection[index];
+		const nextPreparation = preparation === undefined ? currentPreparation : (preparation ?? undefined);
+		const record: Drink = {
+			...deepUpdate<Drink>(data, current as Drink),
+			...(nextPreparation ? { preparation: nextPreparation } : {}),
+			updatedAt: new Date(),
+		};
 		this.collection[index] = record;
 		return record;
 	}
@@ -54,7 +70,7 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 
 	async findAll(query: QueryParams): Promise<Drink[]> {
 		let found = [...this.collection];
-		if (query.search) found = filterItemsBySearchCriteria(found, query.search);
+		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);
 		if (query.sort) found = sortItemsByFields(found, query.sort);
 		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
 	}

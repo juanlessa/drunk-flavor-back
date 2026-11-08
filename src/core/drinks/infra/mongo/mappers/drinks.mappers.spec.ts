@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { PreparationPlan } from '@/core/drinks/modules/preparation';
 import { Types } from 'mongoose';
 import { CategoryPersistence } from '../entities/category.model';
 import { DrinkPersistence } from '../entities/drink.model';
@@ -38,24 +39,35 @@ const buildIngredientPersistence = (): IngredientPersistence => ({
 	_id: new Types.ObjectId(),
 	translations: { en: { name: 'Lime' }, pt: { name: 'Limão' } },
 	category: buildCategoryPersistence(),
-	unit: buildUnitPersistence(),
+	units: [buildUnitPersistence()],
+	kind: 'generic',
 	created_at: createdAt,
 	updated_at: updatedAt,
 });
 
-const buildDrinkPersistence = (): DrinkPersistence => ({
-	_id: new Types.ObjectId(),
-	translations: {
-		en: { name: 'Caipirinha', method: 'Muddle and stir' },
-		pt: { name: 'Caipirinha', method: 'Macere e mexa' },
-	},
-	ingredients: [{ ingredient: buildIngredientPersistence(), quantity: 60 }],
-	avg_rating: 4,
-	ratings_count: 2,
-	ratings_sum: 8,
-	created_at: createdAt,
-	updated_at: updatedAt,
-});
+const buildDrinkPersistence = (): DrinkPersistence => {
+	const ingredient = buildIngredientPersistence();
+	return {
+		_id: new Types.ObjectId(),
+		translations: {
+			en: { name: 'Caipirinha', method: 'Muddle and stir' },
+			pt: { name: 'Caipirinha', method: 'Macere e mexa' },
+		},
+		ingredients: [
+			{
+				ingredient,
+				amount: { type: 'exact', quantity: 60, unit: ingredient.units[0] },
+				optional: false,
+			},
+		],
+		garnishes: [{ ingredient, amount: { type: 'none' } }],
+		avg_rating: 4,
+		ratings_count: 2,
+		ratings_sum: 8,
+		created_at: createdAt,
+		updated_at: updatedAt,
+	};
+};
 
 describe('Drink domain persistence mappers', () => {
 	it('maps categories between camelCase domain and snake_case persistence data', () => {
@@ -115,21 +127,23 @@ describe('Drink domain persistence mappers', () => {
 				id: persistence.category._id.toHexString(),
 				isAlcoholic: false,
 			},
-			unit: {
-				id: persistence.unit._id.toHexString(),
-				spaceBeforeSymbol: false,
-				allowDecimal: true,
-			},
+			units: [
+				{
+					id: persistence.units[0]._id.toHexString(),
+					spaceBeforeSymbol: false,
+					allowDecimal: true,
+				},
+			],
 		});
 		expect(ingredient).not.toHaveProperty('__v');
 		expect(ingredient.category).not.toHaveProperty('_id');
-		expect(ingredient.unit).not.toHaveProperty('_id');
+		expect(ingredient.units[0]).not.toHaveProperty('_id');
 
 		const mapped = IngredientMapper.toPersistence(ingredient);
 		expect(mapped.category?._id).toBeInstanceOf(Types.ObjectId);
 		expect(mapped.category).toMatchObject({ is_alcoholic: false });
-		expect(mapped.unit?._id).toBeInstanceOf(Types.ObjectId);
-		expect(mapped.unit).toMatchObject({
+		expect(mapped.units?.[0]?._id).toBeInstanceOf(Types.ObjectId);
+		expect(mapped.units?.[0]).toMatchObject({
 			space_before_symbol: false,
 			allow_decimal: true,
 		});
@@ -146,11 +160,12 @@ describe('Drink domain persistence mappers', () => {
 			ratingsSum: 8,
 			ingredients: [
 				{
-					quantity: 60,
+					optional: false,
+					amount: { type: 'exact', quantity: 60, unit: { allowDecimal: true } },
 					ingredient: {
 						id: persistence.ingredients[0].ingredient._id.toHexString(),
 						category: { isAlcoholic: false },
-						unit: { allowDecimal: true },
+						units: [{ allowDecimal: true }],
 					},
 				},
 			],
@@ -167,10 +182,11 @@ describe('Drink domain persistence mappers', () => {
 			ratings_sum: 8,
 			ingredients: [
 				{
-					quantity: 60,
+					optional: false,
+					amount: { type: 'exact', quantity: 60, unit: { allow_decimal: true } },
 					ingredient: {
 						category: { is_alcoholic: false },
-						unit: { allow_decimal: true },
+						units: [{ allow_decimal: true }],
 					},
 				},
 			],
@@ -196,5 +212,41 @@ describe('Drink domain persistence mappers', () => {
 			search: { avg_rating: '4' },
 			sort: { ratings_count: -1 },
 		});
+	});
+	it('maps the keys of a preparation plan at any depth in both directions', () => {
+		const plan: PreparationPlan = {
+			mixingVessel: 'shaker',
+			servingGlass: 'coupe',
+			actions: [
+				{
+					type: 'add',
+					target: 'mixing',
+					items: [{ list: 'ingredients', ingredientId: 'gin', unitId: 'ml', withUnit: true }],
+				},
+				{ type: 'strain', kind: 'single', overIce: true },
+			],
+		};
+
+		const persisted = DrinkMapper.toPersistence({ preparation: plan });
+		const drink = DrinkMapper.toDomain({ ...buildDrinkPersistence(), preparation: persisted.preparation });
+
+		expect(persisted.preparation).toEqual({
+			mixing_vessel: 'shaker',
+			serving_glass: 'coupe',
+			actions: [
+				{
+					type: 'add',
+					target: 'mixing',
+					items: [{ list: 'ingredients', ingredient_id: 'gin', unit_id: 'ml', with_unit: true }],
+				},
+				{ type: 'strain', kind: 'single', over_ice: true },
+			],
+		});
+		expect(drink.preparation).toEqual(plan);
+	});
+
+	it('leaves the plan out when the drink has none', () => {
+		expect(DrinkMapper.toPersistence({ translations: { en: { name: 'Sour' } } })).not.toHaveProperty('preparation');
+		expect(DrinkMapper.toDomain(buildDrinkPersistence())).not.toHaveProperty('preparation');
 	});
 });

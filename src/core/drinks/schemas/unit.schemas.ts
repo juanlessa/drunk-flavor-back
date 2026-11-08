@@ -1,4 +1,6 @@
+import { UnitKinds } from '@/core/drinks/constants/unit.constants';
 import { getObjectIdSchema } from '@/infrastructure/mongo/schemas/helpers/objectId.helpers';
+import { genderValidation } from '@/shared/schemas/gender.schemas';
 import { LocaleKey } from '@/shared/types/locale.types';
 import { z } from 'zod/v4';
 
@@ -32,11 +34,13 @@ export const unitAllowDecimalValidation = z.boolean({
 	error: 'apiResponses.units.requiredAllowDecimal' satisfies LocaleKey,
 });
 
-export const unitKindValidation = z.enum(['volume', 'mass', 'count', 'informal'], {
+export const unitKindValidation = z.enum(UnitKinds, {
 	error: 'apiResponses.units.invalidKindFormat' satisfies LocaleKey,
 });
 
+// The gender is optional per language; use `requireGenderFor` on the translations to require it where needed.
 export const unitTranslationSchema = z.object({
 	name: unitNameValidation,
 	namePlural: unitNamePluralValidation,
+	gender: genderValidation.optional(),
 });

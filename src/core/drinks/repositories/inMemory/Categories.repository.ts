@@ -1,6 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { CreateCategory, FindCategoryByName, UpdateCategory } from '@/core/drinks/dtos/category.dtos';
 import { Category } from '@/core/drinks/entities/category.entity';
+import {
+	NAME_SEARCH_FIELDS,
+	buildTranslationsSearchKeys,
+	createNameSearchMatchers,
+} from '@/core/drinks/helpers/searchKeys.helpers';
 import { compareTranslationsName } from '@/core/drinks/helpers/translations.helpers';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
@@ -8,6 +13,10 @@ import { NotFoundError } from '@/shared/error/error.lib';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { filterItemsBySearchCriteria, paginateItems, sortItemsByFields } from '@/shared/helpers/query.helpers';
 import { QueryParams } from '@/shared/types/query.types';
+
+const searchMatchers = createNameSearchMatchers<Category>((item) =>
+	buildTranslationsSearchKeys(item.translations, NAME_SEARCH_FIELDS),
+);
 
 export class CategoriesRepositoryInMemory implements ICategoriesRepository {
 	collection: Category[] = [];
@@ -43,7 +52,7 @@ export class CategoriesRepositoryInMemory implements ICategoriesRepository {
 
 	async findAll(query: QueryParams): Promise<Category[]> {
 		let found = [...this.collection];
-		if (query.search) found = filterItemsBySearchCriteria(found, query.search);
+		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);
 		if (query.sort) found = sortItemsByFields(found, query.sort);
 		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
 	}

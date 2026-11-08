@@ -3,6 +3,7 @@ import { SessionRevokedError } from '@/core/accounts/errors/session.errors';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { AUTH_COOKIE } from '../constants/cookie.constants';
 import { i18n } from '@/infrastructure/i18n';
+import { FieldValidationError } from '@/shared/error/error.lib';
 import { errorHandler } from './errorHandler';
 
 const createContext = () => {
@@ -66,5 +67,50 @@ describe('errorHandler', () => {
 			localeKey: 'apiResponses.internalServerError',
 			message: i18n.translate('en', 'apiResponses.internalServerError'),
 		});
+	});
+	it('lists the invalid fields of a field validation error, each one translated with its params', async () => {
+		const { request, reply, send } = createContext();
+		const error = new FieldValidationError(
+			[
+				{
+					location: 'body',
+					path: 'preparation.actions.2',
+					localeKey: 'apiResponses.drinks.preparation.nothingToShake',
+				},
+				{
+					location: 'body',
+					path: 'preparation.actions',
+					localeKey: 'apiResponses.drinks.preparation.requiredActions',
+					params: { min: 1 },
+				},
+			],
+			{ path: 'test' },
+		);
+
+		await errorHandler(error, request as never, reply as never);
+
+		expect(reply.status).toHaveBeenCalledWith(HTTP_STATUS.bad_request);
+		expect(send).toHaveBeenCalledWith(
+			expect.objectContaining({
+				ok: false,
+				code: 'VALIDATION_FAILED',
+				localeKey: 'apiResponses.validation.failed',
+				errors: [
+					{
+						location: 'body',
+						path: 'preparation.actions.2',
+						localeKey: 'apiResponses.drinks.preparation.nothingToShake',
+						message: i18n.translate('en', 'apiResponses.drinks.preparation.nothingToShake'),
+					},
+					{
+						location: 'body',
+						path: 'preparation.actions',
+						localeKey: 'apiResponses.drinks.preparation.requiredActions',
+						params: { min: 1 },
+						message: i18n.translate('en', 'apiResponses.drinks.preparation.requiredActions', { min: 1 }),
+					},
+				],
+			}),
+		);
 	});
 });

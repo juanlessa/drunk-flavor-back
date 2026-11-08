@@ -5,17 +5,24 @@ import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
 import { toMongoUpdateSet } from '@/infrastructure/mongo/helpers/mapper.helpers';
 import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
 import type { ApplyRatingDelta, DrinkRatingSummary } from '@/core/drinks/public/IDrinksModule';
+import { SEARCH_KEYS_FIELD } from '@/infrastructure/mongo/constants/search.constants';
+import { NAME_SEARCH_FIELDS, buildTranslationsSearchKeys } from '@/core/drinks/helpers/searchKeys.helpers';
+import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
 import { QueryFilter } from 'mongoose';
 import { DRINK_UNIQUE_INDEXES, DrinkModel, DrinkPersistence } from '../entities/drink.model';
-import { getNameCompareQuery } from '../helpers/translations.helpers';
+import { findByTranslatedName, getSortCollation } from '../helpers/translations.helpers';
 import { DrinkMapper } from '../mappers/drink.mapper';
 
 export class DrinksRepository implements IDrinksRepository {
 	async create(data: CreateDrink): Promise<Drink> {
 		try {
-			const document = await DrinkModel.create(DrinkMapper.toPersistence(data));
+			const persistenceData = DrinkMapper.toPersistence(data);
+			const document = await DrinkModel.create({
+				...persistenceData,
+				search_keys: buildTranslationsSearchKeys(persistenceData.translations, NAME_SEARCH_FIELDS),
+			});
 			return DrinkMapper.toDomain(document);
 		} catch (error) {
 			throw mapDuplicateKeyError(error, DRINK_UNIQUE_INDEXES, 'apiResponses.drinks.alreadyExist', {
@@ -24,14 +31,28 @@ export class DrinksRepository implements IDrinksRepository {
 		}
 	}
 
-	async update({ id, ...data }: UpdateDrink): Promise<Drink> {
+	async update({ id, preparation, ...data }: UpdateDrink): Promise<Drink> {
 		const objectId = DrinkMapper.toObjectId(id);
 		if (!objectId) throw this.notFound('update');
+		const persistenceData = DrinkMapper.toPersistence({ ...data, preparation: preparation ?? undefined });
+		const update = toMongoUpdateSet(persistenceData);
+		if (persistenceData.translations) {
+			const current = await DrinkModel.findById(objectId)
+				.select('translations')
+				.lean<Pick<DrinkPersistence, 'translations'>>()
+				.exec();
+			if (!current) throw this.notFound('update');
+			update[SEARCH_KEYS_FIELD] = buildTranslationsSearchKeys(
+				deepUpdate(persistenceData.translations, current.translations),
+				NAME_SEARCH_FIELDS,
+			);
+		}
 		let document: DrinkPersistence | null;
 		try {
 			document = await DrinkModel.findByIdAndUpdate(
 				objectId,
-				{ $set: toMongoUpdateSet(DrinkMapper.toPersistence(data)) },
+				// `null` removes the stored plan; a plan replaces it through the `$set` paths.
+				preparation === null ? { $set: update, $unset: { preparation: '' } } : { $set: update },
 				{
 					returnDocument: 'after',
 					runValidators: true,
@@ -61,10 +82,9 @@ export class DrinksRepository implements IDrinksRepository {
 	}
 
 	async findByName(data: FindDrinkByName): Promise<Drink | null> {
-		const document = await DrinkModel.findOne({ $or: getNameCompareQuery(data) })
-			.select('+ratings_sum')
-			.lean<DrinkPersistence>()
-			.exec();
+		const document = await findByTranslatedName(data, (filter, collation) =>
+			DrinkModel.findOne(filter).collation(collation).select('+ratings_sum').lean<DrinkPersistence>().exec(),
+		);
 		return document ? DrinkMapper.toDomain(document) : null;
 	}
 
@@ -76,7 +96,10 @@ export class DrinksRepository implements IDrinksRepository {
 	}
 
 	async findAll(query: QueryParams): Promise<Drink[]> {
-		const documents = await buildQuery<DrinkPersistence>(DrinkMapper.toPersistenceQuery(query), DrinkModel)
+		const persistenceQuery = DrinkMapper.toPersistenceQuery(query);
+		const documents = await buildQuery<DrinkPersistence>(persistenceQuery, DrinkModel, {
+			collation: getSortCollation(persistenceQuery.sort),
+		})
 			.select('+ratings_sum')
 			.lean<DrinkPersistence[]>()
 			.exec();

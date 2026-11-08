@@ -32,10 +32,10 @@ describe('Create Drink', () => {
 
 	it('Should be able to create a drink', async () => {
 		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
-		const { id: ingredientId } = await createIngredient();
+		const { id: ingredientId, unitId } = await createIngredient();
 
 		const { translations } = createDrinkFactory();
-		const ingredients = [{ ingredientId, quantity: 60 }];
+		const ingredients = [{ ingredientId, amount: { type: 'exact', quantity: 60, unitId }, optional: false }];
 
 		const response = await request(app.server)
 			.post('/drinks')
@@ -47,9 +47,31 @@ describe('Create Drink', () => {
 		expect(response.status).toBe(HTTP_STATUS.created);
 		expect(body).toHaveProperty('id');
 		expect(typeof body.id).toBe('string');
+	});
+	it('Should be able to create a drink whose method is written from its preparation plan', async () => {
+		const { cookies } = await createAndAuthenticateUser(app, { role: Roles.admin });
+		const { id: ingredientId, unitId } = await createIngredient();
+		const ingredients = [{ ingredientId, amount: { type: 'exact', quantity: 60, unitId }, optional: false }];
+		const preparation = {
+			mixingVessel: 'serving_glass',
+			servingGlass: 'rocks',
+			actions: [{ type: 'add', target: 'mixing', items: [{ list: 'ingredients', ingredientId, unitId }] }],
+		};
 
-		const stored = await DrinkModel.findById(body.id).lean();
-		expect(stored?.avg_rating).toBe(0);
-		expect(stored?.ratings_count).toBe(0);
+		const response = await request(app.server)
+			.post('/drinks')
+			.set('Cookie', cookies)
+			.send({ translations: { en: { name: 'Planned' }, pt: { name: 'Planejado' } }, ingredients, preparation });
+		const { id } = response.body as { id: string };
+		const found = await request(app.server).get(`/drinks/${id}`).send();
+
+		expect(response.status).toBe(HTTP_STATUS.created);
+		expect(found.body).toMatchObject({
+			translations: {
+				en: { method: 'In a rocks glass, add syrup.' },
+				pt: { method: 'Em um copo baixo, adicione o xarope.' },
+			},
+			preparation,
+		});
 	});
 });

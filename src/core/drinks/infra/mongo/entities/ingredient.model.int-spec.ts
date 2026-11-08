@@ -1,6 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { ObjectId } from 'mongodb';
 import {
+	INGREDIENT_SEARCH_KEYS_INDEX,
 	INGREDIENT_TRANSLATIONS_EN_NAME_UNIQUE_INDEX,
 	INGREDIENT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX,
 	IngredientModel,
@@ -40,7 +41,8 @@ const buildIngredient = (name: {
 }): Omit<IngredientPersistence, '_id' | 'created_at' | 'updated_at'> => ({
 	translations: { en: { name: name.en }, pt: { name: name.pt } },
 	category: buildCategory(),
-	unit: buildUnit(),
+	units: [buildUnit()],
+	kind: 'generic',
 });
 
 describe('IngredientModel (integration)', () => {
@@ -52,34 +54,45 @@ describe('IngredientModel (integration)', () => {
 		await IngredientModel.deleteMany({});
 	});
 
-	it('resolves to the ingredients collection', () => {
-		expect(IngredientModel.collection.collectionName).toBe('ingredients');
-	});
-
 	it('declares only the owning unique indexes with no leaked embedded-name index', async () => {
 		const indexes = await getIndexes();
 		const names = indexes.map((index) => index.name).sort();
 
 		expect(names).toEqual(
-			['_id_', INGREDIENT_TRANSLATIONS_EN_NAME_UNIQUE_INDEX, INGREDIENT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX].sort(),
+			[
+				'_id_',
+				INGREDIENT_SEARCH_KEYS_INDEX,
+				INGREDIENT_TRANSLATIONS_EN_NAME_UNIQUE_INDEX,
+				INGREDIENT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX,
+			].sort(),
 		);
 		expect(names).not.toContain('translations.en.name_1');
 		expect(names).not.toContain('translations.pt.name_1');
 
 		// No index should be keyed on an embedded category/unit name path.
 		const leaked = indexes.filter((index) =>
-			Object.keys(index.key).some((key) => key.startsWith('category.') || key.startsWith('unit.')),
+			Object.keys(index.key).some((key) => key.startsWith('category.') || key.startsWith('units.')),
 		);
 		expect(leaked).toEqual([]);
 	});
 
-	it('reads back the embedded category and unit subdocuments intact', async () => {
+	it('reads back the embedded category and units subdocuments intact', async () => {
 		const created = await IngredientModel.create(buildIngredient({ en: 'Lime', pt: 'Limão' }));
 		const reloaded = await IngredientModel.findById(created._id).lean();
 
 		expect(reloaded?.category?.translations.en.name).toBe('Syrup');
-		expect(reloaded?.unit?.translations.en.name).toBe('milliliter');
-		expect(reloaded?.unit?.kind).toBe('volume');
+		expect(reloaded?.units?.[0]?.translations.en.name).toBe('milliliter');
+		expect(reloaded?.units?.[0]?.kind).toBe('volume');
+	});
+
+	it('defaults the units to an empty list, which means the ingredient is not measurable', async () => {
+		const created = await IngredientModel.create({
+			...buildIngredient({ en: 'Foam', pt: 'Espuma' }),
+			units: undefined,
+		});
+		const reloaded = await IngredientModel.findById(created._id).lean();
+
+		expect(reloaded?.units).toEqual([]);
 	});
 
 	it('rejects duplicate translations.en.name and translations.pt.name with 11000', async () => {
@@ -89,6 +102,17 @@ describe('IngredientModel (integration)', () => {
 			code: 11000,
 		});
 		await expect(IngredientModel.create(buildIngredient({ en: 'Other', pt: 'Limão' }))).rejects.toMatchObject({
+			code: 11000,
+		});
+	});
+
+	it('rejects a name that only differs by case or accents in either language with 11000', async () => {
+		await IngredientModel.create(buildIngredient({ en: 'Lime', pt: 'Limão' }));
+
+		await expect(IngredientModel.create(buildIngredient({ en: 'LIME', pt: 'Outro' }))).rejects.toMatchObject({
+			code: 11000,
+		});
+		await expect(IngredientModel.create(buildIngredient({ en: 'Other', pt: 'LIMAO' }))).rejects.toMatchObject({
 			code: 11000,
 		});
 	});

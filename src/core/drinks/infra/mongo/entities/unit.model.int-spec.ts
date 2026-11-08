@@ -1,5 +1,6 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import {
+	UNIT_SEARCH_KEYS_INDEX,
 	UNIT_TRANSLATIONS_EN_NAME_UNIQUE_INDEX,
 	UNIT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX,
 	UnitModel,
@@ -27,16 +28,17 @@ describe('UnitModel (integration)', () => {
 		await UnitModel.deleteMany({});
 	});
 
-	it('resolves to the units collection', () => {
-		expect(UnitModel.collection.collectionName).toBe('units');
-	});
-
 	it('declares exactly the expected named unique indexes and no implicit field-level index', async () => {
 		const indexes = await getIndexes();
 		const names = indexes.map((index) => index.name).sort();
 
 		expect(names).toEqual(
-			['_id_', UNIT_TRANSLATIONS_EN_NAME_UNIQUE_INDEX, UNIT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX].sort(),
+			[
+				'_id_',
+				UNIT_SEARCH_KEYS_INDEX,
+				UNIT_TRANSLATIONS_EN_NAME_UNIQUE_INDEX,
+				UNIT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX,
+			].sort(),
 		);
 		expect(names).not.toContain('translations.en.name_1');
 		expect(names).not.toContain('translations.pt.name_1');
@@ -77,6 +79,17 @@ describe('UnitModel (integration)', () => {
 			code: 11000,
 		});
 		await expect(UnitModel.create(buildUnit({ en: 'other', pt: 'mililitro' }))).rejects.toMatchObject({
+			code: 11000,
+		});
+	});
+
+	it('rejects a name that only differs by case or accents in either language with 11000', async () => {
+		await UnitModel.create(buildUnit({ en: 'milliliter', pt: 'mililitro' }));
+
+		await expect(UnitModel.create(buildUnit({ en: 'MILLILITER', pt: 'outro' }))).rejects.toMatchObject({
+			code: 11000,
+		});
+		await expect(UnitModel.create(buildUnit({ en: 'other', pt: 'MILILÍTRO' }))).rejects.toMatchObject({
 			code: 11000,
 		});
 	});

@@ -4,7 +4,11 @@ export type AppErrorOptions = ErrorOptions & {
 	path?: string;
 };
 
-export type FieldErrorParams = Readonly<Partial<Record<'min' | 'max', number>>>;
+/**
+ * Values a message may interpolate or a client may read: rule limits (`min`, `max`) from request validation, or
+ * ids and enum values from domain checks. Never free text.
+ */
+export type FieldErrorParams = Readonly<Record<string, string | number>>;
 
 export type FieldError = {
 	/** Request part that failed validation. */
@@ -12,7 +16,7 @@ export type FieldError = {
 	/** Dot-separated path of the invalid field inside `location`; empty when the whole part is invalid. */
 	path: string;
 	localeKey: LocaleKey;
-	/** Rule limits (`min`, `max`) interpolated into the message, so clients never parse the text for them. */
+	/** Values behind the message, so clients never parse the text for them. */
 	params?: FieldErrorParams;
 };
 

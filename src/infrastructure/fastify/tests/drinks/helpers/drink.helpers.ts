@@ -1,4 +1,5 @@
 import { CreateDrink } from '@/core/drinks/dtos/drink.dtos';
+import { DrinkIngredientAmountTypes } from '@/core/drinks/constants/drink.constants';
 import { createDrinkFactory } from '@/core/drinks/factories/drink.factories';
 import { resolveDrinksRepository } from '@/core/drinks/infra/mongo/container';
 import { DeepPartial } from '@/shared/types/utility.types';
@@ -9,7 +10,13 @@ export const createDrink = async (_drinkOptions?: DeepPartial<CreateDrink>) => {
 	const { translations } = createDrinkFactory();
 	const drink = await resolveDrinksRepository().create({
 		translations,
-		ingredients: [{ ingredient, quantity: 60 }],
+		ingredients: [
+			{
+				ingredient,
+				amount: { type: DrinkIngredientAmountTypes.exact, quantity: 60, unit: ingredient.units[0] },
+				optional: false,
+			},
+		],
 	});
 	return { translations, id: drink.id, drink, ingredient, ingredientId: ingredient.id };
 };
