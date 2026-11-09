@@ -10,6 +10,8 @@ import { getDrinkSchema } from '@/core/drinks/useCases/drinks/get/getDrink.schem
 import { getDrinkController } from '@/core/drinks/useCases/drinks/get/getDrink.controller';
 import { listDrinksSchema } from '@/core/drinks/useCases/drinks/list/listDrinks.schema';
 import { listDrinksController } from '@/core/drinks/useCases/drinks/list/listDrinks.controller';
+import { matchDrinksQuerySchema, matchDrinksSchema } from '@/core/drinks/useCases/drinks/match/matchDrinks.schema';
+import { matchDrinksController } from '@/core/drinks/useCases/drinks/match/matchDrinks.controller';
 import { updateDrinkSchema } from '@/core/drinks/useCases/drinks/update/updateDrink.schema';
 import { updateDrinkController } from '@/core/drinks/useCases/drinks/update/updateDrink.controller';
 import { updateDrinkCoverSchema } from '@/core/drinks/useCases/drinks/updateCover/updateDrinkCover.schema';
@@ -65,6 +67,23 @@ const routes: Routes = (server) => {
 			},
 		},
 		listDrinksController,
+	);
+
+	// A read-only search whose input is a list, so it travels in the content of a QUERY request (RFC 10008): safe and
+	// idempotent like a GET, without squeezing the list into the URL. The page stays in the URL, as in the other listings.
+	server.withTypeProvider<ZodTypeProvider>().query(
+		'/drinks/match',
+		{
+			schema: {
+				tags: ['Drinks'],
+				summary: 'Find drinks by the ingredients a person has',
+				description:
+					'Lists the drinks that use at least one of the given ingredients. Only the required ingredients of a drink count (the optional ones and the garnishes do not). `maxMissing` is how many required ingredients may be missing (0, 1, 2) or `any`; the most complete drinks come first and each one lists the ingredients that are missing. Uses the HTTP QUERY method.',
+				body: matchDrinksSchema,
+				querystring: matchDrinksQuerySchema,
+			},
+		},
+		matchDrinksController,
 	);
 
 	server.withTypeProvider<ZodTypeProvider>().patch(

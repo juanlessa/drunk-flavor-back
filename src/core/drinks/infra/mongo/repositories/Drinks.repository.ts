@@ -1,4 +1,10 @@
-import { CreateDrink, FindDrinkByName, UpdateDrink } from '@/core/drinks/dtos/drink.dtos';
+import {
+	CreateDrink,
+	DrinkIngredientMatch,
+	FindDrinkByName,
+	FindDrinksByIngredients,
+	UpdateDrink,
+} from '@/core/drinks/dtos/drink.dtos';
 import { Drink } from '@/core/drinks/entities/drink.entity';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
@@ -10,8 +16,10 @@ import { NAME_SEARCH_FIELDS, buildTranslationsSearchKeys } from '@/core/drinks/h
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
-import { QueryFilter } from 'mongoose';
+import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
+import { PipelineStage, QueryFilter, Types } from 'mongoose';
 import { DRINK_UNIQUE_INDEXES, DrinkModel, DrinkPersistence } from '../entities/drink.model';
+import { getRequiredIngredientObjectIds } from '../helpers/drinkRequiredIngredients.helpers';
 import { findByTranslatedName, getSortCollation } from '../helpers/translations.helpers';
 import { DrinkMapper } from '../mappers/drink.mapper';
 
@@ -22,6 +30,7 @@ export class DrinksRepository implements IDrinksRepository {
 			const document = await DrinkModel.create({
 				...persistenceData,
 				search_keys: buildTranslationsSearchKeys(persistenceData.translations, NAME_SEARCH_FIELDS),
+				required_ingredient_ids: getRequiredIngredientObjectIds(persistenceData.ingredients ?? []),
 			});
 			return DrinkMapper.toDomain(document);
 		} catch (error) {
@@ -36,6 +45,10 @@ export class DrinksRepository implements IDrinksRepository {
 		if (!objectId) throw this.notFound('update');
 		const persistenceData = DrinkMapper.toPersistence({ ...data, preparation: preparation ?? undefined });
 		const update = toMongoUpdateSet(persistenceData);
+		// The recipe is replaced as a whole, so the ids that the search by ingredients matches on follow it.
+		if (persistenceData.ingredients) {
+			update['required_ingredient_ids'] = getRequiredIngredientObjectIds(persistenceData.ingredients);
+		}
 		if (persistenceData.translations) {
 			const current = await DrinkModel.findById(objectId)
 				.select('translations')
@@ -104,6 +117,38 @@ export class DrinksRepository implements IDrinksRepository {
 			.lean<DrinkPersistence[]>()
 			.exec();
 		return documents.map(DrinkMapper.toDomain);
+	}
+
+	async findByIngredients({
+		ingredientIds,
+		maxMissing,
+		limit = DEFAULT_QUERY_PARAMS.limit,
+		page = DEFAULT_QUERY_PARAMS.page,
+	}: FindDrinksByIngredients): Promise<DrinkIngredientMatch[]> {
+		const available = ingredientIds.map(DrinkMapper.toObjectId);
+		const hasOnlyValidIds = available.every((id): id is Types.ObjectId => id !== null);
+		if (available.length === 0 || !hasOnlyValidIds) return [];
+
+		const pipeline: PipelineStage[] = [
+			// At least one required ingredient must be one the person has. This is the step the index serves, and it
+			// holds for every `maxMissing`, so a drink with nothing in common is never a candidate.
+			{ $match: { required_ingredient_ids: { $in: available } } },
+			{ $addFields: { missing_ingredient_ids: { $setDifference: ['$required_ingredient_ids', available] } } },
+			{ $addFields: { missing_count: { $size: '$missing_ingredient_ids' } } },
+			...(maxMissing === 'any' ? [] : [{ $match: { missing_count: { $lte: maxMissing } } }]),
+			// The most complete first, then the best rated; `_id` keeps the pages stable.
+			{ $sort: { missing_count: 1, avg_rating: -1, _id: -1 } },
+			{ $skip: (page - 1) * limit },
+			{ $limit: limit },
+			{ $project: { search_keys: 0, required_ingredient_ids: 0, missing_count: 0 } },
+		];
+		const documents = await DrinkModel.aggregate<DrinkPersistence & { missing_ingredient_ids: Types.ObjectId[] }>(
+			pipeline,
+		).exec();
+		return documents.map(({ missing_ingredient_ids, ...document }) => ({
+			drink: DrinkMapper.toDomain(document),
+			missingIngredientIds: missing_ingredient_ids.map((id) => id.toHexString()).sort(),
+		}));
 	}
 
 	async applyRatingDelta({ drinkId, countDelta, sumDelta }: ApplyRatingDelta): Promise<DrinkRatingSummary> {

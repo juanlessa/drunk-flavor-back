@@ -1,11 +1,18 @@
 import { randomUUID } from 'node:crypto';
-import { CreateDrink, FindDrinkByName, UpdateDrink } from '@/core/drinks/dtos/drink.dtos';
+import {
+	CreateDrink,
+	DrinkIngredientMatch,
+	FindDrinkByName,
+	FindDrinksByIngredients,
+	UpdateDrink,
+} from '@/core/drinks/dtos/drink.dtos';
 import { Drink } from '@/core/drinks/entities/drink.entity';
 import {
 	NAME_SEARCH_FIELDS,
 	buildTranslationsSearchKeys,
 	createNameSearchMatchers,
 } from '@/core/drinks/helpers/searchKeys.helpers';
+import { getMissingIngredientIds, getRequiredIngredientIds } from '@/core/drinks/helpers/drinkMatch.helpers';
 import { compareTranslationsName } from '@/core/drinks/helpers/translations.helpers';
 import type { ApplyRatingDelta, DrinkRatingSummary } from '@/core/drinks/public/IDrinksModule';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
@@ -73,6 +80,36 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);
 		if (query.sort) found = sortItemsByFields(found, query.sort);
 		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
+	}
+
+	async findByIngredients({
+		ingredientIds,
+		maxMissing,
+		limit = DEFAULT_QUERY_PARAMS.limit,
+		page = DEFAULT_QUERY_PARAMS.page,
+	}: FindDrinksByIngredients): Promise<DrinkIngredientMatch[]> {
+		const available = new Set(ingredientIds);
+		const matches = this.collection
+			.map((drink) => ({
+				drink,
+				required: getRequiredIngredientIds(drink.ingredients),
+			}))
+			// At least one required ingredient must be one the person has, whatever `maxMissing` is.
+			.filter(({ required }) => required.some((id) => available.has(id)))
+			.map(({ drink, required }) => ({
+				drink,
+				missingIngredientIds: getMissingIngredientIds(required, available),
+			}))
+			.filter(({ missingIngredientIds }) => maxMissing === 'any' || missingIngredientIds.length <= maxMissing)
+			// The most complete first, then the best rated, then the newest.
+			.sort(
+				(a, b) =>
+					a.missingIngredientIds.length - b.missingIngredientIds.length ||
+					b.drink.avgRating - a.drink.avgRating ||
+					b.drink.createdAt.getTime() - a.drink.createdAt.getTime(),
+			)
+			.map((match) => ({ ...match, missingIngredientIds: [...match.missingIngredientIds].sort() }));
+		return paginateItems(matches, limit, page);
 	}
 
 	async applyRatingDelta({ drinkId, countDelta, sumDelta }: ApplyRatingDelta): Promise<DrinkRatingSummary> {

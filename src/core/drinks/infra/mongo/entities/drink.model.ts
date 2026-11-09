@@ -17,6 +17,7 @@ export const FileMetadataSchema = new Schema<FileMetadata>(
 );
 
 export const DRINK_SEARCH_KEYS_INDEX = 'drink_search_keys';
+export const DRINK_REQUIRED_INGREDIENT_IDS_INDEX = 'drink_required_ingredient_ids';
 export const DRINK_TRANSLATIONS_EN_NAME_UNIQUE_INDEX = 'drink_translations_en_name_unique';
 export const DRINK_TRANSLATIONS_PT_NAME_UNIQUE_INDEX = 'drink_translations_pt_name_unique';
 export const DRINK_UNIQUE_INDEXES = [
@@ -68,6 +69,9 @@ const drinkSchemaDefinition = {
 	cover: { type: FileMetadataSchema, default: undefined },
 	thumbnail: { type: FileMetadataSchema, default: undefined },
 	search_keys: { type: [String], default: undefined, select: false },
+	// The ids of the non-optional ingredients, kept apart so a search by the ingredients a person has can use an index.
+	// It is written with the recipe (see the repository) and is not part of the drink.
+	required_ingredient_ids: { type: [Schema.Types.ObjectId], default: undefined, select: false },
 	ingredients: { type: [DrinkIngredientSchema], required: true },
 	garnishes: { type: [DrinkGarnishSchema], required: true, default: () => [] },
 	// The preparation module validates the plan before it gets here, so it is stored as it is.
@@ -112,6 +116,7 @@ export type DrinkPersistence = {
 	cover?: FileMetadata;
 	thumbnail?: FileMetadata;
 	search_keys?: string[];
+	required_ingredient_ids?: Types.ObjectId[];
 	ingredients: DrinkIngredientPersistence[];
 	garnishes: DrinkGarnishPersistence[];
 	preparation?: Record<string, unknown>;
@@ -135,6 +140,7 @@ DrinkSchema.index(
 	getNameUniqueIndexOptions('pt', DRINK_TRANSLATIONS_PT_NAME_UNIQUE_INDEX),
 );
 DrinkSchema.index({ search_keys: 1 }, { name: DRINK_SEARCH_KEYS_INDEX });
+DrinkSchema.index({ required_ingredient_ids: 1 }, { name: DRINK_REQUIRED_INGREDIENT_IDS_INDEX });
 
 export const DrinkModel =
 	(mongoose.models['drinks'] as Model<DrinkPersistence> | undefined) ??
