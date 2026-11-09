@@ -16,6 +16,7 @@ import { verifyPermissions } from '../../middlewares/verifyPermissions';
 import { enforceCompleteProfile } from '../../middlewares/enforceCompleteProfile';
 
 import { listCategoriesWithAuthorshipController } from '@/core/drinks/useCases/categories/listWithAuthorship/listCategoriesWithAuthorship.controller';
+import { getCategoryWithAuthorshipController } from '@/core/drinks/useCases/categories/getWithAuthorship/getCategoryWithAuthorship.controller';
 const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
 		'/categories',
@@ -63,6 +64,18 @@ const routes: Routes = (server) => {
 			],
 		},
 		listCategoriesWithAuthorshipController,
+	);
+	server.withTypeProvider<ZodTypeProvider>().get(
+		'/categories/me/:id',
+		{
+			schema: { tags: ['Categories'], params: getCategorySchema },
+			preValidation: [
+				verifyAndRenewToken,
+				enforceCompleteProfile,
+				verifyPermissions('getWithAuthorship', 'Category'),
+			],
+		},
+		getCategoryWithAuthorshipController,
 	);
 	server.withTypeProvider<ZodTypeProvider>().patch(
 		'/categories',

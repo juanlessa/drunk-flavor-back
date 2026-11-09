@@ -153,6 +153,9 @@ policy.
 - `GET /units/me`, `/categories/me`, `/ingredients/me` and `/drinks/me` (action `listWithAuthorship`) are for Partner,
   Admin and Owner only. They take the same filters, search and sort as the public listings, always put the records the
   signed-in user created first, and show `createdBy` and `updatedBy`.
+- `GET /units/me/:id`, `/categories/me/:id`, `/ingredients/me/:id` and `/drinks/me/:id` (action `getWithAuthorship`) are
+  the single-record counterpart: same roles, same fields as the public `GET /:id` plus `createdBy` and `updatedBy`.
+  Every record is visible to those roles, so the only check is the role; a missing record is a 404.
 
 #### Comments
 

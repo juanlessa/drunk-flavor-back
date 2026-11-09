@@ -16,6 +16,7 @@ import { enforceCompleteProfile } from '../../middlewares/enforceCompleteProfile
 import { Routes } from '../../types/fastify.types';
 
 import { listUnitsWithAuthorshipController } from '@/core/drinks/useCases/units/listWithAuthorship/listUnitsWithAuthorship.controller';
+import { getUnitWithAuthorshipController } from '@/core/drinks/useCases/units/getWithAuthorship/getUnitWithAuthorship.controller';
 const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
 		'/units',
@@ -50,6 +51,18 @@ const routes: Routes = (server) => {
 			],
 		},
 		listUnitsWithAuthorshipController,
+	);
+	server.withTypeProvider<ZodTypeProvider>().get(
+		'/units/me/:id',
+		{
+			schema: { tags: ['Units'], params: getUnitSchema },
+			preValidation: [
+				verifyAndRenewToken,
+				enforceCompleteProfile,
+				verifyPermissions('getWithAuthorship', 'Unit'),
+			],
+		},
+		getUnitWithAuthorshipController,
 	);
 	server.withTypeProvider<ZodTypeProvider>().patch(
 		'/units',

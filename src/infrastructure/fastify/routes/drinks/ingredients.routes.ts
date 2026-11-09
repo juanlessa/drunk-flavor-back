@@ -16,6 +16,7 @@ import { verifyPermissions } from '../../middlewares/verifyPermissions';
 import { enforceCompleteProfile } from '../../middlewares/enforceCompleteProfile';
 
 import { listIngredientsWithAuthorshipController } from '@/core/drinks/useCases/ingredients/listWithAuthorship/listIngredientsWithAuthorship.controller';
+import { getIngredientWithAuthorshipController } from '@/core/drinks/useCases/ingredients/getWithAuthorship/getIngredientWithAuthorship.controller';
 const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
 		'/ingredients',
@@ -63,6 +64,18 @@ const routes: Routes = (server) => {
 			],
 		},
 		listIngredientsWithAuthorshipController,
+	);
+	server.withTypeProvider<ZodTypeProvider>().get(
+		'/ingredients/me/:id',
+		{
+			schema: { tags: ['Ingredients'], params: getIngredientSchema },
+			preValidation: [
+				verifyAndRenewToken,
+				enforceCompleteProfile,
+				verifyPermissions('getWithAuthorship', 'Ingredient'),
+			],
+		},
+		getIngredientWithAuthorshipController,
 	);
 	server.withTypeProvider<ZodTypeProvider>().patch(
 		'/ingredients',

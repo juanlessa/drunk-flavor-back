@@ -45,4 +45,14 @@ describe('List Drinks With Authorship', () => {
 		expect(single.body).not.toHaveProperty('createdBy');
 		expect(single.body).not.toHaveProperty('updatedBy');
 	});
+
+	it('gets a drink with who created and last edited it', async () => {
+		const { cookies, user } = await createAndAuthenticateUser(app, { role: Roles.partner });
+		const { id } = await createDrink({ createdBy: user.id });
+
+		const response = await request(app.server).get(`/drinks/me/${id}`).set('Cookie', cookies);
+
+		expect(response.status).toBe(HTTP_STATUS.ok);
+		expect(response.body).toMatchObject({ id, createdBy: user.id, updatedBy: user.id });
+	});
 });

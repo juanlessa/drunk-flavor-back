@@ -40,4 +40,17 @@ describe('List Categories With Authorship', () => {
 		expect(category).not.toHaveProperty('createdBy');
 		expect(category).not.toHaveProperty('updatedBy');
 	});
+
+	it('gets a category with who created and last edited it, while the public read hides it', async () => {
+		const { cookies, user } = await createAndAuthenticateUser(app, { role: Roles.partner });
+		const { id } = await createCategory({ createdBy: user.id });
+
+		const withAuthorship = await request(app.server).get(`/categories/me/${id}`).set('Cookie', cookies);
+		const publicRead = await request(app.server).get(`/categories/${id}`);
+
+		expect(withAuthorship.status).toBe(HTTP_STATUS.ok);
+		expect(withAuthorship.body).toMatchObject({ id, createdBy: user.id, updatedBy: user.id });
+		expect(publicRead.body).not.toHaveProperty('createdBy');
+		expect(publicRead.body).not.toHaveProperty('updatedBy');
+	});
 });

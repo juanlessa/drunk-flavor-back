@@ -122,6 +122,7 @@ describe.each(['Category', 'Unit', 'Ingredient', 'Drink'] as const)('Catalog per
 		}
 		expect(can('create', typename)).toBe(true);
 		expect(can('listWithAuthorship', typename)).toBe(true);
+		expect(can('getWithAuthorship', typename)).toBe(true);
 	});
 
 	describe('a partner', () => {
@@ -133,8 +134,9 @@ describe.each(['Category', 'Unit', 'Ingredient', 'Drink'] as const)('Catalog per
 			expect(can('get', typename)).toBe(true);
 		});
 
-		it('may list with the authorship', () => {
+		it('may list and get with the authorship', () => {
 			expect(can('listWithAuthorship', typename)).toBe(true);
+			expect(can('getWithAuthorship', typename)).toBe(true);
 		});
 
 		it('may update and delete a record they created', () => {
@@ -167,8 +169,9 @@ describe.each(['Category', 'Unit', 'Ingredient', 'Drink'] as const)('Catalog per
 			expect(can('create', typename)).toBe(false);
 		});
 
-		it('may not list with the authorship', () => {
+		it('may not list or get with the authorship', () => {
 			expect(can('listWithAuthorship', typename)).toBe(false);
+			expect(can('getWithAuthorship', typename)).toBe(false);
 		});
 
 		it('may not update or delete, not even a record that has their id as creator', () => {

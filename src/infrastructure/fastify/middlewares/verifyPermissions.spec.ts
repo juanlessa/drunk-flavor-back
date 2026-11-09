@@ -19,23 +19,22 @@ describe('verifyPermissions', () => {
 	});
 
 	describe.each(['Category', 'Unit', 'Ingredient', 'Drink'] as const)(
-		'the listing with authorship of %s',
+		'the reads with authorship of %s',
 		(subject) => {
-			const listWithAuthorship = (role: string) =>
-				verifyPermissions('listWithAuthorship', subject)(
-					{ user: { id: 'user-id', role } } as never,
-					{} as never,
-				);
+			const read = (action: 'listWithAuthorship' | 'getWithAuthorship', role: string) =>
+				verifyPermissions(action, subject)({ user: { id: 'user-id', role } } as never, {} as never);
 
-			it.each([Roles.partner, Roles.admin, Roles.owner])('lets the %s through', async (role) => {
-				await expect(listWithAuthorship(role)).resolves.toBeUndefined();
-			});
+			describe.each(['listWithAuthorship', 'getWithAuthorship'] as const)('%s', (action) => {
+				it.each([Roles.partner, Roles.admin, Roles.owner])('lets the %s through', async (role) => {
+					await expect(read(action, role)).resolves.toBeUndefined();
+				});
 
-			it('rejects a member as insufficient permissions', async () => {
-				const rejection = await listWithAuthorship(Roles.member).catch((error: unknown) => error);
+				it('rejects a member as insufficient permissions', async () => {
+					const rejection = await read(action, Roles.member).catch((error: unknown) => error);
 
-				expect(rejection).toBeInstanceOf(ForbiddenError);
-				expect((rejection as ForbiddenError).message).toBe('apiResponses.auth.insufficientPermissions');
+					expect(rejection).toBeInstanceOf(ForbiddenError);
+					expect((rejection as ForbiddenError).message).toBe('apiResponses.auth.insufficientPermissions');
+				});
 			});
 		},
 	);

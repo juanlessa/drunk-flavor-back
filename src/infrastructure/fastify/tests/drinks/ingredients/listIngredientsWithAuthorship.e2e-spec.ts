@@ -40,4 +40,17 @@ describe('List Ingredients With Authorship', () => {
 		expect(ingredient).not.toHaveProperty('createdBy');
 		expect(ingredient).not.toHaveProperty('updatedBy');
 	});
+
+	it('gets an ingredient with who created and last edited it, while the public read hides it', async () => {
+		const { cookies, user } = await createAndAuthenticateUser(app, { role: Roles.partner });
+		const { id } = await createIngredient({ createdBy: user.id });
+
+		const withAuthorship = await request(app.server).get(`/ingredients/me/${id}`).set('Cookie', cookies);
+		const publicRead = await request(app.server).get(`/ingredients/${id}`);
+
+		expect(withAuthorship.status).toBe(HTTP_STATUS.ok);
+		expect(withAuthorship.body).toMatchObject({ id, createdBy: user.id, updatedBy: user.id });
+		expect(publicRead.body).not.toHaveProperty('createdBy');
+		expect(publicRead.body).not.toHaveProperty('updatedBy');
+	});
 });

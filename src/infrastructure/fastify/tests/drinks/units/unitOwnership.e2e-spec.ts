@@ -119,4 +119,27 @@ describe('Unit ownership', () => {
 			expect(namesOf(alphabetical.body as UnitBody[])).toEqual(['apple', 'zebra']);
 		});
 	});
+
+	describe('getting with authorship (GET /units/me/:id)', () => {
+		it.each([Roles.partner, Roles.admin, Roles.owner])(
+			'lets the %s get a unit created by someone else',
+			async (role) => {
+				const creator = await createAndAuthenticateUser(app, {
+					role: Roles.partner,
+					email: 'creator@example.com',
+				});
+				const reader = await createAndAuthenticateUser(app, { role, email: 'reader@example.com' });
+				const unit = await createUnitAs(creator.cookies, 'cup');
+
+				const response = await request(app.server).get(`/units/me/${unit.id}`).set('Cookie', reader.cookies);
+
+				expect(response.status).toBe(HTTP_STATUS.ok);
+				expect(response.body).toMatchObject({
+					id: unit.id,
+					createdBy: creator.user.id,
+					updatedBy: creator.user.id,
+				});
+			},
+		);
+	});
 });
