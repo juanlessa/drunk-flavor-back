@@ -106,7 +106,7 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 			.sort(
 				(a, b) =>
 					a.missingIngredientIds.length - b.missingIngredientIds.length ||
-					b.drink.avgRating - a.drink.avgRating ||
+					this.ratingScoreOf(b.drink) - this.ratingScoreOf(a.drink) ||
 					b.position - a.position,
 			)
 			.map(({ drink, missingIngredientIds }) => ({
@@ -139,9 +139,13 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 		);
 		const scored = drinks.map((drink) => ({
 			drink,
-			ratingScore: getRatingScore(this.ratingSums.get(drink.id) ?? 0, drink.ratingsCount),
+			ratingScore: this.ratingScoreOf(drink),
 		}));
 		return sortItemsByFields(scored, fields).map(({ drink }) => drink);
+	}
+
+	private ratingScoreOf(drink: Drink): number {
+		return getRatingScore(this.ratingSums.get(drink.id) ?? 0, drink.ratingsCount);
 	}
 
 	private notFound(operation: string): NotFoundError {

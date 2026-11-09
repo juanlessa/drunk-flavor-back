@@ -201,6 +201,19 @@ export const describeFindByIngredientsContract = (getRepository: () => IDrinksRe
 				expect(namesOf(matches)).toEqual(['Rated', 'Newer', 'Older', 'Needs beta']);
 			});
 
+			it('ranks many good ratings above a single perfect one among drinks missing the same', async () => {
+				const single = await createDrink('Single perfect', [required(alpha)]);
+				const many = await createDrink('Many good', [required(alpha)]);
+				await getRepository().applyRatingDelta({ drinkId: single.id, countDelta: 1, sumDelta: 5 });
+				for (let index = 0; index < 10; index += 1) {
+					await getRepository().applyRatingDelta({ drinkId: many.id, countDelta: 1, sumDelta: 4 });
+				}
+
+				const matches = await getRepository().findByIngredients({ ingredientIds: ids(alpha), maxMissing: 0 });
+
+				expect(namesOf(matches)).toEqual(['Many good', 'Single perfect']);
+			});
+
 			it('counts an ingredient that appears twice in a recipe only once', async () => {
 				await createDrink('Twice', [required(alpha), required(alpha), required(beta)]);
 

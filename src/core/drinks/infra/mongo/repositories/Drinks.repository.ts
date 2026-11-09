@@ -132,8 +132,9 @@ export class DrinksRepository implements IDrinksRepository {
 			{ $addFields: { missing_ingredient_ids: { $setDifference: ['$required_ingredient_ids', available] } } },
 			{ $addFields: { missing_count: { $size: '$missing_ingredient_ids' } } },
 			...(maxMissing === 'any' ? [] : [{ $match: { missing_count: { $lte: maxMissing } } }]),
-			// The most complete first, then the best rated; `_id` keeps the pages stable.
-			{ $sort: { missing_count: 1, avg_rating: -1, _id: -1 } },
+			// The most complete first, then the best rated by the rating score (many good ratings above a single
+			// perfect one, as in the drinks list); `_id` keeps the pages stable.
+			{ $sort: { missing_count: 1, rating_score: -1, _id: -1 } },
 			{ $skip: (page - 1) * limit },
 			{ $limit: limit },
 			{
