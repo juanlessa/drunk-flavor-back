@@ -93,25 +93,25 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 	}: FindDrinksByIngredients): Promise<DrinkIngredientMatch[]> {
 		const available = new Set(ingredientIds);
 		const matches = this.collection
-			.map((drink) => ({
-				drink,
-				required: getRequiredIngredientIds(drink.ingredients),
-			}))
+			.map((drink, position) => ({ drink, position, required: getRequiredIngredientIds(drink.ingredients) }))
 			// At least one required ingredient must be one the person has, whatever `maxMissing` is.
 			.filter(({ required }) => required.some((id) => available.has(id)))
-			.map(({ drink, required }) => ({
-				drink,
+			.map(({ required, ...match }) => ({
+				...match,
 				missingIngredientIds: getMissingIngredientIds(required, available),
 			}))
 			.filter(({ missingIngredientIds }) => maxMissing === 'any' || missingIngredientIds.length <= maxMissing)
-			// The most complete first, then the best rated, then the newest.
+			// The most complete first, then the best rated, then the newest (the last one stored).
 			.sort(
 				(a, b) =>
 					a.missingIngredientIds.length - b.missingIngredientIds.length ||
 					b.drink.avgRating - a.drink.avgRating ||
-					b.drink.createdAt.getTime() - a.drink.createdAt.getTime(),
+					b.position - a.position,
 			)
-			.map((match) => ({ ...match, missingIngredientIds: [...match.missingIngredientIds].sort() }));
+			.map(({ drink, missingIngredientIds }) => ({
+				drink,
+				missingIngredientIds: [...missingIngredientIds].sort(),
+			}));
 		return paginateItems(matches, limit, page);
 	}
 

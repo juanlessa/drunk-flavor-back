@@ -8,6 +8,7 @@ import { Category } from '@/core/drinks/entities/category.entity';
 import { Unit } from '@/core/drinks/entities/unit.entity';
 import { createDrinkIngredientFactory } from '@/core/drinks/factories/drink.factories';
 import { PreparationPlan } from '@/core/drinks/modules/preparation';
+import { describeFindByIngredientsContract } from '@/core/drinks/repositories/testing/findByIngredients.contract';
 import { ConflictError, NotFoundError } from '@/shared/error/error.lib';
 
 const buildCategory = (): Category => ({
@@ -520,6 +521,99 @@ describe('DrinksRepository (integration)', () => {
 			const updated = await repository.update({ id: created.id, translations: { en: { name: 'Sour 2' } } });
 
 			expect(updated.preparation).toEqual(buildPlan());
+		});
+	});
+
+	describeFindByIngredientsContract(() => repository);
+
+	describe('search by ingredients, on Mongo', () => {
+		const rawRequiredIds = async (id: string) => {
+			const raw = await DrinkModel.collection.findOne({ _id: new ObjectId(id) });
+			return (raw?.['required_ingredient_ids'] as ObjectId[] | undefined)?.map((value) => value.toHexString());
+		};
+		const gin = { ...buildIngredient(), translations: { en: { name: 'Gin' }, pt: { name: 'Gin' } } };
+		const lime = buildIngredient();
+		const sugar = { ...buildIngredient(), translations: { en: { name: 'Sugar' }, pt: { name: 'Açúcar' } } };
+		const recipe = (name: string, ingredients: Ingredient[], optional: Ingredient[] = []): CreateDrink => ({
+			...buildDrink({ en: name, pt: name }),
+			ingredients: [
+				...ingredients.map((ingredient) => createDrinkIngredientFactory(ingredient)),
+				...optional.map((ingredient) => createDrinkIngredientFactory(ingredient, { optional: true })),
+			],
+		});
+
+		it('stores the ids of the required ingredients once, leaving out the optional ones and the garnishes', async () => {
+			const created = await repository.create({
+				...recipe('Gimlet', [gin, gin, lime], [sugar]),
+				garnishes: [{ ingredient: sugar, amount: { type: 'none' } }],
+			});
+
+			expect(await rawRequiredIds(created.id)).toEqual([gin.id, lime.id]);
+		});
+
+		it('stores an empty list for a drink whose ingredients are all optional', async () => {
+			const created = await repository.create(recipe('Only optional', [], [gin]));
+
+			expect(await rawRequiredIds(created.id)).toEqual([]);
+		});
+
+		it('follows the recipe when an update replaces the ingredients', async () => {
+			const created = await repository.create(recipe('Gimlet', [gin, lime]));
+
+			await repository.update({ id: created.id, ingredients: recipe('Gimlet', [sugar], [gin]).ingredients });
+
+			expect(await rawRequiredIds(created.id)).toEqual([sugar.id]);
+			expect(await repository.findByIngredients({ ingredientIds: [gin.id, lime.id], maxMissing: 'any' })).toEqual(
+				[],
+			);
+			expect(
+				(await repository.findByIngredients({ ingredientIds: [sugar.id], maxMissing: 0 })).map(
+					({ drink }) => drink.id,
+				),
+			).toEqual([created.id]);
+		});
+
+		it('keeps the ids when an update does not touch the ingredients', async () => {
+			const created = await repository.create(recipe('Gimlet', [gin, lime]));
+
+			await repository.update({ id: created.id, translations: { en: { name: 'Gimlet renamed' } } });
+
+			expect(await rawRequiredIds(created.id)).toEqual([gin.id, lime.id]);
+		});
+
+		it('keeps the ids away from the drink the repository returns', async () => {
+			const created = await repository.create(recipe('Gimlet', [gin, lime]));
+
+			const [byId, byName, listed] = await Promise.all([
+				repository.findById(created.id),
+				repository.findByName({ en: { name: 'Gimlet' } }),
+				repository.findAll({}).then(([drink]) => drink),
+			]);
+
+			for (const drink of [created, byId, byName, listed]) {
+				expect(drink).not.toHaveProperty('requiredIngredientIds');
+				expect(drink).not.toHaveProperty('required_ingredient_ids');
+			}
+		});
+
+		it('returns the drink without the fields only the persistence layer knows', async () => {
+			const created = await repository.create(recipe('Gimlet', [gin, lime]));
+			await repository.applyRatingDelta({ drinkId: created.id, countDelta: 1, sumDelta: 4 });
+
+			const [match] = await repository.findByIngredients({ ingredientIds: [gin.id], maxMissing: 'any' });
+
+			expect(match?.drink).toMatchObject({ avgRating: 4, ratingsCount: 1 });
+			for (const field of ['ratingsSum', 'ratings_sum', 'searchKeys', 'search_keys', 'requiredIngredientIds']) {
+				expect(match?.drink).not.toHaveProperty(field);
+			}
+		});
+
+		it('returns nothing when an ingredient id is not a valid ObjectId', async () => {
+			await repository.create(recipe('Gimlet', [gin, lime]));
+
+			await expect(
+				repository.findByIngredients({ ingredientIds: [gin.id, 'not-an-id'], maxMissing: 'any' }),
+			).resolves.toEqual([]);
 		});
 	});
 });

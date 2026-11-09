@@ -7,6 +7,7 @@ import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { PreparationPlan } from '@/core/drinks/modules/preparation';
 import { createDrinkIngredientFactory } from '@/core/drinks/factories/drink.factories';
+import { describeFindByIngredientsContract } from '../testing/findByIngredients.contract';
 
 const buildCategory = (): Category => ({
 	id: new ObjectId().toString(),
@@ -253,4 +254,6 @@ describe('DrinksRepositoryInMemory', () => {
 			expect(removed).not.toHaveProperty('preparation');
 		});
 	});
+
+	describeFindByIngredientsContract(() => repository);
 });
