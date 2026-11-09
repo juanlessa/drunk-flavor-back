@@ -1,3 +1,5 @@
+import { RATING_PRIOR_MEAN } from '@/core/drinks/constants/drink.constants';
+import { getRatingScore } from '@/core/drinks/helpers/ratingScore.helpers';
 import { DrinkModel } from '@/core/drinks/infra/mongo/entities/drink.model';
 import { RatingModel } from '@/core/engagement/infra/mongo/entities/rating.model';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
@@ -26,7 +28,10 @@ const reconcileDrinkRatings = async (): Promise<number> => {
 			},
 		]).exec();
 
-		await DrinkModel.updateMany({}, { $set: { ratings_sum: 0, ratings_count: 0, avg_rating: 0 } }).exec();
+		await DrinkModel.updateMany(
+			{},
+			{ $set: { ratings_sum: 0, ratings_count: 0, avg_rating: 0, rating_score: RATING_PRIOR_MEAN } },
+		).exec();
 
 		if (aggregates.length > 0) {
 			await DrinkModel.bulkWrite(
@@ -38,6 +43,7 @@ const reconcileDrinkRatings = async (): Promise<number> => {
 								ratings_sum: aggregate.ratings_sum,
 								ratings_count: aggregate.ratings_count,
 								avg_rating: aggregate.avg_rating,
+								rating_score: getRatingScore(aggregate.ratings_sum, aggregate.ratings_count),
 							},
 						},
 					},

@@ -16,6 +16,7 @@ import { NAME_SEARCH_FIELDS, buildTranslationsSearchKeys } from '@/core/drinks/h
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
+import { RATING_PRIOR_MEAN, RATING_PRIOR_WEIGHT } from '@/core/drinks/constants/drink.constants';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 import { PipelineStage, QueryFilter, Types } from 'mongoose';
 import { DRINK_UNIQUE_INDEXES, DrinkModel, DrinkPersistence } from '../entities/drink.model';
@@ -135,7 +136,15 @@ export class DrinksRepository implements IDrinksRepository {
 			{ $sort: { missing_count: 1, avg_rating: -1, _id: -1 } },
 			{ $skip: (page - 1) * limit },
 			{ $limit: limit },
-			{ $project: { search_keys: 0, required_ingredient_ids: 0, ratings_sum: 0, missing_count: 0 } },
+			{
+				$project: {
+					search_keys: 0,
+					required_ingredient_ids: 0,
+					ratings_sum: 0,
+					rating_score: 0,
+					missing_count: 0,
+				},
+			},
 		];
 		const documents = await DrinkModel.aggregate<DrinkPersistence & { missing_ingredient_ids: Types.ObjectId[] }>(
 			pipeline,
@@ -164,6 +173,13 @@ export class DrinksRepository implements IDrinksRepository {
 					$set: {
 						avg_rating: {
 							$cond: [{ $eq: ['$ratings_count', 0] }, 0, { $divide: ['$ratings_sum', '$ratings_count'] }],
+						},
+						// The same as `getRatingScore`, from the sum and the count just written.
+						rating_score: {
+							$divide: [
+								{ $add: ['$ratings_sum', RATING_PRIOR_WEIGHT * RATING_PRIOR_MEAN] },
+								{ $add: ['$ratings_count', RATING_PRIOR_WEIGHT] },
+							],
 						},
 					},
 				},

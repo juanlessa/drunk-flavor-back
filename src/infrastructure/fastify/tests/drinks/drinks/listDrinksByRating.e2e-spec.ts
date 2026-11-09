@@ -51,4 +51,36 @@ describe('List Drinks by rating', () => {
 			),
 		).toEqual(['Caipirinha', 'Negroni', 'Mojito']);
 	});
+
+	it('Should be able to list the drinks by rating score, ranking many good ratings above a single perfect one', async () => {
+		const { ingredient } = await createIngredient();
+		const createRated = async (name: string, value?: number, times = 1) => {
+			const drink = await resolveDrinksRepository().create({
+				translations: { en: { name, method: 'Stir' }, pt: { name, method: 'Mexa' } },
+				ingredients: [createDrinkIngredientFactory(ingredient)],
+			});
+			for (let index = 0; value !== undefined && index < times; index += 1) {
+				await resolveDrinksModule().applyRatingDelta({ drinkId: drink.id, countDelta: 1, sumDelta: value });
+			}
+		};
+		// By the plain average or by name the order would be Caipirinha, Mojito, Negroni.
+		await createRated('Caipirinha', 5);
+		await createRated('Mojito', 4, 10);
+		await createRated('Negroni');
+
+		const response = await request(app.server)
+			.get('/drinks')
+			.query({
+				sort: JSON.stringify({ ratingScore: 'desc', 'translations.pt.name': 'asc' }),
+				limit: 10,
+				page: 1,
+			});
+
+		expect(response.status).toBe(HTTP_STATUS.ok);
+		expect(
+			(response.body as { translations: { pt: { name: string } } }[]).map(
+				({ translations }) => translations.pt.name,
+			),
+		).toEqual(['Mojito', 'Caipirinha', 'Negroni']);
+	});
 });

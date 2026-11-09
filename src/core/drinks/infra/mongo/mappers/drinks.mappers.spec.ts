@@ -64,6 +64,7 @@ const buildDrinkPersistence = (): DrinkPersistence => {
 		avg_rating: 4,
 		ratings_count: 2,
 		ratings_sum: 8,
+		rating_score: 23 / 7,
 		created_at: createdAt,
 		updated_at: updatedAt,
 	};
@@ -199,6 +200,7 @@ describe('Drink domain persistence mappers', () => {
 		const loaded = {
 			...buildDrinkPersistence(),
 			ratings_sum: 8,
+			rating_score: 23 / 7,
 			search_keys: ['negroni'],
 			required_ingredient_ids: [new Types.ObjectId()],
 		} as DrinkPersistence;
@@ -206,7 +208,15 @@ describe('Drink domain persistence mappers', () => {
 		const drink = DrinkMapper.toDomain(loaded);
 
 		expect(drink).toMatchObject({ avgRating: 4, ratingsCount: 2 });
-		for (const field of ['ratingsSum', 'ratings_sum', 'searchKeys', 'search_keys', 'requiredIngredientIds']) {
+		for (const field of [
+			'ratingsSum',
+			'ratings_sum',
+			'ratingScore',
+			'rating_score',
+			'searchKeys',
+			'search_keys',
+			'requiredIngredientIds',
+		]) {
 			expect(drink).not.toHaveProperty(field);
 		}
 	});

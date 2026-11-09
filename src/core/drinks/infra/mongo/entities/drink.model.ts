@@ -1,5 +1,9 @@
 import mongoose, { Model, Schema, Types } from 'mongoose';
-import { DrinkIngredientAmountTypes, DrinkIngredientQualifiers } from '@/core/drinks/constants/drink.constants';
+import {
+	DrinkIngredientAmountTypes,
+	DrinkIngredientQualifiers,
+	RATING_PRIOR_MEAN,
+} from '@/core/drinks/constants/drink.constants';
 import { DrinkIngredientAmount } from '@/core/drinks/entities/drink.entity';
 import { Translations } from '@/core/drinks/types/translations';
 import { IngredientPersistence, IngredientSchema } from './ingredient.model';
@@ -92,6 +96,9 @@ const drinkSchemaDefinition = {
 		select: false,
 		validate: { validator: Number.isInteger, message: 'Ratings sum must be an integer' },
 	},
+	// What the drinks are ranked by (see `getRatingScore`). A drink with no rating starts at the prior mean; the
+	// rating projection recalculates it with the sum and the count. Only the persistence layer knows it.
+	rating_score: { type: Number, required: true, default: RATING_PRIOR_MEAN, select: false },
 } as const;
 
 export type DrinkIngredientAmountPersistence = {
@@ -123,6 +130,7 @@ export type DrinkPersistence = {
 	avg_rating: number;
 	ratings_count: number;
 	ratings_sum: number;
+	rating_score: number;
 	created_at: Date;
 	updated_at: Date;
 };

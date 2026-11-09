@@ -13,6 +13,7 @@ import {
 	createNameSearchMatchers,
 } from '@/core/drinks/helpers/searchKeys.helpers';
 import { getMissingIngredientIds, getRequiredIngredientIds } from '@/core/drinks/helpers/drinkMatch.helpers';
+import { getRatingScore } from '@/core/drinks/helpers/ratingScore.helpers';
 import { compareTranslationsName } from '@/core/drinks/helpers/translations.helpers';
 import type { ApplyRatingDelta, DrinkRatingSummary } from '@/core/drinks/public/IDrinksModule';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
@@ -81,7 +82,7 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 	async findAll(query: QueryParams): Promise<Drink[]> {
 		let found = [...this.collection];
 		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);
-		if (query.sort) found = sortItemsByFields(found, query.sort);
+		if (query.sort) found = this.sort(found, query.sort);
 		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
 	}
 
@@ -126,6 +127,21 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 		record.avgRating = ratingsCount === 0 ? 0 : ratingsSum / ratingsCount;
 		record.updatedAt = new Date();
 		return { average: record.avgRating, count: record.ratingsCount };
+	}
+
+	/**
+	 * Sorts the drinks by the given fields. `ratingScore` is not a field of the drink, like in the database: it is
+	 * worked out from the sum of the ratings the repository keeps.
+	 */
+	private sort(drinks: Drink[], sort: NonNullable<QueryParams['sort']>): Drink[] {
+		const fields = Object.fromEntries(
+			Object.entries(sort).map(([field, order]) => [field === 'ratingScore' ? field : `drink.${field}`, order]),
+		);
+		const scored = drinks.map((drink) => ({
+			drink,
+			ratingScore: getRatingScore(this.ratingSums.get(drink.id) ?? 0, drink.ratingsCount),
+		}));
+		return sortItemsByFields(scored, fields).map(({ drink }) => drink);
 	}
 
 	private notFound(operation: string): NotFoundError {

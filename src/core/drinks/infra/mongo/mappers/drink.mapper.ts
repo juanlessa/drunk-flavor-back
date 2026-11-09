@@ -16,7 +16,12 @@ import { DrinkPersistence } from '../entities/drink.model';
  * Fields that only the persistence layer knows. They never belong to the domain, whatever the query loaded: an
  * aggregation, unlike a `find`, returns the fields marked `select: false`.
  */
-const PERSISTENCE_ONLY_FIELDS: ReadonlySet<string> = new Set(['ratings_sum', 'search_keys', 'required_ingredient_ids']);
+const PERSISTENCE_ONLY_FIELDS: ReadonlySet<string> = new Set([
+	'ratings_sum',
+	'rating_score',
+	'search_keys',
+	'required_ingredient_ids',
+]);
 
 export const DrinkMapper = {
 	toDomain(document: DrinkPersistence): Drink {

@@ -152,4 +152,46 @@ describe('List Drinks', () => {
 			translationsDrink1.en.name,
 		]);
 	});
+
+	describe('sorting by rating score', () => {
+		const rate = async (drinkId: string, value: number, times = 1) => {
+			for (let index = 0; index < times; index += 1) {
+				await drinksRepository.applyRatingDelta({ drinkId, countDelta: 1, sumDelta: value });
+			}
+		};
+		const namesOf = (drinks: { translations: { en: { name: string } } }[]) =>
+			drinks.map(({ translations }) => translations.en.name);
+
+		beforeEach(async () => {
+			const [cosmopolitan, paperPlane] = await Promise.all(
+				[translationsDrink1, translationsDrink2].map(
+					async (translations) => (await drinksRepository.findByName(translations))!,
+				),
+			);
+			await rate(cosmopolitan.id, 5);
+			await rate(paperPlane.id, 4, 10);
+		});
+
+		it('should rank many good ratings above a single perfect one, unlike the plain average', async () => {
+			const byScore = await service.execute({ query: { sort: { ratingScore: 'desc' } } });
+			const byAverage = await service.execute({ query: { sort: { avgRating: 'desc' } } });
+
+			expect(namesOf(byScore)).toEqual([
+				translationsDrink2.en.name,
+				translationsDrink1.en.name,
+				translationsDrink3.en.name,
+			]);
+			expect(namesOf(byAverage)).toEqual([
+				translationsDrink1.en.name,
+				translationsDrink2.en.name,
+				translationsDrink3.en.name,
+			]);
+		});
+
+		it('should not expose the score on the drinks found', async () => {
+			const found = await service.execute({ query: { sort: { ratingScore: 'desc' } } });
+
+			for (const drink of found) expect(drink).not.toHaveProperty('ratingScore');
+		});
+	});
 });
