@@ -1,5 +1,9 @@
 import mongoose, { Model, Schema, Types } from 'mongoose';
-import { DrinkIngredientAmountTypes, DrinkIngredientQualifiers } from '@/core/drinks/constants/drink.constants';
+import {
+	DrinkIngredientAmountTypes,
+	DrinkIngredientQualifiers,
+	RATING_PRIOR_MEAN,
+} from '@/core/drinks/constants/drink.constants';
 import { DrinkIngredientAmount } from '@/core/drinks/entities/drink.entity';
 import { Translations } from '@/core/drinks/types/translations';
 import { IngredientPersistence, IngredientSchema } from './ingredient.model';
@@ -17,6 +21,7 @@ export const FileMetadataSchema = new Schema<FileMetadata>(
 );
 
 export const DRINK_SEARCH_KEYS_INDEX = 'drink_search_keys';
+export const DRINK_REQUIRED_INGREDIENT_IDS_INDEX = 'drink_required_ingredient_ids';
 export const DRINK_TRANSLATIONS_EN_NAME_UNIQUE_INDEX = 'drink_translations_en_name_unique';
 export const DRINK_TRANSLATIONS_PT_NAME_UNIQUE_INDEX = 'drink_translations_pt_name_unique';
 export const DRINK_UNIQUE_INDEXES = [
@@ -68,6 +73,9 @@ const drinkSchemaDefinition = {
 	cover: { type: FileMetadataSchema, default: undefined },
 	thumbnail: { type: FileMetadataSchema, default: undefined },
 	search_keys: { type: [String], default: undefined, select: false },
+	// The ids of the non-optional ingredients, kept apart so a search by the ingredients a person has can use an index.
+	// It is written with the recipe (see the repository) and is not part of the drink.
+	required_ingredient_ids: { type: [Schema.Types.ObjectId], default: undefined, select: false },
 	ingredients: { type: [DrinkIngredientSchema], required: true },
 	garnishes: { type: [DrinkGarnishSchema], required: true, default: () => [] },
 	// The preparation module validates the plan before it gets here, so it is stored as it is.
@@ -88,6 +96,9 @@ const drinkSchemaDefinition = {
 		select: false,
 		validate: { validator: Number.isInteger, message: 'Ratings sum must be an integer' },
 	},
+	// What the drinks are ranked by (see `getRatingScore`). A drink with no rating starts at the prior mean; the
+	// rating projection recalculates it with the sum and the count. Only the persistence layer knows it.
+	rating_score: { type: Number, required: true, default: RATING_PRIOR_MEAN, select: false },
 } as const;
 
 export type DrinkIngredientAmountPersistence = {
@@ -112,12 +123,14 @@ export type DrinkPersistence = {
 	cover?: FileMetadata;
 	thumbnail?: FileMetadata;
 	search_keys?: string[];
+	required_ingredient_ids?: Types.ObjectId[];
 	ingredients: DrinkIngredientPersistence[];
 	garnishes: DrinkGarnishPersistence[];
 	preparation?: Record<string, unknown>;
 	avg_rating: number;
 	ratings_count: number;
 	ratings_sum: number;
+	rating_score: number;
 	created_at: Date;
 	updated_at: Date;
 };
@@ -135,6 +148,7 @@ DrinkSchema.index(
 	getNameUniqueIndexOptions('pt', DRINK_TRANSLATIONS_PT_NAME_UNIQUE_INDEX),
 );
 DrinkSchema.index({ search_keys: 1 }, { name: DRINK_SEARCH_KEYS_INDEX });
+DrinkSchema.index({ required_ingredient_ids: 1 }, { name: DRINK_REQUIRED_INGREDIENT_IDS_INDEX });
 
 export const DrinkModel =
 	(mongoose.models['drinks'] as Model<DrinkPersistence> | undefined) ??

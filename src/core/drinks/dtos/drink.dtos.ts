@@ -5,7 +5,7 @@ import {
 	DrinkIngredientQualifier,
 	DrinkTranslation,
 } from '@/core/drinks/entities/drink.entity';
-import { DrinkIngredientAmountTypes } from '@/core/drinks/constants/drink.constants';
+import { DrinkIngredientAmountTypes, DrinkMatchMaxMissing } from '@/core/drinks/constants/drink.constants';
 import type { PreparationPlan } from '@/core/drinks/modules/preparation';
 import { Translations } from '@/core/drinks/types/translations';
 import { DeepPartial } from '@/shared/types/utility.types';
@@ -79,3 +79,23 @@ export type GetDrink = {
 };
 
 export type FindDrinkByName = DeepPartial<Translations<{ name: string }>>;
+
+export type DrinkMatchMaxMissingValue = (typeof DrinkMatchMaxMissing)[number];
+
+/**
+ * Finds the drinks that can be made, or nearly, with the ingredients a person has. Only the required ingredients of
+ * a drink count (the optional ones and the garnishes do not), and the drink must use at least one of `ingredientIds`.
+ */
+export type FindDrinksByIngredients = {
+	ingredientIds: string[];
+	/** How many required ingredients may be missing; `any` puts no limit on it. */
+	maxMissing: DrinkMatchMaxMissingValue;
+	limit?: number;
+	page?: number;
+};
+
+/** A drink found by its ingredients, with the required ingredients the person does not have. */
+export type DrinkIngredientMatch = {
+	drink: Drink;
+	missingIngredientIds: string[];
+};

@@ -2,7 +2,6 @@ import { GetDrink } from '@/core/drinks/dtos/drink.dtos';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
-import { toDrinkView } from '@/core/drinks/mappers/drink.mappers';
 
 export class GetDrinkService {
 	constructor(
@@ -24,6 +23,6 @@ export class GetDrinkService {
 			drink.thumbnail.url = this.storageProvider.getFileURL(drink.thumbnail.name);
 		}
 
-		return toDrinkView(drink);
+		return drink;
 	}
 }

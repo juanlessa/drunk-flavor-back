@@ -8,6 +8,9 @@ import { Category } from '@/core/drinks/entities/category.entity';
 import { Unit } from '@/core/drinks/entities/unit.entity';
 import { createDrinkIngredientFactory } from '@/core/drinks/factories/drink.factories';
 import { PreparationPlan } from '@/core/drinks/modules/preparation';
+import { describeFindByIngredientsContract } from '@/core/drinks/repositories/testing/findByIngredients.contract';
+import { RATING_PRIOR_MEAN } from '@/core/drinks/constants/drink.constants';
+import { getRatingScore } from '@/core/drinks/helpers/ratingScore.helpers';
 import { ConflictError, NotFoundError } from '@/shared/error/error.lib';
 
 const buildCategory = (): Category => ({
@@ -209,11 +212,12 @@ describe('DrinksRepository (integration)', () => {
 			},
 		);
 
-		expect(await repository.findById(drink.id)).toMatchObject({
-			ratingsCount: 3,
-			ratingsSum: 14,
-			avgRating: 14 / 3,
-		});
+		const found = await repository.findById(drink.id);
+		expect(found).toMatchObject({ ratingsCount: 3, avgRating: 14 / 3 });
+		expect(found).not.toHaveProperty('ratingsSum');
+		// The sum behind the average stays stored, but only in the persistence layer.
+		const stored = await DrinkModel.findById(drink.id).select('+ratings_sum').lean();
+		expect(stored?.ratings_sum).toBe(14);
 	});
 
 	it('rejects missing-drink and aggregate-underflow rating deltas without mutation', async () => {
@@ -224,7 +228,8 @@ describe('DrinksRepository (integration)', () => {
 		await expect(
 			repository.applyRatingDelta({ drinkId: drink.id, countDelta: -1, sumDelta: -1 }),
 		).rejects.toBeInstanceOf(NotFoundError);
-		expect(await repository.findById(drink.id)).toMatchObject({ ratingsCount: 0, ratingsSum: 0, avgRating: 0 });
+		expect(await repository.findById(drink.id)).toMatchObject({ ratingsCount: 0, avgRating: 0 });
+		expect((await DrinkModel.findById(drink.id).select('+ratings_sum').lean())?.ratings_sum).toBe(0);
 		expect(await repository.findById('invalid-id')).toBeNull();
 	});
 
@@ -518,6 +523,284 @@ describe('DrinksRepository (integration)', () => {
 			const updated = await repository.update({ id: created.id, translations: { en: { name: 'Sour 2' } } });
 
 			expect(updated.preparation).toEqual(buildPlan());
+		});
+	});
+
+	describeFindByIngredientsContract(() => repository);
+
+	describe('search by ingredients, on Mongo', () => {
+		const rawRequiredIds = async (id: string) => {
+			const raw = await DrinkModel.collection.findOne({ _id: new ObjectId(id) });
+			return (raw?.['required_ingredient_ids'] as ObjectId[] | undefined)?.map((value) => value.toHexString());
+		};
+		const gin = { ...buildIngredient(), translations: { en: { name: 'Gin' }, pt: { name: 'Gin' } } };
+		const lime = buildIngredient();
+		const sugar = { ...buildIngredient(), translations: { en: { name: 'Sugar' }, pt: { name: 'Açúcar' } } };
+		const recipe = (name: string, ingredients: Ingredient[], optional: Ingredient[] = []): CreateDrink => ({
+			...buildDrink({ en: name, pt: name }),
+			ingredients: [
+				...ingredients.map((ingredient) => createDrinkIngredientFactory(ingredient)),
+				...optional.map((ingredient) => createDrinkIngredientFactory(ingredient, { optional: true })),
+			],
+		});
+
+		it('stores the ids of the required ingredients once, leaving out the optional ones and the garnishes', async () => {
+			const created = await repository.create({
+				...recipe('Gimlet', [gin, gin, lime], [sugar]),
+				garnishes: [{ ingredient: sugar, amount: { type: 'none' } }],
+			});
+
+			expect(await rawRequiredIds(created.id)).toEqual([gin.id, lime.id]);
+		});
+
+		it('stores an empty list for a drink whose ingredients are all optional', async () => {
+			const created = await repository.create(recipe('Only optional', [], [gin]));
+
+			expect(await rawRequiredIds(created.id)).toEqual([]);
+		});
+
+		it('follows the recipe when an update replaces the ingredients', async () => {
+			const created = await repository.create(recipe('Gimlet', [gin, lime]));
+
+			await repository.update({ id: created.id, ingredients: recipe('Gimlet', [sugar], [gin]).ingredients });
+
+			expect(await rawRequiredIds(created.id)).toEqual([sugar.id]);
+			expect(await repository.findByIngredients({ ingredientIds: [gin.id, lime.id], maxMissing: 'any' })).toEqual(
+				[],
+			);
+			expect(
+				(await repository.findByIngredients({ ingredientIds: [sugar.id], maxMissing: 0 })).map(
+					({ drink }) => drink.id,
+				),
+			).toEqual([created.id]);
+		});
+
+		it('keeps the ids when an update does not touch the ingredients', async () => {
+			const created = await repository.create(recipe('Gimlet', [gin, lime]));
+
+			await repository.update({ id: created.id, translations: { en: { name: 'Gimlet renamed' } } });
+
+			expect(await rawRequiredIds(created.id)).toEqual([gin.id, lime.id]);
+		});
+
+		it('keeps the ids away from the drink the repository returns', async () => {
+			const created = await repository.create(recipe('Gimlet', [gin, lime]));
+
+			const [byId, byName, listed] = await Promise.all([
+				repository.findById(created.id),
+				repository.findByName({ en: { name: 'Gimlet' } }),
+				repository.findAll({}).then(([drink]) => drink),
+			]);
+
+			for (const drink of [created, byId, byName, listed]) {
+				expect(drink).not.toHaveProperty('requiredIngredientIds');
+				expect(drink).not.toHaveProperty('required_ingredient_ids');
+			}
+		});
+
+		it('returns the drink without the fields only the persistence layer knows', async () => {
+			const created = await repository.create(recipe('Gimlet', [gin, lime]));
+			await repository.applyRatingDelta({ drinkId: created.id, countDelta: 1, sumDelta: 4 });
+
+			const [match] = await repository.findByIngredients({ ingredientIds: [gin.id], maxMissing: 'any' });
+
+			expect(match?.drink).toMatchObject({ avgRating: 4, ratingsCount: 1 });
+			for (const field of ['ratingsSum', 'ratings_sum', 'searchKeys', 'search_keys', 'requiredIngredientIds']) {
+				expect(match?.drink).not.toHaveProperty(field);
+			}
+		});
+
+		it('returns nothing when an ingredient id is not a valid ObjectId', async () => {
+			await repository.create(recipe('Gimlet', [gin, lime]));
+
+			await expect(
+				repository.findByIngredients({ ingredientIds: [gin.id, 'not-an-id'], maxMissing: 'any' }),
+			).resolves.toEqual([]);
+		});
+	});
+
+	describe('sorting by rating', () => {
+		const createRated = async (name: { en: string; pt: string }, rating?: number) => {
+			const drink = await repository.create(buildDrink(name));
+			if (rating !== undefined) {
+				await repository.applyRatingDelta({ drinkId: drink.id, countDelta: 1, sumDelta: rating });
+			}
+			return drink;
+		};
+		const ptNames = (drinks: { translations: { pt: { name: string } } }[]) =>
+			drinks.map(({ translations }) => translations.pt.name);
+
+		beforeEach(async () => {
+			await createRated({ en: 'Zombie', pt: 'Zumbi' }, 4);
+			await createRated({ en: 'Apex', pt: 'Ápice' }, 4);
+			await createRated({ en: 'Mojito', pt: 'Mojito' });
+			await createRated({ en: 'Negroni', pt: 'Negroni' }, 5);
+			await createRated({ en: 'Caipirinha', pt: 'caipirinha' }, 5);
+		});
+
+		it('puts the best rated first and the drinks with no rating last', async () => {
+			const sorted = await repository.findAll({ sort: { avgRating: 'desc' } });
+
+			expect(sorted.map(({ avgRating }) => avgRating)).toEqual([5, 5, 4, 4, 0]);
+		});
+
+		it('breaks the ties by name in the alphabet of the language, ignoring accents and case', async () => {
+			const sorted = await repository.findAll({ sort: { avgRating: 'desc', 'translations.pt.name': 'asc' } });
+
+			expect(ptNames(sorted)).toEqual(['caipirinha', 'Negroni', 'Ápice', 'Zumbi', 'Mojito']);
+		});
+
+		it('breaks the ties by the name of the language asked for', async () => {
+			const sorted = await repository.findAll({ sort: { avgRating: 'desc', 'translations.en.name': 'asc' } });
+
+			expect(sorted.map(({ translations }) => translations.en.name)).toEqual([
+				'Caipirinha',
+				'Negroni',
+				'Apex',
+				'Zombie',
+				'Mojito',
+			]);
+		});
+
+		it('sorts by the name first when the name comes first', async () => {
+			const sorted = await repository.findAll({ sort: { 'translations.pt.name': 'asc', avgRating: 'desc' } });
+
+			expect(ptNames(sorted)).toEqual(['Ápice', 'caipirinha', 'Mojito', 'Negroni', 'Zumbi']);
+		});
+
+		it('pages through the sorted drinks without repeating or skipping one', async () => {
+			const sort = { avgRating: 'desc', 'translations.pt.name': 'asc' } as const;
+
+			const pages = await Promise.all([1, 2, 3].map((page) => repository.findAll({ sort, limit: 2, page })));
+
+			expect(pages.map(ptNames)).toEqual([['caipirinha', 'Negroni'], ['Ápice', 'Zumbi'], ['Mojito']]);
+		});
+	});
+
+	describe('rating score', () => {
+		const storedScore = async (id: string) =>
+			(await DrinkModel.findById(id).select('+rating_score').lean())?.rating_score;
+		const rate = async (drinkId: string, value: number, times = 1) => {
+			for (let index = 0; index < times; index += 1) {
+				await repository.applyRatingDelta({ drinkId, countDelta: 1, sumDelta: value });
+			}
+		};
+
+		it('starts at the prior mean when the drink is created', async () => {
+			const drink = await repository.create(buildDrink({ en: 'New', pt: 'Novo' }));
+
+			expect(await storedScore(drink.id)).toBe(RATING_PRIOR_MEAN);
+		});
+
+		it('follows every rating that is added, changed or removed', async () => {
+			const drink = await repository.create(buildDrink({ en: 'Rated', pt: 'Avaliado' }));
+
+			await repository.applyRatingDelta({ drinkId: drink.id, countDelta: 1, sumDelta: 5 });
+			expect(await storedScore(drink.id)).toBeCloseTo(getRatingScore(5, 1));
+
+			await repository.applyRatingDelta({ drinkId: drink.id, countDelta: 0, sumDelta: -3 });
+			expect(await storedScore(drink.id)).toBeCloseTo(getRatingScore(2, 1));
+
+			await repository.applyRatingDelta({ drinkId: drink.id, countDelta: -1, sumDelta: -2 });
+			expect(await storedScore(drink.id)).toBe(RATING_PRIOR_MEAN);
+		});
+
+		it('stays in line with the sum and the count when ratings arrive at the same time', async () => {
+			const drink = await repository.create(buildDrink({ en: 'Busy', pt: 'Movimentado' }));
+
+			await Promise.all(
+				[5, 4, 3, 2].map((value) =>
+					repository.applyRatingDelta({ drinkId: drink.id, countDelta: 1, sumDelta: value }),
+				),
+			);
+
+			expect(await storedScore(drink.id)).toBeCloseTo(getRatingScore(14, 4));
+		});
+
+		it('is not part of the drink the repository returns', async () => {
+			const drink = await repository.create(buildDrink({ en: 'Hidden', pt: 'Oculto' }));
+			await rate(drink.id, 4);
+
+			const [byId, [listed]] = await Promise.all([
+				repository.findById(drink.id),
+				repository.findAll({ sort: { ratingScore: 'desc' } }),
+			]);
+
+			expect(byId).not.toHaveProperty('ratingScore');
+			expect(listed).not.toHaveProperty('ratingScore');
+		});
+
+		it('ranks many good ratings above a single perfect one, by name among equal scores', async () => {
+			const single = await repository.create(buildDrink({ en: 'Single', pt: 'Única' }));
+			const many = await repository.create(buildDrink({ en: 'Many', pt: 'Muitas' }));
+			const low = await repository.create(buildDrink({ en: 'Low', pt: 'Baixa' }));
+			await repository.create(buildDrink({ en: 'Zero', pt: 'Zero' }));
+			await repository.create(buildDrink({ en: 'Apex', pt: 'Ápice' }));
+			await rate(single.id, 5);
+			await rate(many.id, 4, 10);
+			await rate(low.id, 1, 3);
+
+			const sorted = await repository.findAll({ sort: { ratingScore: 'desc', 'translations.pt.name': 'asc' } });
+
+			expect(sorted.map(({ translations }) => translations.pt.name)).toEqual([
+				'Muitas',
+				'Única',
+				'Ápice',
+				'Zero',
+				'Baixa',
+			]);
+		});
+	});
+
+	describe('sorting by creation and by update', () => {
+		const at = (day: number) => new Date(`2026-01-${String(day).padStart(2, '0')}T12:00:00.000Z`);
+		/** Creates a drink and dates it, so the order does not depend on how fast the test runs. */
+		const createDated = async (name: string, createdDay: number, updatedDay: number) => {
+			const drink = await repository.create(buildDrink({ en: name, pt: name }));
+			await DrinkModel.collection.updateOne(
+				{ _id: new ObjectId(drink.id) },
+				{ $set: { created_at: at(createdDay), updated_at: at(updatedDay) } },
+			);
+			return drink;
+		};
+		const namesOf = (drinks: { translations: { en: { name: string } } }[]) =>
+			drinks.map(({ translations }) => translations.en.name);
+
+		beforeEach(async () => {
+			await createDated('Old', 1, 9);
+			await createDated('Middle', 5, 6);
+			await createDated('New', 8, 8);
+		});
+
+		it('lists the newest drinks first, or the oldest', async () => {
+			const newest = await repository.findAll({ sort: { createdAt: 'desc' } });
+			const oldest = await repository.findAll({ sort: { createdAt: 'asc' } });
+
+			expect(namesOf(newest)).toEqual(['New', 'Middle', 'Old']);
+			expect(namesOf(oldest)).toEqual(['Old', 'Middle', 'New']);
+		});
+
+		it('lists the drinks changed most recently first', async () => {
+			const sorted = await repository.findAll({ sort: { updatedAt: 'desc' } });
+
+			expect(namesOf(sorted)).toEqual(['Old', 'New', 'Middle']);
+		});
+
+		it('moves a drink to the top of the recently changed ones when it is edited', async () => {
+			const [middle] = await repository.findAll({ search: { name: 'Middle' } });
+
+			await repository.update({ id: middle!.id, translations: { en: { name: 'Middle edited' } } });
+
+			const sorted = await repository.findAll({ sort: { updatedAt: 'desc' } });
+			expect(namesOf(sorted)[0]).toBe('Middle edited');
+		});
+
+		it('pages through the newest drinks without repeating or skipping one', async () => {
+			const pages = await Promise.all(
+				[1, 2].map((page) => repository.findAll({ sort: { createdAt: 'desc' }, limit: 2, page })),
+			);
+
+			expect(pages.map(namesOf)).toEqual([['New', 'Middle'], ['Old']]);
 		});
 	});
 });

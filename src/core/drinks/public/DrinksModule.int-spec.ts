@@ -26,8 +26,8 @@ describe('DrinksModule public API (integration)', () => {
 			id: document._id.toHexString(),
 			avgRating: 4,
 			ratingsCount: 2,
-			ratingsSum: 8,
 		});
+		expect(drink).not.toHaveProperty('ratingsSum');
 		expect(drink).not.toHaveProperty('_id');
 		expect(drink).not.toHaveProperty('avg_rating');
 		expect(drink).not.toHaveProperty('ratings_count');

@@ -64,6 +64,7 @@ const buildDrinkPersistence = (): DrinkPersistence => {
 		avg_rating: 4,
 		ratings_count: 2,
 		ratings_sum: 8,
+		rating_score: 23 / 7,
 		created_at: createdAt,
 		updated_at: updatedAt,
 	};
@@ -157,7 +158,6 @@ describe('Drink domain persistence mappers', () => {
 			id: persistence._id.toHexString(),
 			avgRating: 4,
 			ratingsCount: 2,
-			ratingsSum: 8,
 			ingredients: [
 				{
 					optional: false,
@@ -172,6 +172,8 @@ describe('Drink domain persistence mappers', () => {
 		});
 		expect(drink).not.toHaveProperty('__v');
 		expect(drink).not.toHaveProperty('avg_rating');
+		expect(drink).not.toHaveProperty('ratingsSum');
+		expect(drink).not.toHaveProperty('ratings_sum');
 
 		const mapped = DrinkMapper.toPersistence(drink);
 		expect(mapped._id).toBeInstanceOf(Types.ObjectId);
@@ -179,7 +181,6 @@ describe('Drink domain persistence mappers', () => {
 		expect(mapped).toMatchObject({
 			avg_rating: 4,
 			ratings_count: 2,
-			ratings_sum: 8,
 			ingredients: [
 				{
 					optional: false,
@@ -194,6 +195,31 @@ describe('Drink domain persistence mappers', () => {
 		expect(mapped).not.toHaveProperty('avgRating');
 	});
 
+	it('drops the fields only the persistence layer knows, even when the query loaded them', () => {
+		// An aggregation returns the fields marked `select: false`, unlike a find.
+		const loaded = {
+			...buildDrinkPersistence(),
+			ratings_sum: 8,
+			rating_score: 23 / 7,
+			search_keys: ['negroni'],
+			required_ingredient_ids: [new Types.ObjectId()],
+		} as DrinkPersistence;
+
+		const drink = DrinkMapper.toDomain(loaded);
+
+		expect(drink).toMatchObject({ avgRating: 4, ratingsCount: 2 });
+		for (const field of [
+			'ratingsSum',
+			'ratings_sum',
+			'ratingScore',
+			'rating_score',
+			'searchKeys',
+			'search_keys',
+			'requiredIngredientIds',
+		]) {
+			expect(drink).not.toHaveProperty(field);
+		}
+	});
 	it('maps domain query fields to persistence field names for every drinks aggregate', () => {
 		expect(
 			CategoryMapper.toPersistenceQuery({ search: { isAlcoholic: 'false' }, sort: { createdAt: -1 } }),
