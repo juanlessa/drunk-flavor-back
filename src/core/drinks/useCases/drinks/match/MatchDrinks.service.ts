@@ -1,5 +1,4 @@
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
-import { toDrinkView } from '@/core/drinks/mappers/drink.mappers';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { MatchDrinksDTO } from './matchDrinks.dtos';
 
@@ -19,7 +18,7 @@ export class MatchDrinksService {
 				drink.thumbnail.url = this.storageProvider.getFileURL(drink.thumbnail.name);
 			}
 			return {
-				drink: toDrinkView(drink),
+				drink,
 				missingCount: missingIngredientIds.length,
 				missingIngredientIds,
 			};

@@ -76,7 +76,6 @@ export const createPersistedDrinkFactory = (drink?: DeepPartial<Drink>): Drink =
 	garnishes: (drink?.garnishes?.filter((garnish) => garnish !== undefined) as Drink['garnishes']) ?? [],
 	avgRating: drink?.avgRating ?? 0,
 	ratingsCount: drink?.ratingsCount ?? 0,
-	ratingsSum: drink?.ratingsSum ?? 0,
 	createdAt: (drink?.createdAt as Date | undefined) ?? new Date(),
 	updatedAt: (drink?.updatedAt as Date | undefined) ?? new Date(),
 });

@@ -126,7 +126,10 @@ describe('DrinksRepositoryInMemory', () => {
 				count: 0,
 			},
 		);
-		expect(await repository.findById(drink.id)).toMatchObject({ avgRating: 0, ratingsCount: 0, ratingsSum: 0 });
+		const found = await repository.findById(drink.id);
+		expect(found).toMatchObject({ avgRating: 0, ratingsCount: 0 });
+		// The sum is kept by the repository to recalculate the average, not exposed on the drink.
+		expect(found).not.toHaveProperty('ratingsSum');
 	});
 
 	it('rejects rating deltas for missing drinks and aggregate underflow', async () => {

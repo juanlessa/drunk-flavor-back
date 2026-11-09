@@ -28,6 +28,8 @@ const searchMatchers = createNameSearchMatchers<Drink>((item) =>
 
 export class DrinksRepositoryInMemory implements IDrinksRepository {
 	collection: Drink[] = [];
+	/** The sum of the ratings of each drink. Like in the database, it is not part of the drink, only of its storage. */
+	private ratingSums = new Map<string, number>();
 
 	async create(data: CreateDrink): Promise<Drink> {
 		const now = new Date();
@@ -39,7 +41,6 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 			thumbnail: undefined,
 			avgRating: 0,
 			ratingsCount: 0,
-			ratingsSum: 0,
 			createdAt: now,
 			updatedAt: now,
 		};
@@ -64,7 +65,9 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 	async delete(id: string): Promise<Drink> {
 		const index = this.collection.findIndex((record) => record.id === id);
 		if (index < 0) throw this.notFound('delete');
-		return this.collection.splice(index, 1)[0];
+		const [removed] = this.collection.splice(index, 1);
+		this.ratingSums.delete(id);
+		return removed;
 	}
 
 	async findByName(translations: FindDrinkByName): Promise<Drink | null> {
@@ -116,10 +119,10 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 		const record = this.collection.find((drink) => drink.id === drinkId);
 		if (!record) throw this.notFound('rating projection update');
 		const ratingsCount = record.ratingsCount + countDelta;
-		const ratingsSum = record.ratingsSum + sumDelta;
+		const ratingsSum = (this.ratingSums.get(drinkId) ?? 0) + sumDelta;
 		if (ratingsCount < 0 || ratingsSum < 0) throw new Error('Rating projection invariant violated');
 		record.ratingsCount = ratingsCount;
-		record.ratingsSum = ratingsSum;
+		this.ratingSums.set(drinkId, ratingsSum);
 		record.avgRating = ratingsCount === 0 ? 0 : ratingsSum / ratingsCount;
 		record.updatedAt = new Date();
 		return { average: record.avgRating, count: record.ratingsCount };

@@ -71,7 +71,6 @@ export class DrinksRepository implements IDrinksRepository {
 					runValidators: true,
 				},
 			)
-				.select('+ratings_sum')
 				.lean<DrinkPersistence>()
 				.exec();
 		} catch (error) {
@@ -86,17 +85,14 @@ export class DrinksRepository implements IDrinksRepository {
 	async delete(id: string): Promise<Drink> {
 		const objectId = DrinkMapper.toObjectId(id);
 		if (!objectId) throw this.notFound('delete');
-		const document = await DrinkModel.findByIdAndDelete(objectId)
-			.select('+ratings_sum')
-			.lean<DrinkPersistence>()
-			.exec();
+		const document = await DrinkModel.findByIdAndDelete(objectId).lean<DrinkPersistence>().exec();
 		if (!document) throw this.notFound('delete');
 		return DrinkMapper.toDomain(document);
 	}
 
 	async findByName(data: FindDrinkByName): Promise<Drink | null> {
 		const document = await findByTranslatedName(data, (filter, collation) =>
-			DrinkModel.findOne(filter).collation(collation).select('+ratings_sum').lean<DrinkPersistence>().exec(),
+			DrinkModel.findOne(filter).collation(collation).lean<DrinkPersistence>().exec(),
 		);
 		return document ? DrinkMapper.toDomain(document) : null;
 	}
@@ -104,7 +100,7 @@ export class DrinksRepository implements IDrinksRepository {
 	async findById(id: string): Promise<Drink | null> {
 		const objectId = DrinkMapper.toObjectId(id);
 		if (!objectId) return null;
-		const document = await DrinkModel.findById(objectId).select('+ratings_sum').lean<DrinkPersistence>().exec();
+		const document = await DrinkModel.findById(objectId).lean<DrinkPersistence>().exec();
 		return document ? DrinkMapper.toDomain(document) : null;
 	}
 
@@ -113,7 +109,6 @@ export class DrinksRepository implements IDrinksRepository {
 		const documents = await buildQuery<DrinkPersistence>(persistenceQuery, DrinkModel, {
 			collation: getSortCollation(persistenceQuery.sort),
 		})
-			.select('+ratings_sum')
 			.lean<DrinkPersistence[]>()
 			.exec();
 		return documents.map(DrinkMapper.toDomain);
@@ -140,7 +135,7 @@ export class DrinksRepository implements IDrinksRepository {
 			{ $sort: { missing_count: 1, avg_rating: -1, _id: -1 } },
 			{ $skip: (page - 1) * limit },
 			{ $limit: limit },
-			{ $project: { search_keys: 0, required_ingredient_ids: 0, missing_count: 0 } },
+			{ $project: { search_keys: 0, required_ingredient_ids: 0, ratings_sum: 0, missing_count: 0 } },
 		];
 		const documents = await DrinkModel.aggregate<DrinkPersistence & { missing_ingredient_ids: Types.ObjectId[] }>(
 			pipeline,
@@ -175,7 +170,6 @@ export class DrinksRepository implements IDrinksRepository {
 			],
 			{ returnDocument: 'after', updatePipeline: true },
 		)
-			.select('+ratings_sum')
 			.lean<DrinkPersistence>()
 			.exec();
 

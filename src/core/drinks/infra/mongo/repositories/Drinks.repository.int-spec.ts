@@ -209,11 +209,12 @@ describe('DrinksRepository (integration)', () => {
 			},
 		);
 
-		expect(await repository.findById(drink.id)).toMatchObject({
-			ratingsCount: 3,
-			ratingsSum: 14,
-			avgRating: 14 / 3,
-		});
+		const found = await repository.findById(drink.id);
+		expect(found).toMatchObject({ ratingsCount: 3, avgRating: 14 / 3 });
+		expect(found).not.toHaveProperty('ratingsSum');
+		// The sum behind the average stays stored, but only in the persistence layer.
+		const stored = await DrinkModel.findById(drink.id).select('+ratings_sum').lean();
+		expect(stored?.ratings_sum).toBe(14);
 	});
 
 	it('rejects missing-drink and aggregate-underflow rating deltas without mutation', async () => {
@@ -224,7 +225,8 @@ describe('DrinksRepository (integration)', () => {
 		await expect(
 			repository.applyRatingDelta({ drinkId: drink.id, countDelta: -1, sumDelta: -1 }),
 		).rejects.toBeInstanceOf(NotFoundError);
-		expect(await repository.findById(drink.id)).toMatchObject({ ratingsCount: 0, ratingsSum: 0, avgRating: 0 });
+		expect(await repository.findById(drink.id)).toMatchObject({ ratingsCount: 0, avgRating: 0 });
+		expect((await DrinkModel.findById(drink.id).select('+ratings_sum').lean())?.ratings_sum).toBe(0);
 		expect(await repository.findById('invalid-id')).toBeNull();
 	});
 

@@ -52,14 +52,8 @@ export type Drink = EntityMetadata & {
 	cover?: FileMetadata;
 	thumbnail?: FileMetadata;
 	ingredients: DrinkIngredient[];
-	/** Garnishes are listed apart from the ingredients and may be empty. */
 	garnishes: DrinkGarnish[];
-	/**
-	 * How the drink is prepared, as data. When present, the `method` of every language was written from it.
-	 * Absent for drinks whose method was written by hand.
-	 */
 	preparation?: PreparationPlan;
 	avgRating: number;
 	ratingsCount: number;
-	ratingsSum: number;
 };
