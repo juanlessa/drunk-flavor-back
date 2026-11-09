@@ -5,6 +5,12 @@ import { UserPermissionModel } from './entities/user';
 
 const ADMIN_MANAGED_ROLES = [Roles.partner, Roles.member];
 
+/**
+ * The catalog subjects a partner contributes to; a partner changes only the records they created. `listWithAuthorship` is
+ * the listing for the people who contribute to the catalog, which also shows who created each record.
+ */
+const CATALOG_SUBJECTS = ['Category', 'Unit', 'Ingredient', 'Drink'] as const;
+
 type PermissionsByRole = (user: UserPermissionModel, builder: AbilityBuilder<AppAbility>) => void;
 
 export const permissions: Record<Role, PermissionsByRole> = {
@@ -30,10 +36,8 @@ export const permissions: Record<Role, PermissionsByRole> = {
 		});
 	},
 	partner(user, { can }) {
-		can('manage', 'Category');
-		can('manage', 'Unit');
-		can('manage', 'Ingredient');
-		can('manage', 'Drink');
+		can(['create', 'list', 'listWithAuthorship', 'get'], [...CATALOG_SUBJECTS]);
+		can(['update', 'delete'], [...CATALOG_SUBJECTS], { createdBy: { $eq: user.id } });
 		can(['create', 'list', 'get'], 'Comment');
 		can(['create', 'list', 'get'], 'Rating');
 		can(['update', 'delete'], 'Comment', { userId: { $eq: user.id } });

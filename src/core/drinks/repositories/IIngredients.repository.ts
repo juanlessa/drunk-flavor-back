@@ -9,5 +9,9 @@ export interface IIngredientsRepository {
 	findByName(data: FindIngredientByName): Promise<Ingredient | null>;
 	findById(id: string): Promise<Ingredient | null>;
 	findAll(query: QueryParams): Promise<Ingredient[]>;
+	/** Like `findAll`, with the records created by `userId` first and the others after, each group in the order of the query. */
+	findAllOwnedFirst(query: QueryParams, userId: string): Promise<Ingredient[]>;
+	/** Removes the user as creator and last editor of the records, which stay as they are. Returns how many were touched. */
+	clearCreatorByUser(userId: string): Promise<number>;
 	findByIdList(ids: string[]): Promise<Ingredient[]>;
 }

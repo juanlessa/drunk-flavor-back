@@ -1,3 +1,4 @@
+import { omitAuthorship } from '@/shared/helpers/authorship.helpers';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { ListCategoriesDTO } from './listCategories.dtos';
 
@@ -7,6 +8,6 @@ export class ListCategoriesService {
 	async execute({ query = {} }: ListCategoriesDTO) {
 		const categories = await this.categoriesRepository.findAll(query);
 
-		return categories;
+		return categories.map(omitAuthorship);
 	}
 }

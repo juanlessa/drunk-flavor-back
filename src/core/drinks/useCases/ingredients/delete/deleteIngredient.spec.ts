@@ -1,4 +1,5 @@
 import { Category } from '@/core/drinks/entities/category.entity';
+import { withActor, withCreator } from '@/core/drinks/factories/authorship.factories';
 import { Unit } from '@/core/drinks/entities/unit.entity';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Ingredients.repository';
@@ -31,20 +32,24 @@ describe('Delete Ingredient', () => {
 		unitsRepository = new UnitsRepositoryInMemory();
 		service = new DeleteIngredientService(ingredientsRepository);
 
-		createdCategory = await categoriesRepository.create({
-			translations: categoryTranslations,
-			isAlcoholic: false,
-		});
+		createdCategory = await categoriesRepository.create(
+			withCreator({
+				translations: categoryTranslations,
+				isAlcoholic: false,
+			}),
+		);
 		createdUnit = await unitsRepository.create(createUnitFactory());
 	});
 	it('should be able to delete an ingredient', async () => {
-		const createdIngredient = await ingredientsRepository.create({
-			translations,
-			category: createdCategory,
-			units: [createdUnit],
-		});
+		const createdIngredient = await ingredientsRepository.create(
+			withCreator({
+				translations,
+				category: createdCategory,
+				units: [createdUnit],
+			}),
+		);
 
-		await service.execute({ id: createdIngredient.id });
+		await service.execute(withActor({ id: createdIngredient.id }));
 
 		const findDeledIngredient = await ingredientsRepository.findById(createdIngredient.id);
 
@@ -53,6 +58,6 @@ describe('Delete Ingredient', () => {
 
 	it('should not be able to delete a nonexistent ingredient', async () => {
 		const nonexistentId = new ObjectId().toString();
-		await expect(service.execute({ id: nonexistentId })).rejects.toBeInstanceOf(NotFoundError);
+		await expect(service.execute(withActor({ id: nonexistentId }))).rejects.toBeInstanceOf(NotFoundError);
 	});
 });

@@ -5,6 +5,7 @@ import { resolveUpdateDrinkCoverService } from './updateDrinkCover.container';
 
 export const updateDrinkCoverController: Controller<{ Params: UpdateDrinkCoverReqParams }> = async (request, reply) => {
 	const { id } = request.params;
+	const actor = { id: request.user.id, role: request.user.role };
 	const data = await request.file();
 
 	if (!data) {
@@ -18,6 +19,7 @@ export const updateDrinkCoverController: Controller<{ Params: UpdateDrinkCoverRe
 		fileStream: data.file,
 		name: data.filename,
 		mimetype: data.mimetype,
+		actor,
 	});
 
 	return reply.status(HTTP_STATUS.no_content).send();

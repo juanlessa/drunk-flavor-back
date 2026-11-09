@@ -18,6 +18,7 @@ const foreign: Actor = { id: new ObjectId().toString(), role: Roles.member };
 const drinksModule: IDrinksModule = {
 	findDrinkById: vi.fn().mockResolvedValue(null),
 	applyRatingDelta: vi.fn().mockResolvedValue({ average: 2, count: 1 }),
+	clearCreatorByUser: vi.fn().mockResolvedValue(0),
 };
 
 describe('Update Rating', () => {

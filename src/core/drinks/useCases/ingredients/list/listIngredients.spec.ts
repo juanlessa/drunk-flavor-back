@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { withCreator } from '@/core/drinks/factories/authorship.factories';
 import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Ingredients.repository';
 import { ListIngredientsService } from './ListIngredients.service';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
@@ -46,26 +47,34 @@ describe('List Ingredients', () => {
 		const category1 = await categoriesRepository.create(createCategory1);
 		const category2 = await categoriesRepository.create(createCategory2);
 		const unit = await unitsRepository.create(createUnitFactory());
-		await ingredientsRepository.create({
-			translations: translationsIngredient1,
-			category: category1,
-			units: [unit],
-		});
-		await ingredientsRepository.create({
-			translations: translationsIngredient2,
-			category: category1,
-			units: [unit],
-		});
-		await ingredientsRepository.create({
-			translations: translationsIngredient3,
-			category: category2,
-			units: [unit],
-		});
-		await ingredientsRepository.create({
-			translations: translationsIngredient4,
-			category: category2,
-			units: [unit],
-		});
+		await ingredientsRepository.create(
+			withCreator({
+				translations: translationsIngredient1,
+				category: category1,
+				units: [unit],
+			}),
+		);
+		await ingredientsRepository.create(
+			withCreator({
+				translations: translationsIngredient2,
+				category: category1,
+				units: [unit],
+			}),
+		);
+		await ingredientsRepository.create(
+			withCreator({
+				translations: translationsIngredient3,
+				category: category2,
+				units: [unit],
+			}),
+		);
+		await ingredientsRepository.create(
+			withCreator({
+				translations: translationsIngredient4,
+				category: category2,
+				units: [unit],
+			}),
+		);
 	});
 
 	it('should be able to list ingredients', async () => {

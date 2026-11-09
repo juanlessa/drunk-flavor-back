@@ -1,4 +1,6 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { FACTORY_CREATOR_ID } from '@/core/drinks/factories/authorship.factories';
+import { withCreator, withEditor } from '@/core/drinks/factories/authorship.factories';
 import { ObjectId } from 'mongodb';
 import { IngredientsRepository } from './Ingredients.repository';
 import { IngredientModel } from '../entities/ingredient.model';
@@ -28,6 +30,7 @@ const buildUnit = (): Unit => ({
 });
 
 const buildIngredient = (name: { en: string; pt: string }): CreateIngredient => ({
+	createdBy: FACTORY_CREATOR_ID,
 	translations: { en: { name: name.en }, pt: { name: name.pt } },
 	category: buildCategory(),
 	units: [buildUnit()],
@@ -77,15 +80,17 @@ describe('IngredientsRepository (integration)', () => {
 
 	it('throws NotFoundError on update/delete of a missing id and returns the updated doc on success', async () => {
 		await expect(
-			repository.update({ id: new ObjectId().toString(), translations: { en: { name: 'X' } } }),
+			repository.update(withEditor({ id: new ObjectId().toString(), translations: { en: { name: 'X' } } })),
 		).rejects.toBeInstanceOf(NotFoundError);
 		await expect(repository.delete(new ObjectId().toString())).rejects.toBeInstanceOf(NotFoundError);
 
 		const created = await repository.create(buildIngredient({ en: 'Lime', pt: 'Limão' }));
-		const updated = await repository.update({
-			id: created.id,
-			translations: { en: { name: 'Lemon' }, pt: { name: 'Limão' } },
-		});
+		const updated = await repository.update(
+			withEditor({
+				id: created.id,
+				translations: { en: { name: 'Lemon' }, pt: { name: 'Limão' } },
+			}),
+		);
 		expect(updated.translations.en.name).toBe('Lemon');
 	});
 
@@ -119,7 +124,7 @@ describe('IngredientsRepository (integration)', () => {
 		const other = await repository.create(buildIngredient({ en: 'Mint', pt: 'Hortelã' }));
 
 		await expect(
-			repository.update({ id: other.id, translations: { en: { name: 'Lime' } } }),
+			repository.update(withEditor({ id: other.id, translations: { en: { name: 'Lime' } } })),
 		).rejects.toBeInstanceOf(ConflictError);
 	});
 
@@ -156,16 +161,18 @@ describe('IngredientsRepository (integration)', () => {
 			(await IngredientModel.findById(id).select('+search_keys').lean())?.search_keys;
 
 		const createDescribed = () =>
-			repository.create({
-				translations: {
-					en: { name: 'Gabriela', description: 'Clove and cinnamon cachaça' },
-					pt: { name: 'Gabriela', description: 'Cachaça de cravo e canela' },
-				},
-				category: buildCategory(),
-				units: [buildUnit()],
-				kind: 'branded',
-				brand: 'Gabriela',
-			});
+			repository.create(
+				withCreator({
+					translations: {
+						en: { name: 'Gabriela', description: 'Clove and cinnamon cachaça' },
+						pt: { name: 'Gabriela', description: 'Cachaça de cravo e canela' },
+					},
+					category: buildCategory(),
+					units: [buildUnit()],
+					kind: 'branded',
+					brand: 'Gabriela',
+				}),
+			);
 
 		it('persists the kind, the brand and the description of each language', async () => {
 			const created = await createDescribed();
@@ -212,14 +219,16 @@ describe('IngredientsRepository (integration)', () => {
 				useIngredientName: true,
 			});
 			const createLime = (units: Unit[] = [eachUnit()]) =>
-				repository.create({
-					translations: {
-						en: { name: 'Lime', namePlural: 'Limes' },
-						pt: { name: 'Limão', namePlural: 'Limões' },
-					},
-					category: buildCategory(),
-					units,
-				});
+				repository.create(
+					withCreator({
+						translations: {
+							en: { name: 'Lime', namePlural: 'Limes' },
+							pt: { name: 'Limão', namePlural: 'Limões' },
+						},
+						category: buildCategory(),
+						units,
+					}),
+				);
 
 			it('persists the plural name of each language and the flag of the embedded unit', async () => {
 				const created = await createLime();
@@ -239,10 +248,12 @@ describe('IngredientsRepository (integration)', () => {
 
 			it('replaces it in one language and keeps it in the other', async () => {
 				const created = await createLime();
-				const updated = await repository.update({
-					id: created.id,
-					translations: { en: { name: 'Lime', namePlural: 'Lime fruits' } },
-				});
+				const updated = await repository.update(
+					withEditor({
+						id: created.id,
+						translations: { en: { name: 'Lime', namePlural: 'Lime fruits' } },
+					}),
+				);
 
 				expect(updated.translations.en.namePlural).toBe('Lime fruits');
 				expect(updated.translations.pt.namePlural).toBe('Limões');
@@ -250,10 +261,12 @@ describe('IngredientsRepository (integration)', () => {
 
 			it('removes it with null, in the document too', async () => {
 				const created = await createLime();
-				const updated = await repository.update({
-					id: created.id,
-					translations: { pt: { name: 'Limão', namePlural: null } },
-				});
+				const updated = await repository.update(
+					withEditor({
+						id: created.id,
+						translations: { pt: { name: 'Limão', namePlural: null } },
+					}),
+				);
 
 				expect(updated.translations.pt).toEqual({ name: 'Limão' });
 				expect(updated.translations.en.namePlural).toBe('Limes');
@@ -265,10 +278,12 @@ describe('IngredientsRepository (integration)', () => {
 		it('keeps the description of the languages that are not in the update', async () => {
 			const created = await createDescribed();
 
-			const updated = await repository.update({
-				id: created.id,
-				translations: { en: { name: 'Gabriela', description: 'Changed' } },
-			});
+			const updated = await repository.update(
+				withEditor({
+					id: created.id,
+					translations: { en: { name: 'Gabriela', description: 'Changed' } },
+				}),
+			);
 
 			expect(updated.translations.en.description).toBe('Changed');
 			expect(updated.translations.pt.description).toBe('Cachaça de cravo e canela');
@@ -277,12 +292,14 @@ describe('IngredientsRepository (integration)', () => {
 		it('removes the description and the brand with null', async () => {
 			const created = await createDescribed();
 
-			const updated = await repository.update({
-				id: created.id,
-				kind: 'generic',
-				brand: null,
-				translations: { pt: { name: 'Gabriela', description: null } },
-			});
+			const updated = await repository.update(
+				withEditor({
+					id: created.id,
+					kind: 'generic',
+					brand: null,
+					translations: { pt: { name: 'Gabriela', description: null } },
+				}),
+			);
 
 			expect(updated.kind).toBe('generic');
 			expect(updated).not.toHaveProperty('brand');
@@ -297,7 +314,7 @@ describe('IngredientsRepository (integration)', () => {
 		it('keeps the brand when the update does not mention it', async () => {
 			const created = await createDescribed();
 
-			const updated = await repository.update({ id: created.id, kind: 'branded' });
+			const updated = await repository.update(withEditor({ id: created.id, kind: 'branded' }));
 
 			expect(updated.brand).toBe('Gabriela');
 		});
@@ -306,8 +323,8 @@ describe('IngredientsRepository (integration)', () => {
 			const created = await createDescribed();
 			const next = buildUnit();
 
-			const updated = await repository.update({ id: created.id, units: [next] });
-			const cleared = await repository.update({ id: created.id, units: [] });
+			const updated = await repository.update(withEditor({ id: created.id, units: [next] }));
+			const cleared = await repository.update(withEditor({ id: created.id, units: [] }));
 
 			expect(updated.units.map(({ id }) => id)).toEqual([next.id]);
 			expect(cleared.units).toEqual([]);
@@ -337,11 +354,13 @@ describe('IngredientsRepository (integration)', () => {
 			it('are recalculated when a name, a description or the brand changes', async () => {
 				const created = await createDescribed();
 
-				await repository.update({
-					id: created.id,
-					brand: 'Cravo Brand',
-					translations: { en: { name: 'Cloved', description: 'Spiced' } },
-				});
+				await repository.update(
+					withEditor({
+						id: created.id,
+						brand: 'Cravo Brand',
+						translations: { en: { name: 'Cloved', description: 'Spiced' } },
+					}),
+				);
 
 				const keys = (await rawSearchKeys(created.id)) ?? [];
 				expect(keys).toEqual(expect.arrayContaining(['cloved', 'spiced', 'cravo', 'brand'])); // en + brand
@@ -364,12 +383,17 @@ describe('IngredientsRepository (integration)', () => {
 					expect.arrayContaining(['spirit', 'destilado', 'havana']),
 				);
 
-				await repository.update({
-					id: created.id,
-					kind: 'generic',
-					brand: null,
-					translations: { en: { name: 'Rum', description: null }, pt: { name: 'Rum', description: null } },
-				});
+				await repository.update(
+					withEditor({
+						id: created.id,
+						kind: 'generic',
+						brand: null,
+						translations: {
+							en: { name: 'Rum', description: null },
+							pt: { name: 'Rum', description: null },
+						},
+					}),
+				);
 
 				expect(await rawSearchKeys(created.id)).toEqual(['rum']);
 			});
@@ -377,7 +401,7 @@ describe('IngredientsRepository (integration)', () => {
 			it('are recalculated by a brand-only update', async () => {
 				const created = await createDescribed();
 
-				await repository.update({ id: created.id, brand: 'Outra Marca' });
+				await repository.update(withEditor({ id: created.id, brand: 'Outra Marca' }));
 
 				const keys = (await rawSearchKeys(created.id)) ?? [];
 				expect(keys).toEqual(expect.arrayContaining(['outra', 'marca', 'canela']));
@@ -470,7 +494,9 @@ describe('IngredientsRepository (integration)', () => {
 
 		it('treats an id that is not an object id as a document that does not exist', async () => {
 			expect(await repository.findById(invalidId)).toBeNull();
-			await expect(repository.update({ id: invalidId, units: [] })).rejects.toBeInstanceOf(NotFoundError);
+			await expect(repository.update(withEditor({ id: invalidId, units: [] }))).rejects.toBeInstanceOf(
+				NotFoundError,
+			);
 			await expect(repository.delete(invalidId)).rejects.toBeInstanceOf(NotFoundError);
 		});
 
@@ -483,9 +509,9 @@ describe('IngredientsRepository (integration)', () => {
 			{ title: 'while changing the names', data: { translations: { en: { name: 'Other' } } } },
 			{ title: 'while changing the brand', data: { brand: 'Other' } },
 		])('throws NotFoundError when updating a missing document {{title}}', async ({ data }) => {
-			await expect(repository.update({ id: new ObjectId().toString(), ...data })).rejects.toBeInstanceOf(
-				NotFoundError,
-			);
+			await expect(
+				repository.update(withEditor({ id: new ObjectId().toString(), ...data })),
+			).rejects.toBeInstanceOf(NotFoundError);
 		});
 
 		it('deletes the document and returns it', async () => {

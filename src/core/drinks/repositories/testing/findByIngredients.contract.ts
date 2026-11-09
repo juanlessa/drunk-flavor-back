@@ -1,4 +1,5 @@
 import { ObjectId } from 'mongodb';
+import { FACTORY_CREATOR_ID } from '@/core/drinks/factories/authorship.factories';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { DrinkGarnish, DrinkIngredient } from '@/core/drinks/entities/drink.entity';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
@@ -48,6 +49,7 @@ export const describeFindByIngredientsContract = (getRepository: () => IDrinksRe
 			translations: { en: { name, method: 'Stir' }, pt: { name, method: 'Mexa' } },
 			ingredients,
 			garnishes,
+			createdBy: FACTORY_CREATOR_ID,
 		});
 	const namesOf = (matches: Awaited<ReturnType<IDrinksRepository['findByIngredients']>>) =>
 		matches.map(({ drink }) => drink.translations.en.name);

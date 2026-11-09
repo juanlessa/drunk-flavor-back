@@ -15,6 +15,7 @@ import { verifyPermissions } from '../../middlewares/verifyPermissions';
 import { enforceCompleteProfile } from '../../middlewares/enforceCompleteProfile';
 import { Routes } from '../../types/fastify.types';
 
+import { listUnitsWithAuthorshipController } from '@/core/drinks/useCases/units/listWithAuthorship/listUnitsWithAuthorship.controller';
 const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
 		'/units',
@@ -29,7 +30,27 @@ const routes: Routes = (server) => {
 		.get('/units/:id', { schema: { tags: ['Units'], params: getUnitSchema } }, getUnitController);
 	server
 		.withTypeProvider<ZodTypeProvider>()
-		.get('/units', { schema: { tags: ['Units'], querystring: listUnitsQuerySchema } }, listUnitsController);
+
+		.get(
+			'/units',
+			{
+				schema: { tags: ['Units'], querystring: listUnitsQuerySchema },
+			},
+			listUnitsController,
+		);
+	// For the people who contribute to the catalog (partner, admin, owner): their own records first, and who created and last edited each one.
+	server.withTypeProvider<ZodTypeProvider>().get(
+		'/units/me',
+		{
+			schema: { tags: ['Units'], querystring: listUnitsQuerySchema },
+			preValidation: [
+				verifyAndRenewToken,
+				enforceCompleteProfile,
+				verifyPermissions('listWithAuthorship', 'Unit'),
+			],
+		},
+		listUnitsWithAuthorshipController,
+	);
 	server.withTypeProvider<ZodTypeProvider>().patch(
 		'/units',
 		{

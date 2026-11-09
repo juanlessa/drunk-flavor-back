@@ -16,6 +16,10 @@ export interface IDrinksRepository {
 	findByName(data: FindDrinkByName): Promise<Drink | null>;
 	findById(id: string): Promise<Drink | null>;
 	findAll(query: QueryParams): Promise<Drink[]>;
+	/** Like `findAll`, with the records created by `userId` first and the others after, each group in the order of the query. */
+	findAllOwnedFirst(query: QueryParams, userId: string): Promise<Drink[]>;
+	/** Removes the user as creator and last editor of the records, which stay as they are. Returns how many were touched. */
+	clearCreatorByUser(userId: string): Promise<number>;
 	/**
 	 * The drinks that use at least one of the given ingredients and miss no more than `maxMissing` of their required
 	 * ingredients, the most complete first and, among those, the best rated.

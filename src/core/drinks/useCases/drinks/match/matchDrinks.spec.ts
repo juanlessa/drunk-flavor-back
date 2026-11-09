@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { withCreator, withEditor } from '@/core/drinks/factories/authorship.factories';
 import { Drink } from '@/core/drinks/entities/drink.entity';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
@@ -21,10 +22,12 @@ let lime: Ingredient;
 let sugar: Ingredient;
 
 const createDrink = (name: string, ingredients: Ingredient[]): Promise<Drink> =>
-	drinksRepository.create({
-		translations: { en: { name, method: 'Stir' }, pt: { name, method: 'Mexa' } },
-		ingredients: ingredients.map((ingredient) => createDrinkIngredientFactory(ingredient)),
-	});
+	drinksRepository.create(
+		withCreator({
+			translations: { en: { name, method: 'Stir' }, pt: { name, method: 'Mexa' } },
+			ingredients: ingredients.map((ingredient) => createDrinkIngredientFactory(ingredient)),
+		}),
+	);
 
 describe('Match Drinks', () => {
 	beforeEach(async () => {
@@ -39,7 +42,7 @@ describe('Match Drinks', () => {
 		const unit = await unitsRepository.create(createUnitFactory());
 		const build = (name: string) => {
 			const { translations } = createIngredientFactory({ translations: { en: { name }, pt: { name } } });
-			return ingredientsRepository.create({ translations, category, units: [unit] });
+			return ingredientsRepository.create(withCreator({ translations, category, units: [unit] }));
 		};
 		[gin, lime, sugar] = await Promise.all([build('Gin'), build('Lime'), build('Sugar')]);
 	});
@@ -106,11 +109,13 @@ describe('Match Drinks', () => {
 
 	it('should add the url of the cover and of the thumbnail to the drinks found', async () => {
 		const gimlet = await createDrink('Gimlet', [gin, lime]);
-		await drinksRepository.update({
-			id: gimlet.id,
-			cover: { name: 'cover.png', mimetype: 'image/png', url: '' },
-			thumbnail: { name: 'thumbnail.jpeg', mimetype: 'image/jpeg', url: '' },
-		});
+		await drinksRepository.update(
+			withEditor({
+				id: gimlet.id,
+				cover: { name: 'cover.png', mimetype: 'image/png', url: '' },
+				thumbnail: { name: 'thumbnail.jpeg', mimetype: 'image/jpeg', url: '' },
+			}),
+		);
 
 		const { items } = await service.execute({ ingredientIds: [gin.id, lime.id], maxMissing: 0 });
 

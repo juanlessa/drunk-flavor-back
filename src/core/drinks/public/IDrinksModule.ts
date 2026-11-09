@@ -16,4 +16,5 @@ export type DrinkRatingSummary = {
 export interface IDrinksModule {
 	findDrinkById(drinkId: string): Promise<Drink | null>;
 	applyRatingDelta(input: ApplyRatingDelta): Promise<DrinkRatingSummary>;
+	clearCreatorByUser(userId: string): Promise<number>;
 }

@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { withCreator } from '@/core/drinks/factories/authorship.factories';
 import request from 'supertest';
 import { ObjectId } from 'mongodb';
 import { app } from '@/infrastructure/fastify/app';
@@ -29,10 +30,12 @@ describe('List Drinks by creation', () => {
 	it('Should be able to list the newest drinks first', async () => {
 		const { ingredient } = await createIngredient();
 		const createAddedOn = async (name: string, createdAt: string) => {
-			const drink = await resolveDrinksRepository().create({
-				translations: { en: { name, method: 'Stir' }, pt: { name, method: 'Mexa' } },
-				ingredients: [createDrinkIngredientFactory(ingredient)],
-			});
+			const drink = await resolveDrinksRepository().create(
+				withCreator({
+					translations: { en: { name, method: 'Stir' }, pt: { name, method: 'Mexa' } },
+					ingredients: [createDrinkIngredientFactory(ingredient)],
+				}),
+			);
 			// Dated, so the order does not depend on how fast the drinks are created.
 			await DrinkModel.collection.updateOne(
 				{ _id: new ObjectId(drink.id) },

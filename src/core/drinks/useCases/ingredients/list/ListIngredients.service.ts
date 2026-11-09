@@ -1,3 +1,4 @@
+import { omitAuthorship } from '@/shared/helpers/authorship.helpers';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 import { ListIngredientsDTO } from './listIngredients.dtos';
 
@@ -7,6 +8,6 @@ export class ListIngredientsService {
 	async execute({ query = {} }: ListIngredientsDTO) {
 		const ingredients = await this.ingredientsRepository.findAll(query);
 
-		return ingredients;
+		return ingredients.map(omitAuthorship);
 	}
 }

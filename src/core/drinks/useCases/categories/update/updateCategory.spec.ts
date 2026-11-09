@@ -1,4 +1,5 @@
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
+import { withActor, withCreator } from '@/core/drinks/factories/authorship.factories';
 import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateCategoryService } from './UpdateCategory.service';
@@ -23,13 +24,15 @@ describe('Update Category', () => {
 	});
 
 	it('should be able to update a category', async () => {
-		const createdCategory = await categoriesRepository.create({ translations, isAlcoholic });
+		const createdCategory = await categoriesRepository.create(withCreator({ translations, isAlcoholic }));
 
-		await service.execute({
-			id: createdCategory.id,
-			translations: updatedTranslations,
-			isAlcoholic: updatedIsAlcoholic,
-		});
+		await service.execute(
+			withActor({
+				id: createdCategory.id,
+				translations: updatedTranslations,
+				isAlcoholic: updatedIsAlcoholic,
+			}),
+		);
 
 		const findUpdatedCategory = (await categoriesRepository.findById(createdCategory.id)) as Category;
 
@@ -40,25 +43,31 @@ describe('Update Category', () => {
 
 	it('should not be able to update a nonexistent category', async () => {
 		await expect(
-			service.execute({
-				id: new ObjectId().toString(),
-				translations: updatedTranslations,
-				isAlcoholic: updatedIsAlcoholic,
-			}),
+			service.execute(
+				withActor({
+					id: new ObjectId().toString(),
+					translations: updatedTranslations,
+					isAlcoholic: updatedIsAlcoholic,
+				}),
+			),
 		).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('should not be able to update an ingredient name to an existing name', async () => {
-		const createdCategory = await categoriesRepository.create({ translations, isAlcoholic });
+		const createdCategory = await categoriesRepository.create(withCreator({ translations, isAlcoholic }));
 
-		await categoriesRepository.create({ translations: updatedTranslations, isAlcoholic: updatedIsAlcoholic });
+		await categoriesRepository.create(
+			withCreator({ translations: updatedTranslations, isAlcoholic: updatedIsAlcoholic }),
+		);
 
 		await expect(
-			service.execute({
-				id: createdCategory.id,
-				translations: updatedTranslations,
-				isAlcoholic: updatedIsAlcoholic,
-			}),
+			service.execute(
+				withActor({
+					id: createdCategory.id,
+					translations: updatedTranslations,
+					isAlcoholic: updatedIsAlcoholic,
+				}),
+			),
 		).rejects.toBeInstanceOf(ConflictError);
 	});
 });

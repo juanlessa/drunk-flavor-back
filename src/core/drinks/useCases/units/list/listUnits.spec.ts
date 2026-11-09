@@ -43,4 +43,13 @@ describe('List Units', () => {
 		const found = await service.execute({ query: { sort: { 'translations.en.namePlural': -1 } } });
 		expect(found.map((unit) => unit.translations.en.name)).toEqual(['piece', 'gram', 'cup']);
 	});
+
+	it('does not show who created or last edited the units', async () => {
+		await repository.create(createUnitFactory());
+
+		const [unit] = await service.execute({});
+
+		expect(unit).not.toHaveProperty('createdBy');
+		expect(unit).not.toHaveProperty('updatedBy');
+	});
 });

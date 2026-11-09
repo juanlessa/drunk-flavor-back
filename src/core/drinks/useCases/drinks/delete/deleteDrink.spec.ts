@@ -1,4 +1,5 @@
 import { Category } from '@/core/drinks/entities/category.entity';
+import { withActor, withCreator, withEditor } from '@/core/drinks/factories/authorship.factories';
 import { Unit } from '@/core/drinks/entities/unit.entity';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Ingredients.repository';
@@ -48,20 +49,26 @@ describe('Delete Drink', () => {
 		storageProvider = new MockStorageProvider();
 		service = new DeleteDrinkService(drinksRepository, storageProvider);
 
-		createdCategory = await categoriesRepository.create({
-			translations: categoryTranslations,
-			isAlcoholic: false,
-		});
+		createdCategory = await categoriesRepository.create(
+			withCreator({
+				translations: categoryTranslations,
+				isAlcoholic: false,
+			}),
+		);
 		createdUnit = await unitsRepository.create(createUnitFactory());
-		createdIngredient = await ingredientsRepository.create({
-			translations: ingredientTranslations,
-			category: createdCategory,
-			units: [createdUnit],
-		});
-		createdDrink = await drinksRepository.create({
-			translations,
-			ingredients: [createDrinkIngredientFactory(createdIngredient, { quantity: 60 })],
-		});
+		createdIngredient = await ingredientsRepository.create(
+			withCreator({
+				translations: ingredientTranslations,
+				category: createdCategory,
+				units: [createdUnit],
+			}),
+		);
+		createdDrink = await drinksRepository.create(
+			withCreator({
+				translations,
+				ingredients: [createDrinkIngredientFactory(createdIngredient, { quantity: 60 })],
+			}),
+		);
 	});
 
 	afterAll(async () => {
@@ -69,7 +76,7 @@ describe('Delete Drink', () => {
 	});
 
 	it('should be able to delete a drink', async () => {
-		await service.execute({ id: createdDrink.id });
+		await service.execute(withActor({ id: createdDrink.id }));
 
 		const found = await drinksRepository.findById(createdDrink.id);
 
@@ -78,17 +85,19 @@ describe('Delete Drink', () => {
 
 	it('should not be able to delete a nonexistent drink', async () => {
 		const nonexistentId = new ObjectId().toString();
-		await expect(service.execute({ id: nonexistentId })).rejects.toBeInstanceOf(NotFoundError);
+		await expect(service.execute(withActor({ id: nonexistentId }))).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('should be able to delete the cover and thumbnail during delete a drink', async () => {
-		await drinksRepository.update({
-			id: createdDrink.id,
-			cover: { name: 'coverFile.png', mimetype: 'image/png', url: '' },
-			thumbnail: { name: 'thumbnailFile.jpeg', mimetype: 'image/jpeg', url: '' },
-		});
+		await drinksRepository.update(
+			withEditor({
+				id: createdDrink.id,
+				cover: { name: 'coverFile.png', mimetype: 'image/png', url: '' },
+				thumbnail: { name: 'thumbnailFile.jpeg', mimetype: 'image/jpeg', url: '' },
+			}),
+		);
 
-		await service.execute({ id: createdDrink.id });
+		await service.execute(withActor({ id: createdDrink.id }));
 
 		const found = await drinksRepository.findById(createdDrink.id);
 

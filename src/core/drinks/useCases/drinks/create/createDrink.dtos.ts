@@ -1,6 +1,7 @@
 import { z } from 'zod/v4';
 import { PreparationPlan } from '@/core/drinks/modules/preparation';
 import { Translations } from '@/core/drinks/types/translations';
+import { Actor } from '@/shared/accessControl/actor.types';
 import { DrinkGarnishInput, DrinkIngredientInput, DrinkTranslationInput } from '@/core/drinks/dtos/drink.dtos';
 import { createDrinkSchema } from './createDrink.schema';
 
@@ -12,4 +13,5 @@ export type CreateDrinkDTO = {
 	garnishes?: DrinkGarnishInput[];
 	/** When present, it writes the method of every language and is stored with the drink. */
 	preparation?: PreparationPlan;
+	actor: Actor;
 };

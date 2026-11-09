@@ -1,5 +1,6 @@
 import { CreateUnit } from '@/core/drinks/dtos/unit.dtos';
 import { Genders } from '@/shared/constants/gender.constants';
+import { FACTORY_CREATOR_ID } from './authorship.factories';
 import { DeepPartial } from '@/shared/types/utility.types';
 
 export const createUnitFactory = (unit?: DeepPartial<CreateUnit>): CreateUnit => ({
@@ -18,5 +19,6 @@ export const createUnitFactory = (unit?: DeepPartial<CreateUnit>): CreateUnit =>
 	...(unit?.spaceBeforeSymbol === undefined ? {} : { spaceBeforeSymbol: unit.spaceBeforeSymbol }),
 	allowDecimal: unit?.allowDecimal ?? true,
 	kind: unit?.kind || 'volume',
+	createdBy: unit?.createdBy ?? FACTORY_CREATOR_ID,
 	...(unit?.useIngredientName === undefined ? {} : { useIngredientName: unit.useIngredientName }),
 });

@@ -4,6 +4,7 @@ import { insertCategories } from './categories';
 import { insertUnits } from './units';
 import { insertIngredients } from './ingredients';
 import { insertDrinks } from './drinks';
+import { findSeedActor } from './owner';
 
 process.on('unhandledRejection', (err) => {
 	logger.error({ err }, 'Unhandled Rejection');
@@ -36,10 +37,11 @@ const gracefulShutdown = (signal: string) => async () => {
 };
 
 const seedDatabase = async () => {
-	await insertCategories();
-	await insertUnits();
-	await insertIngredients();
-	await insertDrinks();
+	const actor = await findSeedActor();
+	await insertCategories(actor);
+	await insertUnits(actor);
+	await insertIngredients(actor);
+	await insertDrinks(actor);
 };
 
 const main = async () => {

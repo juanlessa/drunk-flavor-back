@@ -1,6 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { ObjectId } from 'mongodb';
 import {
+	INGREDIENT_CREATED_BY_INDEX,
 	INGREDIENT_SEARCH_KEYS_INDEX,
 	INGREDIENT_TRANSLATIONS_EN_NAME_UNIQUE_INDEX,
 	INGREDIENT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX,
@@ -61,6 +62,7 @@ describe('IngredientModel (integration)', () => {
 		expect(names).toEqual(
 			[
 				'_id_',
+				INGREDIENT_CREATED_BY_INDEX,
 				INGREDIENT_SEARCH_KEYS_INDEX,
 				INGREDIENT_TRANSLATIONS_EN_NAME_UNIQUE_INDEX,
 				INGREDIENT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX,

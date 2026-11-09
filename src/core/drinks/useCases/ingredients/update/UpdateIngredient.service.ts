@@ -1,4 +1,5 @@
 import { IngredientKinds } from '@/core/drinks/constants/ingredient.constants';
+import { assertCanChangeIngredient } from '@/core/drinks/helpers/catalogAuthorization.helpers';
 import { assertIngredientBrand, assertIngredientNamePlural } from '@/core/drinks/helpers/ingredient.helpers';
 import { resolveIngredientUnits } from '@/core/drinks/mappers/ingredientUnits.mappers';
 import { mapToTranslationsName } from '@/core/drinks/mappers/translations.mappers';
@@ -16,11 +17,12 @@ export class UpdateIngredientService {
 		private unitsRepository: IUnitsRepository,
 	) {}
 
-	async execute({ id, translations, categoryId, unitIds, kind, brand }: UpdateIngredientDTO): Promise<void> {
+	async execute({ id, translations, categoryId, unitIds, kind, brand, actor }: UpdateIngredientDTO): Promise<void> {
 		const ingredient = await this.ingredientsRepository.findById(id);
 		if (!ingredient) {
 			throw new NotFoundError('apiResponses.ingredients.notFound', { path: 'UpdateIngredient.service.1' });
 		}
+		assertCanChangeIngredient('update', ingredient, actor, 'UpdateIngredient.service.forbidden');
 		const duplicate = await this.ingredientsRepository.findByName(mapToTranslationsName(translations));
 		if (duplicate && duplicate.id !== ingredient.id) {
 			throw new ConflictError('apiResponses.ingredients.alreadyExist', { path: 'UpdateIngredient.service.2' });
@@ -58,6 +60,7 @@ export class UpdateIngredientService {
 			units,
 			kind,
 			brand: finalKind === IngredientKinds.generic ? null : brand,
+			updatedBy: actor.id,
 		});
 	}
 }

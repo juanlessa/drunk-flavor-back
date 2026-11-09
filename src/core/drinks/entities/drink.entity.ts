@@ -1,7 +1,7 @@
 import { DrinkIngredientAmountTypes, DrinkIngredientQualifiers } from '@/core/drinks/constants/drink.constants';
 import type { PreparationPlan } from '@/core/drinks/modules/preparation';
 import { Translations } from '@/core/drinks/types/translations';
-import { EntityMetadata } from '@/shared/types/entity.types';
+import { AuthoredEntityMetadata } from '@/shared/types/entity.types';
 import { FileMetadata } from '@/shared/types/file.types';
 import { Ingredient } from './ingredient.entity';
 import { Unit } from './unit.entity';
@@ -47,7 +47,7 @@ export type DrinkIngredient = DrinkRecipeItem & {
 /** A finishing touch (e.g. a lime wedge, a mint sprig). Always optional by nature. */
 export type DrinkGarnish = DrinkRecipeItem;
 
-export type Drink = EntityMetadata & {
+export type Drink = AuthoredEntityMetadata & {
 	translations: Translations<DrinkTranslation>;
 	cover?: FileMetadata;
 	thumbnail?: FileMetadata;

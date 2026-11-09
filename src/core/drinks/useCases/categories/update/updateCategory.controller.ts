@@ -4,6 +4,7 @@ import { resolveUpdateCategoryService } from './updateCategory.container';
 import { UpdateCategoryReqBody } from './updateCategory.dtos';
 
 export const updateCategoryController: Controller<{ Body: UpdateCategoryReqBody }> = async (request, reply) => {
-	await resolveUpdateCategoryService().execute(request.body);
+	const actor = { id: request.user.id, role: request.user.role };
+	await resolveUpdateCategoryService().execute({ ...request.body, actor });
 	return reply.status(HTTP_STATUS.no_content).send();
 };

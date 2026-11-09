@@ -1,4 +1,5 @@
 import { ObjectId } from 'mongodb';
+import { withCreator } from '@/core/drinks/factories/authorship.factories';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { Unit } from '@/core/drinks/entities/unit.entity';
@@ -36,16 +37,20 @@ describe('Generate Method', () => {
 		ingredientsRepository = new IngredientsRepositoryInMemory();
 		service = new GenerateMethodService(ingredientsRepository);
 
-		const category = await categoriesRepository.create({
-			translations: createCategoryFactory().translations,
-			isAlcoholic: false,
-		});
+		const category = await categoriesRepository.create(
+			withCreator({
+				translations: createCategoryFactory().translations,
+				isAlcoholic: false,
+			}),
+		);
 		unit = await unitsRepository.create(createUnitFactory());
-		ingredient = await ingredientsRepository.create({
-			translations: createIngredientFactory().translations,
-			category,
-			units: [unit],
-		});
+		ingredient = await ingredientsRepository.create(
+			withCreator({
+				translations: createIngredientFactory().translations,
+				category,
+				units: [unit],
+			}),
+		);
 	});
 
 	it('should write the method in every language, sentence by sentence, without saving anything', async () => {

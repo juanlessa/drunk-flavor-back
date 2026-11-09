@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { withCreator } from '@/core/drinks/factories/authorship.factories';
 import request from 'supertest';
 import { app } from '@/infrastructure/fastify/app';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
@@ -29,10 +30,12 @@ describe('List Drinks by rating', () => {
 	it('Should be able to list the best rated drinks first, by name among the drinks with the same rating', async () => {
 		const { ingredient } = await createIngredient();
 		const createRated = async (name: string, rating: number) => {
-			const drink = await resolveDrinksRepository().create({
-				translations: { en: { name, method: 'Stir' }, pt: { name, method: 'Mexa' } },
-				ingredients: [createDrinkIngredientFactory(ingredient)],
-			});
+			const drink = await resolveDrinksRepository().create(
+				withCreator({
+					translations: { en: { name, method: 'Stir' }, pt: { name, method: 'Mexa' } },
+					ingredients: [createDrinkIngredientFactory(ingredient)],
+				}),
+			);
 			await resolveDrinksModule().applyRatingDelta({ drinkId: drink.id, countDelta: 1, sumDelta: rating });
 		};
 		// By name alone they would read Caipirinha, Mojito, Negroni: the rating has to come first to change that.
@@ -55,10 +58,12 @@ describe('List Drinks by rating', () => {
 	it('Should be able to list the drinks by rating score, ranking many good ratings above a single perfect one', async () => {
 		const { ingredient } = await createIngredient();
 		const createRated = async (name: string, value?: number, times = 1) => {
-			const drink = await resolveDrinksRepository().create({
-				translations: { en: { name, method: 'Stir' }, pt: { name, method: 'Mexa' } },
-				ingredients: [createDrinkIngredientFactory(ingredient)],
-			});
+			const drink = await resolveDrinksRepository().create(
+				withCreator({
+					translations: { en: { name, method: 'Stir' }, pt: { name, method: 'Mexa' } },
+					ingredients: [createDrinkIngredientFactory(ingredient)],
+				}),
+			);
 			for (let index = 0; value !== undefined && index < times; index += 1) {
 				await resolveDrinksModule().applyRatingDelta({ drinkId: drink.id, countDelta: 1, sumDelta: value });
 			}

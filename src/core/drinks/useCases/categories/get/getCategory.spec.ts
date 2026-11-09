@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { withCreator } from '@/core/drinks/factories/authorship.factories';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { ObjectId } from 'mongodb';
 import { GetCategoryService } from './GetCategory.service';
@@ -17,7 +18,7 @@ describe('Get Ingredient', () => {
 		service = new GetCategoryService(categoriesRepository);
 	});
 	it('should be able to find a Category', async () => {
-		const createdCategory = await categoriesRepository.create({ translations, isAlcoholic });
+		const createdCategory = await categoriesRepository.create(withCreator({ translations, isAlcoholic }));
 
 		const categoryFound = await service.execute({ id: createdCategory.id });
 

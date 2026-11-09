@@ -21,6 +21,7 @@ export const FileMetadataSchema = new Schema<FileMetadata>(
 );
 
 export const DRINK_SEARCH_KEYS_INDEX = 'drink_search_keys';
+export const DRINK_CREATED_BY_INDEX = 'drink_created_by';
 export const DRINK_REQUIRED_INGREDIENT_IDS_INDEX = 'drink_required_ingredient_ids';
 export const DRINK_TRANSLATIONS_EN_NAME_UNIQUE_INDEX = 'drink_translations_en_name_unique';
 export const DRINK_TRANSLATIONS_PT_NAME_UNIQUE_INDEX = 'drink_translations_pt_name_unique';
@@ -99,6 +100,9 @@ const drinkSchemaDefinition = {
 	// What the drinks are ranked by (see `getRatingScore`). A drink with no rating starts at the prior mean; the
 	// rating projection recalculates it with the sum and the count. Only the persistence layer knows it.
 	rating_score: { type: Number, required: true, default: RATING_PRIOR_MEAN, select: false },
+	// Who created the record (set once, never changed) and who changed it last. Both are removed when that account is closed.
+	created_by: { type: String, required: false, immutable: true },
+	updated_by: { type: String, required: false },
 } as const;
 
 export type DrinkIngredientAmountPersistence = {
@@ -131,6 +135,8 @@ export type DrinkPersistence = {
 	ratings_count: number;
 	ratings_sum: number;
 	rating_score: number;
+	created_by?: string;
+	updated_by?: string;
 	created_at: Date;
 	updated_at: Date;
 };
@@ -148,6 +154,7 @@ DrinkSchema.index(
 	getNameUniqueIndexOptions('pt', DRINK_TRANSLATIONS_PT_NAME_UNIQUE_INDEX),
 );
 DrinkSchema.index({ search_keys: 1 }, { name: DRINK_SEARCH_KEYS_INDEX });
+DrinkSchema.index({ created_by: 1 }, { name: DRINK_CREATED_BY_INDEX });
 DrinkSchema.index({ required_ingredient_ids: 1 }, { name: DRINK_REQUIRED_INGREDIENT_IDS_INDEX });
 
 export const DrinkModel =

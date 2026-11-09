@@ -3,6 +3,7 @@ import { resolveCreateDrinkService } from '@/core/drinks/useCases/drinks/create/
 import { DrinkGarnishInput, DrinkIngredientInput } from '@/core/drinks/dtos/drink.dtos';
 import { PreparationPlan } from '@/core/drinks/modules/preparation';
 import { DrinkIngredientAmountTypes } from '@/core/drinks/constants/drink.constants';
+import { Actor } from '@/shared/accessControl/actor.types';
 import { logger } from '@/shared/providers/logger';
 import { ingredientsMap } from './ingredients';
 
@@ -314,7 +315,7 @@ const resolvePlanRefs = (value: unknown): unknown => {
 	return value;
 };
 
-const toCreateDrink = (drink: SeedDrink): CreateDrinkDTO => ({
+const toCreateDrink = (drink: SeedDrink): Omit<CreateDrinkDTO, 'actor'> => ({
 	translations: { en: { name: drink.names.en }, pt: { name: drink.names.pt } },
 	ingredients: drink.ingredients.map((line): DrinkIngredientInput => ({
 		ingredientId: resolveIngredientId(line.ingredient),
@@ -328,11 +329,11 @@ const toCreateDrink = (drink: SeedDrink): CreateDrinkDTO => ({
 	preparation: resolvePlanRefs(drink.preparation) as PreparationPlan,
 });
 
-export async function insertDrinks() {
+export async function insertDrinks(actor: Actor) {
 	try {
 		const service = resolveCreateDrinkService();
 		for (const drink of drinks) {
-			await service.execute(toCreateDrink(drink));
+			await service.execute({ ...toCreateDrink(drink), actor });
 		}
 		logger.info('Drinks inserted successfully');
 	} catch (error) {

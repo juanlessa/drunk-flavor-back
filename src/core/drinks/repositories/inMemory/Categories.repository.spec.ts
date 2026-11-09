@@ -1,10 +1,13 @@
 import { ObjectId } from 'mongodb';
+import { FACTORY_CREATOR_ID } from '@/core/drinks/factories/authorship.factories';
+import { withEditor } from '@/core/drinks/factories/authorship.factories';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CreateCategory } from '@/core/drinks/dtos/category.dtos';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { CategoriesRepositoryInMemory } from './Categories.repository';
 
 const buildCategory = (name: { en: string; pt: string }, isAlcoholic = false): CreateCategory => ({
+	createdBy: FACTORY_CREATOR_ID,
 	translations: { en: { name: name.en }, pt: { name: name.pt } },
 	isAlcoholic,
 });
@@ -56,7 +59,7 @@ describe('CategoriesRepositoryInMemory', () => {
 	describe('update', () => {
 		it('throws NotFoundError for a missing id', async () => {
 			await expect(
-				repository.update({ id: new ObjectId().toString(), isAlcoholic: true }),
+				repository.update(withEditor({ id: new ObjectId().toString(), isAlcoholic: true })),
 			).rejects.toBeInstanceOf(NotFoundError);
 		});
 
@@ -64,7 +67,9 @@ describe('CategoriesRepositoryInMemory', () => {
 			const created = await repository.create(buildCategory({ en: 'Citrus', pt: 'Cítrico' }));
 			const originalUpdatedAt = created.updatedAt.getTime();
 
-			const updated = await repository.update({ id: created.id, translations: { en: { name: 'Tropical' } } });
+			const updated = await repository.update(
+				withEditor({ id: created.id, translations: { en: { name: 'Tropical' } } }),
+			);
 
 			expect(updated.translations.en.name).toBe('Tropical');
 			expect(updated.translations.pt.name).toBe('Cítrico');
@@ -76,7 +81,7 @@ describe('CategoriesRepositoryInMemory', () => {
 		it('keeps false when the flag is updated to false', async () => {
 			const created = await repository.create(buildCategory({ en: 'Spirit', pt: 'Destilado' }, true));
 
-			const updated = await repository.update({ id: created.id, isAlcoholic: false });
+			const updated = await repository.update(withEditor({ id: created.id, isAlcoholic: false }));
 
 			expect(updated.isAlcoholic).toBe(false);
 		});

@@ -8,6 +8,7 @@ import { UnitPersistence, UnitSchema } from './unit.model';
 import { getNameUniqueIndexOptions, getTranslationsSchema } from '../helpers/translations.helpers';
 
 export const INGREDIENT_SEARCH_KEYS_INDEX = 'ingredient_search_keys';
+export const INGREDIENT_CREATED_BY_INDEX = 'ingredient_created_by';
 export const INGREDIENT_TRANSLATIONS_EN_NAME_UNIQUE_INDEX = 'ingredient_translations_en_name_unique';
 export const INGREDIENT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX = 'ingredient_translations_pt_name_unique';
 export const INGREDIENT_UNIQUE_INDEXES = [
@@ -33,6 +34,9 @@ const ingredientSchemaDefinition = {
 	kind: { type: String, enum: Object.values(IngredientKinds), required: true, default: IngredientKinds.generic },
 	brand: { type: String, required: false },
 	search_keys: { type: [String], default: undefined, select: false },
+	// Who created the record (set once, never changed) and who changed it last. Both are removed when that account is closed.
+	created_by: { type: String, required: false, immutable: true },
+	updated_by: { type: String, required: false },
 } as const;
 
 export type IngredientPersistence = {
@@ -43,6 +47,8 @@ export type IngredientPersistence = {
 	kind: IngredientKind;
 	brand?: string;
 	search_keys?: string[];
+	created_by?: string;
+	updated_by?: string;
 	created_at: Date;
 	updated_at: Date;
 };
@@ -60,6 +66,7 @@ IngredientSchema.index(
 	getNameUniqueIndexOptions('pt', INGREDIENT_TRANSLATIONS_PT_NAME_UNIQUE_INDEX),
 );
 IngredientSchema.index({ search_keys: 1 }, { name: INGREDIENT_SEARCH_KEYS_INDEX });
+IngredientSchema.index({ created_by: 1 }, { name: INGREDIENT_CREATED_BY_INDEX });
 
 export const IngredientModel =
 	(mongoose.models['ingredients'] as Model<IngredientPersistence> | undefined) ??

@@ -11,6 +11,7 @@ import {
 	deleteAccountData,
 } from '@/core/accounts/helpers/accountClosure.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
+import { IDrinksModule } from '@/core/drinks/public';
 import { IEngagementModule } from '@/core/engagement/public';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
@@ -28,6 +29,7 @@ export class DeleteProfileService {
 		private storageProvider: IStorageProvider,
 		private administrativeEventsRepository: IAdministrativeEventsRepository,
 		private engagementModule: IEngagementModule,
+		private drinksModule: IDrinksModule,
 		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
 	) {}
 
@@ -53,6 +55,7 @@ export class DeleteProfileService {
 				tokensRepository: this.tokensRepository,
 				administrativeEventsRepository: this.administrativeEventsRepository,
 				engagementModule: this.engagementModule,
+				drinksModule: this.drinksModule,
 				sessionVersionMarkerStore: this.sessionVersionMarkerStore,
 			});
 			return user;
