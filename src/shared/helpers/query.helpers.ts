@@ -13,6 +13,9 @@ type Comparable = string | number;
  *
  * @returns A negative number if `a < b`, a positive number if `a > b`, otherwise `0`.
  */
+/** Whether a sort order is ascending, in any of the ways the API accepts it (the same ones MongoDB does). */
+const isAscending = (order: SortOrder | undefined): boolean => order === 'asc' || order === 'ascending' || order === 1;
+
 const compareValues = (a: unknown, b: unknown): number => {
 	const left = a as Comparable;
 	const right = b as Comparable;
@@ -59,6 +62,8 @@ export const filterItemsBySearchCriteria = <T>(
 export const sortItemsByFields = <T>(items: T[], sort: Record<string, SortOrder | undefined>): T[] => {
 	return items.sort((a, b) => {
 		for (const [field, order] of Object.entries(sort)) {
+			// A field with no order does not sort, as in the database query.
+			if (order === undefined) continue;
 			const fields = field.split('.');
 			let aValue: unknown = a;
 			let bValue: unknown = b;
@@ -67,8 +72,9 @@ export const sortItemsByFields = <T>(items: T[], sort: Record<string, SortOrder 
 				bValue = isRecord(bValue) ? bValue[f] : undefined;
 			}
 			const comparison = compareValues(aValue, bValue);
-			if (comparison < 0) return order === 'asc' || order === 1 ? -1 : 1;
-			if (comparison > 0) return order === 'asc' || order === 1 ? 1 : -1;
+			const ascending = isAscending(order);
+			if (comparison < 0) return ascending ? -1 : 1;
+			if (comparison > 0) return ascending ? 1 : -1;
 		}
 		return 0;
 	});

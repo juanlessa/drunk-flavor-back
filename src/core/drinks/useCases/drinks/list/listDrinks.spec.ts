@@ -131,4 +131,25 @@ describe('List Drinks', () => {
 		expect(drinksFound.length).toBe(3);
 		expect(storageProvider.getFileURL).toHaveBeenCalledTimes(2);
 	});
+
+	it('should be able to list the best rated drinks first, by name among the drinks with the same rating', async () => {
+		const [cosmopolitan, paperPlane, tequilaSunrise] = await Promise.all(
+			[translationsDrink1, translationsDrink2, translationsDrink3].map(
+				async (translations) => (await drinksRepository.findByName(translations))!,
+			),
+		);
+		await drinksRepository.applyRatingDelta({ drinkId: cosmopolitan.id, countDelta: 1, sumDelta: 3 });
+		await drinksRepository.applyRatingDelta({ drinkId: tequilaSunrise.id, countDelta: 1, sumDelta: 5 });
+		await drinksRepository.applyRatingDelta({ drinkId: paperPlane.id, countDelta: 1, sumDelta: 5 });
+
+		const found = await service.execute({
+			query: { sort: { avgRating: 'desc', 'translations.en.name': 'asc' } },
+		});
+
+		expect(found.map(({ translations }) => translations.en.name)).toEqual([
+			translationsDrink2.en.name,
+			translationsDrink3.en.name,
+			translationsDrink1.en.name,
+		]);
+	});
 });

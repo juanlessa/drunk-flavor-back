@@ -616,4 +616,62 @@ describe('DrinksRepository (integration)', () => {
 			).resolves.toEqual([]);
 		});
 	});
+
+	describe('sorting by rating', () => {
+		const createRated = async (name: { en: string; pt: string }, rating?: number) => {
+			const drink = await repository.create(buildDrink(name));
+			if (rating !== undefined) {
+				await repository.applyRatingDelta({ drinkId: drink.id, countDelta: 1, sumDelta: rating });
+			}
+			return drink;
+		};
+		const ptNames = (drinks: { translations: { pt: { name: string } } }[]) =>
+			drinks.map(({ translations }) => translations.pt.name);
+
+		beforeEach(async () => {
+			await createRated({ en: 'Zombie', pt: 'Zumbi' }, 4);
+			await createRated({ en: 'Apex', pt: 'Ápice' }, 4);
+			await createRated({ en: 'Mojito', pt: 'Mojito' });
+			await createRated({ en: 'Negroni', pt: 'Negroni' }, 5);
+			await createRated({ en: 'Caipirinha', pt: 'caipirinha' }, 5);
+		});
+
+		it('puts the best rated first and the drinks with no rating last', async () => {
+			const sorted = await repository.findAll({ sort: { avgRating: 'desc' } });
+
+			expect(sorted.map(({ avgRating }) => avgRating)).toEqual([5, 5, 4, 4, 0]);
+		});
+
+		it('breaks the ties by name in the alphabet of the language, ignoring accents and case', async () => {
+			const sorted = await repository.findAll({ sort: { avgRating: 'desc', 'translations.pt.name': 'asc' } });
+
+			expect(ptNames(sorted)).toEqual(['caipirinha', 'Negroni', 'Ápice', 'Zumbi', 'Mojito']);
+		});
+
+		it('breaks the ties by the name of the language asked for', async () => {
+			const sorted = await repository.findAll({ sort: { avgRating: 'desc', 'translations.en.name': 'asc' } });
+
+			expect(sorted.map(({ translations }) => translations.en.name)).toEqual([
+				'Caipirinha',
+				'Negroni',
+				'Apex',
+				'Zombie',
+				'Mojito',
+			]);
+		});
+
+		it('sorts by the name first when the name comes first', async () => {
+			const sorted = await repository.findAll({ sort: { 'translations.pt.name': 'asc', avgRating: 'desc' } });
+
+			expect(ptNames(sorted)).toEqual(['Ápice', 'caipirinha', 'Mojito', 'Negroni', 'Zumbi']);
+		});
+
+		it('pages through the sorted drinks without repeating or skipping one', async () => {
+			const sort = { avgRating: 'desc', 'translations.pt.name': 'asc' } as const;
+
+			const pages = await Promise.all([1, 2, 3].map((page) => repository.findAll({ sort, limit: 2, page })));
+
+			expect(pages.map(ptNames)).toEqual([['caipirinha', 'Negroni'], ['Ápice', 'Zumbi'], ['Mojito']]);
+		});
+	});
 });

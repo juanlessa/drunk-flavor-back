@@ -9,7 +9,10 @@ const searchSchema = z.object({
 	...generateTranslationsFieldSchema(drinkTranslationSchema, ['name'], searchTermSchema).shape,
 });
 
+// The keys keep the order they are sent in: the first one sorts, the next ones break the ties,
+// e.g. `{"avgRating":"desc","translations.pt.name":"asc"}` for the best rated first, by name among equals.
 const sortSchema = z.object({
+	avgRating: sortOrderSchema,
 	...generateTranslationsFieldSchema(drinkTranslationSchema, ['name'], sortOrderSchema).shape,
 });
 
