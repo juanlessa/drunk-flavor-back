@@ -91,7 +91,9 @@
 			"recentAuthenticationRequired": "Autentique-se novamente antes de continuar",
 			"invalidReauthentication": "Não foi possível verificar o método de autenticação",
 			"googleAlreadyConnected": "O Google já está conectado a esta conta",
-			"googleIdentityUnavailable": "Esta conta Google já está conectada a outra conta"
+			"googleIdentityUnavailable": "Esta conta Google já está conectada a outra conta",
+			"googleNotConnected": "O Google não está conectado a esta conta",
+			"passwordRequiredToDisconnectGoogle": "Defina uma senha antes de desconectar o Google, para continuar com uma forma de entrar"
 		},
 		"categories": {
 			"alreadyExist": "A categoria já existe",

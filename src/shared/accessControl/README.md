@@ -75,7 +75,8 @@ Ownership transfer commands and the pending-invitation read are reserved for the
 Profile operations act only on the authenticated user. They are gated by authentication (`verifyAndRenewToken`) and are
 not enforced by CASL: there is no `Profile` subject. Authenticated roles may manage their own profile, except that Owner
 cannot close the owner account before transferring ownership. Account closure, password creation, and Google identity
-linking require recent authentication.
+linking and unlinking require recent authentication. Unlinking Google also requires the account to have a password, so
+it keeps a way to sign in.
 
 |                                                                     | Owner | Admin | Partner | Member | Anonymous |
 | ------------------------------------------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
@@ -86,6 +87,7 @@ linking require recent authentication.
 | Create own password (`POST /me/password`)                           |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
 | Update own password (`PATCH /me/password`)                          |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
 | Link Google identity (`POST /me/identities/google`)                 |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Unlink Google identity (`DELETE /me/identities/google`)             |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
 | Reauthenticate with password (`POST /me/reauthentication/password`) |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
 | Reauthenticate with Google (`POST /me/reauthentication/google`)     |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
 
