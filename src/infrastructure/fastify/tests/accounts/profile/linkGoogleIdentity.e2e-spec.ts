@@ -22,6 +22,7 @@ const googleIdentity = {
 	familyName: 'Google',
 };
 type ProfileResponseBody = {
+	avatarUrl?: string;
 	authenticationMethods: { password: { enabled: boolean }; providers: string[] };
 };
 
@@ -63,5 +64,20 @@ describe('Link Google identity', () => {
 		expect(
 			(await request(app.server).post('/signin').send({ email: user.email, password: user.password })).status,
 		).toBe(HTTP_STATUS.ok);
+	});
+
+	it('uses the picture of the Google account as the avatar of a user who has none', async () => {
+		const { cookies } = await createAndAuthenticateUser(app, { email: 'no-avatar@example.com' });
+		setNextVerifiedGoogleIdentity({ ...googleIdentity, pictureUrl: 'https://lh3.googleusercontent.com/a/picture' });
+
+		const linked = await request(app.server)
+			.post('/me/identities/google')
+			.set('Cookie', cookies)
+			.set(GOOGLE_POPUP_HEADERS)
+			.send({ code });
+
+		const rotatedCookies = linked.headers['set-cookie'] as unknown as string[];
+		const profile = await request(app.server).get('/me').set('Cookie', rotatedCookies);
+		expect((profile.body as ProfileResponseBody).avatarUrl).toBe('https://lh3.googleusercontent.com/a/picture');
 	});
 });

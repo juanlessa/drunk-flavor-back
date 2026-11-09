@@ -64,6 +64,10 @@ export class LinkGoogleIdentityService {
 				pictureUrl: googleIdentity.pictureUrl,
 				lastLoginAt: this.dateProvider.dateNow(),
 			});
+			// A user without an avatar takes the picture of the Google account; an avatar the user chose is kept.
+			if (!user.avatarUrl && googleIdentity.pictureUrl) {
+				await this.usersRepository.update({ id: userId, avatarUrl: googleIdentity.pictureUrl });
+			}
 			const updatedUser = await invalidateUserSessions(
 				this.usersRepository,
 				this.sessionVersionMarkerStore,
