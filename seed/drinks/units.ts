@@ -25,6 +25,16 @@ const units = [
 		kind: 'mass',
 	},
 	{
+		// Written with the name of the ingredient ("3 limes"), so ingredients that use it need a plural name.
+		translations: {
+			en: { name: 'unit', namePlural: 'units' },
+			pt: { name: 'unidade', namePlural: 'unidades', gender: 'feminine' },
+		},
+		allowDecimal: false,
+		kind: 'count',
+		useIngredientName: true,
+	},
+	{
 		translations: {
 			en: { name: 'dash', namePlural: 'dashes' },
 			pt: { name: 'dash', namePlural: 'dashes', gender: 'masculine' },

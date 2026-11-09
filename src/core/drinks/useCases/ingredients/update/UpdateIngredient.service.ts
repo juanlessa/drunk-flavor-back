@@ -1,10 +1,11 @@
 import { IngredientKinds } from '@/core/drinks/constants/ingredient.constants';
-import { assertIngredientBrand } from '@/core/drinks/helpers/ingredient.helpers';
+import { assertIngredientBrand, assertIngredientNamePlural } from '@/core/drinks/helpers/ingredient.helpers';
 import { resolveIngredientUnits } from '@/core/drinks/mappers/ingredientUnits.mappers';
 import { mapToTranslationsName } from '@/core/drinks/mappers/translations.mappers';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
+import { Language, Languages } from '@/core/drinks/types/translations';
 import { BadRequestError, NotFoundError, ConflictError } from '@/shared/error/error.lib';
 import { UpdateIngredientDTO } from './updateIngredient.dtos';
 
@@ -32,12 +33,23 @@ export class UpdateIngredientService {
 		}
 		const units = await resolveIngredientUnits(unitIds, this.unitsRepository, 'UpdateIngredient.service.4');
 
+		// The plural names the ingredient will have: an omitted one keeps the current, `null` removes it.
+		const finalNamePlural = (language: Language) => {
+			const patch = translations[language].namePlural;
+			return patch === undefined ? ingredient.translations[language].namePlural : patch;
+		};
+		assertIngredientNamePlural(
+			units,
+			{ en: finalNamePlural(Languages.en), pt: finalNamePlural(Languages.pt) },
+			'UpdateIngredient.service.5',
+		);
+
 		// The kind and brand the ingredient will have after this update: an omitted value keeps the
 		// current one, and a generic ingredient never keeps a brand.
 		const finalKind = kind ?? ingredient.kind;
 		const keptBrand = finalKind === IngredientKinds.generic ? undefined : ingredient.brand;
 		const finalBrand = brand === undefined ? keptBrand : brand;
-		assertIngredientBrand(finalKind, finalBrand, 'UpdateIngredient.service.5');
+		assertIngredientBrand(finalKind, finalBrand, 'UpdateIngredient.service.6');
 
 		await this.ingredientsRepository.update({
 			id,

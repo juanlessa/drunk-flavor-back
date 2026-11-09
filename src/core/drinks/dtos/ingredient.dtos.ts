@@ -14,9 +14,10 @@ export type CreateIngredient = {
 	brand?: string;
 };
 
-/** On update, a `null` description removes the current one. */
+/** On update, a `null` description or plural name removes the current one. */
 export type UpdateIngredientTranslation = {
 	name: string;
+	namePlural?: string | null;
 	description?: string | null;
 };
 

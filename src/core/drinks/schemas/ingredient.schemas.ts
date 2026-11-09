@@ -21,6 +21,14 @@ export const ingredientNameValidation = z
 	.min(1, { error: 'apiResponses.ingredients.invalidNameFormat' satisfies LocaleKey })
 	.transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`);
 
+// Written like the name: lower-cased, then the first letter capitalized.
+export const ingredientNamePluralValidation = z
+	.string({ error: 'apiResponses.ingredients.invalidNamePluralFormat' satisfies LocaleKey })
+	.trim()
+	.toLowerCase()
+	.min(1, { error: 'apiResponses.ingredients.invalidNamePluralFormat' satisfies LocaleKey })
+	.transform((val) => `${val.charAt(0).toLocaleUpperCase()}${val.slice(1)}`);
+
 export const ingredientCategoryIdValidation = getObjectIdSchema({
 	required: 'apiResponses.ingredients.requiredCategory',
 	invalid: 'apiResponses.ingredients.invalidCategoryFormat',
@@ -81,13 +89,15 @@ export const refineIngredientBrand = (
 // The gender is optional per language; use `requireGenderFor` on the translations to require it where needed.
 export const ingredientTranslationSchema = z.object({
 	name: ingredientNameValidation,
+	namePlural: ingredientNamePluralValidation.optional(),
 	description: ingredientDescriptionValidation.optional(),
 	gender: genderValidation.optional(),
 });
 
-// On update, omitting the description keeps it and `null` removes it.
+// On update, omitting the description or the plural name keeps it and `null` removes it.
 export const ingredientUpdateTranslationSchema = z.object({
 	name: ingredientNameValidation,
+	namePlural: ingredientNamePluralValidation.nullable().optional(),
 	description: ingredientDescriptionValidation.nullable().optional(),
 	gender: genderValidation.optional(),
 });

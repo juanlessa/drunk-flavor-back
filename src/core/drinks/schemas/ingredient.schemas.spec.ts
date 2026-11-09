@@ -71,6 +71,52 @@ describe('Ingredient schemas', () => {
 		});
 	});
 
+	describe('namePlural', () => {
+		const withPlural = (en: unknown, pt: unknown = 'limões') => ({
+			translations: {
+				en: { name: 'Lime', namePlural: en },
+				pt: { name: 'Limão', gender: 'masculine', namePlural: pt },
+			},
+		});
+
+		it('is optional', () => {
+			const parsed = create();
+			expect(parsed.success && parsed.data.translations.en).not.toHaveProperty('namePlural');
+			expect(parsed.success && parsed.data.translations.pt).not.toHaveProperty('namePlural');
+		});
+
+		it('is normalized like the name: trimmed, lower-cased, then the first letter capitalized', () => {
+			const parsed = create(withPlural('  LIMES  ', 'limões'));
+			expect(parsed.success && parsed.data.translations.en.namePlural).toBe('Limes');
+			expect(parsed.success && parsed.data.translations.pt.namePlural).toBe('Limões');
+		});
+
+		it.each([
+			{ title: 'a blank text', value: '   ' },
+			{ title: 'an empty text', value: '' },
+			{ title: 'a value that is not text', value: 10 },
+		])('rejects $title', ({ value }) => {
+			expect(issuesOf(create(withPlural(value)))).toEqual([
+				{
+					path: ['translations', 'en', 'namePlural'],
+					message: 'apiResponses.ingredients.invalidNamePluralFormat',
+				},
+			]);
+		});
+
+		it('can be removed on update with null, and is kept when omitted', () => {
+			const removed = update({
+				translations: { en: { name: 'Lime', namePlural: null }, pt: { name: 'Limão', gender: 'masculine' } },
+			});
+			expect(removed.success && removed.data.translations.en.namePlural).toBeNull();
+			expect(removed.success && removed.data.translations.pt).not.toHaveProperty('namePlural');
+		});
+
+		it('does not accept null on create', () => {
+			expect(create(withPlural(null)).success).toBe(false);
+		});
+	});
+
 	describe('units', () => {
 		it('accepts an empty list, which means the ingredient is not measurable', () => {
 			expect(create({ unitIds: [] }).success).toBe(true);

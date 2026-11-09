@@ -65,6 +65,61 @@ describe('Unit schemas', () => {
 		expect(schema.safeParse({ ...baseInput, translations: { en } }).success).toBe(false);
 	});
 
+	describe('useIngredientName', () => {
+		const countUnit = { ...validUnit, kind: 'count', symbol: undefined };
+		const parse = (schema: typeof createUnitSchema | typeof updateUnitSchema, extra: object) =>
+			schema.safeParse({
+				...(schema === updateUnitSchema ? { id: new ObjectId().toString() } : {}),
+				...countUnit,
+				...extra,
+			});
+
+		it.each([createUnitSchema, updateUnitSchema])('is optional and stays omitted', (schema) => {
+			const parsed = parse(schema, {});
+			expect(parsed.success && parsed.data).not.toHaveProperty('useIngredientName');
+		});
+
+		it.each([createUnitSchema, updateUnitSchema])(
+			'keeps true and false on a count unit without a symbol',
+			(schema) => {
+				for (const useIngredientName of [true, false]) {
+					const parsed = parse(schema, { useIngredientName });
+					expect(parsed.success && parsed.data.useIngredientName).toBe(useIngredientName);
+				}
+			},
+		);
+
+		it.each([createUnitSchema, updateUnitSchema])('rejects a value that is not a boolean', (schema) => {
+			expect(parse(schema, { useIngredientName: 'true' }).success).toBe(false);
+			expect(parse(schema, { useIngredientName: null }).success).toBe(false);
+		});
+
+		it.each([createUnitSchema, updateUnitSchema])(
+			'rejects a kind other than count, pointing at the kind',
+			(schema) => {
+				const result = parse(schema, { useIngredientName: true, kind: 'volume' });
+				expect(
+					result.success ? [] : result.error.issues.map(({ path, message }) => ({ path, message })),
+				).toEqual([{ path: ['kind'], message: 'apiResponses.units.ingredientNameRequiresCountKind' }]);
+			},
+		);
+
+		it.each([createUnitSchema, updateUnitSchema])('rejects a symbol, pointing at the symbol', (schema) => {
+			const result = parse(schema, { useIngredientName: true, symbol: 'u' });
+			expect(result.success ? [] : result.error.issues.map(({ path, message }) => ({ path, message }))).toEqual([
+				{ path: ['symbol'], message: 'apiResponses.units.ingredientNameNotAllowedWithSymbol' },
+			]);
+		});
+
+		it('does not restrict the units that are not written with the ingredient name', () => {
+			expect(createUnitSchema.safeParse({ ...validUnit, useIngredientName: false }).success).toBe(true);
+		});
+
+		it('lets an update drop the symbol with null on a unit written with the ingredient name', () => {
+			expect(parse(updateUnitSchema, { useIngredientName: true, symbol: null }).success).toBe(true);
+		});
+	});
+
 	it('parses pagination, translated search, and translated sort', () => {
 		const parsed = listUnitsQuerySchema.parse({
 			page: '2',

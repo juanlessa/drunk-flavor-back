@@ -1,6 +1,6 @@
 import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
 import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Units.repository';
-import { NotFoundError, ConflictError } from '@/shared/error/error.lib';
+import { BadRequestError, NotFoundError, ConflictError } from '@/shared/error/error.lib';
 import { ObjectId } from 'mongodb';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { UpdateUnitService } from './UpdateUnit.service';
@@ -45,6 +45,62 @@ describe('Update Unit', () => {
 		await service.execute({ id: created.id, ...createUnitFactory(), symbol: null });
 
 		expect(await repository.findById(created.id)).not.toHaveProperty('symbol');
+	});
+
+	describe('written with the ingredient name', () => {
+		const createEach = () =>
+			repository.create(createUnitFactory({ kind: 'count', allowDecimal: false, useIngredientName: true }));
+
+		it('turns the flag on and off', async () => {
+			const created = await repository.create(createUnitFactory({ kind: 'count' }));
+			await service.execute({ id: created.id, ...createUnitFactory({ kind: 'count', useIngredientName: true }) });
+			expect((await repository.findById(created.id))?.useIngredientName).toBe(true);
+			await service.execute({
+				id: created.id,
+				...createUnitFactory({ kind: 'count', useIngredientName: false }),
+			});
+			expect((await repository.findById(created.id))?.useIngredientName).toBe(false);
+		});
+
+		it('keeps the flag when it is omitted', async () => {
+			const created = await createEach();
+			await service.execute({ id: created.id, ...createUnitFactory({ kind: 'count' }) });
+			expect((await repository.findById(created.id))?.useIngredientName).toBe(true);
+		});
+
+		it('rejects turning it on for a unit that has a symbol the update keeps', async () => {
+			const created = await repository.create(createUnitFactory({ kind: 'count', symbol: 'u' }));
+			await expect(
+				service.execute({ id: created.id, ...createUnitFactory({ kind: 'count', useIngredientName: true }) }),
+			).rejects.toBeInstanceOf(BadRequestError);
+			expect(await repository.findById(created.id)).not.toHaveProperty('useIngredientName');
+		});
+
+		it('accepts turning it on when the update removes the symbol', async () => {
+			const created = await repository.create(createUnitFactory({ kind: 'count', symbol: 'u' }));
+			await service.execute({
+				id: created.id,
+				...createUnitFactory({ kind: 'count', useIngredientName: true }),
+				symbol: null,
+			});
+			expect((await repository.findById(created.id))?.useIngredientName).toBe(true);
+		});
+
+		it('rejects giving a symbol to a unit that stays written with the ingredient name', async () => {
+			const created = await createEach();
+			await expect(
+				service.execute({ id: created.id, ...createUnitFactory({ kind: 'count' }), symbol: 'u' }),
+			).rejects.toBeInstanceOf(BadRequestError);
+			expect(await repository.findById(created.id)).not.toHaveProperty('symbol');
+		});
+
+		it('rejects changing the kind of a unit that stays written with the ingredient name', async () => {
+			const created = await createEach();
+			await expect(
+				service.execute({ id: created.id, ...createUnitFactory({ kind: 'volume' }) }),
+			).rejects.toBeInstanceOf(BadRequestError);
+			expect((await repository.findById(created.id))?.kind).toBe('count');
+		});
 	});
 
 	it('rejects a nonexistent unit', async () => {

@@ -1,3 +1,4 @@
+import { assertUnitIngredientName } from '@/core/drinks/helpers/unit.helpers';
 import { mapToTranslationsName } from '@/core/drinks/mappers/translations.mappers';
 import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
 import { NotFoundError, ConflictError } from '@/shared/error/error.lib';
@@ -13,6 +14,16 @@ export class UpdateUnitService {
 		if (duplicate && duplicate.id !== unit.id) {
 			throw new ConflictError('apiResponses.units.alreadyExist', { path: 'UpdateUnit.service' });
 		}
+
+		// The values the unit will have after this update: an omitted value keeps the current one.
+		assertUnitIngredientName(
+			{
+				useIngredientName: data.useIngredientName ?? unit.useIngredientName,
+				kind: data.kind,
+				symbol: data.symbol === undefined ? unit.symbol : data.symbol,
+			},
+			'UpdateUnit.service.1',
+		);
 		await this.unitsRepository.update(data);
 	}
 }

@@ -78,7 +78,7 @@ export class IngredientsRepositoryInMemory implements IIngredientsRepository {
 		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
 	}
 
-	/** Applies the translations patch per language; a `null` description removes the current one. */
+	/** Applies the translations patch per language; a `null` description or plural name removes the current one. */
 	private mergeTranslations(
 		current: Ingredient['translations'],
 		patch: UpdateIngredient['translations'],
@@ -86,10 +86,12 @@ export class IngredientsRepositoryInMemory implements IIngredientsRepository {
 		const languages = Object.keys(Languages) as Language[];
 		return languages.reduce<Ingredient['translations']>(
 			(merged, language) => {
-				const { description, ...fields } = patch?.[language] ?? {};
+				const { description, namePlural, ...fields } = patch?.[language] ?? {};
 				const translation = { ...current[language], ...fields };
 				if (description === null) delete translation.description;
 				else if (description !== undefined) translation.description = description;
+				if (namePlural === null) delete translation.namePlural;
+				else if (namePlural !== undefined) translation.namePlural = namePlural;
 				return { ...merged, [language]: translation };
 			},
 			{} as Ingredient['translations'],

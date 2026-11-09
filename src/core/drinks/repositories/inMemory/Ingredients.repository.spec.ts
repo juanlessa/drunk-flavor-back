@@ -136,6 +136,29 @@ describe('IngredientsRepositoryInMemory', () => {
 			expect(updated.translations.pt).toEqual({ name: 'Triple sec' });
 		});
 
+		it('replaces, keeps and removes the plural name of each language', async () => {
+			const created = await repository.create({
+				translations: {
+					en: { name: 'Lime', namePlural: 'Limes' },
+					pt: { name: 'Limão', namePlural: 'Limões' },
+				},
+				category: buildCategory(),
+				units: [buildUnit()],
+			});
+			const replaced = await repository.update({
+				id: created.id,
+				translations: { en: { name: 'Lime', namePlural: 'Lime fruits' } },
+			});
+			expect(replaced.translations.en.namePlural).toBe('Lime fruits');
+			expect(replaced.translations.pt.namePlural).toBe('Limões');
+			const removed = await repository.update({
+				id: created.id,
+				translations: { pt: { name: 'Limão', namePlural: null } },
+			});
+			expect(removed.translations.pt).toEqual({ name: 'Limão' });
+			expect(removed.translations.en.namePlural).toBe('Lime fruits');
+		});
+
 		it('keeps the description of a language that is not in the patch', async () => {
 			const created = await createDescribed();
 

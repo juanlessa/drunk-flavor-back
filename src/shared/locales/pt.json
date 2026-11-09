@@ -114,7 +114,10 @@
 			"invalidSymbolFormat": "O símbolo deve ter no mínimo 1 caractere",
 			"invalidSpaceBeforeSymbolFormat": "O espaço antes do símbolo deve ser um booleano",
 			"requiredAllowDecimal": "O campo que permite decimais é obrigatório e deve ser um booleano",
-			"invalidKindFormat": "O tipo deve ser volume, mass, count ou informal"
+			"invalidKindFormat": "O tipo deve ser volume, mass, count ou informal",
+			"invalidUseIngredientNameFormat": "O campo que usa o nome do ingrediente deve ser um booleano",
+			"ingredientNameRequiresCountKind": "Uma unidade escrita com o nome do ingrediente deve ser do tipo count",
+			"ingredientNameNotAllowedWithSymbol": "Uma unidade escrita com o nome do ingrediente não pode ter símbolo"
 		},
 		"ingredients": {
 			"alreadyExist": "O ingrediente já existe",
@@ -123,6 +126,8 @@
 			"invalidIdFormat": "Formato de ID inválido",
 			"requiredName": "O nome é obrigatório",
 			"invalidNameFormat": "O nome deve ter no mínimo 1 caractere",
+			"invalidNamePluralFormat": "O nome no plural deve ter no mínimo 1 caractere",
+			"requiredNamePluralForUnit": "O nome no plural é obrigatório em todos os idiomas enquanto o ingrediente tiver uma unidade escrita com o nome do ingrediente",
 			"requiredCategory": "A categoria é obrigatória",
 			"invalidCategoryFormat": "Formato de categoria inválido",
 			"requiredUnit": "A unidade é obrigatória",

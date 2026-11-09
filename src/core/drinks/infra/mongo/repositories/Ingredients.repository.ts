@@ -25,16 +25,17 @@ import { IngredientMapper } from '../mappers/ingredient.mapper';
 const LANGUAGES = Object.keys(Languages) as Language[];
 
 const descriptionPath = (language: Language) => `translations.${language}.description`;
+const namePluralPath = (language: Language) => `translations.${language}.name_plural`;
 
-/** Persisted fields that an update explicitly removes (a `null` description or brand). */
+/** Persisted fields that an update explicitly removes (a `null` description, plural name or brand). */
 const getUnsetFields = (data: UpdateIngredientData): string[] => {
-	const descriptions = LANGUAGES.filter((language) => data.translations?.[language]?.description === null).map(
-		descriptionPath,
-	);
-	return data.brand === null ? [...descriptions, 'brand'] : descriptions;
+	const removedFor = (field: 'description' | 'namePlural', toPath: (language: Language) => string) =>
+		LANGUAGES.filter((language) => data.translations?.[language]?.[field] === null).map(toPath);
+	const fields = [...removedFor('description', descriptionPath), ...removedFor('namePlural', namePluralPath)];
+	return data.brand === null ? [...fields, 'brand'] : fields;
 };
 
-/** Applies the translations patch to the current translations, dropping the removed descriptions. */
+/** Applies the translations patch to the current translations, dropping the removed optional fields. */
 const mergeTranslations = (
 	current: IngredientPersistence['translations'],
 	patch: Partial<IngredientPersistence['translations']> | undefined,
@@ -44,6 +45,7 @@ const mergeTranslations = (
 		(merged, language) => {
 			const translation = { ...current[language], ...patch?.[language] };
 			if (unsetFields.includes(descriptionPath(language))) delete translation.description;
+			if (unsetFields.includes(namePluralPath(language))) delete translation.name_plural;
 			return { ...merged, [language]: translation };
 		},
 		{} as IngredientPersistence['translations'],

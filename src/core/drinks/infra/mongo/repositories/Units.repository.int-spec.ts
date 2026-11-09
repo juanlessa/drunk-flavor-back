@@ -125,6 +125,37 @@ describe('UnitsRepository (integration)', () => {
 		await expect(repository.findAll({})).resolves.toHaveLength(1);
 	});
 
+	describe('written with the ingredient name', () => {
+		it('persists the flag and leaves it out of a unit that does not set it', async () => {
+			const each = await repository.create({
+				...buildUnit({ en: 'unit', pt: 'unidade' }),
+				kind: 'count',
+				allowDecimal: false,
+				useIngredientName: true,
+			});
+			const plain = await repository.create(buildUnit({ en: 'milliliter', pt: 'mililitro' }));
+
+			expect((await repository.findById(each.id))?.useIngredientName).toBe(true);
+			expect(await repository.findById(plain.id)).not.toHaveProperty('useIngredientName');
+			const raw = await UnitModel.collection.findOne({ _id: new ObjectId(each.id) });
+			expect(raw?.['use_ingredient_name']).toBe(true);
+		});
+
+		it('turns the flag off with false and keeps it when the update does not mention it', async () => {
+			const created = await repository.create({
+				...buildUnit({ en: 'unit', pt: 'unidade' }),
+				kind: 'count',
+				useIngredientName: true,
+			});
+
+			const untouched = await repository.update({ id: created.id, allowDecimal: false });
+			const disabled = await repository.update({ id: created.id, useIngredientName: false });
+
+			expect(untouched.useIngredientName).toBe(true);
+			expect(disabled.useIngredientName).toBe(false);
+		});
+	});
+
 	describe('ids and missing documents', () => {
 		const invalidId = 'not-an-object-id';
 

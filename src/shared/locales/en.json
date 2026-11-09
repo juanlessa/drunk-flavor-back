@@ -114,7 +114,10 @@
 			"invalidSymbolFormat": "Symbol must have a minimum of 1 character",
 			"invalidSpaceBeforeSymbolFormat": "Space before symbol must be a boolean",
 			"requiredAllowDecimal": "Allow decimal field is required and must be a boolean",
-			"invalidKindFormat": "Kind must be volume, mass, count, or informal"
+			"invalidKindFormat": "Kind must be volume, mass, count, or informal",
+			"invalidUseIngredientNameFormat": "Use ingredient name must be a boolean",
+			"ingredientNameRequiresCountKind": "A unit written with the ingredient name must be of the count kind",
+			"ingredientNameNotAllowedWithSymbol": "A unit written with the ingredient name cannot have a symbol"
 		},
 		"ingredients": {
 			"alreadyExist": "Ingredient already exists",
@@ -123,6 +126,8 @@
 			"invalidIdFormat": "Invalid ID format",
 			"requiredName": "Name is required",
 			"invalidNameFormat": "Name must have a minimum of 1 character",
+			"invalidNamePluralFormat": "Plural name must have a minimum of 1 character",
+			"requiredNamePluralForUnit": "Plural name is required in every language while the ingredient has a unit written with the ingredient name",
 			"requiredCategory": "Category is required",
 			"invalidCategoryFormat": "Invalid category format",
 			"requiredUnit": "Unit is required",

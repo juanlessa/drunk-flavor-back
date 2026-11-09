@@ -11,4 +11,6 @@ export type UpdateUnitDTO = {
 	spaceBeforeSymbol?: boolean;
 	allowDecimal: boolean;
 	kind: UnitKind;
+	/** Omitted keeps the current value. */
+	useIngredientName?: boolean;
 };
