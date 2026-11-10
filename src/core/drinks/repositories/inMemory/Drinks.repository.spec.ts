@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { withCreator, withEditor } from '@/core/drinks/factories/authorship.factories';
 import { ObjectId } from 'mongodb';
 import { DrinksRepositoryInMemory } from './Drinks.repository';
 import { Category } from '@/core/drinks/entities/category.entity';
@@ -47,13 +48,15 @@ describe('DrinksRepositoryInMemory', () => {
 	});
 
 	it('forces cover/thumbnail to undefined and aggregate fields to zero, assigning id and timestamps', async () => {
-		const created = await repository.create({
-			translations: {
-				en: { name: 'Caipirinha', method: 'Muddle and stir' },
-				pt: { name: 'Caipirinha', method: 'Macere e mexa' },
-			},
-			ingredients: [createDrinkIngredientFactory(buildIngredient())],
-		});
+		const created = await repository.create(
+			withCreator({
+				translations: {
+					en: { name: 'Caipirinha', method: 'Muddle and stir' },
+					pt: { name: 'Caipirinha', method: 'Macere e mexa' },
+				},
+				ingredients: [createDrinkIngredientFactory(buildIngredient())],
+			}),
+		);
 
 		expect(created.cover).toBeUndefined();
 		expect(created.thumbnail).toBeUndefined();
@@ -66,13 +69,15 @@ describe('DrinksRepositoryInMemory', () => {
 	});
 
 	it('finds a drink by name across languages', async () => {
-		await repository.create({
-			translations: {
-				en: { name: 'Mojito', method: 'Build over ice' },
-				pt: { name: 'Mojito BR', method: 'Monte com gelo' },
-			},
-			ingredients: [],
-		});
+		await repository.create(
+			withCreator({
+				translations: {
+					en: { name: 'Mojito', method: 'Build over ice' },
+					pt: { name: 'Mojito BR', method: 'Monte com gelo' },
+				},
+				ingredients: [],
+			}),
+		);
 
 		expect(await repository.findByName({ en: { name: 'Mojito' } })).not.toBeNull();
 		expect(await repository.findByName({ pt: { name: 'Mojito BR' } })).not.toBeNull();
@@ -81,24 +86,28 @@ describe('DrinksRepositoryInMemory', () => {
 
 	it('throws NotFoundError when updating a missing id', async () => {
 		await expect(
-			repository.update({ id: new ObjectId().toString(), translations: { en: { name: 'X' } } }),
+			repository.update(withEditor({ id: new ObjectId().toString(), translations: { en: { name: 'X' } } })),
 		).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('deep-merges on update and refreshes updatedAt', async () => {
-		const created = await repository.create({
-			translations: {
-				en: { name: 'Negroni', method: 'Stir' },
-				pt: { name: 'Negroni', method: 'Mexa' },
-			},
-			ingredients: [],
-		});
+		const created = await repository.create(
+			withCreator({
+				translations: {
+					en: { name: 'Negroni', method: 'Stir' },
+					pt: { name: 'Negroni', method: 'Mexa' },
+				},
+				ingredients: [],
+			}),
+		);
 		const originalUpdatedAt = created.updatedAt.getTime();
 
-		const updated = await repository.update({
-			id: created.id,
-			translations: { en: { name: 'Negroni Sbagliato' } },
-		});
+		const updated = await repository.update(
+			withEditor({
+				id: created.id,
+				translations: { en: { name: 'Negroni Sbagliato' } },
+			}),
+		);
 
 		expect(updated.translations.en.name).toBe('Negroni Sbagliato');
 		// Untouched fields are preserved by the deep merge.
@@ -112,10 +121,12 @@ describe('DrinksRepositoryInMemory', () => {
 	});
 
 	it('applies rating deltas and resets the average when the count reaches zero', async () => {
-		const drink = await repository.create({
-			translations: { en: { name: 'Rated', method: 'm' }, pt: { name: 'Avaliado', method: 'm' } },
-			ingredients: [],
-		});
+		const drink = await repository.create(
+			withCreator({
+				translations: { en: { name: 'Rated', method: 'm' }, pt: { name: 'Avaliado', method: 'm' } },
+				ingredients: [],
+			}),
+		);
 
 		await expect(repository.applyRatingDelta({ drinkId: drink.id, countDelta: 1, sumDelta: 4 })).resolves.toEqual({
 			average: 4,
@@ -137,28 +148,36 @@ describe('DrinksRepositoryInMemory', () => {
 		await expect(
 			repository.applyRatingDelta({ drinkId: 'missing-drink', countDelta: 1, sumDelta: 4 }),
 		).rejects.toBeInstanceOf(NotFoundError);
-		const drink = await repository.create({
-			translations: { en: { name: 'Empty', method: 'm' }, pt: { name: 'Vazio', method: 'm' } },
-			ingredients: [],
-		});
+		const drink = await repository.create(
+			withCreator({
+				translations: { en: { name: 'Empty', method: 'm' }, pt: { name: 'Vazio', method: 'm' } },
+				ingredients: [],
+			}),
+		);
 		await expect(repository.applyRatingDelta({ drinkId: drink.id, countDelta: -1, sumDelta: -1 })).rejects.toThrow(
 			'Rating projection invariant violated',
 		);
 	});
 
 	it('applies search, sort and pagination in findAll', async () => {
-		await repository.create({
-			translations: { en: { name: 'Alpha', method: 'm' }, pt: { name: 'Alpha', method: 'm' } },
-			ingredients: [],
-		});
-		await repository.create({
-			translations: { en: { name: 'Beta', method: 'm' }, pt: { name: 'Beta', method: 'm' } },
-			ingredients: [],
-		});
-		await repository.create({
-			translations: { en: { name: 'Gamma', method: 'm' }, pt: { name: 'Gamma', method: 'm' } },
-			ingredients: [],
-		});
+		await repository.create(
+			withCreator({
+				translations: { en: { name: 'Alpha', method: 'm' }, pt: { name: 'Alpha', method: 'm' } },
+				ingredients: [],
+			}),
+		);
+		await repository.create(
+			withCreator({
+				translations: { en: { name: 'Beta', method: 'm' }, pt: { name: 'Beta', method: 'm' } },
+				ingredients: [],
+			}),
+		);
+		await repository.create(
+			withCreator({
+				translations: { en: { name: 'Gamma', method: 'm' }, pt: { name: 'Gamma', method: 'm' } },
+				ingredients: [],
+			}),
+		);
 
 		const sortedPage = await repository.findAll({
 			sort: { 'translations.en.name': 1 },
@@ -171,15 +190,19 @@ describe('DrinksRepositoryInMemory', () => {
 
 	it('creates a drink without garnishes by default and keeps the ones given', async () => {
 		const ingredient = buildIngredient();
-		const plain = await repository.create({
-			translations: { en: { name: 'Plain', method: 'm' }, pt: { name: 'Simples', method: 'm' } },
-			ingredients: [createDrinkIngredientFactory(ingredient)],
-		});
-		const garnished = await repository.create({
-			translations: { en: { name: 'Garnished', method: 'm' }, pt: { name: 'Decorado', method: 'm' } },
-			ingredients: [createDrinkIngredientFactory(ingredient)],
-			garnishes: [{ ingredient, amount: { type: 'none' } }],
-		});
+		const plain = await repository.create(
+			withCreator({
+				translations: { en: { name: 'Plain', method: 'm' }, pt: { name: 'Simples', method: 'm' } },
+				ingredients: [createDrinkIngredientFactory(ingredient)],
+			}),
+		);
+		const garnished = await repository.create(
+			withCreator({
+				translations: { en: { name: 'Garnished', method: 'm' }, pt: { name: 'Decorado', method: 'm' } },
+				ingredients: [createDrinkIngredientFactory(ingredient)],
+				garnishes: [{ ingredient, amount: { type: 'none' } }],
+			}),
+		);
 
 		expect(plain.garnishes).toEqual([]);
 		expect(garnished.garnishes).toEqual([{ ingredient, amount: { type: 'none' } }]);
@@ -187,17 +210,21 @@ describe('DrinksRepositoryInMemory', () => {
 
 	it('replaces the ingredients and the garnishes on update, and clears the garnishes with an empty list', async () => {
 		const ingredient = buildIngredient();
-		const created = await repository.create({
-			translations: { en: { name: 'Mojito', method: 'm' }, pt: { name: 'Mojito', method: 'm' } },
-			ingredients: [createDrinkIngredientFactory(ingredient)],
-			garnishes: [{ ingredient, amount: { type: 'none' } }],
-		});
+		const created = await repository.create(
+			withCreator({
+				translations: { en: { name: 'Mojito', method: 'm' }, pt: { name: 'Mojito', method: 'm' } },
+				ingredients: [createDrinkIngredientFactory(ingredient)],
+				garnishes: [{ ingredient, amount: { type: 'none' } }],
+			}),
+		);
 
-		const replaced = await repository.update({
-			id: created.id,
-			garnishes: [{ ingredient, amount: { type: 'qualitative', qualifier: 'to_taste' } }],
-		});
-		const cleared = await repository.update({ id: created.id, garnishes: [] });
+		const replaced = await repository.update(
+			withEditor({
+				id: created.id,
+				garnishes: [{ ingredient, amount: { type: 'qualitative', qualifier: 'to_taste' } }],
+			}),
+		);
+		const cleared = await repository.update(withEditor({ id: created.id, garnishes: [] }));
 
 		expect(replaced.garnishes).toEqual([{ ingredient, amount: { type: 'qualitative', qualifier: 'to_taste' } }]);
 		expect(cleared.garnishes).toEqual([]);
@@ -205,10 +232,12 @@ describe('DrinksRepositoryInMemory', () => {
 	});
 
 	it('finds a drink by name ignoring accents and case', async () => {
-		await repository.create({
-			translations: { en: { name: 'Pina colada', method: 'm' }, pt: { name: 'Piña colada', method: 'm' } },
-			ingredients: [],
-		});
+		await repository.create(
+			withCreator({
+				translations: { en: { name: 'Pina colada', method: 'm' }, pt: { name: 'Piña colada', method: 'm' } },
+				ingredients: [],
+			}),
+		);
 
 		expect(await repository.findByName({ pt: { name: 'PINA COLADA' } })).not.toBeNull();
 		expect(await repository.findAll({ search: { name: 'pina' } })).toHaveLength(1);
@@ -223,31 +252,33 @@ describe('DrinksRepositoryInMemory', () => {
 		const translations = { en: { name: 'Sour', method: 'm' }, pt: { name: 'Sour', method: 'm' } };
 
 		it('keeps the plan given on create, and has none by default', async () => {
-			const withPlan = await repository.create({ translations, ingredients: [], preparation: plan });
-			const withoutPlan = await repository.create({
-				translations: { en: { name: 'Fizz', method: 'm' }, pt: { name: 'Fizz', method: 'm' } },
-				ingredients: [],
-			});
+			const withPlan = await repository.create(withCreator({ translations, ingredients: [], preparation: plan }));
+			const withoutPlan = await repository.create(
+				withCreator({
+					translations: { en: { name: 'Fizz', method: 'm' }, pt: { name: 'Fizz', method: 'm' } },
+					ingredients: [],
+				}),
+			);
 
 			expect(withPlan.preparation).toEqual(plan);
 			expect(withoutPlan.preparation).toBeUndefined();
 		});
 
 		it('sets the plan of a drink that had none, and replaces a stored plan', async () => {
-			const created = await repository.create({ translations, ingredients: [] });
+			const created = await repository.create(withCreator({ translations, ingredients: [] }));
 
-			const set = await repository.update({ id: created.id, preparation: plan });
-			const replaced = await repository.update({ id: created.id, preparation: otherPlan });
+			const set = await repository.update(withEditor({ id: created.id, preparation: plan }));
+			const replaced = await repository.update(withEditor({ id: created.id, preparation: otherPlan }));
 
 			expect(set.preparation).toEqual(plan);
 			expect(replaced.preparation).toEqual(otherPlan);
 		});
 
 		it('keeps the stored plan when an update leaves it out, and removes it with null', async () => {
-			const created = await repository.create({ translations, ingredients: [], preparation: plan });
+			const created = await repository.create(withCreator({ translations, ingredients: [], preparation: plan }));
 
-			const untouched = await repository.update({ id: created.id, garnishes: [] });
-			const removed = await repository.update({ id: created.id, preparation: null });
+			const untouched = await repository.update(withEditor({ id: created.id, garnishes: [] }));
+			const removed = await repository.update(withEditor({ id: created.id, preparation: null }));
 
 			expect(untouched.preparation).toEqual(plan);
 			expect(removed.preparation).toBeUndefined();

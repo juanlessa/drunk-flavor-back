@@ -1,6 +1,6 @@
 import { UnitKinds } from '@/core/drinks/constants/unit.constants';
 import { Translations } from '@/core/drinks/types/translations';
-import { EntityMetadata } from '@/shared/types/entity.types';
+import { AuthoredEntityMetadata } from '@/shared/types/entity.types';
 import { Gender } from '@/shared/types/gender.types';
 
 export type UnitKind = (typeof UnitKinds)[keyof typeof UnitKinds];
@@ -12,7 +12,7 @@ export type UnitTranslation = {
 	gender?: Gender;
 };
 
-export type Unit = EntityMetadata & {
+export type Unit = AuthoredEntityMetadata & {
 	translations: Translations<UnitTranslation>;
 	symbol?: string;
 	spaceBeforeSymbol?: boolean;

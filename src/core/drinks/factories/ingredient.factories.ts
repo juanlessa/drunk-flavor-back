@@ -1,8 +1,8 @@
-import { CreateIngredientDTO } from '@/core/drinks/useCases/ingredients/create/createIngredient.dtos';
+import { CreateIngredientInput } from '@/core/drinks/useCases/ingredients/create/createIngredient.dtos';
 import { Genders } from '@/shared/constants/gender.constants';
 import { DeepPartial } from '@/shared/types/utility.types';
 
-export const createIngredientFactory = (ingredient?: DeepPartial<CreateIngredientDTO>): CreateIngredientDTO => ({
+export const createIngredientFactory = (ingredient?: DeepPartial<CreateIngredientInput>): CreateIngredientInput => ({
 	translations: {
 		en: {
 			name: ingredient?.translations?.en?.name || 'Syrup',

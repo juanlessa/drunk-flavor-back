@@ -49,3 +49,15 @@ export async function createAndAuthenticateUser(
 		user,
 	};
 }
+
+// Keeps the cookies of the earlier responses and replaces the ones that a later response set again.
+export const mergeCookies = (...responses: (string[] | string | undefined)[]) => {
+	const byName = new Map<string, string>();
+	for (const cookies of responses) {
+		for (const cookie of [cookies ?? []].flat()) {
+			const pair = cookie.split(';')[0];
+			byName.set(pair.split('=')[0], pair);
+		}
+	}
+	return [...byName.values()];
+};

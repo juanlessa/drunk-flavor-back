@@ -15,6 +15,8 @@ import { updateCategoryController } from '@/core/drinks/useCases/categories/upda
 import { verifyPermissions } from '../../middlewares/verifyPermissions';
 import { enforceCompleteProfile } from '../../middlewares/enforceCompleteProfile';
 
+import { listCategoriesWithAuthorshipController } from '@/core/drinks/useCases/categories/listWithAuthorship/listCategoriesWithAuthorship.controller';
+import { getCategoryWithAuthorshipController } from '@/core/drinks/useCases/categories/getWithAuthorship/getCategoryWithAuthorship.controller';
 const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
 		'/categories',
@@ -50,6 +52,31 @@ const routes: Routes = (server) => {
 		listCategoriesController,
 	);
 
+	// For the people who contribute to the catalog (partner, admin, owner): their own records first, and who created and last edited each one.
+	server.withTypeProvider<ZodTypeProvider>().get(
+		'/categories/me',
+		{
+			schema: { tags: ['Categories'], querystring: listCategoriesQuerySchema },
+			preValidation: [
+				verifyAndRenewToken,
+				enforceCompleteProfile,
+				verifyPermissions('listWithAuthorship', 'Category'),
+			],
+		},
+		listCategoriesWithAuthorshipController,
+	);
+	server.withTypeProvider<ZodTypeProvider>().get(
+		'/categories/me/:id',
+		{
+			schema: { tags: ['Categories'], params: getCategorySchema },
+			preValidation: [
+				verifyAndRenewToken,
+				enforceCompleteProfile,
+				verifyPermissions('getWithAuthorship', 'Category'),
+			],
+		},
+		getCategoryWithAuthorshipController,
+	);
 	server.withTypeProvider<ZodTypeProvider>().patch(
 		'/categories',
 		{

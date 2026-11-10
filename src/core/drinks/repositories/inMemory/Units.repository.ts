@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { clearCreatorFromRecords, keepCreator, prioritizeCreator } from '@/core/drinks/helpers/creator.helpers';
 import { CreateUnit, FindUnitByName, UpdateUnit } from '@/core/drinks/dtos/unit.dtos';
 import { Unit } from '@/core/drinks/entities/unit.entity';
 import {
@@ -23,7 +24,7 @@ export class UnitsRepositoryInMemory implements IUnitsRepository {
 
 	async create(data: CreateUnit): Promise<Unit> {
 		const now = new Date();
-		const record: Unit = { id: randomUUID(), ...data, createdAt: now, updatedAt: now };
+		const record: Unit = { id: randomUUID(), ...data, updatedBy: data.createdBy, createdAt: now, updatedAt: now };
 		this.collection.push(record);
 		return record;
 	}
@@ -36,8 +37,9 @@ export class UnitsRepositoryInMemory implements IUnitsRepository {
 		else if (symbol !== undefined) record.symbol = symbol;
 		if (spaceBeforeSymbol !== undefined) record.spaceBeforeSymbol = spaceBeforeSymbol;
 		if (useIngredientName !== undefined) record.useIngredientName = useIngredientName;
-		this.collection[index] = record;
-		return record;
+		const stored = keepCreator(record, this.collection[index]);
+		this.collection[index] = stored;
+		return stored;
 	}
 
 	async delete(id: string): Promise<Unit> {
@@ -59,6 +61,18 @@ export class UnitsRepositoryInMemory implements IUnitsRepository {
 		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);
 		if (query.sort) found = sortItemsByFields(found, query.sort);
 		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
+	}
+
+	async findAllOwnedFirst(query: QueryParams, userId: string): Promise<Unit[]> {
+		let found = [...this.collection];
+		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);
+		if (query.sort) found = sortItemsByFields(found, query.sort);
+		found = prioritizeCreator(found, userId);
+		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
+	}
+
+	async clearCreatorByUser(userId: string): Promise<number> {
+		return clearCreatorFromRecords(this.collection, userId);
 	}
 
 	private notFound(operation: string): NotFoundError {

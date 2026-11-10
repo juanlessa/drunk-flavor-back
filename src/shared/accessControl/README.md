@@ -75,7 +75,8 @@ Ownership transfer commands and the pending-invitation read are reserved for the
 Profile operations act only on the authenticated user. They are gated by authentication (`verifyAndRenewToken`) and are
 not enforced by CASL: there is no `Profile` subject. Authenticated roles may manage their own profile, except that Owner
 cannot close the owner account before transferring ownership. Account closure, password creation, and Google identity
-linking require recent authentication.
+linking and unlinking require recent authentication. Unlinking Google also requires the account to have a password, so
+it keeps a way to sign in.
 
 |                                                                     | Owner | Admin | Partner | Member | Anonymous |
 | ------------------------------------------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
@@ -86,6 +87,7 @@ linking require recent authentication.
 | Create own password (`POST /me/password`)                           |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
 | Update own password (`PATCH /me/password`)                          |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
 | Link Google identity (`POST /me/identities/google`)                 |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Unlink Google identity (`DELETE /me/identities/google`)             |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
 | Reauthenticate with password (`POST /me/reauthentication/password`) |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
 | Reauthenticate with Google (`POST /me/reauthentication/google`)     |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
 
@@ -94,30 +96,30 @@ linking require recent authentication.
 |                                        | Owner | Admin | Partner | Member | Anonymous |
 | -------------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
 | Create category (`POST /categories`)   |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
-| Delete category (`DELETE /categories`) |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
+| Delete category (`DELETE /categories`) |  ✅   |  ✅   |   🟠    |   ❌   |    ❌     |
 | Get category (`GET /categories/:id`)   |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
 | List categories (`GET /categories`)    |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
-| Update category (`PATCH /categories`)  |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
+| Update category (`PATCH /categories`)  |  ✅   |  ✅   |   🟠    |   ❌   |    ❌     |
 
 #### Units
 
 |                               | Owner | Admin | Partner | Member | Anonymous |
 | ----------------------------- | :---: | :---: | :-----: | :----: | :-------: |
 | Create unit (`POST /units`)   |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
-| Delete unit (`DELETE /units`) |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
+| Delete unit (`DELETE /units`) |  ✅   |  ✅   |   🟠    |   ❌   |    ❌     |
 | Get unit (`GET /units/:id`)   |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
 | List units (`GET /units`)     |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
-| Update unit (`PATCH /units`)  |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
+| Update unit (`PATCH /units`)  |  ✅   |  ✅   |   🟠    |   ❌   |    ❌     |
 
 #### Ingredients
 
 |                                           | Owner | Admin | Partner | Member | Anonymous |
 | ----------------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
 | Create ingredient (`POST /ingredients`)   |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
-| Delete ingredient (`DELETE /ingredients`) |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
+| Delete ingredient (`DELETE /ingredients`) |  ✅   |  ✅   |   🟠    |   ❌   |    ❌     |
 | Get ingredient (`GET /ingredients/:id`)   |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
 | List ingredients (`GET /ingredients`)     |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
-| Update ingredient (`PATCH /ingredients`)  |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
+| Update ingredient (`PATCH /ingredients`)  |  ✅   |  ✅   |   🟠    |   ❌   |    ❌     |
 
 #### Drinks
 
@@ -128,12 +130,34 @@ policy.
 |                                                        | Owner | Admin | Partner | Member | Anonymous |
 | ------------------------------------------------------ | :---: | :---: | :-----: | :----: | :-------: |
 | Create drink (`POST /drinks`)                          |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
-| Delete drink (`DELETE /drinks`)                        |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
+| Delete drink (`DELETE /drinks`)                        |  ✅   |  ✅   |   🟠    |   ❌   |    ❌     |
 | Get drink (`GET /drinks/:id`)                          |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
 | List drinks (`GET /drinks`)                            |  ✅   |  ✅   |   ✅    |   ✅   |    ✅     |
-| Update drink (`PATCH /drinks`)                         |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
-| Update drink cover (`PATCH /drinks/:id/cover`)         |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
-| Update drink thumbnail (`PATCH /drinks/:id/thumbnail`) |  ✅   |  ✅   |   ✅    |   ❌   |    ❌     |
+| Update drink (`PATCH /drinks`)                         |  ✅   |  ✅   |   🟠    |   ❌   |    ❌     |
+| Update drink cover (`PATCH /drinks/:id/cover`)         |  ✅   |  ✅   |   🟠    |   ❌   |    ❌     |
+| Update drink thumbnail (`PATCH /drinks/:id/thumbnail`) |  ✅   |  ✅   |   🟠    |   ❌   |    ❌     |
+
+##### Conditions
+
+- A partner can update or delete a catalog record (category, unit, ingredient or drink) only if they created it
+  (`createdBy` equals their id). Owner and Admin can change any record.
+- The condition cannot be checked by the route middleware, which does not know the record. `verifyPermissions` only
+  checks the action on the subject, and each update and delete service then loads the record and checks it with
+  `assertCanChange*` (`core/drinks/helpers/catalogAuthorization.helpers.ts`).
+- `createdBy` is set once, from the signed-in user, and never changes. `updatedBy` is the last editor. Neither is read
+  from the request body.
+- Permissions follow the current role, not the role the creator had: a partner demoted to member loses the edit rights
+  on what they created, and a member promoted to partner gets none retroactively.
+- When an account is closed, the user is removed as `createdBy` and `updatedBy` of every catalog record. Records without
+  a creator can be changed only by an Owner or an Admin.
+- The public listings and reads (`GET /units`, `/categories`, `/ingredients`, `/drinks` and their `/:id`) never show
+  `createdBy` or `updatedBy`.
+- `GET /units/me`, `/categories/me`, `/ingredients/me` and `/drinks/me` (action `listWithAuthorship`) are for Partner,
+  Admin and Owner only. They take the same filters, search and sort as the public listings, always put the records the
+  signed-in user created first, and show `createdBy` and `updatedBy`.
+- `GET /units/me/:id`, `/categories/me/:id`, `/ingredients/me/:id` and `/drinks/me/:id` (action `getWithAuthorship`) are
+  the single-record counterpart: same roles, same fields as the public `GET /:id` plus `createdBy` and `updatedBy`.
+  Every record is visible to those roles, so the only check is the role; a missing record is a 404.
 
 #### Comments
 

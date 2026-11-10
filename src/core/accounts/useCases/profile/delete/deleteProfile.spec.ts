@@ -22,6 +22,7 @@ import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { MockStorageProvider } from '@/shared/providers/storage/implementations/MockStorage.provider';
 import { AdministrativeEventsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/AdministrativeEvents.repository';
 import { AdministrativeEventActions } from '@/core/accounts/constants/administrativeEvent.constants';
+import { IDrinksModule } from '@/core/drinks/public';
 import { IEngagementModule } from '@/core/engagement/public';
 import { SessionVersionMarkerStoreInMemory } from '@/core/accounts/stores/inMemory/SessionVersionMarker.store';
 
@@ -33,6 +34,7 @@ let identitiesRepository: IIdentitiesRepository;
 let storageProvider: IStorageProvider;
 let administrativeEventsRepository: AdministrativeEventsRepositoryInMemory;
 let engagementModule: IEngagementModule;
+let drinksModule: IDrinksModule;
 let service: DeleteProfileService;
 
 const userData = createUserFactory();
@@ -47,6 +49,11 @@ describe('Delete Profile', () => {
 		storageProvider = new MockStorageProvider();
 		administrativeEventsRepository = new AdministrativeEventsRepositoryInMemory();
 		engagementModule = { deleteCommentsByUser: vi.fn().mockResolvedValue(0) };
+		drinksModule = {
+			findDrinkById: vi.fn(),
+			applyRatingDelta: vi.fn(),
+			clearCreatorByUser: vi.fn().mockResolvedValue(0),
+		};
 		service = new DeleteProfileService(
 			usersRepository,
 			tokensRepository,
@@ -56,6 +63,7 @@ describe('Delete Profile', () => {
 			storageProvider,
 			administrativeEventsRepository,
 			engagementModule,
+			drinksModule,
 			new SessionVersionMarkerStoreInMemory(),
 		);
 	});
@@ -69,6 +77,7 @@ describe('Delete Profile', () => {
 
 		expect(findDeledProfile).toBeNull();
 		expect(engagementModule.deleteCommentsByUser).toHaveBeenCalledWith(createdUser.id);
+		expect(drinksModule.clearCreatorByUser).toHaveBeenCalledWith(createdUser.id);
 		expect(administrativeEventsRepository.collection).toEqual([
 			expect.objectContaining({
 				actorId: createdUser.id,
@@ -144,5 +153,21 @@ describe('Delete Profile', () => {
 
 		expect(await usersRepository.findById(owner.id)).not.toBeNull();
 		expect(storageProvider.deleteFile).not.toHaveBeenCalled();
+	});
+
+	it('does not touch the catalog when the profile does not exist', async () => {
+		await expect(service.execute({ id: new ObjectId().toString() })).rejects.toBeInstanceOf(NotFoundError);
+
+		expect(drinksModule.clearCreatorByUser).not.toHaveBeenCalled();
+	});
+
+	it('keeps the account and records no closure when the catalog cannot be anonymized', async () => {
+		const createdUser = await usersRepository.create(userData);
+		vi.mocked(drinksModule.clearCreatorByUser).mockRejectedValueOnce(new Error('catalog unavailable'));
+
+		await expect(service.execute({ id: createdUser.id })).rejects.toThrow('catalog unavailable');
+
+		expect(await usersRepository.findById(createdUser.id)).not.toBeNull();
+		expect(administrativeEventsRepository.collection).toHaveLength(0);
 	});
 });

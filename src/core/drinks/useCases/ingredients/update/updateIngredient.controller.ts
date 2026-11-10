@@ -4,6 +4,7 @@ import { resolveUpdateIngredientService } from './updateIngredient.container';
 import { UpdateIngredientReqBody } from './updateIngredient.dtos';
 
 export const updateIngredientController: Controller<{ Body: UpdateIngredientReqBody }> = async (request, reply) => {
-	await resolveUpdateIngredientService().execute(request.body);
+	const actor = { id: request.user.id, role: request.user.role };
+	await resolveUpdateIngredientService().execute({ ...request.body, actor });
 	return reply.status(HTTP_STATUS.no_content).send();
 };

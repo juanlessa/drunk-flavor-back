@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { clearCreatorFromRecords, keepCreator, prioritizeCreator } from '@/core/drinks/helpers/creator.helpers';
 import { CreateCategory, FindCategoryByName, UpdateCategory } from '@/core/drinks/dtos/category.dtos';
 import { Category } from '@/core/drinks/entities/category.entity';
 import {
@@ -23,7 +24,13 @@ export class CategoriesRepositoryInMemory implements ICategoriesRepository {
 
 	async create(data: CreateCategory): Promise<Category> {
 		const now = new Date();
-		const record: Category = { id: randomUUID(), ...data, createdAt: now, updatedAt: now };
+		const record: Category = {
+			id: randomUUID(),
+			...data,
+			updatedBy: data.createdBy,
+			createdAt: now,
+			updatedAt: now,
+		};
 		this.collection.push(record);
 		return record;
 	}
@@ -32,8 +39,9 @@ export class CategoriesRepositoryInMemory implements ICategoriesRepository {
 		const index = this.collection.findIndex((record) => record.id === id);
 		if (index < 0) throw this.notFound('update');
 		const record = { ...deepUpdate<Category>(data, this.collection[index]), updatedAt: new Date() };
-		this.collection[index] = record;
-		return record;
+		const stored = keepCreator(record, this.collection[index]);
+		this.collection[index] = stored;
+		return stored;
 	}
 
 	async delete(id: string): Promise<Category> {
@@ -55,6 +63,18 @@ export class CategoriesRepositoryInMemory implements ICategoriesRepository {
 		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);
 		if (query.sort) found = sortItemsByFields(found, query.sort);
 		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
+	}
+
+	async findAllOwnedFirst(query: QueryParams, userId: string): Promise<Category[]> {
+		let found = [...this.collection];
+		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);
+		if (query.sort) found = sortItemsByFields(found, query.sort);
+		found = prioritizeCreator(found, userId);
+		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
+	}
+
+	async clearCreatorByUser(userId: string): Promise<number> {
+		return clearCreatorFromRecords(this.collection, userId);
 	}
 
 	private notFound(operation: string): NotFoundError {

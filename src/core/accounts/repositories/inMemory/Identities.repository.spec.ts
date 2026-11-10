@@ -73,4 +73,41 @@ describe('IdentitiesRepositoryInMemory', () => {
 			IdentityProviderSubjectAlreadyExistsError,
 		);
 	});
+
+	describe('deleteByUserIdAndProvider', () => {
+		it('removes the identity of the user with the provider and says so', async () => {
+			const userId = new ObjectId().toString();
+			const providerSubject = new ObjectId().toString();
+			await repository.create(buildIdentity({ userId, providerSubject }));
+
+			expect(await repository.deleteByUserIdAndProvider(userId, 'google')).toBe(true);
+
+			expect(await repository.findByUserId(userId)).toEqual([]);
+			expect(await repository.findByProviderSub('google', providerSubject)).toBeNull();
+		});
+
+		it('leaves the identities of other users', async () => {
+			const userId = new ObjectId().toString();
+			await repository.create(buildIdentity({ userId }));
+			const other = await repository.create(buildIdentity());
+
+			await repository.deleteByUserIdAndProvider(userId, 'google');
+
+			expect(await repository.findByUserId(other.userId)).toHaveLength(1);
+		});
+
+		it('says there was nothing to remove when the user has no identity with the provider', async () => {
+			await repository.create(buildIdentity());
+
+			expect(await repository.deleteByUserIdAndProvider(new ObjectId().toString(), 'google')).toBe(false);
+		});
+
+		it('allows the user to connect the provider again afterwards', async () => {
+			const userId = new ObjectId().toString();
+			await repository.create(buildIdentity({ userId }));
+			await repository.deleteByUserIdAndProvider(userId, 'google');
+
+			await expect(repository.create(buildIdentity({ userId }))).resolves.toMatchObject({ userId });
+		});
+	});
 });

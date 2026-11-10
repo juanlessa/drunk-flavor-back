@@ -8,7 +8,10 @@ import { resolveRateLimitStore } from '@/infrastructure/fastify/rateLimitStore';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { resetFakeGoogleIdentityProvider, setNextVerifiedGoogleIdentity } from '@/shared/providers/googleAuth';
-import { GOOGLE_POPUP_HEADERS } from '@/infrastructure/fastify/tests/accounts/helpers/authentication.helpers';
+import {
+	GOOGLE_POPUP_HEADERS,
+	mergeCookies,
+} from '@/infrastructure/fastify/tests/accounts/helpers/authentication.helpers';
 
 const code = 'google-password-setup-code';
 const password = 'Created-password-123456';
@@ -65,6 +68,40 @@ describe('Profile password methods', () => {
 		).toMatchObject({
 			authenticationMethods: { password: { enabled: true }, providers: ['google'] },
 		});
+		expect((await request(app.server).post('/signin').send({ email: googleIdentity.email, password })).status).toBe(
+			HTTP_STATUS.ok,
+		);
+	});
+
+	it('allows an account that started with Google to disconnect it after adding a password', async () => {
+		setNextVerifiedGoogleIdentity(googleIdentity);
+		const googleLogin = await request(app.server).post('/google').set(GOOGLE_POPUP_HEADERS).send({ code });
+		const cookies = googleLogin.headers['set-cookie'];
+		setNextVerifiedGoogleIdentity(googleIdentity);
+		await request(app.server)
+			.post('/me/reauthentication/google')
+			.set('Cookie', cookies)
+			.set(GOOGLE_POPUP_HEADERS)
+			.send({ code });
+		const createPassword = await request(app.server).post('/me/password').set('Cookie', cookies).send({ password });
+		const passwordCookies = createPassword.headers['set-cookie'] as unknown as string[];
+		// Creating the password rotates the session, which ends the recent authentication the disconnection asks for.
+		const reauthentication = await request(app.server)
+			.post('/me/reauthentication/password')
+			.set('Cookie', passwordCookies)
+			.send({ password });
+		expect(reauthentication.status).toBe(HTTP_STATUS.no_content);
+		const reauthenticatedCookies = mergeCookies(passwordCookies, reauthentication.headers['set-cookie']);
+
+		const unlinked = await request(app.server)
+			.delete('/me/identities/google')
+			.set('Cookie', reauthenticatedCookies);
+
+		expect(unlinked.status).toBe(HTTP_STATUS.no_content);
+		const rotatedCookies = unlinked.headers['set-cookie'] as unknown as string[];
+		expect(
+			(await request(app.server).get('/me').set('Cookie', rotatedCookies)).body as ProfileResponseBody,
+		).toMatchObject({ authenticationMethods: { password: { enabled: true }, providers: [] } });
 		expect((await request(app.server).post('/signin').send({ email: googleIdentity.email, password })).status).toBe(
 			HTTP_STATUS.ok,
 		);

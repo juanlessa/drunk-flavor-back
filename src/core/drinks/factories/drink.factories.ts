@@ -42,7 +42,9 @@ export const createDrinkIngredientFactory = (
 });
 
 /** A create request whose translations always carry the method, as a hand-written drink does. */
-type CreateDrinkWithMethodDTO = Omit<CreateDrinkDTO, 'translations'> & { translations: Translations<DrinkTranslation> };
+type CreateDrinkWithMethodDTO = Omit<CreateDrinkDTO, 'translations' | 'actor'> & {
+	translations: Translations<DrinkTranslation>;
+};
 export const createDrinkFactory = (drink?: DeepPartial<CreateDrinkDTO>): CreateDrinkWithMethodDTO => ({
 	translations: {
 		en: {

@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { clearCreatorFromRecords, keepCreator, prioritizeCreator } from '@/core/drinks/helpers/creator.helpers';
 import { CreateIngredient, FindIngredientByName, UpdateIngredient } from '@/core/drinks/dtos/ingredient.dtos';
 import { IngredientKinds } from '@/core/drinks/constants/ingredient.constants';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
@@ -29,6 +30,7 @@ export class IngredientsRepositoryInMemory implements IIngredientsRepository {
 		const record: Ingredient = {
 			id: randomUUID(),
 			...data,
+			updatedBy: data.createdBy,
 			kind: data.kind ?? IngredientKinds.generic,
 			createdAt: now,
 			updatedAt: now,
@@ -49,8 +51,9 @@ export class IngredientsRepositoryInMemory implements IIngredientsRepository {
 		};
 		if (brand === null) delete record.brand;
 		else if (brand !== undefined) record.brand = brand;
-		this.collection[index] = record;
-		return record;
+		const stored = keepCreator(record, this.collection[index]);
+		this.collection[index] = stored;
+		return stored;
 	}
 
 	async delete(id: string): Promise<Ingredient> {
@@ -78,6 +81,14 @@ export class IngredientsRepositoryInMemory implements IIngredientsRepository {
 		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
 	}
 
+	async findAllOwnedFirst(query: QueryParams, userId: string): Promise<Ingredient[]> {
+		let found = [...this.collection];
+		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);
+		if (query.sort) found = sortItemsByFields(found, query.sort);
+		found = prioritizeCreator(found, userId);
+		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
+	}
+
 	/** Applies the translations patch per language; a `null` description or plural name removes the current one. */
 	private mergeTranslations(
 		current: Ingredient['translations'],
@@ -96,6 +107,10 @@ export class IngredientsRepositoryInMemory implements IIngredientsRepository {
 			},
 			{} as Ingredient['translations'],
 		);
+	}
+
+	async clearCreatorByUser(userId: string): Promise<number> {
+		return clearCreatorFromRecords(this.collection, userId);
 	}
 
 	private notFound(operation: string): NotFoundError {

@@ -1,6 +1,6 @@
 import { IngredientKinds } from '@/core/drinks/constants/ingredient.constants';
 import { Translations } from '@/core/drinks/types/translations';
-import { EntityMetadata } from '@/shared/types/entity.types';
+import { AuthoredEntityMetadata } from '@/shared/types/entity.types';
 import { Gender } from '@/shared/types/gender.types';
 import { Category } from './category.entity';
 import { Unit } from './unit.entity';
@@ -15,7 +15,7 @@ export type IngredientTranslation = {
 	gender?: Gender;
 };
 
-export type Ingredient = EntityMetadata & {
+export type Ingredient = AuthoredEntityMetadata & {
 	translations: Translations<IngredientTranslation>;
 	category: Category;
 	units: Unit[];

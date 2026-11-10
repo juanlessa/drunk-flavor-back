@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { withActor, withCreator } from '@/core/drinks/factories/authorship.factories';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { CreateCategoryService } from './CreateCategory.service';
 import { Category } from '@/core/drinks/entities/category.entity';
@@ -18,7 +19,7 @@ describe('Create Category', () => {
 	});
 
 	it('should be able to create a new category', async () => {
-		await service.execute({ translations, isAlcoholic });
+		await service.execute(withActor({ translations, isAlcoholic }));
 
 		const createdCategory = (await categoriesRepository.findByName(translations)) as Category;
 
@@ -27,8 +28,8 @@ describe('Create Category', () => {
 	});
 
 	it('should not be able to create a category with an existing name', async () => {
-		await categoriesRepository.create({ translations, isAlcoholic });
+		await categoriesRepository.create(withCreator({ translations, isAlcoholic }));
 
-		await expect(service.execute({ translations, isAlcoholic })).rejects.toBeInstanceOf(ConflictError);
+		await expect(service.execute(withActor({ translations, isAlcoholic }))).rejects.toBeInstanceOf(ConflictError);
 	});
 });

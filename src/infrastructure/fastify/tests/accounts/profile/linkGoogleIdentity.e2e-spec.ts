@@ -10,6 +10,7 @@ import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { resetFakeGoogleIdentityProvider, setNextVerifiedGoogleIdentity } from '@/shared/providers/googleAuth';
 import {
 	createAndAuthenticateUser,
+	mergeCookies,
 	GOOGLE_POPUP_HEADERS,
 } from '@/infrastructure/fastify/tests/accounts/helpers/authentication.helpers';
 
@@ -22,6 +23,7 @@ const googleIdentity = {
 	familyName: 'Google',
 };
 type ProfileResponseBody = {
+	avatarUrl?: string;
 	authenticationMethods: { password: { enabled: boolean }; providers: string[] };
 };
 
@@ -60,6 +62,54 @@ describe('Link Google identity', () => {
 		expect((await request(app.server).post('/google').set(GOOGLE_POPUP_HEADERS).send({ code })).status).toBe(
 			HTTP_STATUS.ok,
 		);
+		expect(
+			(await request(app.server).post('/signin').send({ email: user.email, password: user.password })).status,
+		).toBe(HTTP_STATUS.ok);
+	});
+
+	it('uses the picture of the Google account as the avatar of a user who has none', async () => {
+		const { cookies } = await createAndAuthenticateUser(app, { email: 'no-avatar@example.com' });
+		setNextVerifiedGoogleIdentity({ ...googleIdentity, pictureUrl: 'https://lh3.googleusercontent.com/a/picture' });
+
+		const linked = await request(app.server)
+			.post('/me/identities/google')
+			.set('Cookie', cookies)
+			.set(GOOGLE_POPUP_HEADERS)
+			.send({ code });
+
+		const rotatedCookies = linked.headers['set-cookie'] as unknown as string[];
+		const profile = await request(app.server).get('/me').set('Cookie', rotatedCookies);
+		expect((profile.body as ProfileResponseBody).avatarUrl).toBe('https://lh3.googleusercontent.com/a/picture');
+	});
+
+	it('disconnects Google from an account that has a password, keeping the password login', async () => {
+		const { cookies, user } = await createAndAuthenticateUser(app, { email: 'primary-local@example.com' });
+		setNextVerifiedGoogleIdentity(googleIdentity);
+		const linked = await request(app.server)
+			.post('/me/identities/google')
+			.set('Cookie', cookies)
+			.set(GOOGLE_POPUP_HEADERS)
+			.send({ code });
+		const linkedCookies = linked.headers['set-cookie'] as unknown as string[];
+		// Linking rotates the session, which ends the recent authentication the disconnection asks for.
+		const reauthentication = await request(app.server)
+			.post('/me/reauthentication/password')
+			.set('Cookie', linkedCookies)
+			.send({ password: user.password });
+		expect(reauthentication.status).toBe(HTTP_STATUS.no_content);
+		const reauthenticatedCookies = mergeCookies(linkedCookies, reauthentication.headers['set-cookie']);
+
+		const unlinked = await request(app.server)
+			.delete('/me/identities/google')
+			.set('Cookie', reauthenticatedCookies);
+
+		expect(unlinked.status).toBe(HTTP_STATUS.no_content);
+		const rotatedCookies = unlinked.headers['set-cookie'] as unknown as string[];
+		const profile = await request(app.server).get('/me').set('Cookie', rotatedCookies);
+		expect((profile.body as ProfileResponseBody).authenticationMethods).toEqual({
+			password: { enabled: true },
+			providers: [],
+		});
 		expect(
 			(await request(app.server).post('/signin').send({ email: user.email, password: user.password })).status,
 		).toBe(HTTP_STATUS.ok);

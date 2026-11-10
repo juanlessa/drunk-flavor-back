@@ -11,6 +11,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
 import { invalidateDeletedUserSessions } from '@/core/accounts/helpers/sessionInvalidation.helpers';
 import { getManagedStoredFileName } from '@/shared/helpers/file.helpers';
+import { IDrinksModule } from '@/core/drinks/public';
 import { IEngagementModule } from '@/core/engagement/public';
 import { logger } from '@/shared/providers/logger';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
@@ -38,6 +39,7 @@ type DeleteAccountDataOptions = {
 	tokensRepository: ITokensRepository;
 	administrativeEventsRepository: IAdministrativeEventsRepository;
 	engagementModule: IEngagementModule;
+	drinksModule: IDrinksModule;
 	sessionVersionMarkerStore: ISessionVersionMarkerStore;
 };
 
@@ -52,9 +54,12 @@ export const deleteAccountData = async ({
 	tokensRepository,
 	administrativeEventsRepository,
 	engagementModule,
+	drinksModule,
 	sessionVersionMarkerStore,
 }: DeleteAccountDataOptions): Promise<void> => {
 	await engagementModule.deleteCommentsByUser(user.id);
+	// The catalog the user contributed to is kept, without the user as its creator (the account holds the personal data).
+	await drinksModule.clearCreatorByUser(user.id);
 	await credentialsRepository.deleteByUserId(user.id);
 	await identitiesRepository.deleteByUserId(user.id);
 	await tokensRepository.deleteByUserId(user.id);

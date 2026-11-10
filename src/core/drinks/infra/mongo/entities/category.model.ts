@@ -3,6 +3,7 @@ import { Translations } from '@/core/drinks/types/translations';
 import { getNameUniqueIndexOptions, getTranslationsSchema } from '../helpers/translations.helpers';
 
 export const CATEGORY_SEARCH_KEYS_INDEX = 'category_search_keys';
+export const CATEGORY_CREATED_BY_INDEX = 'category_created_by';
 export const CATEGORY_TRANSLATIONS_EN_NAME_UNIQUE_INDEX = 'category_translations_en_name_unique';
 export const CATEGORY_TRANSLATIONS_PT_NAME_UNIQUE_INDEX = 'category_translations_pt_name_unique';
 export const CATEGORY_UNIQUE_INDEXES = [
@@ -16,6 +17,9 @@ const categorySchemaDefinition = {
 	translations: { type: getTranslationsSchema(categoryTranslationSchema), required: true },
 	is_alcoholic: { type: Boolean, required: true },
 	search_keys: { type: [String], default: undefined, select: false },
+	// Who created the record (set once, never changed) and who changed it last. Both are removed when that account is closed.
+	created_by: { type: String, required: false, immutable: true },
+	updated_by: { type: String, required: false },
 } as const;
 
 export type CategoryPersistence = {
@@ -23,6 +27,8 @@ export type CategoryPersistence = {
 	translations: Translations<{ name: string }>;
 	is_alcoholic: boolean;
 	search_keys?: string[];
+	created_by?: string;
+	updated_by?: string;
 	created_at: Date;
 	updated_at: Date;
 };
@@ -40,6 +46,7 @@ CategorySchema.index(
 	getNameUniqueIndexOptions('pt', CATEGORY_TRANSLATIONS_PT_NAME_UNIQUE_INDEX),
 );
 CategorySchema.index({ search_keys: 1 }, { name: CATEGORY_SEARCH_KEYS_INDEX });
+CategorySchema.index({ created_by: 1 }, { name: CATEGORY_CREATED_BY_INDEX });
 
 export const CategoryModel =
 	(mongoose.models['categories'] as Model<CategoryPersistence> | undefined) ??

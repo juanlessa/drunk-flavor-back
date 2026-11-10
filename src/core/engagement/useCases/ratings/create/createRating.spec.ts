@@ -16,6 +16,7 @@ const actor: Actor = { id: new ObjectId().toString(), role: Roles.member };
 const drinksModule: IDrinksModule = {
 	findDrinkById: vi.fn().mockResolvedValue(null),
 	applyRatingDelta: vi.fn().mockResolvedValue({ average: 4, count: 1 }),
+	clearCreatorByUser: vi.fn().mockResolvedValue(0),
 };
 
 describe('Create Rating', () => {

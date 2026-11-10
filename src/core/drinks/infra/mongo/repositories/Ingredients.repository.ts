@@ -6,7 +6,7 @@ import {
 } from '@/core/drinks/dtos/ingredient.dtos';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
-import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
+import { buildQuery, findOwnedFirst } from '@/infrastructure/mongo/helpers/query.helpers';
 import { toMongoUpdateSet } from '@/infrastructure/mongo/helpers/mapper.helpers';
 import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
 import { SEARCH_KEYS_FIELD } from '@/infrastructure/mongo/constants/search.constants';
@@ -19,6 +19,7 @@ import { Languages, Language } from '@/core/drinks/types/translations';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
 import { INGREDIENT_UNIQUE_INDEXES, IngredientModel, IngredientPersistence } from '../entities/ingredient.model';
+import { CREATED_BY_FIELD, clearAuthorshipByUser, omitAuthorshipDeep } from '../helpers/authorship.helpers';
 import { findByTranslatedName, getSortCollation } from '../helpers/translations.helpers';
 import { IngredientMapper } from '../mappers/ingredient.mapper';
 
@@ -51,12 +52,20 @@ const mergeTranslations = (
 		{} as IngredientPersistence['translations'],
 	);
 
+/** The category and the units are snapshots: they are stored without who created them (see `omitAuthorshipDeep`). */
+const withoutSnapshotAuthorship = (data: Partial<IngredientPersistence>): Partial<IngredientPersistence> => ({
+	...data,
+	...(data.category && { category: omitAuthorshipDeep(data.category) }),
+	...(data.units && { units: omitAuthorshipDeep(data.units) }),
+});
+
 export class IngredientsRepository implements IIngredientsRepository {
 	async create(data: CreateIngredient): Promise<Ingredient> {
 		try {
-			const persistenceData = IngredientMapper.toPersistence(data);
+			const persistenceData = withoutSnapshotAuthorship(IngredientMapper.toPersistence(data));
 			const document = await IngredientModel.create({
 				...persistenceData,
+				updated_by: persistenceData.created_by,
 				search_keys: buildTranslationsSearchKeys(
 					persistenceData.translations,
 					INGREDIENT_SEARCH_FIELDS,
@@ -75,7 +84,7 @@ export class IngredientsRepository implements IIngredientsRepository {
 	async update({ id, ...data }: UpdateIngredient): Promise<Ingredient> {
 		const objectId = IngredientMapper.toObjectId(id);
 		if (!objectId) throw this.notFound('update');
-		const persistenceData = IngredientMapper.toPersistence(data);
+		const persistenceData = withoutSnapshotAuthorship(IngredientMapper.toPersistence(data));
 		const update = toMongoUpdateSet(persistenceData);
 		const unsetFields = getUnsetFields(data);
 		if (persistenceData.translations || data.brand !== undefined) {
@@ -156,6 +165,24 @@ export class IngredientsRepository implements IIngredientsRepository {
 			.lean<IngredientPersistence[]>()
 			.exec();
 		return documents.map(IngredientMapper.toDomain);
+	}
+
+	async findAllOwnedFirst(query: QueryParams, userId: string): Promise<Ingredient[]> {
+		const persistenceQuery = IngredientMapper.toPersistenceQuery(query);
+		const documents = await findOwnedFirst<IngredientPersistence>(
+			persistenceQuery,
+			IngredientModel,
+			userId,
+			CREATED_BY_FIELD,
+			{
+				collation: getSortCollation(persistenceQuery.sort),
+			},
+		);
+		return documents.map(IngredientMapper.toDomain);
+	}
+
+	clearCreatorByUser(userId: string): Promise<number> {
+		return clearAuthorshipByUser(IngredientModel, userId);
 	}
 
 	private notFound(operation: string): NotFoundError {

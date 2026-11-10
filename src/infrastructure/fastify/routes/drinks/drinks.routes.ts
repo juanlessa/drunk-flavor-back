@@ -23,6 +23,8 @@ import { deleteDrinkController } from '@/core/drinks/useCases/drinks/delete/dele
 import { verifyPermissions } from '../../middlewares/verifyPermissions';
 import { enforceCompleteProfile } from '../../middlewares/enforceCompleteProfile';
 
+import { listDrinksWithAuthorshipController } from '@/core/drinks/useCases/drinks/listWithAuthorship/listDrinksWithAuthorship.controller';
+import { getDrinkWithAuthorshipController } from '@/core/drinks/useCases/drinks/getWithAuthorship/getDrinkWithAuthorship.controller';
 const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().post(
 		'/drinks',
@@ -86,6 +88,31 @@ const routes: Routes = (server) => {
 		matchDrinksController,
 	);
 
+	// For the people who contribute to the catalog (partner, admin, owner): their own records first, and who created and last edited each one.
+	server.withTypeProvider<ZodTypeProvider>().get(
+		'/drinks/me',
+		{
+			schema: { tags: ['Drinks'], querystring: listDrinksSchema },
+			preValidation: [
+				verifyAndRenewToken,
+				enforceCompleteProfile,
+				verifyPermissions('listWithAuthorship', 'Drink'),
+			],
+		},
+		listDrinksWithAuthorshipController,
+	);
+	server.withTypeProvider<ZodTypeProvider>().get(
+		'/drinks/me/:id',
+		{
+			schema: { tags: ['Drinks'], params: getDrinkSchema },
+			preValidation: [
+				verifyAndRenewToken,
+				enforceCompleteProfile,
+				verifyPermissions('getWithAuthorship', 'Drink'),
+			],
+		},
+		getDrinkWithAuthorshipController,
+	);
 	server.withTypeProvider<ZodTypeProvider>().patch(
 		'/drinks',
 		{

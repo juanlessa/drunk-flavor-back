@@ -69,4 +69,9 @@ export class IdentitiesRepository implements IIdentitiesRepository {
 	async deleteByUserId(userId: string): Promise<void> {
 		await this.model.deleteMany({ user_id: userId }).exec();
 	}
+
+	async deleteByUserIdAndProvider(userId: string, provider: IdentityProvider): Promise<boolean> {
+		const result = await this.model.deleteOne({ user_id: userId, provider }).exec();
+		return result.deletedCount > 0;
+	}
 }

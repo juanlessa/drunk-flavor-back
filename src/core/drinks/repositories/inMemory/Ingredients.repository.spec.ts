@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { withCreator, withEditor } from '@/core/drinks/factories/authorship.factories';
 import { ObjectId } from 'mongodb';
 import { IngredientsRepositoryInMemory } from './Ingredients.repository';
 import { Category } from '@/core/drinks/entities/category.entity';
@@ -30,11 +31,13 @@ const createIngredient = (
 	repository: IngredientsRepositoryInMemory,
 	name: { en: string; pt: string },
 ): Promise<Ingredient> =>
-	repository.create({
-		translations: { en: { name: name.en }, pt: { name: name.pt } },
-		category: buildCategory(),
-		units: [buildUnit()],
-	});
+	repository.create(
+		withCreator({
+			translations: { en: { name: name.en }, pt: { name: name.pt } },
+			category: buildCategory(),
+			units: [buildUnit()],
+		}),
+	);
 
 let repository: IngredientsRepositoryInMemory;
 
@@ -61,7 +64,7 @@ describe('IngredientsRepositoryInMemory', () => {
 
 	it('throws NotFoundError when updating a missing id', async () => {
 		await expect(
-			repository.update({ id: new ObjectId().toString(), translations: { en: { name: 'X' } } }),
+			repository.update(withEditor({ id: new ObjectId().toString(), translations: { en: { name: 'X' } } })),
 		).rejects.toBeInstanceOf(NotFoundError);
 	});
 
@@ -69,10 +72,12 @@ describe('IngredientsRepositoryInMemory', () => {
 		const created = await createIngredient(repository, { en: 'Lime', pt: 'Limão' });
 		const originalUpdatedAt = created.updatedAt.getTime();
 
-		const updated = await repository.update({
-			id: created.id,
-			translations: { en: { name: 'Lemon' } },
-		});
+		const updated = await repository.update(
+			withEditor({
+				id: created.id,
+				translations: { en: { name: 'Lemon' } },
+			}),
+		);
 
 		expect(updated.translations.en.name).toBe('Lemon');
 		// pt name and the embedded category survive the deep merge.
@@ -95,13 +100,15 @@ describe('IngredientsRepositoryInMemory', () => {
 
 	it('creates a generic ingredient by default and keeps a given kind and brand', async () => {
 		const generic = await createIngredient(repository, { en: 'Lime', pt: 'Limão' });
-		const branded = await repository.create({
-			translations: { en: { name: 'Licor 43' }, pt: { name: 'Licor 43' } },
-			category: buildCategory(),
-			units: [buildUnit()],
-			kind: 'branded',
-			brand: 'Licor 43',
-		});
+		const branded = await repository.create(
+			withCreator({
+				translations: { en: { name: 'Licor 43' }, pt: { name: 'Licor 43' } },
+				category: buildCategory(),
+				units: [buildUnit()],
+				kind: 'branded',
+				brand: 'Licor 43',
+			}),
+		);
 
 		expect(generic.kind).toBe('generic');
 		expect(generic.brand).toBeUndefined();
@@ -110,51 +117,61 @@ describe('IngredientsRepositoryInMemory', () => {
 
 	describe('update', () => {
 		const createDescribed = () =>
-			repository.create({
-				translations: {
-					en: { name: 'Triple sec', description: 'Orange liqueur' },
-					pt: { name: 'Triple sec', description: 'Licor de laranja' },
-				},
-				category: buildCategory(),
-				units: [buildUnit()],
-				kind: 'branded',
-				brand: 'Bols',
-			});
+			repository.create(
+				withCreator({
+					translations: {
+						en: { name: 'Triple sec', description: 'Orange liqueur' },
+						pt: { name: 'Triple sec', description: 'Licor de laranja' },
+					},
+					category: buildCategory(),
+					units: [buildUnit()],
+					kind: 'branded',
+					brand: 'Bols',
+				}),
+			);
 
 		it('replaces, keeps and removes the description of each language', async () => {
 			const created = await createDescribed();
 
-			const updated = await repository.update({
-				id: created.id,
-				translations: {
-					en: { name: 'Triple sec', description: 'Orange-flavored liqueur' },
-					pt: { name: 'Triple sec', description: null },
-				},
-			});
+			const updated = await repository.update(
+				withEditor({
+					id: created.id,
+					translations: {
+						en: { name: 'Triple sec', description: 'Orange-flavored liqueur' },
+						pt: { name: 'Triple sec', description: null },
+					},
+				}),
+			);
 
 			expect(updated.translations.en.description).toBe('Orange-flavored liqueur');
 			expect(updated.translations.pt).toEqual({ name: 'Triple sec' });
 		});
 
 		it('replaces, keeps and removes the plural name of each language', async () => {
-			const created = await repository.create({
-				translations: {
-					en: { name: 'Lime', namePlural: 'Limes' },
-					pt: { name: 'Limão', namePlural: 'Limões' },
-				},
-				category: buildCategory(),
-				units: [buildUnit()],
-			});
-			const replaced = await repository.update({
-				id: created.id,
-				translations: { en: { name: 'Lime', namePlural: 'Lime fruits' } },
-			});
+			const created = await repository.create(
+				withCreator({
+					translations: {
+						en: { name: 'Lime', namePlural: 'Limes' },
+						pt: { name: 'Limão', namePlural: 'Limões' },
+					},
+					category: buildCategory(),
+					units: [buildUnit()],
+				}),
+			);
+			const replaced = await repository.update(
+				withEditor({
+					id: created.id,
+					translations: { en: { name: 'Lime', namePlural: 'Lime fruits' } },
+				}),
+			);
 			expect(replaced.translations.en.namePlural).toBe('Lime fruits');
 			expect(replaced.translations.pt.namePlural).toBe('Limões');
-			const removed = await repository.update({
-				id: created.id,
-				translations: { pt: { name: 'Limão', namePlural: null } },
-			});
+			const removed = await repository.update(
+				withEditor({
+					id: created.id,
+					translations: { pt: { name: 'Limão', namePlural: null } },
+				}),
+			);
 			expect(removed.translations.pt).toEqual({ name: 'Limão' });
 			expect(removed.translations.en.namePlural).toBe('Lime fruits');
 		});
@@ -162,7 +179,9 @@ describe('IngredientsRepositoryInMemory', () => {
 		it('keeps the description of a language that is not in the patch', async () => {
 			const created = await createDescribed();
 
-			const updated = await repository.update({ id: created.id, translations: { en: { name: 'Triple sec 2' } } });
+			const updated = await repository.update(
+				withEditor({ id: created.id, translations: { en: { name: 'Triple sec 2' } } }),
+			);
 
 			expect(updated.translations.en).toEqual({ name: 'Triple sec 2', description: 'Orange liqueur' });
 			expect(updated.translations.pt.description).toBe('Licor de laranja');
@@ -171,10 +190,10 @@ describe('IngredientsRepositoryInMemory', () => {
 		it('changes, keeps and removes the brand', async () => {
 			const created = await createDescribed();
 
-			expect((await repository.update({ id: created.id, brand: 'Other' })).brand).toBe('Other');
-			expect((await repository.update({ id: created.id, kind: 'branded' })).brand).toBe('Other');
+			expect((await repository.update(withEditor({ id: created.id, brand: 'Other' }))).brand).toBe('Other');
+			expect((await repository.update(withEditor({ id: created.id, kind: 'branded' }))).brand).toBe('Other');
 
-			const generic = await repository.update({ id: created.id, kind: 'generic', brand: null });
+			const generic = await repository.update(withEditor({ id: created.id, kind: 'generic', brand: null }));
 			expect(generic.kind).toBe('generic');
 			expect(generic).not.toHaveProperty('brand');
 		});
@@ -183,8 +202,8 @@ describe('IngredientsRepositoryInMemory', () => {
 			const created = await createDescribed();
 			const [first, second] = [buildUnit(), buildUnit()];
 
-			const updated = await repository.update({ id: created.id, units: [first, second] });
-			const cleared = await repository.update({ id: created.id, units: [] });
+			const updated = await repository.update(withEditor({ id: created.id, units: [first, second] }));
+			const cleared = await repository.update(withEditor({ id: created.id, units: [] }));
 
 			expect(updated.units.map(({ id }) => id)).toEqual([first.id, second.id]);
 			expect(cleared.units).toEqual([]);
@@ -193,29 +212,35 @@ describe('IngredientsRepositoryInMemory', () => {
 
 	describe('findAll by name', () => {
 		beforeEach(async () => {
-			await repository.create({
-				translations: {
-					en: { name: 'Coconut water' },
-					pt: { name: 'Água de coco' },
-				},
-				category: buildCategory(),
-				units: [buildUnit()],
-			});
-			await repository.create({
-				translations: {
-					en: { name: 'Triple sec', description: 'Liqueur of orange' },
-					pt: { name: 'Triple sec', description: 'Licor de laranja' },
-				},
-				category: buildCategory(),
-				units: [buildUnit()],
-			});
-			await repository.create({
-				translations: { en: { name: 'Gabriela' }, pt: { name: 'Gabriela' } },
-				category: buildCategory(),
-				units: [buildUnit()],
-				kind: 'branded',
-				brand: 'Cravo',
-			});
+			await repository.create(
+				withCreator({
+					translations: {
+						en: { name: 'Coconut water' },
+						pt: { name: 'Água de coco' },
+					},
+					category: buildCategory(),
+					units: [buildUnit()],
+				}),
+			);
+			await repository.create(
+				withCreator({
+					translations: {
+						en: { name: 'Triple sec', description: 'Liqueur of orange' },
+						pt: { name: 'Triple sec', description: 'Licor de laranja' },
+					},
+					category: buildCategory(),
+					units: [buildUnit()],
+				}),
+			);
+			await repository.create(
+				withCreator({
+					translations: { en: { name: 'Gabriela' }, pt: { name: 'Gabriela' } },
+					category: buildCategory(),
+					units: [buildUnit()],
+					kind: 'branded',
+					brand: 'Cravo',
+				}),
+			);
 		});
 
 		const find = async (name: string) =>

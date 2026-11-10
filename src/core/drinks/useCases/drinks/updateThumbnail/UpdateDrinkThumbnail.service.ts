@@ -1,3 +1,4 @@
+import { assertCanChangeDrink } from '@/core/drinks/helpers/catalogAuthorization.helpers';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
@@ -11,7 +12,7 @@ export class UpdateDrinkThumbnailService {
 		private storageProvider: IStorageProvider,
 	) {}
 
-	async execute({ drinkId, fileStream, mimetype }: UpdateDrinkThumbnailDTO): Promise<void> {
+	async execute({ drinkId, fileStream, mimetype, actor }: UpdateDrinkThumbnailDTO): Promise<void> {
 		if (!isSupportedFileType('image', mimetype)) {
 			throw new BadRequestError('apiResponses.drinks.invalidFileType', {
 				path: 'UpdateDrinkThumbnail.service.1',
@@ -23,6 +24,7 @@ export class UpdateDrinkThumbnailService {
 		if (!drink) {
 			throw new NotFoundError('apiResponses.drinks.notFound', { path: 'UpdateDrinkThumbnail.service.2' });
 		}
+		assertCanChangeDrink('update', drink, actor, 'UpdateDrinkThumbnail.service.forbidden');
 
 		if (drink.thumbnail) {
 			await this.storageProvider.deleteFile(drink.thumbnail.name);
@@ -32,6 +34,6 @@ export class UpdateDrinkThumbnailService {
 		const url = '';
 
 		await this.storageProvider.uploadFile({ fileStream, name, mimetype });
-		await this.drinksRepository.update({ id: drinkId, thumbnail: { name, mimetype, url } });
+		await this.drinksRepository.update({ id: drinkId, updatedBy: actor.id, thumbnail: { name, mimetype, url } });
 	}
 }

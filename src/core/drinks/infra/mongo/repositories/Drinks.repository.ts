@@ -7,7 +7,7 @@ import {
 } from '@/core/drinks/dtos/drink.dtos';
 import { Drink } from '@/core/drinks/entities/drink.entity';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
-import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
+import { buildQuery, findOwnedFirst } from '@/infrastructure/mongo/helpers/query.helpers';
 import { toMongoUpdateSet } from '@/infrastructure/mongo/helpers/mapper.helpers';
 import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
 import type { ApplyRatingDelta, DrinkRatingSummary } from '@/core/drinks/public/IDrinksModule';
@@ -21,15 +21,24 @@ import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 import { PipelineStage, QueryFilter, Types } from 'mongoose';
 import { DRINK_UNIQUE_INDEXES, DrinkModel, DrinkPersistence } from '../entities/drink.model';
 import { getRequiredIngredientObjectIds } from '../helpers/drinkRequiredIngredients.helpers';
+import { CREATED_BY_FIELD, clearAuthorshipByUser, omitAuthorshipDeep } from '../helpers/authorship.helpers';
 import { findByTranslatedName, getSortCollation } from '../helpers/translations.helpers';
 import { DrinkMapper } from '../mappers/drink.mapper';
+
+/** The recipe lines are snapshots of ingredients and units: they are stored without who created them. */
+const withoutSnapshotAuthorship = (data: Partial<DrinkPersistence>): Partial<DrinkPersistence> => ({
+	...data,
+	...(data.ingredients && { ingredients: omitAuthorshipDeep(data.ingredients) }),
+	...(data.garnishes && { garnishes: omitAuthorshipDeep(data.garnishes) }),
+});
 
 export class DrinksRepository implements IDrinksRepository {
 	async create(data: CreateDrink): Promise<Drink> {
 		try {
-			const persistenceData = DrinkMapper.toPersistence(data);
+			const persistenceData = withoutSnapshotAuthorship(DrinkMapper.toPersistence(data));
 			const document = await DrinkModel.create({
 				...persistenceData,
+				updated_by: persistenceData.created_by,
 				search_keys: buildTranslationsSearchKeys(persistenceData.translations, NAME_SEARCH_FIELDS),
 				required_ingredient_ids: getRequiredIngredientObjectIds(persistenceData.ingredients ?? []),
 			});
@@ -44,7 +53,9 @@ export class DrinksRepository implements IDrinksRepository {
 	async update({ id, preparation, ...data }: UpdateDrink): Promise<Drink> {
 		const objectId = DrinkMapper.toObjectId(id);
 		if (!objectId) throw this.notFound('update');
-		const persistenceData = DrinkMapper.toPersistence({ ...data, preparation: preparation ?? undefined });
+		const persistenceData = withoutSnapshotAuthorship(
+			DrinkMapper.toPersistence({ ...data, preparation: preparation ?? undefined }),
+		);
 		const update = toMongoUpdateSet(persistenceData);
 		// The recipe is replaced as a whole, so the ids that the search by ingredients matches on follow it.
 		if (persistenceData.ingredients) {
@@ -113,6 +124,24 @@ export class DrinksRepository implements IDrinksRepository {
 			.lean<DrinkPersistence[]>()
 			.exec();
 		return documents.map(DrinkMapper.toDomain);
+	}
+
+	async findAllOwnedFirst(query: QueryParams, userId: string): Promise<Drink[]> {
+		const persistenceQuery = DrinkMapper.toPersistenceQuery(query);
+		const documents = await findOwnedFirst<DrinkPersistence>(
+			persistenceQuery,
+			DrinkModel,
+			userId,
+			CREATED_BY_FIELD,
+			{
+				collation: getSortCollation(persistenceQuery.sort),
+			},
+		);
+		return documents.map(DrinkMapper.toDomain);
+	}
+
+	clearCreatorByUser(userId: string): Promise<number> {
+		return clearAuthorshipByUser(DrinkModel, userId);
 	}
 
 	async findByIngredients({

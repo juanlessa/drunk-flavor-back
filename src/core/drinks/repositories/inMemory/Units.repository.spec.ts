@@ -1,4 +1,5 @@
 import { ObjectId } from 'mongodb';
+import { withEditor } from '@/core/drinks/factories/authorship.factories';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CreateUnit } from '@/core/drinks/dtos/unit.dtos';
 import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
@@ -66,7 +67,7 @@ describe('UnitsRepositoryInMemory', () => {
 	describe('update', () => {
 		it('throws NotFoundError for a missing id', async () => {
 			await expect(
-				repository.update({ id: new ObjectId().toString(), allowDecimal: false }),
+				repository.update(withEditor({ id: new ObjectId().toString(), allowDecimal: false })),
 			).rejects.toBeInstanceOf(NotFoundError);
 		});
 
@@ -74,11 +75,13 @@ describe('UnitsRepositoryInMemory', () => {
 			const created = await repository.create(buildUnit(milliliter, { symbol: 'ml' }));
 			const originalUpdatedAt = created.updatedAt.getTime();
 
-			const updated = await repository.update({
-				id: created.id,
-				translations: { en: { name: 'millilitre' } },
-				allowDecimal: false,
-			});
+			const updated = await repository.update(
+				withEditor({
+					id: created.id,
+					translations: { en: { name: 'millilitre' } },
+					allowDecimal: false,
+				}),
+			);
 
 			expect(updated.translations.en).toEqual({ name: 'millilitre', namePlural: 'milliliters' });
 			expect(updated.translations.pt.name).toBe('mililitro');
@@ -91,11 +94,11 @@ describe('UnitsRepositoryInMemory', () => {
 		it('sets, replaces, keeps and removes the symbol', async () => {
 			const created = await repository.create(buildUnit(milliliter));
 
-			expect((await repository.update({ id: created.id, symbol: 'ml' })).symbol).toBe('ml');
-			expect((await repository.update({ id: created.id, symbol: 'mL' })).symbol).toBe('mL');
-			expect((await repository.update({ id: created.id, allowDecimal: false })).symbol).toBe('mL');
+			expect((await repository.update(withEditor({ id: created.id, symbol: 'ml' }))).symbol).toBe('ml');
+			expect((await repository.update(withEditor({ id: created.id, symbol: 'mL' }))).symbol).toBe('mL');
+			expect((await repository.update(withEditor({ id: created.id, allowDecimal: false }))).symbol).toBe('mL');
 
-			const removed = await repository.update({ id: created.id, symbol: null });
+			const removed = await repository.update(withEditor({ id: created.id, symbol: null }));
 			expect(removed).not.toHaveProperty('symbol');
 		});
 
@@ -103,9 +106,9 @@ describe('UnitsRepositoryInMemory', () => {
 			const created = await repository.create(buildUnit(leaf, { kind: 'count', allowDecimal: false }));
 			expect(created).not.toHaveProperty('useIngredientName');
 
-			const enabled = await repository.update({ id: created.id, useIngredientName: true });
-			const untouched = await repository.update({ id: created.id, allowDecimal: false });
-			const disabled = await repository.update({ id: created.id, useIngredientName: false });
+			const enabled = await repository.update(withEditor({ id: created.id, useIngredientName: true }));
+			const untouched = await repository.update(withEditor({ id: created.id, allowDecimal: false }));
+			const disabled = await repository.update(withEditor({ id: created.id, useIngredientName: false }));
 
 			expect(enabled.useIngredientName).toBe(true);
 			expect(untouched.useIngredientName).toBe(true);
@@ -115,8 +118,8 @@ describe('UnitsRepositoryInMemory', () => {
 		it('sets the spacing of the symbol and keeps false', async () => {
 			const created = await repository.create(buildUnit(milliliter, { spaceBeforeSymbol: true }));
 
-			const unspaced = await repository.update({ id: created.id, spaceBeforeSymbol: false });
-			const untouched = await repository.update({ id: created.id, allowDecimal: true });
+			const unspaced = await repository.update(withEditor({ id: created.id, spaceBeforeSymbol: false }));
+			const untouched = await repository.update(withEditor({ id: created.id, allowDecimal: true }));
 
 			expect(unspaced.spaceBeforeSymbol).toBe(false);
 			expect(untouched.spaceBeforeSymbol).toBe(false);

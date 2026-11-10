@@ -46,7 +46,7 @@ export type DrinkTranslationInput = {
 	method?: string;
 };
 
-export type CreateDrink = {
+export type DrinkData = {
 	translations: Translations<DrinkTranslation>;
 	ingredients: DrinkIngredient[];
 	/** Defaults to no garnishes when omitted. */
@@ -54,7 +54,10 @@ export type CreateDrink = {
 	preparation?: PreparationPlan;
 };
 
-export type UpdateDrink = { id: string } & DeepPartial<
+/** `createdBy` is set once, when the drink is created, and is never part of an update. */
+export type CreateDrink = DrinkData & { createdBy: string };
+
+export type UpdateDrink = { id: string; updatedBy: string } & DeepPartial<
 	Pick<Drink, 'translations' | 'ingredients' | 'garnishes' | 'cover' | 'thumbnail'>
 > & {
 		/** A plan replaces the stored one; `null` removes it (the method was written by hand). */

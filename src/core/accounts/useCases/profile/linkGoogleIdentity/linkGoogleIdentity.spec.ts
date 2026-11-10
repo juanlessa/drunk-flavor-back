@@ -82,4 +82,93 @@ describe('Link Google Identity', () => {
 			ConflictError,
 		);
 	});
+
+	describe('avatar', () => {
+		const googlePicture = 'https://lh3.googleusercontent.com/a/picture';
+		const identityWith = (pictureUrl?: string) => ({
+			subject: 'fake-google-sub',
+			email: 'local@example.com',
+			isEmailVerified: true,
+			...(pictureUrl === undefined ? {} : { pictureUrl }),
+		});
+
+		it('uses the picture of the Google account when the user has no avatar', async () => {
+			const user = await seedAccount();
+			googleIdentityProvider.setNextIdentity(identityWith(googlePicture));
+
+			await service.execute({ userId: user.id, authorizationCode: 'token' });
+
+			expect((await usersRepository.findById(user.id))?.avatarUrl).toBe(googlePicture);
+		});
+
+		it('keeps the avatar the user already has', async () => {
+			const user = await usersRepository.create(
+				createUserFactory({ email: 'local@example.com', avatarUrl: 'https://cdn.example.com/mine.png' }),
+			);
+			googleIdentityProvider.setNextIdentity(identityWith(googlePicture));
+
+			await service.execute({ userId: user.id, authorizationCode: 'token' });
+
+			expect((await usersRepository.findById(user.id))?.avatarUrl).toBe('https://cdn.example.com/mine.png');
+		});
+
+		it('leaves the user without an avatar when the Google account has no picture', async () => {
+			const user = await seedAccount();
+			googleIdentityProvider.setNextIdentity(identityWith());
+
+			await service.execute({ userId: user.id, authorizationCode: 'token' });
+
+			expect((await usersRepository.findById(user.id))?.avatarUrl).toBeUndefined();
+		});
+
+		it('treats an empty picture as no picture', async () => {
+			const user = await seedAccount();
+			googleIdentityProvider.setNextIdentity(identityWith(''));
+
+			await service.execute({ userId: user.id, authorizationCode: 'token' });
+
+			expect((await usersRepository.findById(user.id))?.avatarUrl).toBeUndefined();
+		});
+
+		it('still records the picture on the linked identity and revokes older sessions', async () => {
+			const user = await seedAccount();
+			googleIdentityProvider.setNextIdentity(identityWith(googlePicture));
+
+			const result = await service.execute({ userId: user.id, authorizationCode: 'token' });
+
+			const identity = await identitiesRepository.findByProviderSub(IdentityProviders.google, 'fake-google-sub');
+			expect(identity?.pictureUrl).toBe(googlePicture);
+			expect(result.user.sessionVersion).toBe(user.sessionVersion + 1);
+		});
+
+		it.each([['an unverified Google identity', { ...identityWith(googlePicture), isEmailVerified: false }]])(
+			'does not take the picture from %s',
+			async (_title, identity) => {
+				const user = await seedAccount();
+				googleIdentityProvider.setNextIdentity(identity);
+
+				await expect(service.execute({ userId: user.id, authorizationCode: 'token' })).rejects.toBeInstanceOf(
+					UnauthorizedError,
+				);
+
+				expect((await usersRepository.findById(user.id))?.avatarUrl).toBeUndefined();
+			},
+		);
+
+		it('does not take the picture when the Google account belongs to another user', async () => {
+			const user = await seedAccount();
+			await identitiesRepository.create({
+				userId: '507f1f77bcf86cd799439012',
+				provider: IdentityProviders.google,
+				providerSubject: 'fake-google-sub',
+			});
+			googleIdentityProvider.setNextIdentity(identityWith(googlePicture));
+
+			await expect(service.execute({ userId: user.id, authorizationCode: 'token' })).rejects.toBeInstanceOf(
+				ConflictError,
+			);
+
+			expect((await usersRepository.findById(user.id))?.avatarUrl).toBeUndefined();
+		});
+	});
 });

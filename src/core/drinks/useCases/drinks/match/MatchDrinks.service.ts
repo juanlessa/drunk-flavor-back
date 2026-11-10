@@ -1,3 +1,4 @@
+import { omitAuthorship } from '@/shared/helpers/authorship.helpers';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { MatchDrinksDTO } from './matchDrinks.dtos';
@@ -18,7 +19,7 @@ export class MatchDrinksService {
 				drink.thumbnail.url = this.storageProvider.getFileURL(drink.thumbnail.name);
 			}
 			return {
-				drink,
+				drink: omitAuthorship(drink),
 				missingCount: missingIngredientIds.length,
 				missingIngredientIds,
 			};

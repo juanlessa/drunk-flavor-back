@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { clearCreatorFromRecords, keepCreator, prioritizeCreator } from '@/core/drinks/helpers/creator.helpers';
 import {
 	CreateDrink,
 	DrinkIngredientMatch,
@@ -37,6 +38,7 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 		const record: Drink = {
 			id: randomUUID(),
 			...data,
+			updatedBy: data.createdBy,
 			garnishes: data.garnishes ?? [],
 			cover: undefined,
 			thumbnail: undefined,
@@ -59,8 +61,9 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 			...(nextPreparation ? { preparation: nextPreparation } : {}),
 			updatedAt: new Date(),
 		};
-		this.collection[index] = record;
-		return record;
+		const stored = keepCreator(record, this.collection[index]);
+		this.collection[index] = stored;
+		return stored;
 	}
 
 	async delete(id: string): Promise<Drink> {
@@ -83,6 +86,14 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 		let found = [...this.collection];
 		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);
 		if (query.sort) found = this.sort(found, query.sort);
+		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
+	}
+
+	async findAllOwnedFirst(query: QueryParams, userId: string): Promise<Drink[]> {
+		let found = [...this.collection];
+		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);
+		if (query.sort) found = this.sort(found, query.sort);
+		found = prioritizeCreator(found, userId);
 		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
 	}
 
@@ -146,6 +157,10 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 
 	private ratingScoreOf(drink: Drink): number {
 		return getRatingScore(this.ratingSums.get(drink.id) ?? 0, drink.ratingsCount);
+	}
+
+	async clearCreatorByUser(userId: string): Promise<number> {
+		return clearCreatorFromRecords(this.collection, userId);
 	}
 
 	private notFound(operation: string): NotFoundError {

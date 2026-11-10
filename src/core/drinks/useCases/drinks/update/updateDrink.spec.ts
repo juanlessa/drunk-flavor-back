@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { withActor, withCreator, withEditor } from '@/core/drinks/factories/authorship.factories';
 import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Ingredients.repository';
 import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Units.repository';
 import { ObjectId } from 'mongodb';
@@ -55,26 +56,34 @@ describe('Update Drink', () => {
 		drinksRepository = new DrinksRepositoryInMemory();
 		service = new UpdateDrinkService(drinksRepository, ingredientsRepository);
 
-		const category = await categoriesRepository.create({ translations: categoryTranslations, isAlcoholic: false });
+		const category = await categoriesRepository.create(
+			withCreator({ translations: categoryTranslations, isAlcoholic: false }),
+		);
 		unit = await unitsRepository.create(createUnitFactory());
-		ingredient = await ingredientsRepository.create({
-			translations: translationsIngredient,
-			category: category,
-			units: [unit],
-		});
-		createdDrink = await drinksRepository.create({
-			translations,
-			ingredients: [createDrinkIngredientFactory(ingredient, { amount: amount(30) })],
-		});
+		ingredient = await ingredientsRepository.create(
+			withCreator({
+				translations: translationsIngredient,
+				category: category,
+				units: [unit],
+			}),
+		);
+		createdDrink = await drinksRepository.create(
+			withCreator({
+				translations,
+				ingredients: [createDrinkIngredientFactory(ingredient, { amount: amount(30) })],
+			}),
+		);
 	});
 
 	it('should be able to update a drink', async () => {
-		await service.execute({
-			id: createdDrink.id,
-			translations: updatedTranslations,
-			ingredients: [createDrinkIngredientInputFactory(ingredient.id, { unitId: unit.id })],
-			garnishes: [],
-		});
+		await service.execute(
+			withActor({
+				id: createdDrink.id,
+				translations: updatedTranslations,
+				ingredients: [createDrinkIngredientInputFactory(ingredient.id, { unitId: unit.id })],
+				garnishes: [],
+			}),
+		);
 
 		const findUpdatedDrink = (await drinksRepository.findById(createdDrink.id)) as Drink;
 
@@ -85,39 +94,47 @@ describe('Update Drink', () => {
 
 	it('should not be able to update a nonexistent drink', async () => {
 		await expect(
-			service.execute({
-				id: new ObjectId().toString(),
-				translations: updatedTranslations,
-				ingredients: [createDrinkIngredientInputFactory(ingredient.id, { unitId: unit.id })],
-				garnishes: [],
-			}),
+			service.execute(
+				withActor({
+					id: new ObjectId().toString(),
+					translations: updatedTranslations,
+					ingredients: [createDrinkIngredientInputFactory(ingredient.id, { unitId: unit.id })],
+					garnishes: [],
+				}),
+			),
 		).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('should not be able to update a drink name to an existing name', async () => {
-		await drinksRepository.create({
-			translations: updatedTranslations,
-			ingredients: [createDrinkIngredientFactory(ingredient, { amount: amount(30) })],
-		});
+		await drinksRepository.create(
+			withCreator({
+				translations: updatedTranslations,
+				ingredients: [createDrinkIngredientFactory(ingredient, { amount: amount(30) })],
+			}),
+		);
 
 		await expect(
-			service.execute({
-				id: createdDrink.id,
-				translations: updatedTranslations,
-				ingredients: [createDrinkIngredientInputFactory(ingredient.id, { unitId: unit.id })],
-				garnishes: [],
-			}),
+			service.execute(
+				withActor({
+					id: createdDrink.id,
+					translations: updatedTranslations,
+					ingredients: [createDrinkIngredientInputFactory(ingredient.id, { unitId: unit.id })],
+					garnishes: [],
+				}),
+			),
 		).rejects.toBeInstanceOf(ConflictError);
 	});
 
 	it('should not be able to update a drink with a nonexistent ingredient', async () => {
 		await expect(
-			service.execute({
-				id: createdDrink.id,
-				translations: updatedTranslations,
-				ingredients: [createDrinkIngredientInputFactory(new ObjectId().toString(), { unitId: unit.id })],
-				garnishes: [],
-			}),
+			service.execute(
+				withActor({
+					id: createdDrink.id,
+					translations: updatedTranslations,
+					ingredients: [createDrinkIngredientInputFactory(new ObjectId().toString(), { unitId: unit.id })],
+					garnishes: [],
+				}),
+			),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});
 
@@ -129,12 +146,14 @@ describe('Update Drink', () => {
 		});
 
 		it('should be able to use the same ingredient as an ingredient and as a garnish', async () => {
-			await service.execute({
-				id: createdDrink.id,
-				translations: updatedTranslations,
-				ingredients: [mainLine()],
-				garnishes: [garnishLine(ingredient.id)],
-			});
+			await service.execute(
+				withActor({
+					id: createdDrink.id,
+					translations: updatedTranslations,
+					ingredients: [mainLine()],
+					garnishes: [garnishLine(ingredient.id)],
+				}),
+			);
 
 			const updated = (await drinksRepository.findById(createdDrink.id)) as Drink;
 
@@ -143,12 +162,14 @@ describe('Update Drink', () => {
 
 		it('should not be able to update a drink with a nonexistent garnish ingredient', async () => {
 			await expect(
-				service.execute({
-					id: createdDrink.id,
-					translations: updatedTranslations,
-					ingredients: [mainLine()],
-					garnishes: [garnishLine(new ObjectId().toString())],
-				}),
+				service.execute(
+					withActor({
+						id: createdDrink.id,
+						translations: updatedTranslations,
+						ingredients: [mainLine()],
+						garnishes: [garnishLine(new ObjectId().toString())],
+					}),
+				),
 			).rejects.toBeInstanceOf(BadRequestError);
 		});
 
@@ -163,7 +184,7 @@ describe('Update Drink', () => {
 			},
 		])('should not update the drink when $title, even when called directly', async ({ build }) => {
 			await expect(
-				service.execute({ id: createdDrink.id, translations: updatedTranslations, ...build() }),
+				service.execute(withActor({ id: createdDrink.id, translations: updatedTranslations, ...build() })),
 			).rejects.toBeInstanceOf(BadRequestError);
 
 			const untouched = (await drinksRepository.findById(createdDrink.id)) as Drink;
@@ -190,13 +211,15 @@ describe('Update Drink', () => {
 		it('should write the method from the plan and store it', async () => {
 			const preparation = buildPlan();
 
-			await service.execute({
-				id: createdDrink.id,
-				translations: namesOnly,
-				ingredients: [line()],
-				garnishes: [],
-				preparation,
-			});
+			await service.execute(
+				withActor({
+					id: createdDrink.id,
+					translations: namesOnly,
+					ingredients: [line()],
+					garnishes: [],
+					preparation,
+				}),
+			);
 
 			const updated = (await drinksRepository.findById(createdDrink.id)) as Drink;
 			expect(updated.translations.en.method).toBe('In a rocks glass, add syrup.');
@@ -205,16 +228,18 @@ describe('Update Drink', () => {
 		});
 
 		it('should replace the stored plan with the new one', async () => {
-			await drinksRepository.update({ id: createdDrink.id, preparation: buildPlan() });
+			await drinksRepository.update(withEditor({ id: createdDrink.id, preparation: buildPlan() }));
 			const replacement: PreparationPlan = { ...buildPlan(), servingGlass: 'highball' };
 
-			await service.execute({
-				id: createdDrink.id,
-				translations: namesOnly,
-				ingredients: [line()],
-				garnishes: [],
-				preparation: replacement,
-			});
+			await service.execute(
+				withActor({
+					id: createdDrink.id,
+					translations: namesOnly,
+					ingredients: [line()],
+					garnishes: [],
+					preparation: replacement,
+				}),
+			);
 
 			const updated = (await drinksRepository.findById(createdDrink.id)) as Drink;
 			expect(updated.preparation).toEqual(replacement);
@@ -222,14 +247,16 @@ describe('Update Drink', () => {
 		});
 
 		it('should remove the stored plan when the method is written by hand', async () => {
-			await drinksRepository.update({ id: createdDrink.id, preparation: buildPlan() });
+			await drinksRepository.update(withEditor({ id: createdDrink.id, preparation: buildPlan() }));
 
-			await service.execute({
-				id: createdDrink.id,
-				translations: updatedTranslations,
-				ingredients: [line()],
-				garnishes: [],
-			});
+			await service.execute(
+				withActor({
+					id: createdDrink.id,
+					translations: updatedTranslations,
+					ingredients: [line()],
+					garnishes: [],
+				}),
+			);
 
 			const updated = (await drinksRepository.findById(createdDrink.id)) as Drink;
 			expect(updated.translations).toEqual(updatedTranslations);
@@ -244,13 +271,15 @@ describe('Update Drink', () => {
 			};
 
 			await expect(
-				service.execute({
-					id: createdDrink.id,
-					translations: namesOnly,
-					ingredients: [line()],
-					garnishes: [],
-					preparation,
-				}),
+				service.execute(
+					withActor({
+						id: createdDrink.id,
+						translations: namesOnly,
+						ingredients: [line()],
+						garnishes: [],
+						preparation,
+					}),
+				),
 			).rejects.toBeInstanceOf(FieldValidationError);
 
 			const untouched = (await drinksRepository.findById(createdDrink.id)) as Drink;

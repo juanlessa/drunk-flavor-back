@@ -1,4 +1,6 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { FACTORY_CREATOR_ID } from '@/core/drinks/factories/authorship.factories';
+import { withEditor } from '@/core/drinks/factories/authorship.factories';
 import { ObjectId } from 'mongodb';
 import { DrinksRepository } from './Drinks.repository';
 import { DrinkModel } from '../entities/drink.model';
@@ -44,6 +46,7 @@ const buildIngredient = (): Ingredient => ({
 });
 
 const buildDrink = (name: { en: string; pt: string }): CreateDrink => ({
+	createdBy: FACTORY_CREATOR_ID,
 	translations: {
 		en: { name: name.en, method: 'Stir' },
 		pt: { name: name.pt, method: 'Mexa' },
@@ -120,15 +123,17 @@ describe('DrinksRepository (integration)', () => {
 
 	it('throws NotFoundError on update/delete of a missing id and returns the updated doc on success', async () => {
 		await expect(
-			repository.update({ id: new ObjectId().toString(), translations: { en: { name: 'X' } } }),
+			repository.update(withEditor({ id: new ObjectId().toString(), translations: { en: { name: 'X' } } })),
 		).rejects.toBeInstanceOf(NotFoundError);
 		await expect(repository.delete(new ObjectId().toString())).rejects.toBeInstanceOf(NotFoundError);
 
 		const created = await repository.create(buildDrink({ en: 'Daiquiri', pt: 'Daiquiri BR' }));
-		const updated = await repository.update({
-			id: created.id,
-			translations: { en: { name: 'Daiquiri Reserve' } },
-		});
+		const updated = await repository.update(
+			withEditor({
+				id: created.id,
+				translations: { en: { name: 'Daiquiri Reserve' } },
+			}),
+		);
 		expect(updated.translations.en.name).toBe('Daiquiri Reserve');
 	});
 
@@ -162,7 +167,7 @@ describe('DrinksRepository (integration)', () => {
 		const other = await repository.create(buildDrink({ en: 'Paloma', pt: 'Paloma BR' }));
 
 		await expect(
-			repository.update({ id: other.id, translations: { en: { name: 'Margarita' } } }),
+			repository.update(withEditor({ id: other.id, translations: { en: { name: 'Margarita' } } })),
 		).rejects.toBeInstanceOf(ConflictError);
 	});
 
@@ -317,12 +322,14 @@ describe('DrinksRepository (integration)', () => {
 			});
 			const next = buildIngredient();
 
-			const replaced = await repository.update({
-				id: created.id,
-				ingredients: [createDrinkIngredientFactory(next, { quantity: 10 })],
-				garnishes: [{ ingredient: next, amount: { type: 'qualitative', qualifier: 'as_needed' } }],
-			});
-			const cleared = await repository.update({ id: created.id, garnishes: [] });
+			const replaced = await repository.update(
+				withEditor({
+					id: created.id,
+					ingredients: [createDrinkIngredientFactory(next, { quantity: 10 })],
+					garnishes: [{ ingredient: next, amount: { type: 'qualitative', qualifier: 'as_needed' } }],
+				}),
+			);
+			const cleared = await repository.update(withEditor({ id: created.id, garnishes: [] }));
 
 			expect(replaced.ingredients).toHaveLength(1);
 			expect(replaced.ingredients[0].ingredient.id).toBe(next.id);
@@ -338,7 +345,9 @@ describe('DrinksRepository (integration)', () => {
 				garnishes: [garnish],
 			});
 
-			const updated = await repository.update({ id: created.id, translations: { en: { name: 'Mojito 2' } } });
+			const updated = await repository.update(
+				withEditor({ id: created.id, translations: { en: { name: 'Mojito 2' } } }),
+			);
 
 			expect(updated.garnishes).toHaveLength(1);
 		});
@@ -359,7 +368,7 @@ describe('DrinksRepository (integration)', () => {
 		it('are recalculated when a name changes', async () => {
 			const created = await repository.create(buildDrink({ en: 'Mojito', pt: 'Mojito BR' }));
 
-			await repository.update({ id: created.id, translations: { en: { name: 'Cosmopolitan' } } });
+			await repository.update(withEditor({ id: created.id, translations: { en: { name: 'Cosmopolitan' } } }));
 
 			const keys = (await rawSearchKeys(created.id)) ?? [];
 			expect(keys).toEqual(expect.arrayContaining(['cosmopolitan', 'mojito', 'br']));
@@ -370,7 +379,7 @@ describe('DrinksRepository (integration)', () => {
 			const created = await repository.create(buildDrink({ en: 'Mojito', pt: 'Mojito BR' }));
 			const before = await rawSearchKeys(created.id);
 
-			await repository.update({ id: created.id, garnishes: [] });
+			await repository.update(withEditor({ id: created.id, garnishes: [] }));
 
 			expect(await rawSearchKeys(created.id)).toEqual(before);
 		});
@@ -411,7 +420,9 @@ describe('DrinksRepository (integration)', () => {
 
 		it('treats an id that is not an object id as a document that does not exist', async () => {
 			expect(await repository.findById(invalidId)).toBeNull();
-			await expect(repository.update({ id: invalidId, garnishes: [] })).rejects.toBeInstanceOf(NotFoundError);
+			await expect(repository.update(withEditor({ id: invalidId, garnishes: [] }))).rejects.toBeInstanceOf(
+				NotFoundError,
+			);
 			await expect(repository.delete(invalidId)).rejects.toBeInstanceOf(NotFoundError);
 		});
 
@@ -423,9 +434,9 @@ describe('DrinksRepository (integration)', () => {
 			{ title: 'without touching the names', data: { garnishes: [] } },
 			{ title: 'while changing the names', data: { translations: { en: { name: 'Other' } } } },
 		])('throws NotFoundError when updating a missing document {{title}}', async ({ data }) => {
-			await expect(repository.update({ id: new ObjectId().toString(), ...data })).rejects.toBeInstanceOf(
-				NotFoundError,
-			);
+			await expect(
+				repository.update(withEditor({ id: new ObjectId().toString(), ...data })),
+			).rejects.toBeInstanceOf(NotFoundError);
 		});
 
 		it('deletes the document and returns it', async () => {
@@ -475,7 +486,7 @@ describe('DrinksRepository (integration)', () => {
 		it('sets the plan of a drink that had none', async () => {
 			const created = await repository.create(buildDrink({ en: 'Fizz', pt: 'Fizz BR' }));
 
-			const updated = await repository.update({ id: created.id, preparation: buildPlan() });
+			const updated = await repository.update(withEditor({ id: created.id, preparation: buildPlan() }));
 
 			expect(updated.preparation).toEqual(buildPlan());
 		});
@@ -491,7 +502,7 @@ describe('DrinksRepository (integration)', () => {
 				actions: [{ type: 'stir', seconds: 20 }],
 			};
 
-			const updated = await repository.update({ id: created.id, preparation: replacement });
+			const updated = await repository.update(withEditor({ id: created.id, preparation: replacement }));
 
 			expect(updated.preparation).toEqual(replacement);
 			expect(await rawPlan(created.id)).toEqual({
@@ -507,7 +518,7 @@ describe('DrinksRepository (integration)', () => {
 				preparation: buildPlan(),
 			});
 
-			const updated = await repository.update({ id: created.id, preparation: null });
+			const updated = await repository.update(withEditor({ id: created.id, preparation: null }));
 
 			expect(updated.preparation).toBeUndefined();
 			expect(await rawPlan(created.id)).toBeUndefined();
@@ -520,7 +531,9 @@ describe('DrinksRepository (integration)', () => {
 				preparation: buildPlan(),
 			});
 
-			const updated = await repository.update({ id: created.id, translations: { en: { name: 'Sour 2' } } });
+			const updated = await repository.update(
+				withEditor({ id: created.id, translations: { en: { name: 'Sour 2' } } }),
+			);
 
 			expect(updated.preparation).toEqual(buildPlan());
 		});
@@ -562,7 +575,9 @@ describe('DrinksRepository (integration)', () => {
 		it('follows the recipe when an update replaces the ingredients', async () => {
 			const created = await repository.create(recipe('Gimlet', [gin, lime]));
 
-			await repository.update({ id: created.id, ingredients: recipe('Gimlet', [sugar], [gin]).ingredients });
+			await repository.update(
+				withEditor({ id: created.id, ingredients: recipe('Gimlet', [sugar], [gin]).ingredients }),
+			);
 
 			expect(await rawRequiredIds(created.id)).toEqual([sugar.id]);
 			expect(await repository.findByIngredients({ ingredientIds: [gin.id, lime.id], maxMissing: 'any' })).toEqual(
@@ -578,7 +593,7 @@ describe('DrinksRepository (integration)', () => {
 		it('keeps the ids when an update does not touch the ingredients', async () => {
 			const created = await repository.create(recipe('Gimlet', [gin, lime]));
 
-			await repository.update({ id: created.id, translations: { en: { name: 'Gimlet renamed' } } });
+			await repository.update(withEditor({ id: created.id, translations: { en: { name: 'Gimlet renamed' } } }));
 
 			expect(await rawRequiredIds(created.id)).toEqual([gin.id, lime.id]);
 		});
@@ -789,7 +804,7 @@ describe('DrinksRepository (integration)', () => {
 		it('moves a drink to the top of the recently changed ones when it is edited', async () => {
 			const [middle] = await repository.findAll({ search: { name: 'Middle' } });
 
-			await repository.update({ id: middle!.id, translations: { en: { name: 'Middle edited' } } });
+			await repository.update(withEditor({ id: middle!.id, translations: { en: { name: 'Middle edited' } } }));
 
 			const sorted = await repository.findAll({ sort: { updatedAt: 'desc' } });
 			expect(namesOf(sorted)[0]).toBe('Middle edited');

@@ -5,6 +5,7 @@ import {
 	resolveTokensRepository,
 	resolveUsersRepository,
 } from '@/core/accounts/infra/mongo/container';
+import { resolveDrinksModule } from '@/core/drinks/public';
 import { resolveEngagementModule } from '@/core/engagement/public';
 import { resolveTransactionManager } from '@/infrastructure/mongo/transactions';
 import { resolveStorageProvider } from '@/shared/providers/storage';
@@ -18,6 +19,7 @@ const closeUserService = new CloseUserService(
 	resolveTokensRepository(),
 	resolveAdministrativeEventsRepository(),
 	resolveEngagementModule(),
+	resolveDrinksModule(),
 	resolveTransactionManager(),
 	resolveStorageProvider(),
 	resolveSessionVersionMarkerStore(),

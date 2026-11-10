@@ -1,3 +1,6 @@
 import { UnitPermissionModel } from '../entities/unit';
 
-export type UnitSubject = ['create' | 'delete' | 'list' | 'get' | 'update' | 'manage', 'Unit' | UnitPermissionModel];
+export type UnitSubject = [
+	'create' | 'delete' | 'list' | 'listWithAuthorship' | 'get' | 'getWithAuthorship' | 'update' | 'manage',
+	'Unit' | UnitPermissionModel,
+];

@@ -1,6 +1,6 @@
 import { IngredientPermissionModel } from '../entities/ingredient';
 
 export type IngredientSubject = [
-	'create' | 'delete' | 'list' | 'get' | 'update' | 'manage',
+	'create' | 'delete' | 'list' | 'listWithAuthorship' | 'get' | 'getWithAuthorship' | 'update' | 'manage',
 	'Ingredient' | IngredientPermissionModel,
 ];

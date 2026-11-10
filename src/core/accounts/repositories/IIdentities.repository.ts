@@ -8,4 +8,6 @@ export interface IIdentitiesRepository {
 	touchLastLogin(id: string, date: Date): Promise<void>;
 	findByUserId(userId: string): Promise<Identity[]>;
 	deleteByUserId(userId: string): Promise<void>;
+	/** Removes the identity a user has with a provider. Returns whether there was one to remove. */
+	deleteByUserIdAndProvider(userId: string, provider: IdentityProvider): Promise<boolean>;
 }

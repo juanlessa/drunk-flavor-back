@@ -1,6 +1,7 @@
-import { CreateUnitDTO } from '@/core/drinks/useCases/units/create/createUnit.dtos';
+import { UnitData } from '@/core/drinks/dtos/unit.dtos';
 import { resolveCreateUnitService } from '@/core/drinks/useCases/units/create/createUnit.container';
 import { Unit } from '@/core/drinks/entities/unit.entity';
+import { Actor } from '@/shared/accessControl/actor.types';
 import { logger } from '@/shared/providers/logger';
 
 const units = [
@@ -91,18 +92,18 @@ const units = [
 		allowDecimal: false,
 		kind: 'count',
 	},
-] as const satisfies readonly CreateUnitDTO[];
+] as const satisfies readonly UnitData[];
 
 type UnitEnName = (typeof units)[number]['translations']['en']['name'];
 
 /** Created units keyed by their English singular name, for ingredients.ts to reference. */
 export const unitsMap = new Map<UnitEnName, Unit>();
 
-export async function insertUnits() {
+export async function insertUnits(actor: Actor) {
 	try {
 		const service = resolveCreateUnitService();
 		for (const unit of units) {
-			const created = await service.execute(unit);
+			const created = await service.execute({ ...unit, actor });
 			unitsMap.set(unit.translations.en.name, created);
 		}
 		logger.info('Units inserted successfully');

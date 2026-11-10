@@ -56,4 +56,11 @@ export class IdentitiesRepositoryInMemory implements IIdentitiesRepository {
 	async deleteByUserId(userId: string): Promise<void> {
 		this.collection = this.collection.filter((record) => record.userId !== userId);
 	}
+
+	async deleteByUserIdAndProvider(userId: string, provider: IdentityProvider): Promise<boolean> {
+		const remaining = this.collection.filter((record) => record.userId !== userId || record.provider !== provider);
+		const removed = remaining.length < this.collection.length;
+		this.collection = remaining;
+		return removed;
+	}
 }

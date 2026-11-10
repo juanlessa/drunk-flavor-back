@@ -1,4 +1,6 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { FACTORY_CREATOR_ID } from '@/core/drinks/factories/authorship.factories';
+import { withEditor } from '@/core/drinks/factories/authorship.factories';
 import { ObjectId } from 'mongodb';
 import { UnitsRepository } from './Units.repository';
 import { UnitModel } from '../entities/unit.model';
@@ -6,6 +8,7 @@ import { CreateUnit } from '@/core/drinks/dtos/unit.dtos';
 import { ConflictError, NotFoundError } from '@/shared/error/error.lib';
 
 const buildUnit = (name: { en: string; pt: string }): CreateUnit => ({
+	createdBy: FACTORY_CREATOR_ID,
 	translations: {
 		en: { name: name.en, namePlural: `${name.en}s` },
 		pt: { name: name.pt, namePlural: `${name.pt}s` },
@@ -50,13 +53,13 @@ describe('UnitsRepository (integration)', () => {
 	});
 
 	it('throws NotFoundError on update/delete of a missing id and returns the updated doc on success', async () => {
-		await expect(repository.update({ id: new ObjectId().toString(), allowDecimal: false })).rejects.toBeInstanceOf(
-			NotFoundError,
-		);
+		await expect(
+			repository.update(withEditor({ id: new ObjectId().toString(), allowDecimal: false })),
+		).rejects.toBeInstanceOf(NotFoundError);
 		await expect(repository.delete(new ObjectId().toString())).rejects.toBeInstanceOf(NotFoundError);
 
 		const created = await repository.create(buildUnit({ en: 'milliliter', pt: 'mililitro' }));
-		const updated = await repository.update({ id: created.id, allowDecimal: false });
+		const updated = await repository.update(withEditor({ id: created.id, allowDecimal: false }));
 		expect(updated.allowDecimal).toBe(false);
 	});
 
@@ -90,7 +93,7 @@ describe('UnitsRepository (integration)', () => {
 		const other = await repository.create(buildUnit({ en: 'centiliter', pt: 'centilitro' }));
 
 		await expect(
-			repository.update({ id: other.id, translations: { en: { name: 'milliliter' } } }),
+			repository.update(withEditor({ id: other.id, translations: { en: { name: 'milliliter' } } })),
 		).rejects.toBeInstanceOf(ConflictError);
 	});
 
@@ -148,8 +151,8 @@ describe('UnitsRepository (integration)', () => {
 				useIngredientName: true,
 			});
 
-			const untouched = await repository.update({ id: created.id, allowDecimal: false });
-			const disabled = await repository.update({ id: created.id, useIngredientName: false });
+			const untouched = await repository.update(withEditor({ id: created.id, allowDecimal: false }));
+			const disabled = await repository.update(withEditor({ id: created.id, useIngredientName: false }));
 
 			expect(untouched.useIngredientName).toBe(true);
 			expect(disabled.useIngredientName).toBe(false);
@@ -161,7 +164,7 @@ describe('UnitsRepository (integration)', () => {
 
 		it('treats an id that is not an object id as a document that does not exist', async () => {
 			expect(await repository.findById(invalidId)).toBeNull();
-			await expect(repository.update({ id: invalidId, allowDecimal: false })).rejects.toBeInstanceOf(
+			await expect(repository.update(withEditor({ id: invalidId, allowDecimal: false }))).rejects.toBeInstanceOf(
 				NotFoundError,
 			);
 			await expect(repository.delete(invalidId)).rejects.toBeInstanceOf(NotFoundError);
@@ -179,9 +182,9 @@ describe('UnitsRepository (integration)', () => {
 			},
 			{ title: 'while changing the symbol', data: { symbol: 'ml' } },
 		])('throws NotFoundError when updating a missing document {{title}}', async ({ data }) => {
-			await expect(repository.update({ id: new ObjectId().toString(), ...data })).rejects.toBeInstanceOf(
-				NotFoundError,
-			);
+			await expect(
+				repository.update(withEditor({ id: new ObjectId().toString(), ...data })),
+			).rejects.toBeInstanceOf(NotFoundError);
 		});
 
 		it('deletes the document and returns it', async () => {
@@ -222,7 +225,7 @@ describe('UnitsRepository (integration)', () => {
 		it('sets a symbol on a unit that had none', async () => {
 			const created = await createWithSymbol();
 
-			const updated = await repository.update({ id: created.id, symbol: 'L' });
+			const updated = await repository.update(withEditor({ id: created.id, symbol: 'L' }));
 
 			expect(updated.symbol).toBe('L');
 			expect(await rawSearchKeys(created.id)).toEqual(['liter', 'liters', 'litro', 'litros', 'l']);
@@ -231,7 +234,7 @@ describe('UnitsRepository (integration)', () => {
 		it('replaces the symbol and the keys follow', async () => {
 			const created = await createWithSymbol('L');
 
-			const updated = await repository.update({ id: created.id, symbol: 'lt' });
+			const updated = await repository.update(withEditor({ id: created.id, symbol: 'lt' }));
 
 			expect(updated.symbol).toBe('lt');
 			const keys = (await rawSearchKeys(created.id)) ?? [];
@@ -242,7 +245,7 @@ describe('UnitsRepository (integration)', () => {
 		it('removes the symbol with null, and the keys forget it', async () => {
 			const created = await createWithSymbol('L');
 
-			const updated = await repository.update({ id: created.id, symbol: null });
+			const updated = await repository.update(withEditor({ id: created.id, symbol: null }));
 
 			expect(updated).not.toHaveProperty('symbol');
 			expect(await UnitModel.collection.findOne({ _id: new ObjectId(created.id) })).not.toHaveProperty('symbol');
@@ -253,7 +256,7 @@ describe('UnitsRepository (integration)', () => {
 			const created = await createWithSymbol('L');
 			const before = await rawSearchKeys(created.id);
 
-			const updated = await repository.update({ id: created.id, allowDecimal: false });
+			const updated = await repository.update(withEditor({ id: created.id, allowDecimal: false }));
 
 			expect(updated.symbol).toBe('L');
 			expect(updated.allowDecimal).toBe(false);
@@ -263,7 +266,9 @@ describe('UnitsRepository (integration)', () => {
 		it('keeps the symbol in the keys when only a name changes', async () => {
 			const created = await createWithSymbol('L');
 
-			await repository.update({ id: created.id, translations: { en: { name: 'litre', namePlural: 'litres' } } });
+			await repository.update(
+				withEditor({ id: created.id, translations: { en: { name: 'litre', namePlural: 'litres' } } }),
+			);
 
 			expect(await rawSearchKeys(created.id)).toEqual(['litre', 'litres', 'litro', 'litros', 'l']);
 		});

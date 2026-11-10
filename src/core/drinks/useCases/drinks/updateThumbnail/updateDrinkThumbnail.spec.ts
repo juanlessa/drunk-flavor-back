@@ -1,4 +1,5 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { withActor, withCreator, withEditor } from '@/core/drinks/factories/authorship.factories';
 import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Ingredients.repository';
 import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Units.repository';
 import { ObjectId } from 'mongodb';
@@ -60,17 +61,23 @@ describe('Update Drink', () => {
 		storageProvider = new MockStorageProvider();
 		service = new UpdateDrinkThumbnailService(drinksRepository, storageProvider);
 
-		const category = await categoriesRepository.create({ translations: categoryTranslations, isAlcoholic: false });
+		const category = await categoriesRepository.create(
+			withCreator({ translations: categoryTranslations, isAlcoholic: false }),
+		);
 		const unit = await unitsRepository.create(createUnitFactory());
-		ingredient = await ingredientsRepository.create({
-			translations: translationsIngredient,
-			category: category,
-			units: [unit],
-		});
-		createdDrink = await drinksRepository.create({
-			translations,
-			ingredients: [createDrinkIngredientFactory(ingredient, { quantity: 30 })],
-		});
+		ingredient = await ingredientsRepository.create(
+			withCreator({
+				translations: translationsIngredient,
+				category: category,
+				units: [unit],
+			}),
+		);
+		createdDrink = await drinksRepository.create(
+			withCreator({
+				translations,
+				ingredients: [createDrinkIngredientFactory(ingredient, { quantity: 30 })],
+			}),
+		);
 	});
 
 	afterAll(async () => {
@@ -78,12 +85,14 @@ describe('Update Drink', () => {
 	});
 
 	it('should be able to update a drink thumbnail', async () => {
-		await service.execute({
-			drinkId: createdDrink.id,
-			name: fileName,
-			mimetype: fileMimetype,
-			fileStream: mockedFileStream,
-		});
+		await service.execute(
+			withActor({
+				drinkId: createdDrink.id,
+				name: fileName,
+				mimetype: fileMimetype,
+				fileStream: mockedFileStream,
+			}),
+		);
 
 		const findUpdatedDrink = (await drinksRepository.findById(createdDrink.id)) as Drink;
 		const drinkId = createdDrink.id;
@@ -102,49 +111,59 @@ describe('Update Drink', () => {
 
 	it('should not be able to update the thumbnail to a non-image file', async () => {
 		await expect(
-			service.execute({
-				drinkId: new ObjectId().toString(),
-				name: fileName,
-				mimetype: 'application/json',
-				fileStream: mockedFileStream,
-			}),
+			service.execute(
+				withActor({
+					drinkId: new ObjectId().toString(),
+					name: fileName,
+					mimetype: 'application/json',
+					fileStream: mockedFileStream,
+				}),
+			),
 		).rejects.toBeInstanceOf(BadRequestError);
 	});
 
 	it('should not be able to update the thumbnail of a nonexistent drink', async () => {
 		await expect(
-			service.execute({
-				drinkId: new ObjectId().toString(),
-				name: fileName,
-				mimetype: fileMimetype,
-				fileStream: mockedFileStream,
-			}),
+			service.execute(
+				withActor({
+					drinkId: new ObjectId().toString(),
+					name: fileName,
+					mimetype: fileMimetype,
+					fileStream: mockedFileStream,
+				}),
+			),
 		).rejects.toBeInstanceOf(NotFoundError);
 	});
 
 	it('should be able to delete the existing drink thumbnail during the update', async () => {
-		await drinksRepository.update({
-			id: createdDrink.id,
-			thumbnail: { name: fileMimetype, mimetype: fileMimetype, url: '' },
-		});
+		await drinksRepository.update(
+			withEditor({
+				id: createdDrink.id,
+				thumbnail: { name: fileMimetype, mimetype: fileMimetype, url: '' },
+			}),
+		);
 
-		await service.execute({
-			drinkId: createdDrink.id,
-			name: fileName,
-			mimetype: fileMimetype,
-			fileStream: mockedFileStream,
-		});
+		await service.execute(
+			withActor({
+				drinkId: createdDrink.id,
+				name: fileName,
+				mimetype: fileMimetype,
+				fileStream: mockedFileStream,
+			}),
+		);
 
 		expect(storageProvider.deleteFile).toHaveBeenCalledTimes(1);
 	});
 
 	it('should set the file extension from the mime type regardless of the uploaded name', async () => {
-		await service.execute({
-			drinkId: createdDrink.id,
-			name: 'imageFileNameWithoutExtension',
-			mimetype: fileMimetype,
-			fileStream: mockedFileStream,
-		});
+		await service.execute(
+			withActor({
+				drinkId: createdDrink.id,
+				name: 'imageFileNameWithoutExtension',
+				mimetype: fileMimetype,
+				fileStream: mockedFileStream,
+			}),
+		);
 
 		const foundDrink = (await drinksRepository.findById(createdDrink.id)) as Drink;
 		const drinkThumbnail = foundDrink.thumbnail as FileMetadata;

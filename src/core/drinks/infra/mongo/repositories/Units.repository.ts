@@ -1,7 +1,7 @@
 import { CreateUnit, FindUnitByName, UpdateUnit } from '@/core/drinks/dtos/unit.dtos';
 import { Unit } from '@/core/drinks/entities/unit.entity';
 import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
-import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
+import { buildQuery, findOwnedFirst } from '@/infrastructure/mongo/helpers/query.helpers';
 import { toMongoUpdateSet } from '@/infrastructure/mongo/helpers/mapper.helpers';
 import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
 import { SEARCH_KEYS_FIELD } from '@/infrastructure/mongo/constants/search.constants';
@@ -10,6 +10,7 @@ import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
 import { UNIT_UNIQUE_INDEXES, UnitModel, UnitPersistence } from '../entities/unit.model';
+import { CREATED_BY_FIELD, clearAuthorshipByUser } from '../helpers/authorship.helpers';
 import { findByTranslatedName, getSortCollation } from '../helpers/translations.helpers';
 import { UnitMapper } from '../mappers/unit.mapper';
 
@@ -19,6 +20,7 @@ export class UnitsRepository implements IUnitsRepository {
 			const persistenceData = UnitMapper.toPersistence(data);
 			const document = await UnitModel.create({
 				...persistenceData,
+				updated_by: persistenceData.created_by,
 				search_keys: buildTranslationsSearchKeys(persistenceData.translations, UNIT_PERSISTENCE_SEARCH_FIELDS, [
 					persistenceData.symbol,
 				]),
@@ -99,6 +101,18 @@ export class UnitsRepository implements IUnitsRepository {
 			.lean<UnitPersistence[]>()
 			.exec();
 		return documents.map(UnitMapper.toDomain);
+	}
+
+	async findAllOwnedFirst(query: QueryParams, userId: string): Promise<Unit[]> {
+		const persistenceQuery = UnitMapper.toPersistenceQuery(query);
+		const documents = await findOwnedFirst<UnitPersistence>(persistenceQuery, UnitModel, userId, CREATED_BY_FIELD, {
+			collation: getSortCollation(persistenceQuery.sort),
+		});
+		return documents.map(UnitMapper.toDomain);
+	}
+
+	clearCreatorByUser(userId: string): Promise<number> {
+		return clearAuthorshipByUser(UnitModel, userId);
 	}
 
 	private notFound(operation: string): NotFoundError {

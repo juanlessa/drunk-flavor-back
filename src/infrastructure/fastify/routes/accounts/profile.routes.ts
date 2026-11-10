@@ -10,6 +10,7 @@ import { deleteProfileController } from '@/core/accounts/useCases/profile/delete
 import { getProfileController } from '@/core/accounts/useCases/profile/get/getProfile.controller';
 import { linkGoogleIdentityController } from '@/core/accounts/useCases/profile/linkGoogleIdentity/linkGoogleIdentity.controller';
 import { linkGoogleIdentitySchema } from '@/core/accounts/useCases/profile/linkGoogleIdentity/linkGoogleIdentity.schema';
+import { unlinkGoogleIdentityController } from '@/core/accounts/useCases/profile/unlinkGoogleIdentity/unlinkGoogleIdentity.controller';
 import { reauthenticateGoogleController } from '@/core/accounts/useCases/profile/reauthenticateGoogle/reauthenticateGoogle.controller';
 import { reauthenticateGoogleSchema } from '@/core/accounts/useCases/profile/reauthenticateGoogle/reauthenticateGoogle.schema';
 import { reauthenticatePasswordController } from '@/core/accounts/useCases/profile/reauthenticatePassword/reauthenticatePassword.controller';
@@ -61,6 +62,20 @@ const routes: Routes = (server) => {
 		linkGoogleIdentityController,
 	);
 
+	server.delete(
+		'/me/identities/google',
+		{
+			config: { rateLimit: { max: 5, timeWindow: ONE_MINUTE, ban: BAN_THRESHOLD } },
+			schema: {
+				tags: ['Profile'],
+				summary: 'Disconnect Google',
+				description:
+					'Removes the Google sign-in from the account. Requires a password, so the account keeps a way to sign in, and a recent authentication.',
+			},
+			preValidation: [verifyAndRenewToken, requireRecentAuthentication],
+		},
+		unlinkGoogleIdentityController,
+	);
 	server.withTypeProvider<ZodTypeProvider>().post(
 		'/me/reauthentication/google',
 		{

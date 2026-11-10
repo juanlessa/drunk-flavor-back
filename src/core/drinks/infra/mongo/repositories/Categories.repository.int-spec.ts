@@ -1,4 +1,6 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { FACTORY_CREATOR_ID } from '@/core/drinks/factories/authorship.factories';
+import { withEditor } from '@/core/drinks/factories/authorship.factories';
 import { ObjectId } from 'mongodb';
 import { CategoriesRepository } from './Categories.repository';
 import { CategoryModel } from '../entities/category.model';
@@ -6,6 +8,7 @@ import { CreateCategory } from '@/core/drinks/dtos/category.dtos';
 import { ConflictError, NotFoundError } from '@/shared/error/error.lib';
 
 const buildCategory = (name: { en: string; pt: string }): CreateCategory => ({
+	createdBy: FACTORY_CREATOR_ID,
 	translations: { en: { name: name.en }, pt: { name: name.pt } },
 	isAlcoholic: false,
 });
@@ -46,13 +49,13 @@ describe('CategoriesRepository (integration)', () => {
 	});
 
 	it('throws NotFoundError on update/delete of a missing id and returns the updated doc on success', async () => {
-		await expect(repository.update({ id: new ObjectId().toString(), isAlcoholic: true })).rejects.toBeInstanceOf(
-			NotFoundError,
-		);
+		await expect(
+			repository.update(withEditor({ id: new ObjectId().toString(), isAlcoholic: true })),
+		).rejects.toBeInstanceOf(NotFoundError);
 		await expect(repository.delete(new ObjectId().toString())).rejects.toBeInstanceOf(NotFoundError);
 
 		const created = await repository.create(buildCategory({ en: 'Citrus', pt: 'Cítrico' }));
-		const updated = await repository.update({ id: created.id, isAlcoholic: true });
+		const updated = await repository.update(withEditor({ id: created.id, isAlcoholic: true }));
 		expect(updated.isAlcoholic).toBe(true);
 	});
 
@@ -86,7 +89,7 @@ describe('CategoriesRepository (integration)', () => {
 		const other = await repository.create(buildCategory({ en: 'Herbal', pt: 'Herbal' }));
 
 		await expect(
-			repository.update({ id: other.id, translations: { en: { name: 'Citrus' } } }),
+			repository.update(withEditor({ id: other.id, translations: { en: { name: 'Citrus' } } })),
 		).rejects.toBeInstanceOf(ConflictError);
 	});
 
@@ -122,7 +125,9 @@ describe('CategoriesRepository (integration)', () => {
 
 		it('treats an id that is not an object id as a document that does not exist', async () => {
 			expect(await repository.findById(invalidId)).toBeNull();
-			await expect(repository.update({ id: invalidId, isAlcoholic: true })).rejects.toBeInstanceOf(NotFoundError);
+			await expect(repository.update(withEditor({ id: invalidId, isAlcoholic: true }))).rejects.toBeInstanceOf(
+				NotFoundError,
+			);
 			await expect(repository.delete(invalidId)).rejects.toBeInstanceOf(NotFoundError);
 		});
 
@@ -134,9 +139,9 @@ describe('CategoriesRepository (integration)', () => {
 			{ title: 'without touching the names', data: { isAlcoholic: true } },
 			{ title: 'while changing the names', data: { translations: { en: { name: 'Other' } } } },
 		])('throws NotFoundError when updating a missing document {{title}}', async ({ data }) => {
-			await expect(repository.update({ id: new ObjectId().toString(), ...data })).rejects.toBeInstanceOf(
-				NotFoundError,
-			);
+			await expect(
+				repository.update(withEditor({ id: new ObjectId().toString(), ...data })),
+			).rejects.toBeInstanceOf(NotFoundError);
 		});
 
 		it('deletes the document and returns it', async () => {
@@ -164,10 +169,10 @@ describe('CategoriesRepository (integration)', () => {
 		it('follow a name change and are left alone by an update that does not touch the names', async () => {
 			const created = await repository.create(buildCategory({ en: 'Citrus', pt: 'Cítrico' }));
 
-			await repository.update({ id: created.id, translations: { en: { name: 'Tropical' } } });
+			await repository.update(withEditor({ id: created.id, translations: { en: { name: 'Tropical' } } }));
 			expect(await rawSearchKeys(created.id)).toEqual(['tropical', 'citrico']);
 
-			await repository.update({ id: created.id, isAlcoholic: true });
+			await repository.update(withEditor({ id: created.id, isAlcoholic: true }));
 			expect(await rawSearchKeys(created.id)).toEqual(['tropical', 'citrico']);
 		});
 

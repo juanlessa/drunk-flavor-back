@@ -15,7 +15,10 @@ describe('Get Unit', () => {
 	});
 	it('gets an existing unit', async () => {
 		const created = await repository.create(createUnitFactory());
-		expect(await service.execute({ id: created.id })).toEqual(created);
+		const found = await service.execute({ id: created.id });
+		expect(found).toMatchObject({ id: created.id, translations: created.translations });
+		expect(found).not.toHaveProperty('createdBy');
+		expect(found).not.toHaveProperty('updatedBy');
 	});
 	it('rejects a nonexistent unit', async () => {
 		await expect(service.execute({ id: new ObjectId().toString() })).rejects.toBeInstanceOf(NotFoundError);

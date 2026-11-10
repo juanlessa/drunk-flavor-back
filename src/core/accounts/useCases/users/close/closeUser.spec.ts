@@ -22,6 +22,7 @@ import { env } from '@/env';
 import { Actor } from '@/shared/accessControl/actor.types';
 import { Roles } from '@/shared/accessControl/roles';
 import { ForbiddenError, NotFoundError } from '@/shared/error/error.lib';
+import { IDrinksModule } from '@/core/drinks/public';
 import { IEngagementModule } from '@/core/engagement/public';
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
 import { MockStorageProvider } from '@/shared/providers/storage/implementations/MockStorage.provider';
@@ -35,6 +36,7 @@ let credentialsRepository: ICredentialsRepository;
 let identitiesRepository: IIdentitiesRepository;
 let administrativeEventsRepository: AdministrativeEventsRepositoryInMemory;
 let engagementModule: IEngagementModule;
+let drinksModule: IDrinksModule;
 let storageProvider: MockStorageProvider;
 let service: CloseUserService;
 
@@ -66,6 +68,11 @@ describe('Close User', () => {
 		identitiesRepository = new IdentitiesRepositoryInMemory();
 		administrativeEventsRepository = new AdministrativeEventsRepositoryInMemory();
 		engagementModule = { deleteCommentsByUser: vi.fn().mockResolvedValue(0) };
+		drinksModule = {
+			findDrinkById: vi.fn(),
+			applyRatingDelta: vi.fn(),
+			clearCreatorByUser: vi.fn().mockResolvedValue(0),
+		};
 		storageProvider = new MockStorageProvider();
 		service = new CloseUserService(
 			usersRepository,
@@ -74,6 +81,7 @@ describe('Close User', () => {
 			tokensRepository,
 			administrativeEventsRepository,
 			engagementModule,
+			drinksModule,
 			new FakeTransactionManager(),
 			storageProvider,
 			new SessionVersionMarkerStoreInMemory(),
@@ -87,6 +95,7 @@ describe('Close User', () => {
 
 		expect(await usersRepository.findById(createdUser.id)).toBeNull();
 		expect(engagementModule.deleteCommentsByUser).toHaveBeenCalledWith(createdUser.id);
+		expect(drinksModule.clearCreatorByUser).toHaveBeenCalledWith(createdUser.id);
 		expect(administrativeEventsRepository.collection).toEqual([
 			expect.objectContaining({
 				actorId: admin.id,
@@ -168,5 +177,27 @@ describe('Close User', () => {
 		await service.execute({ id: admin.id, actor: owner, reason });
 
 		expect(await usersRepository.findById(admin.id)).toBeNull();
+	});
+
+	it('does not touch the catalog when the actor may not close the user', async () => {
+		const createdUser = await usersRepository.create(userData);
+
+		await expect(service.execute({ id: createdUser.id, actor: member, reason })).rejects.toBeInstanceOf(
+			ForbiddenError,
+		);
+
+		expect(drinksModule.clearCreatorByUser).not.toHaveBeenCalled();
+	});
+
+	it('keeps the account and records no closure when the catalog cannot be anonymized', async () => {
+		const createdUser = await usersRepository.create(userData);
+		vi.mocked(drinksModule.clearCreatorByUser).mockRejectedValueOnce(new Error('catalog unavailable'));
+
+		await expect(service.execute({ id: createdUser.id, actor: admin, reason })).rejects.toThrow(
+			'catalog unavailable',
+		);
+
+		expect(await usersRepository.findById(createdUser.id)).not.toBeNull();
+		expect(administrativeEventsRepository.collection).toHaveLength(0);
 	});
 });

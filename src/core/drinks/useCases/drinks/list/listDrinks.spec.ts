@@ -1,4 +1,5 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { withCreator, withEditor } from '@/core/drinks/factories/authorship.factories';
 import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Ingredients.repository';
 import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Units.repository';
 import { ListDrinksService } from './ListDrinks.service';
@@ -59,31 +60,41 @@ describe('List Drinks', () => {
 
 		const category1 = await categoriesRepository.create(createCategory1);
 		const unit = await unitsRepository.create(createUnitFactory());
-		const ingredient1 = await ingredientsRepository.create({
-			translations: translationsIngredient1,
-			category: category1,
-			units: [unit],
-		});
-		const ingredient2 = await ingredientsRepository.create({
-			translations: translationsIngredient2,
-			category: category1,
-			units: [unit],
-		});
-		createdDrink1 = await drinksRepository.create({
-			translations: translationsDrink1,
-			ingredients: [createDrinkIngredientFactory(ingredient1, { quantity: 60 })],
-		});
-		await drinksRepository.create({
-			translations: translationsDrink2,
-			ingredients: [createDrinkIngredientFactory(ingredient2, { quantity: 60 })],
-		});
-		await drinksRepository.create({
-			translations: translationsDrink3,
-			ingredients: [
-				createDrinkIngredientFactory(ingredient1, { quantity: 30 }),
-				createDrinkIngredientFactory(ingredient2, { quantity: 30 }),
-			],
-		});
+		const ingredient1 = await ingredientsRepository.create(
+			withCreator({
+				translations: translationsIngredient1,
+				category: category1,
+				units: [unit],
+			}),
+		);
+		const ingredient2 = await ingredientsRepository.create(
+			withCreator({
+				translations: translationsIngredient2,
+				category: category1,
+				units: [unit],
+			}),
+		);
+		createdDrink1 = await drinksRepository.create(
+			withCreator({
+				translations: translationsDrink1,
+				ingredients: [createDrinkIngredientFactory(ingredient1, { quantity: 60 })],
+			}),
+		);
+		await drinksRepository.create(
+			withCreator({
+				translations: translationsDrink2,
+				ingredients: [createDrinkIngredientFactory(ingredient2, { quantity: 60 })],
+			}),
+		);
+		await drinksRepository.create(
+			withCreator({
+				translations: translationsDrink3,
+				ingredients: [
+					createDrinkIngredientFactory(ingredient1, { quantity: 30 }),
+					createDrinkIngredientFactory(ingredient2, { quantity: 30 }),
+				],
+			}),
+		);
 	});
 
 	afterAll(async () => {
@@ -120,11 +131,13 @@ describe('List Drinks', () => {
 	});
 
 	it('should be able to add the cover and thumbnail url to the found drinks', async () => {
-		await drinksRepository.update({
-			id: createdDrink1.id,
-			cover: { name: 'coverFile.png', mimetype: 'image/png', url: '' },
-			thumbnail: { name: 'thumbnailFile.jpeg', mimetype: 'image/jpeg', url: '' },
-		});
+		await drinksRepository.update(
+			withEditor({
+				id: createdDrink1.id,
+				cover: { name: 'coverFile.png', mimetype: 'image/png', url: '' },
+				thumbnail: { name: 'thumbnailFile.jpeg', mimetype: 'image/jpeg', url: '' },
+			}),
+		);
 
 		const drinksFound = await service.execute({ query: { limit: 3, page: 1 } });
 

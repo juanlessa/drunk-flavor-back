@@ -16,7 +16,7 @@ export class CreateIngredientService {
 		private unitsRepository: IUnitsRepository,
 	) {}
 
-	async execute({ translations, categoryId, unitIds, kind, brand }: CreateIngredientDTO): Promise<Ingredient> {
+	async execute({ translations, categoryId, unitIds, kind, brand, actor }: CreateIngredientDTO): Promise<Ingredient> {
 		assertIngredientBrand(kind ?? IngredientKinds.generic, brand, 'CreateIngredient.service.0');
 		const translationsName = mapToTranslationsName(translations);
 		const ingredientAlreadyExists = await this.ingredientsRepository.findByName(translationsName);
@@ -44,6 +44,7 @@ export class CreateIngredientService {
 			units,
 			kind,
 			brand,
+			createdBy: actor.id,
 		});
 	}
 }

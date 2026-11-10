@@ -1,4 +1,5 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { withCreator, withEditor } from '@/core/drinks/factories/authorship.factories';
 import { ObjectId } from 'mongodb';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Ingredients.repository';
@@ -46,13 +47,17 @@ describe('Get Drink', () => {
 		storageProvider = new MockStorageProvider();
 		service = new GetDrinkService(drinksRepository, storageProvider);
 
-		const category = await categoriesRepository.create({ translations: translationsCategory, isAlcoholic: false });
+		const category = await categoriesRepository.create(
+			withCreator({ translations: translationsCategory, isAlcoholic: false }),
+		);
 		const unit = await unitsRepository.create(createUnitFactory());
-		ingredient = await ingredientsRepository.create({
-			translations: translationsIngredient,
-			category: category,
-			units: [unit],
-		});
+		ingredient = await ingredientsRepository.create(
+			withCreator({
+				translations: translationsIngredient,
+				category: category,
+				units: [unit],
+			}),
+		);
 	});
 
 	afterAll(async () => {
@@ -60,10 +65,12 @@ describe('Get Drink', () => {
 	});
 
 	it('should be able to find a drink', async () => {
-		const createdDrink = await drinksRepository.create({
-			translations,
-			ingredients: [createDrinkIngredientFactory(ingredient, { quantity: 30 })],
-		});
+		const createdDrink = await drinksRepository.create(
+			withCreator({
+				translations,
+				ingredients: [createDrinkIngredientFactory(ingredient, { quantity: 30 })],
+			}),
+		);
 
 		const drinkFound = await service.execute({ id: createdDrink.id });
 
@@ -78,15 +85,19 @@ describe('Get Drink', () => {
 	});
 
 	it('should be able to add the cover and thumbnail url to a found drink', async () => {
-		const createdDrink = await drinksRepository.create({
-			translations,
-			ingredients: [createDrinkIngredientFactory(ingredient, { quantity: 30 })],
-		});
-		await drinksRepository.update({
-			id: createdDrink.id,
-			cover: { name: 'coverFile.png', mimetype: 'image/png', url: '' },
-			thumbnail: { name: 'thumbnailFile.jpeg', mimetype: 'image/jpeg', url: '' },
-		});
+		const createdDrink = await drinksRepository.create(
+			withCreator({
+				translations,
+				ingredients: [createDrinkIngredientFactory(ingredient, { quantity: 30 })],
+			}),
+		);
+		await drinksRepository.update(
+			withEditor({
+				id: createdDrink.id,
+				cover: { name: 'coverFile.png', mimetype: 'image/png', url: '' },
+				thumbnail: { name: 'thumbnailFile.jpeg', mimetype: 'image/jpeg', url: '' },
+			}),
+		);
 
 		const drinkFound = await service.execute({ id: createdDrink.id });
 

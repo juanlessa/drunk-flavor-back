@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { withCreator } from '@/core/drinks/factories/authorship.factories';
 import { ObjectId } from 'mongodb';
 import { CategoriesRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Categories.repository';
 import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Ingredients.repository';
@@ -31,18 +32,22 @@ describe('Get Ingredient', () => {
 		unitsRepository = new UnitsRepositoryInMemory();
 		service = new GetIngredientService(ingredientsRepository);
 
-		createdCategory = await categoriesRepository.create({
-			translations: categoryTranslations,
-			isAlcoholic: false,
-		});
+		createdCategory = await categoriesRepository.create(
+			withCreator({
+				translations: categoryTranslations,
+				isAlcoholic: false,
+			}),
+		);
 		createdUnit = await unitsRepository.create(createUnitFactory());
 	});
 	it('should be able to find an ingredient', async () => {
-		const createdIngredient = await ingredientsRepository.create({
-			translations,
-			category: createdCategory,
-			units: [createdUnit],
-		});
+		const createdIngredient = await ingredientsRepository.create(
+			withCreator({
+				translations,
+				category: createdCategory,
+				units: [createdUnit],
+			}),
+		);
 
 		const ingredientFound = await service.execute({ id: createdIngredient.id });
 

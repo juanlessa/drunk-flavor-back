@@ -7,10 +7,10 @@ import { CreateCategoryDTO } from './createCategory.dtos';
 export class CreateCategoryService {
 	constructor(private categoriesRepository: ICategoriesRepository) {}
 
-	async execute({ translations, isAlcoholic }: CreateCategoryDTO): Promise<Category> {
+	async execute({ translations, isAlcoholic, actor }: CreateCategoryDTO): Promise<Category> {
 		if (await this.categoriesRepository.findByName(mapToTranslationsName(translations))) {
 			throw new ConflictError('apiResponses.categories.alreadyExist', { path: 'CreateCategory.service' });
 		}
-		return this.categoriesRepository.create({ translations, isAlcoholic });
+		return this.categoriesRepository.create({ translations, isAlcoholic, createdBy: actor.id });
 	}
 }

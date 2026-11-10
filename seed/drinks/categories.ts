@@ -1,6 +1,7 @@
-import { CreateCategoryDTO } from '@/core/drinks/useCases/categories/create/createCategory.dtos';
+import { CategoryData } from '@/core/drinks/dtos/category.dtos';
 import { resolveCreateCategoryService } from '@/core/drinks/useCases/categories/create/createCategory.container';
 import { Category } from '@/core/drinks/entities/category.entity';
+import { Actor } from '@/shared/accessControl/actor.types';
 import { logger } from '@/shared/providers/logger';
 
 const categories = [
@@ -23,18 +24,18 @@ const categories = [
 	{ translations: { en: { name: 'Tequila' }, pt: { name: 'Tequila' } }, isAlcoholic: true },
 	{ translations: { en: { name: 'Vodka' }, pt: { name: 'Vodka' } }, isAlcoholic: true },
 	{ translations: { en: { name: 'Whisky' }, pt: { name: 'Whisky' } }, isAlcoholic: true },
-] as const satisfies readonly CreateCategoryDTO[];
+] as const satisfies readonly CategoryData[];
 
 type CategoryEnName = (typeof categories)[number]['translations']['en']['name'];
 
 /** Created categories keyed by their English name, for ingredients.ts to reference. */
 export const categoriesMap = new Map<CategoryEnName, Category>();
 
-export async function insertCategories() {
+export async function insertCategories(actor: Actor) {
 	try {
 		const service = resolveCreateCategoryService();
 		for (const category of categories) {
-			const created = await service.execute(category);
+			const created = await service.execute({ ...category, actor });
 			categoriesMap.set(category.translations.en.name, created);
 		}
 		logger.info('Categories inserted successfully');

@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { withCreator } from '@/core/drinks/factories/authorship.factories';
 import request from 'supertest';
 import { app } from '@/infrastructure/fastify/app';
 import { CORS_OPTIONS } from '@/infrastructure/fastify/constants/cors.constants';
@@ -34,27 +35,33 @@ describe('Match Drinks', () => {
 		const { category } = await createCategory();
 		const { unit } = await createUnit();
 		const buildIngredient = (en: string, pt: string) =>
-			resolveIngredientsRepository().create({
-				translations: { en: { name: en }, pt: { name: pt, gender: 'masculine' } },
-				category,
-				units: [unit],
-			});
+			resolveIngredientsRepository().create(
+				withCreator({
+					translations: { en: { name: en }, pt: { name: pt, gender: 'masculine' } },
+					category,
+					units: [unit],
+				}),
+			);
 		const gin = await buildIngredient('Gin', 'Gin');
 		const lime = await buildIngredient('Lime', 'Limão');
 		const sugar = await buildIngredient('Sugar', 'Açúcar');
 		const names = (name: string) => ({ en: { name, method: 'Stir' }, pt: { name, method: 'Mexa' } });
-		await resolveDrinksRepository().create({
-			translations: names('Gimlet'),
-			ingredients: [createDrinkIngredientFactory(gin), createDrinkIngredientFactory(lime)],
-		});
-		await resolveDrinksRepository().create({
-			translations: names('Gin sour'),
-			ingredients: [
-				createDrinkIngredientFactory(gin),
-				createDrinkIngredientFactory(lime),
-				createDrinkIngredientFactory(sugar),
-			],
-		});
+		await resolveDrinksRepository().create(
+			withCreator({
+				translations: names('Gimlet'),
+				ingredients: [createDrinkIngredientFactory(gin), createDrinkIngredientFactory(lime)],
+			}),
+		);
+		await resolveDrinksRepository().create(
+			withCreator({
+				translations: names('Gin sour'),
+				ingredients: [
+					createDrinkIngredientFactory(gin),
+					createDrinkIngredientFactory(lime),
+					createDrinkIngredientFactory(sugar),
+				],
+			}),
+		);
 
 		const response = await queryRequest(app.server, '/drinks/match?limit=10&page=1').send({
 			ingredientIds: [gin.id, lime.id],

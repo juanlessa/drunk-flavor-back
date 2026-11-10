@@ -1,3 +1,4 @@
+import { assertCanChangeDrink } from '@/core/drinks/helpers/catalogAuthorization.helpers';
 import { resolveDrinkMethod } from '@/core/drinks/helpers/drinkMethod.helpers';
 import { resolveDrinkRecipe } from '@/core/drinks/helpers/drinkRecipe.helpers';
 import { mapToTranslationsName } from '@/core/drinks/mappers/translations.mappers';
@@ -14,9 +15,10 @@ export class UpdateDrinkService {
 		private ingredientsRepository: IIngredientsRepository,
 	) {}
 
-	async execute({ id, translations, ingredients, garnishes, preparation }: UpdateDrinkDTO): Promise<void> {
+	async execute({ id, translations, ingredients, garnishes, preparation, actor }: UpdateDrinkDTO): Promise<void> {
 		const drink = await this.drinksRepository.findById(id);
 		if (!drink) throw new NotFoundError('apiResponses.drinks.notFound', { path: `${path}.1` });
+		assertCanChangeDrink('update', drink, actor, `${path}.forbidden`);
 
 		const duplicate = await this.drinksRepository.findByName(mapToTranslationsName(translations));
 		if (duplicate && duplicate.id !== drink.id) {
@@ -28,6 +30,7 @@ export class UpdateDrinkService {
 
 		await this.drinksRepository.update({
 			id,
+			updatedBy: actor.id,
 			...method,
 			// A method written by hand no longer matches a stored plan, so the plan goes away with it.
 			preparation: method.preparation ?? null,

@@ -1,4 +1,5 @@
 import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
+import { withActor } from '@/core/drinks/factories/authorship.factories';
 import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Units.repository';
 import { BadRequestError, ConflictError } from '@/shared/error/error.lib';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -15,14 +16,14 @@ describe('Create Unit', () => {
 
 	it('creates a unit with all fields and preserves false booleans', async () => {
 		const data = createUnitFactory({ symbol: 'mL', spaceBeforeSymbol: false, allowDecimal: false });
-		await service.execute(data);
+		await service.execute(withActor(data));
 		const unit = await repository.findByName(data.translations);
 		expect(unit).toMatchObject({ symbol: 'mL', spaceBeforeSymbol: false, allowDecimal: false, kind: 'volume' });
 	});
 
 	it('creates a unit with optional fields omitted', async () => {
 		const data = createUnitFactory();
-		await service.execute(data);
+		await service.execute(withActor(data));
 		const unit = await repository.findByName(data.translations);
 		expect(unit).not.toHaveProperty('symbol');
 		expect(unit).not.toHaveProperty('spaceBeforeSymbol');
@@ -31,7 +32,7 @@ describe('Create Unit', () => {
 	describe('written with the ingredient name', () => {
 		it('creates a count unit without a symbol that is written with the ingredient name', async () => {
 			const data = createUnitFactory({ kind: 'count', allowDecimal: false, useIngredientName: true });
-			await service.execute(data);
+			await service.execute(withActor(data));
 			expect(await repository.findByName(data.translations)).toMatchObject({
 				kind: 'count',
 				useIngredientName: true,
@@ -40,7 +41,7 @@ describe('Create Unit', () => {
 
 		it('does not manufacture the flag on a unit that omits it', async () => {
 			const data = createUnitFactory();
-			await service.execute(data);
+			await service.execute(withActor(data));
 			expect(await repository.findByName(data.translations)).not.toHaveProperty('useIngredientName');
 		});
 
@@ -49,7 +50,7 @@ describe('Create Unit', () => {
 			{ title: 'has a symbol', unit: { kind: 'count', symbol: 'u' } },
 		] as const)('rejects a unit that $title', async ({ unit }) => {
 			await expect(
-				service.execute(createUnitFactory({ ...unit, useIngredientName: true })),
+				service.execute(withActor(createUnitFactory({ ...unit, useIngredientName: true }))),
 			).rejects.toBeInstanceOf(BadRequestError);
 			expect(await repository.findAll({})).toHaveLength(0);
 		});
@@ -60,6 +61,16 @@ describe('Create Unit', () => {
 		['Portuguese', { en: { name: 'unique english unit' }, pt: { name: 'mililitro' } }],
 	] as const)('rejects a duplicate name in %s only', async (_, translations) => {
 		await repository.create(createUnitFactory());
-		await expect(service.execute(createUnitFactory({ translations }))).rejects.toBeInstanceOf(ConflictError);
+		await expect(service.execute(withActor(createUnitFactory({ translations })))).rejects.toBeInstanceOf(
+			ConflictError,
+		);
+	});
+
+	it('records the actor as the creator and the last editor, whatever the data says', async () => {
+		const data = { ...createUnitFactory(), createdBy: 'someone-else' };
+
+		const created = await service.execute(withActor(data, { id: 'partner-id', role: 'partner' }));
+
+		expect(created).toMatchObject({ createdBy: 'partner-id', updatedBy: 'partner-id' });
 	});
 });

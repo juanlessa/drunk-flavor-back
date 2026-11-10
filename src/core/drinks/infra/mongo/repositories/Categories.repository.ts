@@ -1,7 +1,7 @@
 import { CreateCategory, FindCategoryByName, UpdateCategory } from '@/core/drinks/dtos/category.dtos';
 import { Category } from '@/core/drinks/entities/category.entity';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
-import { buildQuery } from '@/infrastructure/mongo/helpers/query.helpers';
+import { buildQuery, findOwnedFirst } from '@/infrastructure/mongo/helpers/query.helpers';
 import { toMongoUpdateSet } from '@/infrastructure/mongo/helpers/mapper.helpers';
 import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
 import { SEARCH_KEYS_FIELD } from '@/infrastructure/mongo/constants/search.constants';
@@ -10,6 +10,7 @@ import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
 import { CATEGORY_UNIQUE_INDEXES, CategoryModel, CategoryPersistence } from '../entities/category.model';
+import { CREATED_BY_FIELD, clearAuthorshipByUser } from '../helpers/authorship.helpers';
 import { findByTranslatedName, getSortCollation } from '../helpers/translations.helpers';
 import { CategoryMapper } from '../mappers/category.mapper';
 
@@ -19,6 +20,7 @@ export class CategoriesRepository implements ICategoriesRepository {
 			const persistenceData = CategoryMapper.toPersistence(data);
 			const document = await CategoryModel.create({
 				...persistenceData,
+				updated_by: persistenceData.created_by,
 				search_keys: buildTranslationsSearchKeys(persistenceData.translations, NAME_SEARCH_FIELDS),
 			});
 			return CategoryMapper.toDomain(document);
@@ -96,6 +98,24 @@ export class CategoriesRepository implements ICategoriesRepository {
 			.lean<CategoryPersistence[]>()
 			.exec();
 		return documents.map(CategoryMapper.toDomain);
+	}
+
+	async findAllOwnedFirst(query: QueryParams, userId: string): Promise<Category[]> {
+		const persistenceQuery = CategoryMapper.toPersistenceQuery(query);
+		const documents = await findOwnedFirst<CategoryPersistence>(
+			persistenceQuery,
+			CategoryModel,
+			userId,
+			CREATED_BY_FIELD,
+			{
+				collation: getSortCollation(persistenceQuery.sort),
+			},
+		);
+		return documents.map(CategoryMapper.toDomain);
+	}
+
+	clearCreatorByUser(userId: string): Promise<number> {
+		return clearAuthorshipByUser(CategoryModel, userId);
 	}
 
 	private notFound(operation: string): NotFoundError {

@@ -1,3 +1,4 @@
+import { omitAuthorship } from '@/shared/helpers/authorship.helpers';
 import { GetDrink } from '@/core/drinks/dtos/drink.dtos';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { NotFoundError } from '@/shared/error/error.lib';
@@ -23,6 +24,6 @@ export class GetDrinkService {
 			drink.thumbnail.url = this.storageProvider.getFileURL(drink.thumbnail.name);
 		}
 
-		return drink;
+		return omitAuthorship(drink);
 	}
 }

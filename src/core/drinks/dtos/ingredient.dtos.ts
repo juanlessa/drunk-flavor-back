@@ -4,7 +4,7 @@ import { Unit } from '@/core/drinks/entities/unit.entity';
 import { Translations } from '@/core/drinks/types/translations';
 import { DeepPartial } from '@/shared/types/utility.types';
 
-export type CreateIngredient = {
+export type IngredientData = {
 	translations: Translations<IngredientTranslation>;
 	category: Category;
 	/** Allowed units in display order; empty means not measurable. */
@@ -13,6 +13,9 @@ export type CreateIngredient = {
 	kind?: IngredientKind;
 	brand?: string;
 };
+
+/** `createdBy` is set once, when the ingredient is created, and is never part of an update. */
+export type CreateIngredient = IngredientData & { createdBy: string };
 
 /** On update, a `null` description or plural name removes the current one. */
 export type UpdateIngredientTranslation = {
@@ -31,7 +34,7 @@ export type UpdateIngredientData = {
 	kind: IngredientKind;
 }>;
 
-export type UpdateIngredient = { id: string } & UpdateIngredientData;
+export type UpdateIngredient = { id: string; updatedBy: string } & UpdateIngredientData;
 
 export type DeleteIngredient = {
 	id: string;

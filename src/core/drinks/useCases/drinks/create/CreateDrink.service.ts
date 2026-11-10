@@ -14,7 +14,7 @@ export class CreateDrinkService {
 		private ingredientsRepository: IIngredientsRepository,
 	) {}
 
-	async execute({ translations, ingredients, garnishes = [], preparation }: CreateDrinkDTO): Promise<string> {
+	async execute({ translations, ingredients, garnishes = [], preparation, actor }: CreateDrinkDTO): Promise<string> {
 		if (await this.drinksRepository.findByName(mapToTranslationsName(translations))) {
 			throw new ConflictError('apiResponses.drinks.alreadyExist', { path });
 		}
@@ -22,7 +22,7 @@ export class CreateDrinkService {
 		const recipe = await resolveDrinkRecipe(this.ingredientsRepository, { ingredients, garnishes }, path);
 		const method = resolveDrinkMethod({ translations, preparation }, recipe, path);
 
-		const drink = await this.drinksRepository.create({ ...method, ...recipe });
+		const drink = await this.drinksRepository.create({ ...method, ...recipe, createdBy: actor.id });
 		return drink.id;
 	}
 }

@@ -1,6 +1,7 @@
-import { CreateIngredientDTO } from '@/core/drinks/useCases/ingredients/create/createIngredient.dtos';
+import { CreateIngredientInput } from '@/core/drinks/useCases/ingredients/create/createIngredient.dtos';
 import { resolveCreateIngredientService } from '@/core/drinks/useCases/ingredients/create/createIngredient.container';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
+import { Actor } from '@/shared/accessControl/actor.types';
 import { logger } from '@/shared/providers/logger';
 import { categoriesMap } from './categories';
 import { unitsMap } from './units';
@@ -11,10 +12,10 @@ import { unitsMap } from './units';
  * order; an empty list means the ingredient is not measurable (e.g. a foam).
  */
 type SeedIngredient = {
-	translations: CreateIngredientDTO['translations'];
+	translations: CreateIngredientInput['translations'];
 	category: string;
 	units: readonly string[];
-	kind?: CreateIngredientDTO['kind'];
+	kind?: CreateIngredientInput['kind'];
 	brand?: string;
 };
 
@@ -196,7 +197,7 @@ type IngredientEnName = (typeof ingredients)[number]['translations']['en']['name
 /** Created ingredients keyed by their raw English name, for drinks.ts to reference. */
 export const ingredientsMap = new Map<IngredientEnName, Ingredient>();
 
-export async function insertIngredients() {
+export async function insertIngredients(actor: Actor) {
 	try {
 		const service = resolveCreateIngredientService();
 		for (const ingredient of ingredients) {
@@ -211,6 +212,7 @@ export async function insertIngredients() {
 				translations: ingredient.translations,
 				categoryId: category.id,
 				unitIds,
+				actor,
 				...('kind' in ingredient ? { kind: ingredient.kind } : {}),
 				...('brand' in ingredient ? { brand: ingredient.brand } : {}),
 			});

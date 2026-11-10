@@ -1,0 +1,146 @@
+import { beforeEach, describe, expect, it } from 'vitest';
+import { ObjectId } from 'mongodb';
+import { IdentityProviders } from '@/core/accounts/constants/identity.constants';
+import { createUserFactory } from '@/core/accounts/factories/user.factories';
+import { CredentialsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Credentials.repository';
+import { IdentitiesRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Identities.repository';
+import { UsersRepositoryInMemory } from '@/core/accounts/repositories/inMemory/Users.repository';
+import { SessionVersionMarkerStoreInMemory } from '@/core/accounts/stores/inMemory/SessionVersionMarker.store';
+import { ConflictError, NotFoundError } from '@/shared/error/error.lib';
+import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
+import { UnlinkGoogleIdentityService } from './UnlinkGoogleIdentity.service';
+
+let usersRepository: UsersRepositoryInMemory;
+let identitiesRepository: IdentitiesRepositoryInMemory;
+let credentialsRepository: CredentialsRepositoryInMemory;
+let markerStore: SessionVersionMarkerStoreInMemory;
+let service: UnlinkGoogleIdentityService;
+
+const seedAccount = async ({ password, google }: { password: boolean; google: boolean }) => {
+	const user = await usersRepository.create(createUserFactory({ email: 'local@example.com' }));
+	if (password) await credentialsRepository.create({ userId: user.id, passwordHash: 'hash' });
+	if (google) {
+		await identitiesRepository.create({
+			userId: user.id,
+			provider: IdentityProviders.google,
+			providerSubject: 'google-sub',
+			pictureUrl: 'https://lh3.googleusercontent.com/a/picture',
+		});
+	}
+	return user;
+};
+
+describe('Unlink Google Identity', () => {
+	beforeEach(() => {
+		usersRepository = new UsersRepositoryInMemory();
+		identitiesRepository = new IdentitiesRepositoryInMemory();
+		credentialsRepository = new CredentialsRepositoryInMemory();
+		markerStore = new SessionVersionMarkerStoreInMemory();
+		service = new UnlinkGoogleIdentityService(
+			usersRepository,
+			identitiesRepository,
+			credentialsRepository,
+			new FakeTransactionManager(),
+			markerStore,
+		);
+	});
+
+	it('disconnects Google from an account that has a password', async () => {
+		const user = await seedAccount({ password: true, google: true });
+
+		await service.execute({ userId: user.id });
+
+		expect(await identitiesRepository.listProvidersByUserId(user.id)).toEqual([]);
+		expect(await identitiesRepository.findByProviderSub(IdentityProviders.google, 'google-sub')).toBeNull();
+	});
+
+	it('keeps the password', async () => {
+		const user = await seedAccount({ password: true, google: true });
+
+		await service.execute({ userId: user.id });
+
+		expect(await credentialsRepository.existsByUserId(user.id)).toBe(true);
+	});
+
+	it('revokes the older sessions and raises the marker for them', async () => {
+		const user = await seedAccount({ password: true, google: true });
+
+		const result = await service.execute({ userId: user.id });
+
+		expect(result.user.sessionVersion).toBe(user.sessionVersion + 1);
+		expect(markerStore.collection.get(user.id)).toBe(user.sessionVersion + 1);
+	});
+
+	it('keeps the avatar of the user, even when it is the picture of the Google account', async () => {
+		const user = await seedAccount({ password: true, google: true });
+		await usersRepository.update({ id: user.id, avatarUrl: 'https://lh3.googleusercontent.com/a/picture' });
+
+		await service.execute({ userId: user.id });
+
+		expect((await usersRepository.findById(user.id))?.avatarUrl).toBe(
+			'https://lh3.googleusercontent.com/a/picture',
+		);
+	});
+
+	it('only touches the identity of the user who asked', async () => {
+		const user = await seedAccount({ password: true, google: true });
+		await identitiesRepository.create({
+			userId: new ObjectId().toString(),
+			provider: IdentityProviders.google,
+			providerSubject: 'another-google-sub',
+		});
+
+		await service.execute({ userId: user.id });
+
+		expect(
+			await identitiesRepository.findByProviderSub(IdentityProviders.google, 'another-google-sub'),
+		).not.toBeNull();
+	});
+
+	it('lets an account that started with Google disconnect it once it has a password', async () => {
+		const user = await seedAccount({ password: false, google: true });
+		await credentialsRepository.create({ userId: user.id, passwordHash: 'hash' });
+
+		await service.execute({ userId: user.id });
+
+		expect(await identitiesRepository.listProvidersByUserId(user.id)).toEqual([]);
+	});
+
+	it('refuses an account without a password, leaving Google connected and the sessions alone', async () => {
+		const user = await seedAccount({ password: false, google: true });
+
+		await expect(service.execute({ userId: user.id })).rejects.toBeInstanceOf(ConflictError);
+
+		expect(await identitiesRepository.listProvidersByUserId(user.id)).toEqual([IdentityProviders.google]);
+		expect((await usersRepository.findById(user.id))?.sessionVersion).toBe(user.sessionVersion);
+		expect(markerStore.collection.size).toBe(0);
+	});
+
+	it('rejects an account where Google is not connected', async () => {
+		const user = await seedAccount({ password: true, google: false });
+
+		await expect(service.execute({ userId: user.id })).rejects.toBeInstanceOf(NotFoundError);
+
+		expect((await usersRepository.findById(user.id))?.sessionVersion).toBe(user.sessionVersion);
+	});
+
+	it('rejects a second disconnection of the same account', async () => {
+		const user = await seedAccount({ password: true, google: true });
+		await service.execute({ userId: user.id });
+
+		await expect(service.execute({ userId: user.id })).rejects.toBeInstanceOf(NotFoundError);
+	});
+
+	it('rejects a user that does not exist', async () => {
+		await expect(service.execute({ userId: new ObjectId().toString() })).rejects.toBeInstanceOf(NotFoundError);
+	});
+
+	it('fails when the marker cannot be raised, so a disconnection is never left without it', async () => {
+		const user = await seedAccount({ password: true, google: true });
+		markerStore.failWrites = true;
+
+		await expect(service.execute({ userId: user.id })).rejects.toThrow(
+			'Session version marker store is unavailable',
+		);
+	});
+});
