@@ -64,7 +64,7 @@
 		"google-auth-library": "11.3.3",
 		"mjml": "5.4.1",
 		"mongodb": "7.7.0",
-		"mongoose": "9.11.4",
+		"mongoose": "9.12.1",
 		"nodemailer": "10.5.0",
 		"pino": "10.4.0",
 		"pino-http": "11.0.0",
