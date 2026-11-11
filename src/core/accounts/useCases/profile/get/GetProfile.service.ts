@@ -26,8 +26,9 @@ export class GetProfileService {
 		return {
 			...toUserView(user),
 			authenticationMethods: {
-				password: { enabled: passwordEnabled },
+				password: { enabled: passwordEnabled, removable: passwordEnabled && providers.length > 0 },
 				providers,
+				disconnectableProviders: passwordEnabled ? providers : [],
 			},
 		};
 	}

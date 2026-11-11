@@ -11,8 +11,9 @@ import { Roles } from '@/shared/accessControl/roles';
 
 type ProfileResponseBody = {
 	authenticationMethods: {
-		password: { enabled: boolean };
+		password: { enabled: boolean; removable: boolean };
 		providers: string[];
+		disconnectableProviders: string[];
 	};
 };
 
@@ -38,8 +39,9 @@ describe('Get Profile', () => {
 
 		expect(response.status).toBe(HTTP_STATUS.ok);
 		expect((response.body as ProfileResponseBody).authenticationMethods).toEqual({
-			password: { enabled: true },
+			password: { enabled: true, removable: false },
 			providers: [],
+			disconnectableProviders: [],
 		});
 	});
 });

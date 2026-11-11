@@ -37,8 +37,9 @@ describe('Get Profile', () => {
 		const result = await service.execute({ id: user.id });
 
 		expect(result.authenticationMethods).toEqual({
-			password: { enabled: false },
+			password: { enabled: false, removable: false },
 			providers: [IdentityProviders.google],
+			disconnectableProviders: [],
 		});
 		expect(result).not.toHaveProperty('passwordHash');
 		expect(result).not.toHaveProperty('providerSubject');
@@ -57,8 +58,22 @@ describe('Get Profile', () => {
 		const result = await service.execute({ id: user.id });
 
 		expect(result.authenticationMethods).toEqual({
-			password: { enabled: true },
+			password: { enabled: true, removable: true },
 			providers: [IdentityProviders.google],
+			disconnectableProviders: [IdentityProviders.google],
+		});
+	});
+
+	it('reports a password-only account as having nothing to remove', async () => {
+		const user = await usersRepository.create(userData);
+		await credentialsRepository.create({ userId: user.id, passwordHash: 'hash' });
+
+		const result = await service.execute({ id: user.id });
+
+		expect(result.authenticationMethods).toEqual({
+			password: { enabled: true, removable: false },
+			providers: [],
+			disconnectableProviders: [],
 		});
 	});
 
