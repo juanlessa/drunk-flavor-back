@@ -10,6 +10,7 @@ import { deleteProfileController } from '@/core/accounts/useCases/profile/delete
 import { getProfileController } from '@/core/accounts/useCases/profile/get/getProfile.controller';
 import { linkGoogleIdentityController } from '@/core/accounts/useCases/profile/linkGoogleIdentity/linkGoogleIdentity.controller';
 import { linkGoogleIdentitySchema } from '@/core/accounts/useCases/profile/linkGoogleIdentity/linkGoogleIdentity.schema';
+import { removePasswordController } from '@/core/accounts/useCases/profile/removePassword/removePassword.controller';
 import { unlinkGoogleIdentityController } from '@/core/accounts/useCases/profile/unlinkGoogleIdentity/unlinkGoogleIdentity.controller';
 import { reauthenticateGoogleController } from '@/core/accounts/useCases/profile/reauthenticateGoogle/reauthenticateGoogle.controller';
 import { reauthenticateGoogleSchema } from '@/core/accounts/useCases/profile/reauthenticateGoogle/reauthenticateGoogle.schema';
@@ -104,6 +105,21 @@ const routes: Routes = (server) => {
 			preValidation: [verifyAndRenewToken, requireRecentAuthentication],
 		},
 		createPasswordController,
+	);
+
+	server.delete(
+		'/me/password',
+		{
+			config: { rateLimit: { max: 5, timeWindow: ONE_MINUTE, ban: BAN_THRESHOLD } },
+			schema: {
+				tags: ['Profile'],
+				summary: 'Remove password',
+				description:
+					'Removes the password from the account. Requires a connected provider, so the account keeps a way to sign in, and a recent authentication.',
+			},
+			preValidation: [verifyAndRenewToken, requireRecentAuthentication],
+		},
+		removePasswordController,
 	);
 
 	server.withTypeProvider<ZodTypeProvider>().patch(

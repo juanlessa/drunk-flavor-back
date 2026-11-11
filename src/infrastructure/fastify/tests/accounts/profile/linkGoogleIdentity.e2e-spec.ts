@@ -24,7 +24,11 @@ const googleIdentity = {
 };
 type ProfileResponseBody = {
 	avatarUrl?: string;
-	authenticationMethods: { password: { enabled: boolean }; providers: string[] };
+	authenticationMethods: {
+		password: { enabled: boolean; removable: boolean };
+		providers: string[];
+		disconnectableProviders: string[];
+	};
 };
 
 describe('Link Google identity', () => {
@@ -55,8 +59,9 @@ describe('Link Google identity', () => {
 		const rotatedCookies = linked.headers['set-cookie'] as unknown as string[];
 		const profile = await request(app.server).get('/me').set('Cookie', rotatedCookies);
 		expect((profile.body as ProfileResponseBody).authenticationMethods).toEqual({
-			password: { enabled: true },
+			password: { enabled: true, removable: true },
 			providers: ['google'],
+			disconnectableProviders: ['google'],
 		});
 		setNextVerifiedGoogleIdentity(googleIdentity);
 		expect((await request(app.server).post('/google').set(GOOGLE_POPUP_HEADERS).send({ code })).status).toBe(
@@ -107,8 +112,9 @@ describe('Link Google identity', () => {
 		const rotatedCookies = unlinked.headers['set-cookie'] as unknown as string[];
 		const profile = await request(app.server).get('/me').set('Cookie', rotatedCookies);
 		expect((profile.body as ProfileResponseBody).authenticationMethods).toEqual({
-			password: { enabled: true },
+			password: { enabled: true, removable: false },
 			providers: [],
+			disconnectableProviders: [],
 		});
 		expect(
 			(await request(app.server).post('/signin').send({ email: user.email, password: user.password })).status,

@@ -23,7 +23,11 @@ const googleIdentity = {
 	familyName: 'Only',
 };
 type ProfileResponseBody = {
-	authenticationMethods: { password: { enabled: boolean }; providers: string[] };
+	authenticationMethods: {
+		password: { enabled: boolean; removable: boolean };
+		providers: string[];
+		disconnectableProviders: string[];
+	};
 };
 
 describe('Profile password methods', () => {
@@ -46,7 +50,11 @@ describe('Profile password methods', () => {
 		const cookies = googleLogin.headers['set-cookie'];
 		expect((await request(app.server).get('/me').set('Cookie', cookies)).body as ProfileResponseBody).toMatchObject(
 			{
-				authenticationMethods: { password: { enabled: false }, providers: ['google'] },
+				authenticationMethods: {
+					password: { enabled: false, removable: false },
+					providers: ['google'],
+					disconnectableProviders: [],
+				},
 			},
 		);
 
@@ -66,7 +74,11 @@ describe('Profile password methods', () => {
 		expect(
 			(await request(app.server).get('/me').set('Cookie', rotatedCookies)).body as ProfileResponseBody,
 		).toMatchObject({
-			authenticationMethods: { password: { enabled: true }, providers: ['google'] },
+			authenticationMethods: {
+				password: { enabled: true, removable: true },
+				providers: ['google'],
+				disconnectableProviders: ['google'],
+			},
 		});
 		expect((await request(app.server).post('/signin').send({ email: googleIdentity.email, password })).status).toBe(
 			HTTP_STATUS.ok,
@@ -101,9 +113,52 @@ describe('Profile password methods', () => {
 		const rotatedCookies = unlinked.headers['set-cookie'] as unknown as string[];
 		expect(
 			(await request(app.server).get('/me').set('Cookie', rotatedCookies)).body as ProfileResponseBody,
-		).toMatchObject({ authenticationMethods: { password: { enabled: true }, providers: [] } });
+		).toMatchObject({
+			authenticationMethods: {
+				password: { enabled: true, removable: false },
+				providers: [],
+				disconnectableProviders: [],
+			},
+		});
 		expect((await request(app.server).post('/signin').send({ email: googleIdentity.email, password })).status).toBe(
 			HTTP_STATUS.ok,
 		);
+	});
+
+	it('allows an account with a connected provider to remove its password', async () => {
+		setNextVerifiedGoogleIdentity(googleIdentity);
+		const googleLogin = await request(app.server).post('/google').set(GOOGLE_POPUP_HEADERS).send({ code });
+		const cookies = googleLogin.headers['set-cookie'];
+		setNextVerifiedGoogleIdentity(googleIdentity);
+		await request(app.server)
+			.post('/me/reauthentication/google')
+			.set('Cookie', cookies)
+			.set(GOOGLE_POPUP_HEADERS)
+			.send({ code });
+		const createPassword = await request(app.server).post('/me/password').set('Cookie', cookies).send({ password });
+		const passwordCookies = createPassword.headers['set-cookie'] as unknown as string[];
+		// Creating the password rotates the session, which ends the recent authentication the removal asks for.
+		const reauthentication = await request(app.server)
+			.post('/me/reauthentication/password')
+			.set('Cookie', passwordCookies)
+			.send({ password });
+		const reauthenticatedCookies = mergeCookies(passwordCookies, reauthentication.headers['set-cookie']);
+
+		const removed = await request(app.server).delete('/me/password').set('Cookie', reauthenticatedCookies);
+
+		expect(removed.status).toBe(HTTP_STATUS.no_content);
+		const rotatedCookies = removed.headers['set-cookie'] as unknown as string[];
+		expect(
+			(await request(app.server).get('/me').set('Cookie', rotatedCookies)).body as ProfileResponseBody,
+		).toMatchObject({
+			authenticationMethods: {
+				password: { enabled: false, removable: false },
+				providers: ['google'],
+				disconnectableProviders: [],
+			},
+		});
+		expect(
+			(await request(app.server).post('/signin').send({ email: googleIdentity.email, password })).status,
+		).not.toBe(HTTP_STATUS.ok);
 	});
 });

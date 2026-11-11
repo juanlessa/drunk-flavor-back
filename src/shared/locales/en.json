@@ -93,7 +93,9 @@
 			"googleAlreadyConnected": "Google is already connected to this account",
 			"googleIdentityUnavailable": "This Google account is already connected to another account",
 			"googleNotConnected": "Google is not connected to this account",
-			"passwordRequiredToDisconnectGoogle": "Set a password before disconnecting Google, so you keep a way to sign in"
+			"passwordRequiredToDisconnectGoogle": "Set a password before disconnecting Google, so you keep a way to sign in",
+			"passwordNotConfigured": "A password is not configured for this account",
+			"providerRequiredToRemovePassword": "Connect a sign-in provider before removing the password, so you keep a way to sign in"
 		},
 		"categories": {
 			"alreadyExist": "Category already exists",
