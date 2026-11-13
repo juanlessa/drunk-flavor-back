@@ -1,20 +1,10 @@
 import { Drink } from '@/core/drinks/entities/drink.entity';
-
-export type RatingCountDelta = -1 | 0 | 1;
-
-export type ApplyRatingDelta = {
-	drinkId: string;
-	countDelta: RatingCountDelta;
-	sumDelta: number;
-};
-
-export type DrinkRatingSummary = {
-	average: number;
-	count: number;
-};
+import { ApplyRatingDelta, DrinkRatingSummary } from './applyRatingDelta/applyRatingDelta.dtos';
+import { ClearCreatorByUser } from './clearCreatorByUser/clearCreatorByUser.dtos';
+import { FindDrinkById } from './findDrinkById/findDrinkById.dtos';
 
 export interface IDrinksModule {
-	findDrinkById(drinkId: string): Promise<Drink | null>;
-	applyRatingDelta(input: ApplyRatingDelta): Promise<DrinkRatingSummary>;
-	clearCreatorByUser(userId: string): Promise<number>;
+	findDrinkById(data: FindDrinkById): Promise<Drink | null>;
+	applyRatingDelta(data: ApplyRatingDelta): Promise<DrinkRatingSummary>;
+	clearCreatorByUser(data: ClearCreatorByUser): Promise<number>;
 }

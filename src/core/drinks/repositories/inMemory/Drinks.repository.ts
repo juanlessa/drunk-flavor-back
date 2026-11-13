@@ -1,6 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { clearCreatorFromRecords, keepCreator, prioritizeCreator } from '@/core/drinks/helpers/creator.helpers';
 import {
+	ApplyRatingDelta,
+	DrinkRatingSummary,
 	CreateDrink,
 	DrinkIngredientMatch,
 	FindDrinkByName,
@@ -16,7 +18,6 @@ import {
 import { getMissingIngredientIds, getRequiredIngredientIds } from '@/core/drinks/helpers/drinkMatch.helpers';
 import { getRatingScore } from '@/core/drinks/helpers/ratingScore.helpers';
 import { compareTranslationsName } from '@/core/drinks/helpers/translations.helpers';
-import type { ApplyRatingDelta, DrinkRatingSummary } from '@/core/drinks/public/IDrinksModule';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 import { NotFoundError } from '@/shared/error/error.lib';

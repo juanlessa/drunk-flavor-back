@@ -1,4 +1,6 @@
 import {
+	ApplyRatingDelta,
+	DrinkRatingSummary,
 	CreateDrink,
 	DrinkIngredientMatch,
 	FindDrinkByName,
@@ -6,7 +8,6 @@ import {
 	UpdateDrink,
 } from '@/core/drinks/dtos/drink.dtos';
 import { Drink } from '@/core/drinks/entities/drink.entity';
-import type { ApplyRatingDelta, DrinkRatingSummary } from '@/core/drinks/public/IDrinksModule';
 import { QueryParams } from '@/shared/types/query.types';
 
 export interface IDrinksRepository {

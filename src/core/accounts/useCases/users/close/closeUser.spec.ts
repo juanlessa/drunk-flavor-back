@@ -95,7 +95,7 @@ describe('Close User', () => {
 
 		expect(await usersRepository.findById(createdUser.id)).toBeNull();
 		expect(engagementModule.deleteCommentsByUser).toHaveBeenCalledWith(createdUser.id);
-		expect(drinksModule.clearCreatorByUser).toHaveBeenCalledWith(createdUser.id);
+		expect(drinksModule.clearCreatorByUser).toHaveBeenCalledWith({ userId: createdUser.id });
 		expect(administrativeEventsRepository.collection).toEqual([
 			expect.objectContaining({
 				actorId: admin.id,

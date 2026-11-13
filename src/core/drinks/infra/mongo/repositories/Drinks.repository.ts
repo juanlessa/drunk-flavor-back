@@ -1,4 +1,6 @@
 import {
+	ApplyRatingDelta,
+	DrinkRatingSummary,
 	CreateDrink,
 	DrinkIngredientMatch,
 	FindDrinkByName,
@@ -10,7 +12,6 @@ import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository
 import { buildQuery, findOwnedFirst } from '@/infrastructure/mongo/helpers/query.helpers';
 import { toMongoUpdateSet } from '@/infrastructure/mongo/helpers/mapper.helpers';
 import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
-import type { ApplyRatingDelta, DrinkRatingSummary } from '@/core/drinks/public/IDrinksModule';
 import { SEARCH_KEYS_FIELD } from '@/infrastructure/mongo/constants/search.constants';
 import { NAME_SEARCH_FIELDS, buildTranslationsSearchKeys } from '@/core/drinks/helpers/searchKeys.helpers';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';

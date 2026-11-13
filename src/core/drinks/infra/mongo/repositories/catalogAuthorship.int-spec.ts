@@ -3,7 +3,7 @@ import { DrinkIngredientAmountTypes } from '@/core/drinks/constants/drink.consta
 import { createCategoryFactory } from '@/core/drinks/factories/category.factories';
 import { createDrinkIngredientFactory } from '@/core/drinks/factories/drink.factories';
 import { createUnitFactory } from '@/core/drinks/factories/unit.factories';
-import { DrinksModule } from '@/core/drinks/public/DrinksModule';
+import { ClearCreatorByUserService } from '@/core/drinks/public/clearCreatorByUser/ClearCreatorByUser.service';
 import { CategoryModel } from '../entities/category.model';
 import { DrinkModel } from '../entities/drink.model';
 import { IngredientModel } from '../entities/ingredient.model';
@@ -129,7 +129,7 @@ describe('Catalog authorship across collections (integration)', () => {
 		});
 	});
 
-	describe('DrinksModule.clearCreatorByUser', () => {
+	describe('ClearCreatorByUserService', () => {
 		it('anonymizes the four collections and returns how many records were touched', async () => {
 			const { category, unit, ingredient } = await createIngredient(bob);
 			await ingredients.update({ id: ingredient.id, updatedBy: alice, kind: 'generic' });
@@ -138,10 +138,10 @@ describe('Catalog authorship across collections (integration)', () => {
 				ingredients: [createDrinkIngredientFactory(ingredient)],
 				createdBy: alice,
 			});
-			const module = new DrinksModule(drinks, ingredients, categories, units);
+			const service = new ClearCreatorByUserService(drinks, ingredients, categories, units);
 
 			// The category, the unit, the ingredient (last edited by alice) and the drink.
-			expect(await module.clearCreatorByUser(alice)).toBe(4);
+			expect(await service.execute({ userId: alice })).toBe(4);
 
 			expect(await categories.findById(category.id)).not.toHaveProperty('createdBy');
 			expect(await units.findById(unit.id)).not.toHaveProperty('createdBy');
@@ -153,9 +153,9 @@ describe('Catalog authorship across collections (integration)', () => {
 		it('returns zero for a user without records', async () => {
 			await createIngredient(bob);
 
-			const module = new DrinksModule(drinks, ingredients, categories, units);
+			const service = new ClearCreatorByUserService(drinks, ingredients, categories, units);
 
-			expect(await module.clearCreatorByUser('66b0000000000000000000c3')).toBe(0);
+			expect(await service.execute({ userId: '66b0000000000000000000c3' })).toBe(0);
 		});
 	});
 });

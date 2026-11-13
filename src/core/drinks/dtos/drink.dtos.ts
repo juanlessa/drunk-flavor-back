@@ -94,3 +94,17 @@ export type DrinkIngredientMatch = {
 	drink: Drink;
 	missingIngredientIds: string[];
 };
+
+export type RatingCountDelta = -1 | 0 | 1;
+
+/** A change to the rating tally of a drink: how many ratings it gains or loses and how much the sum moves. */
+export type ApplyRatingDelta = {
+	drinkId: string;
+	countDelta: RatingCountDelta;
+	sumDelta: number;
+};
+
+export type DrinkRatingSummary = {
+	average: number;
+	count: number;
+};

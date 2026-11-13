@@ -1,32 +1,28 @@
-import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
-import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
-import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
-import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
-import { ApplyRatingDelta, DrinkRatingSummary, IDrinksModule } from './IDrinksModule';
+import { Drink } from '@/core/drinks/entities/drink.entity';
+import { IDrinksModule } from './IDrinksModule';
+import { ApplyRatingDelta, DrinkRatingSummary } from './applyRatingDelta/applyRatingDelta.dtos';
+import { ApplyRatingDeltaService } from './applyRatingDelta/ApplyRatingDelta.service';
+import { ClearCreatorByUser } from './clearCreatorByUser/clearCreatorByUser.dtos';
+import { ClearCreatorByUserService } from './clearCreatorByUser/ClearCreatorByUser.service';
+import { FindDrinkById } from './findDrinkById/findDrinkById.dtos';
+import { FindDrinkByIdService } from './findDrinkById/FindDrinkById.service';
 
 export class DrinksModule implements IDrinksModule {
 	constructor(
-		private drinksRepository: IDrinksRepository,
-		private ingredientsRepository: IIngredientsRepository,
-		private categoriesRepository: ICategoriesRepository,
-		private unitsRepository: IUnitsRepository,
+		private findDrinkByIdService: FindDrinkByIdService,
+		private applyRatingDeltaService: ApplyRatingDeltaService,
+		private clearCreatorByUserService: ClearCreatorByUserService,
 	) {}
 
-	findDrinkById(drinkId: string) {
-		return this.drinksRepository.findById(drinkId);
+	findDrinkById(data: FindDrinkById): Promise<Drink | null> {
+		return this.findDrinkByIdService.execute(data);
 	}
 
-	applyRatingDelta(input: ApplyRatingDelta): Promise<DrinkRatingSummary> {
-		return this.drinksRepository.applyRatingDelta(input);
+	applyRatingDelta(data: ApplyRatingDelta): Promise<DrinkRatingSummary> {
+		return this.applyRatingDeltaService.execute(data);
 	}
 
-	async clearCreatorByUser(userId: string): Promise<number> {
-		const touched = [
-			await this.drinksRepository.clearCreatorByUser(userId),
-			await this.ingredientsRepository.clearCreatorByUser(userId),
-			await this.categoriesRepository.clearCreatorByUser(userId),
-			await this.unitsRepository.clearCreatorByUser(userId),
-		];
-		return touched.reduce((total, count) => total + count, 0);
+	clearCreatorByUser(data: ClearCreatorByUser): Promise<number> {
+		return this.clearCreatorByUserService.execute(data);
 	}
 }

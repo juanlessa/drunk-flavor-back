@@ -1,20 +1,19 @@
-import {
-	resolveCategoriesRepository,
-	resolveDrinksRepository,
-	resolveIngredientsRepository,
-	resolveUnitsRepository,
-} from '@/core/drinks/infra/mongo/container';
 import { DrinksModule } from './DrinksModule';
 import { IDrinksModule } from './IDrinksModule';
+import { resolveApplyRatingDeltaService } from './applyRatingDelta/applyRatingDelta.container';
+import { resolveClearCreatorByUserService } from './clearCreatorByUser/clearCreatorByUser.container';
+import { resolveFindDrinkByIdService } from './findDrinkById/findDrinkById.container';
 
 const drinksModule: IDrinksModule = new DrinksModule(
-	resolveDrinksRepository(),
-	resolveIngredientsRepository(),
-	resolveCategoriesRepository(),
-	resolveUnitsRepository(),
+	resolveFindDrinkByIdService(),
+	resolveApplyRatingDeltaService(),
+	resolveClearCreatorByUserService(),
 );
 
 export const resolveDrinksModule = (): IDrinksModule => drinksModule;
 
 export { DrinksModule } from './DrinksModule';
-export type { ApplyRatingDelta, DrinkRatingSummary, IDrinksModule, RatingCountDelta } from './IDrinksModule';
+export type { IDrinksModule } from './IDrinksModule';
+export type { ApplyRatingDelta, DrinkRatingSummary, RatingCountDelta } from './applyRatingDelta/applyRatingDelta.dtos';
+export type { ClearCreatorByUser } from './clearCreatorByUser/clearCreatorByUser.dtos';
+export type { FindDrinkById } from './findDrinkById/findDrinkById.dtos';
