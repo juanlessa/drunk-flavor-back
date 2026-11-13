@@ -1,6 +1,6 @@
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
-import { ListDrinksWithAuthorshipDTO } from './listDrinksWithAuthorship.dtos';
+import { ListDrinksWithAuthorshipCommand } from './listDrinksWithAuthorship.dtos';
 
 /**
  * Lists the drinks for the people who contribute to the catalog: the ones the actor created come first, then the others,
@@ -12,7 +12,7 @@ export class ListDrinksWithAuthorshipService {
 		private storageProvider: IStorageProvider,
 	) {}
 
-	async execute({ query = {}, actor }: ListDrinksWithAuthorshipDTO) {
+	async execute({ query = {}, actor }: ListDrinksWithAuthorshipCommand) {
 		const drinks = await this.drinksRepository.findAllOwnedFirst(query, actor.id);
 		return drinks.map((drink) => {
 			if (drink.cover) {

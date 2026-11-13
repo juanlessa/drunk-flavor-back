@@ -36,12 +36,4 @@ export type UpdateIngredientData = {
 
 export type UpdateIngredient = { id: string; updatedBy: string } & UpdateIngredientData;
 
-export type DeleteIngredient = {
-	id: string;
-};
-
-export type GetIngredient = {
-	id: string;
-};
-
 export type FindIngredientByName = DeepPartial<Translations<{ name: string }>>;

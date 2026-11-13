@@ -7,7 +7,7 @@ import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.re
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
 import { BadRequestError, ConflictError } from '@/shared/error/error.lib';
-import { CreateIngredientDTO } from './createIngredient.dtos';
+import { CreateIngredientCommand } from './createIngredient.dtos';
 
 export class CreateIngredientService {
 	constructor(
@@ -16,7 +16,14 @@ export class CreateIngredientService {
 		private unitsRepository: IUnitsRepository,
 	) {}
 
-	async execute({ translations, categoryId, unitIds, kind, brand, actor }: CreateIngredientDTO): Promise<Ingredient> {
+	async execute({
+		translations,
+		categoryId,
+		unitIds,
+		kind,
+		brand,
+		actor,
+	}: CreateIngredientCommand): Promise<Ingredient> {
 		assertIngredientBrand(kind ?? IngredientKinds.generic, brand, 'CreateIngredient.service.0');
 		const translationsName = mapToTranslationsName(translations);
 		const ingredientAlreadyExists = await this.ingredientsRepository.findByName(translationsName);

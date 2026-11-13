@@ -4,4 +4,4 @@ import { z } from 'zod/v4';
 import { listIngredientsSchema } from '../list/listIngredients.schema';
 
 export type ListIngredientsWithAuthorshipReqQuery = z.infer<typeof listIngredientsSchema>;
-export type ListIngredientsWithAuthorshipDTO = { query?: QueryParams; actor: Actor };
+export type ListIngredientsWithAuthorshipCommand = { query?: QueryParams; actor: Actor };

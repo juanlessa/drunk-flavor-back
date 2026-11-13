@@ -7,7 +7,8 @@ export const listIngredientsWithAuthorshipController: Controller<{
 }> = async (request, reply) => {
 	const { limit, page, search, sort } = request.query;
 	const actor = { id: request.user.id, role: request.user.role };
-	const ingredients = await resolveListIngredientsWithAuthorshipService().execute({
+	const service = resolveListIngredientsWithAuthorshipService();
+	const ingredients = await service.execute({
 		query: { limit, page, search, sort },
 		actor,
 	});

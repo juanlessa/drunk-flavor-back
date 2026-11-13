@@ -8,7 +8,8 @@ export const listDrinksWithAuthorshipController: Controller<{ Querystring: ListD
 ) => {
 	const { limit, page, search, sort } = request.query;
 	const actor = { id: request.user.id, role: request.user.role };
-	const drinks = await resolveListDrinksWithAuthorshipService().execute({
+	const service = resolveListDrinksWithAuthorshipService();
+	const drinks = await service.execute({
 		query: { limit, page, search, sort },
 		actor,
 	});

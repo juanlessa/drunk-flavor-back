@@ -8,7 +8,8 @@ export const listUnitsWithAuthorshipController: Controller<{ Querystring: ListUn
 ) => {
 	const { limit, page, search, sort } = request.query;
 	const actor = { id: request.user.id, role: request.user.role };
-	const units = await resolveListUnitsWithAuthorshipService().execute({
+	const service = resolveListUnitsWithAuthorshipService();
+	const units = await service.execute({
 		query: { limit, page, search, sort },
 		actor,
 	});

@@ -2,12 +2,12 @@ import { assertCanChangeCategory } from '@/core/drinks/helpers/catalogAuthorizat
 import { mapToTranslationsName } from '@/core/drinks/mappers/translations.mappers';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { NotFoundError, ConflictError } from '@/shared/error/error.lib';
-import { UpdateCategoryDTO } from './updateCategory.dtos';
+import { UpdateCategoryCommand } from './updateCategory.dtos';
 
 export class UpdateCategoryService {
 	constructor(private categoriesRepository: ICategoriesRepository) {}
 
-	async execute({ id, translations, isAlcoholic, actor }: UpdateCategoryDTO): Promise<void> {
+	async execute({ id, translations, isAlcoholic, actor }: UpdateCategoryCommand): Promise<void> {
 		const category = await this.categoriesRepository.findById(id);
 		if (!category) throw new NotFoundError('apiResponses.categories.notFound', { path: 'UpdateCategory.service' });
 		assertCanChangeCategory('update', category, actor, 'UpdateCategory.service.forbidden');

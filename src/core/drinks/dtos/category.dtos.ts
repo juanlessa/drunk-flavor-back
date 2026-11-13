@@ -11,6 +11,4 @@ export type CategoryData = {
 export type CreateCategory = CategoryData & { createdBy: string };
 
 export type UpdateCategory = { id: string; updatedBy: string } & DeepPartial<CategoryData>;
-export type DeleteCategory = { id: string };
-export type GetCategory = { id: string };
 export type FindCategoryByName = DeepPartial<Translations<{ name: string }>>;

@@ -5,7 +5,7 @@ import { mapToTranslationsName } from '@/core/drinks/mappers/translations.mapper
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 import { NotFoundError, ConflictError } from '@/shared/error/error.lib';
-import { UpdateDrinkDTO } from './updateDrink.dtos';
+import { UpdateDrinkCommand } from './updateDrink.dtos';
 
 const path = 'UpdateDrink.service';
 
@@ -15,7 +15,7 @@ export class UpdateDrinkService {
 		private ingredientsRepository: IIngredientsRepository,
 	) {}
 
-	async execute({ id, translations, ingredients, garnishes, preparation, actor }: UpdateDrinkDTO): Promise<void> {
+	async execute({ id, translations, ingredients, garnishes, preparation, actor }: UpdateDrinkCommand): Promise<void> {
 		const drink = await this.drinksRepository.findById(id);
 		if (!drink) throw new NotFoundError('apiResponses.drinks.notFound', { path: `${path}.1` });
 		assertCanChangeDrink('update', drink, actor, `${path}.forbidden`);

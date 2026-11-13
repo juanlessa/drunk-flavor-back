@@ -1,4 +1,4 @@
-import { CreateIngredientInput } from '@/core/drinks/useCases/ingredients/create/createIngredient.dtos';
+import { CreateIngredientCommand } from '@/core/drinks/useCases/ingredients/create/createIngredient.dtos';
 import { resolveCreateIngredientService } from '@/core/drinks/useCases/ingredients/create/createIngredient.container';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { Actor } from '@/shared/accessControl/actor.types';
@@ -12,10 +12,10 @@ import { unitsMap } from './units';
  * order; an empty list means the ingredient is not measurable (e.g. a foam).
  */
 type SeedIngredient = {
-	translations: CreateIngredientInput['translations'];
+	translations: CreateIngredientCommand['translations'];
 	category: string;
 	units: readonly string[];
-	kind?: CreateIngredientInput['kind'];
+	kind?: CreateIngredientCommand['kind'];
 	brand?: string;
 };
 

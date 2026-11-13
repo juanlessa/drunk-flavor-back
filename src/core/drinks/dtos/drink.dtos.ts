@@ -73,14 +73,6 @@ export type UpdateDrinkThumbnail = {
 	thumbnail: string;
 };
 
-export type DeleteDrink = {
-	id: string;
-};
-
-export type GetDrink = {
-	id: string;
-};
-
 export type FindDrinkByName = DeepPartial<Translations<{ name: string }>>;
 
 export type DrinkMatchMaxMissingValue = (typeof DrinkMatchMaxMissing)[number];

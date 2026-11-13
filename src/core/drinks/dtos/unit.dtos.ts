@@ -17,6 +17,4 @@ export type CreateUnit = UnitData & { createdBy: string };
 export type UpdateUnit = { id: string; updatedBy: string; symbol?: string | null } & DeepPartial<
 	Omit<UnitData, 'symbol'>
 >;
-export type DeleteUnit = { id: string };
-export type GetUnit = { id: string };
 export type FindUnitByName = DeepPartial<Translations<{ name: string }>>;

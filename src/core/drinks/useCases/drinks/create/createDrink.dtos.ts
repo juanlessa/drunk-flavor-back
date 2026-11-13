@@ -6,7 +6,7 @@ import { DrinkGarnishInput, DrinkIngredientInput, DrinkTranslationInput } from '
 import { createDrinkSchema } from './createDrink.schema';
 
 export type CreateDrinkReqBody = z.infer<typeof createDrinkSchema>;
-export type CreateDrinkDTO = {
+export type CreateDrinkCommand = {
 	translations: Translations<DrinkTranslationInput>;
 	ingredients: DrinkIngredientInput[];
 	/** Defaults to no garnishes when omitted. */

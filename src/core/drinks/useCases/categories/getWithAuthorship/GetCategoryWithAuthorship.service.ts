@@ -1,4 +1,4 @@
-import { GetCategory } from '@/core/drinks/dtos/category.dtos';
+import { GetCategoryWithAuthorshipCommand } from './getCategoryWithAuthorship.dtos';
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
 import { NotFoundError } from '@/shared/error/error.lib';
 
@@ -9,7 +9,7 @@ import { NotFoundError } from '@/shared/error/error.lib';
 export class GetCategoryWithAuthorshipService {
 	constructor(private categoriesRepository: ICategoriesRepository) {}
 
-	async execute({ id }: GetCategory) {
+	async execute({ id }: GetCategoryWithAuthorshipCommand) {
 		const category = await this.categoriesRepository.findById(id);
 		if (!category) {
 			throw new NotFoundError('apiResponses.categories.notFound', { path: 'GetCategoryWithAuthorship.service' });

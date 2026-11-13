@@ -5,7 +5,7 @@ import { Actor } from '@/shared/accessControl/actor.types';
 import { updateCategorySchema } from './updateCategory.schema';
 
 export type UpdateCategoryReqBody = z.infer<typeof updateCategorySchema>;
-export type UpdateCategoryDTO = {
+export type UpdateCategoryCommand = {
 	id: string;
 	translations: Translations<CategoryTranslation>;
 	isAlcoholic: boolean;

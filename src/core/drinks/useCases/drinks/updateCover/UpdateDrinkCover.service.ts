@@ -2,7 +2,7 @@ import { assertCanChangeDrink } from '@/core/drinks/helpers/catalogAuthorization
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
-import { UpdateDrinkCoverDTO } from './updateDrinkCover.dtos';
+import { UpdateDrinkCoverCommand } from './updateDrinkCover.dtos';
 import { generateStoredFileName, isSupportedFileType } from '@/shared/helpers/file.helpers';
 
 export class UpdateDrinkCoverService {
@@ -11,7 +11,7 @@ export class UpdateDrinkCoverService {
 		private storageProvider: IStorageProvider,
 	) {}
 
-	async execute({ drinkId, fileStream, mimetype, actor }: UpdateDrinkCoverDTO): Promise<void> {
+	async execute({ drinkId, fileStream, mimetype, actor }: UpdateDrinkCoverCommand): Promise<void> {
 		if (!isSupportedFileType('image', mimetype)) {
 			throw new BadRequestError('apiResponses.drinks.invalidFileType', {
 				path: 'UpdateDrinkCover.service.1',

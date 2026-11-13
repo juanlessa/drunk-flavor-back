@@ -4,7 +4,7 @@ import { mapToTranslationsName } from '@/core/drinks/mappers/translations.mapper
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 import { ConflictError } from '@/shared/error/error.lib';
-import { CreateDrinkDTO } from './createDrink.dtos';
+import { CreateDrinkCommand } from './createDrink.dtos';
 
 const path = 'CreateDrink.service';
 
@@ -14,7 +14,13 @@ export class CreateDrinkService {
 		private ingredientsRepository: IIngredientsRepository,
 	) {}
 
-	async execute({ translations, ingredients, garnishes = [], preparation, actor }: CreateDrinkDTO): Promise<string> {
+	async execute({
+		translations,
+		ingredients,
+		garnishes = [],
+		preparation,
+		actor,
+	}: CreateDrinkCommand): Promise<string> {
 		if (await this.drinksRepository.findByName(mapToTranslationsName(translations))) {
 			throw new ConflictError('apiResponses.drinks.alreadyExist', { path });
 		}

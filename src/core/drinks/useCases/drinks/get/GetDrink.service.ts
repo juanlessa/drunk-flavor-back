@@ -1,5 +1,5 @@
 import { omitAuthorship } from '@/shared/helpers/authorship.helpers';
-import { GetDrink } from '@/core/drinks/dtos/drink.dtos';
+import { GetDrinkCommand } from './getDrink.dtos';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
@@ -10,7 +10,7 @@ export class GetDrinkService {
 		private storageProvider: IStorageProvider,
 	) {}
 
-	async execute({ id }: GetDrink) {
+	async execute({ id }: GetDrinkCommand) {
 		const drink = await this.drinksRepository.findById(id);
 
 		if (!drink) {

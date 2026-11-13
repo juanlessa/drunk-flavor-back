@@ -1,7 +1,7 @@
 import { omitAuthorship } from '@/shared/helpers/authorship.helpers';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
-import { MatchDrinksDTO } from './matchDrinks.dtos';
+import { MatchDrinksCommand } from './matchDrinks.dtos';
 
 export class MatchDrinksService {
 	constructor(
@@ -9,7 +9,7 @@ export class MatchDrinksService {
 		private storageProvider: IStorageProvider,
 	) {}
 
-	async execute({ ingredientIds, maxMissing, limit, page }: MatchDrinksDTO) {
+	async execute({ ingredientIds, maxMissing, limit, page }: MatchDrinksCommand) {
 		const matches = await this.drinksRepository.findByIngredients({ ingredientIds, maxMissing, limit, page });
 		const items = matches.map(({ drink, missingIngredientIds }) => {
 			if (drink.cover) {

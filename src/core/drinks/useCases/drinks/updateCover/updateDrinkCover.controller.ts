@@ -1,9 +1,9 @@
 import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
-import { UpdateDrinkCoverReqParams } from './updateDrinkCover.dtos';
+import { UpdateDrinkCoverReqParam } from './updateDrinkCover.dtos';
 import { resolveUpdateDrinkCoverService } from './updateDrinkCover.container';
 
-export const updateDrinkCoverController: Controller<{ Params: UpdateDrinkCoverReqParams }> = async (request, reply) => {
+export const updateDrinkCoverController: Controller<{ Params: UpdateDrinkCoverReqParam }> = async (request, reply) => {
 	const { id } = request.params;
 	const actor = { id: request.user.id, role: request.user.role };
 	const data = await request.file();

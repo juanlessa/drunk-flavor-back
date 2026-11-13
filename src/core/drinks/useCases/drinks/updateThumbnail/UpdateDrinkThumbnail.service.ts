@@ -4,7 +4,7 @@ import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 
 import { generateStoredFileName, isSupportedFileType } from '@/shared/helpers/file.helpers';
-import { UpdateDrinkThumbnailDTO } from './updateDrinkThumbnail.dtos';
+import { UpdateDrinkThumbnailCommand } from './updateDrinkThumbnail.dtos';
 
 export class UpdateDrinkThumbnailService {
 	constructor(
@@ -12,7 +12,7 @@ export class UpdateDrinkThumbnailService {
 		private storageProvider: IStorageProvider,
 	) {}
 
-	async execute({ drinkId, fileStream, mimetype, actor }: UpdateDrinkThumbnailDTO): Promise<void> {
+	async execute({ drinkId, fileStream, mimetype, actor }: UpdateDrinkThumbnailCommand): Promise<void> {
 		if (!isSupportedFileType('image', mimetype)) {
 			throw new BadRequestError('apiResponses.drinks.invalidFileType', {
 				path: 'UpdateDrinkThumbnail.service.1',

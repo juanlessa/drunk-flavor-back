@@ -10,7 +10,6 @@ import { ValidateOngoingSessionService } from './validateOngoingSession/Validate
 import { ValidateSessionRenewal } from './validateSessionRenewal/validateSessionRenewal.dtos';
 import { ValidateSessionRenewalService } from './validateSessionRenewal/ValidateSessionRenewal.service';
 
-/** Public facade of the accounts module: delegates every operation to its dedicated service. */
 export class AccountsModule implements IAccountsModule {
 	constructor(
 		private findUserByIdService: FindUserByIdService,

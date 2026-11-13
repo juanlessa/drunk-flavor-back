@@ -4,4 +4,4 @@ import { z } from 'zod/v4';
 import { listUnitsQuerySchema } from '../list/listUnits.schema';
 
 export type ListUnitsWithAuthorshipReqQuery = z.infer<typeof listUnitsQuerySchema>;
-export type ListUnitsWithAuthorshipDTO = { query?: QueryParams; actor: Actor };
+export type ListUnitsWithAuthorshipCommand = { query?: QueryParams; actor: Actor };

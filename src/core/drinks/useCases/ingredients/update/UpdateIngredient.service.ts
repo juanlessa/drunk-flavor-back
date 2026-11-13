@@ -8,7 +8,7 @@ import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.
 import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
 import { Language, Languages } from '@/core/drinks/types/translations';
 import { BadRequestError, NotFoundError, ConflictError } from '@/shared/error/error.lib';
-import { UpdateIngredientDTO } from './updateIngredient.dtos';
+import { UpdateIngredientCommand } from './updateIngredient.dtos';
 
 export class UpdateIngredientService {
 	constructor(
@@ -17,7 +17,15 @@ export class UpdateIngredientService {
 		private unitsRepository: IUnitsRepository,
 	) {}
 
-	async execute({ id, translations, categoryId, unitIds, kind, brand, actor }: UpdateIngredientDTO): Promise<void> {
+	async execute({
+		id,
+		translations,
+		categoryId,
+		unitIds,
+		kind,
+		brand,
+		actor,
+	}: UpdateIngredientCommand): Promise<void> {
 		const ingredient = await this.ingredientsRepository.findById(id);
 		if (!ingredient) {
 			throw new NotFoundError('apiResponses.ingredients.notFound', { path: 'UpdateIngredient.service.1' });

@@ -4,4 +4,4 @@ import { Actor } from '@/shared/accessControl/actor.types';
 import { createUnitSchema } from './createUnit.schema';
 
 export type CreateUnitReqBody = z.infer<typeof createUnitSchema>;
-export type CreateUnitDTO = UnitData & { actor: Actor };
+export type CreateUnitCommand = UnitData & { actor: Actor };

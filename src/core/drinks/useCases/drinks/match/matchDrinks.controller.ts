@@ -8,6 +8,7 @@ export const matchDrinksController: Controller<{ Body: MatchDrinksReqBody; Query
 ) => {
 	const { ingredientIds, maxMissing } = request.body;
 	const { limit, page } = request.query;
-	const result = await resolveMatchDrinksService().execute({ ingredientIds, maxMissing, limit, page });
+	const service = resolveMatchDrinksService();
+	const result = await service.execute({ ingredientIds, maxMissing, limit, page });
 	return reply.send(result);
 };

@@ -4,7 +4,9 @@ import { resolveGenerateMethodService } from './generateMethod.container';
 import { GenerateMethodReqBody } from './generateMethod.dtos';
 
 export const generateMethodController: Controller<{ Body: GenerateMethodReqBody }> = async (request, reply) => {
-	const { warnings, ...method } = await resolveGenerateMethodService().execute(request.body);
+	const { ingredients, garnishes, preparation } = request.body;
+	const service = resolveGenerateMethodService();
+	const { warnings, ...method } = await service.execute({ ingredients, garnishes, preparation });
 
 	// Warnings are described like the field errors of a failed request, message included.
 	return reply.send({

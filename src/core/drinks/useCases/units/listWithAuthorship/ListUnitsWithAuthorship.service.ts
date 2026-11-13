@@ -1,5 +1,5 @@
 import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
-import { ListUnitsWithAuthorshipDTO } from './listUnitsWithAuthorship.dtos';
+import { ListUnitsWithAuthorshipCommand } from './listUnitsWithAuthorship.dtos';
 
 /**
  * Lists the units for the people who contribute to the catalog: the ones the actor created come first, then the others,
@@ -8,7 +8,7 @@ import { ListUnitsWithAuthorshipDTO } from './listUnitsWithAuthorship.dtos';
 export class ListUnitsWithAuthorshipService {
 	constructor(private unitsRepository: IUnitsRepository) {}
 
-	async execute({ query = {}, actor }: ListUnitsWithAuthorshipDTO) {
+	async execute({ query = {}, actor }: ListUnitsWithAuthorshipCommand) {
 		return this.unitsRepository.findAllOwnedFirst(query, actor.id);
 	}
 }

@@ -4,4 +4,4 @@ import { Actor } from '@/shared/accessControl/actor.types';
 import { createCategorySchema } from './createCategory.schema';
 
 export type CreateCategoryReqBody = z.infer<typeof createCategorySchema>;
-export type CreateCategoryDTO = CategoryData & { actor: Actor };
+export type CreateCategoryCommand = CategoryData & { actor: Actor };

@@ -6,7 +6,7 @@ import { Actor } from '@/shared/accessControl/actor.types';
 import { updateIngredientSchema } from './updateIngredient.schema';
 
 export type UpdateIngredientReqBody = z.infer<typeof updateIngredientSchema>;
-export type UpdateIngredientDTO = {
+export type UpdateIngredientCommand = {
 	id: string;
 	translations: Translations<UpdateIngredientTranslation>;
 	categoryId: string;

@@ -2,7 +2,7 @@ import { assertCanChangeDrink } from '@/core/drinks/helpers/catalogAuthorization
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
-import { DeleteDrinkDTO } from './deleteDrink.dtos';
+import { DeleteDrinkCommand } from './deleteDrink.dtos';
 
 export class DeleteDrinkService {
 	constructor(
@@ -10,7 +10,7 @@ export class DeleteDrinkService {
 		private storageProvider: IStorageProvider,
 	) {}
 
-	async execute({ id, actor }: DeleteDrinkDTO) {
+	async execute({ id, actor }: DeleteDrinkCommand) {
 		const drinkExists = await this.drinksRepository.findById(id);
 		if (!drinkExists) {
 			throw new NotFoundError('apiResponses.drinks.notFound', { path: 'DeleteDrink.service' });

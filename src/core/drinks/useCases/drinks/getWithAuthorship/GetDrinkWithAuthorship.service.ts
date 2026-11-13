@@ -1,4 +1,4 @@
-import { GetDrink } from '@/core/drinks/dtos/drink.dtos';
+import { GetDrinkWithAuthorshipCommand } from './getDrinkWithAuthorship.dtos';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
@@ -13,7 +13,7 @@ export class GetDrinkWithAuthorshipService {
 		private storageProvider: IStorageProvider,
 	) {}
 
-	async execute({ id }: GetDrink) {
+	async execute({ id }: GetDrinkWithAuthorshipCommand) {
 		const drink = await this.drinksRepository.findById(id);
 		if (!drink) {
 			throw new NotFoundError('apiResponses.drinks.notFound', { path: 'GetDrinkWithAuthorship.service' });

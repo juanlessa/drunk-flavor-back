@@ -1,5 +1,5 @@
 import { ICategoriesRepository } from '@/core/drinks/repositories/ICategories.repository';
-import { ListCategoriesWithAuthorshipDTO } from './listCategoriesWithAuthorship.dtos';
+import { ListCategoriesWithAuthorshipCommand } from './listCategoriesWithAuthorship.dtos';
 
 /**
  * Lists the categories for the people who contribute to the catalog: the ones the actor created come first, then the others,
@@ -8,7 +8,7 @@ import { ListCategoriesWithAuthorshipDTO } from './listCategoriesWithAuthorship.
 export class ListCategoriesWithAuthorshipService {
 	constructor(private categoriesRepository: ICategoriesRepository) {}
 
-	async execute({ query = {}, actor }: ListCategoriesWithAuthorshipDTO) {
+	async execute({ query = {}, actor }: ListCategoriesWithAuthorshipCommand) {
 		return this.categoriesRepository.findAllOwnedFirst(query, actor.id);
 	}
 }
