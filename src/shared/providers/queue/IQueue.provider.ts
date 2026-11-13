@@ -10,6 +10,16 @@ export type ObliterateQueueOptions = {
 	force?: boolean;
 };
 
+/** Options for `add`. */
+export type AddJobOptions = {
+	/**
+	 * Identifies the unit of work. While a job with the same key is still pending
+	 * (neither completed nor failed), adding another one is ignored, so a producer
+	 * that enqueues the same work twice does not duplicate it.
+	 */
+	deduplicationKey?: string;
+};
+
 /**
  * Generic producer-side queue contract.
  *
@@ -29,8 +39,13 @@ export interface IQueueProvider<JobDataMap extends Record<string, unknown>> {
 	 *
 	 * @param name - Name of the job to enqueue.
 	 * @param data - JSON-serializable payload for the job.
+	 * @param options - Optional per-job settings.
 	 */
-	add<Name extends keyof JobDataMap & string>(name: Name, data: JobDataMap[Name]): Promise<void>;
+	add<Name extends keyof JobDataMap & string>(
+		name: Name,
+		data: JobDataMap[Name],
+		options?: AddJobOptions,
+	): Promise<void>;
 
 	/**
 	 * Removes all jobs that are waiting (and, when `delayed` is true, delayed as

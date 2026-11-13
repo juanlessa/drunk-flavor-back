@@ -1,31 +1,42 @@
-import { Worker, type Job } from 'bullmq';
+import { UnrecoverableError, Worker, type Job } from 'bullmq';
 import { BullMQConnection } from '@/infrastructure/bullmq/BullMQConnection';
 import type { IStartedWorker } from '@/infrastructure/workers/IWorkerRegistration';
 import { logger } from '@/shared/providers/logger';
 import type { QueueName } from '@/shared/providers/queue/queue.types';
 
-export interface BullMQWorkerOptions<Data> {
+export type JobHandlers<JobDataMap extends Record<string, unknown>> = {
+	[Name in keyof JobDataMap & string]: (data: JobDataMap[Name]) => Promise<void>;
+};
+
+export interface BullMQWorkerOptions<JobDataMap extends Record<string, unknown>> {
 	queueName: QueueName;
-	handler: (data: Data) => Promise<void>;
+	handlers: JobHandlers<JobDataMap>;
 	concurrency: number;
 }
 
-/**
- * Adapts an engine-agnostic handler to a BullMQ worker: it owns the BullMQ
- * connection, concurrency and event logging, so handlers stay free of them.
- */
-export const createBullMQWorker = <Data, Name extends string = string>(
-	options: BullMQWorkerOptions<Data>,
+export const createBullMQWorker = <JobDataMap extends Record<string, unknown>>(
+	options: BullMQWorkerOptions<JobDataMap>,
 ): IStartedWorker => {
-	const { queueName, handler, concurrency } = options;
-	const worker = new Worker<Data, void, Name>(queueName, (job) => handler(job.data), {
-		connection: BullMQConnection.Instance.client,
-		concurrency,
-	});
-	worker.on('completed', (job: Job<Data, void, Name>) => {
+	const { queueName, handlers, concurrency } = options;
+	type Name = keyof JobDataMap & string;
+	const worker = new Worker<JobDataMap[Name], void, Name>(
+		queueName,
+		async (job) => {
+			const handler = Object.hasOwn(handlers, job.name) ? handlers[job.name] : undefined;
+			if (!handler) {
+				throw new UnrecoverableError(`No handler registered for job "${job.name}" on queue "${queueName}".`);
+			}
+			await handler(job.data);
+		},
+		{
+			connection: BullMQConnection.Instance.client,
+			concurrency,
+		},
+	);
+	worker.on('completed', (job: Job<JobDataMap[Name], void, Name>) => {
 		logger.info({ jobId: job.id, jobName: job.name }, `${queueName} job completed.`);
 	});
-	worker.on('failed', (job: Job<Data, void, Name> | undefined, error: Error) => {
+	worker.on('failed', (job: Job<JobDataMap[Name], void, Name> | undefined, error: Error) => {
 		logger.error({ err: error, jobId: job?.id, jobName: job?.name }, `${queueName} job failed.`);
 	});
 	worker.on('error', (error: Error) => {

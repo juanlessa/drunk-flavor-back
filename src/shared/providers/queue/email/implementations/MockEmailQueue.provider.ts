@@ -1,10 +1,10 @@
 import { type Mock, vi } from 'vitest';
 import { type IEmailQueueProvider } from '../IEmailQueue.provider';
-import { type ObliterateQueueOptions, type QueueJobState } from '../../IQueue.provider';
+import { type AddJobOptions, type ObliterateQueueOptions, type QueueJobState } from '../../IQueue.provider';
 import { type EmailJobDataMap } from '../emailQueue.types';
 
 type AddArgs = {
-	[Name in keyof EmailJobDataMap & string]: [name: Name, data: EmailJobDataMap[Name]];
+	[Name in keyof EmailJobDataMap & string]: [name: Name, data: EmailJobDataMap[Name], options?: AddJobOptions];
 }[keyof EmailJobDataMap & string];
 
 export class MockEmailQueueProvider implements IEmailQueueProvider {
@@ -20,8 +20,13 @@ export class MockEmailQueueProvider implements IEmailQueueProvider {
 		.mockImplementation(() => Promise.resolve());
 	readonly closeMock: Mock<() => Promise<void>> = vi.fn().mockImplementation(() => Promise.resolve());
 
-	add<Name extends keyof EmailJobDataMap & string>(name: Name, data: EmailJobDataMap[Name]): Promise<void> {
-		return this.addMock(...([name, data] as AddArgs));
+	add<Name extends keyof EmailJobDataMap & string>(
+		name: Name,
+		data: EmailJobDataMap[Name],
+		options?: AddJobOptions,
+	): Promise<void> {
+		// Forward the options only when given, so assertions on (name, data) stay exact.
+		return this.addMock(...((options ? [name, data, options] : [name, data]) as AddArgs));
 	}
 
 	drain(delayed?: boolean): Promise<void> {
