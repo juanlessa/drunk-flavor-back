@@ -1,4 +1,4 @@
-import { GoogleAuth } from './googleAuth.dtos';
+import { GoogleAuthCommand } from './googleAuth.dtos';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.repository';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
@@ -29,7 +29,7 @@ export class GoogleAuthService {
 		private transactionManager: ITransactionManager,
 	) {}
 
-	async execute({ authorizationCode }: GoogleAuth): Promise<GoogleAuthResult> {
+	async execute({ authorizationCode }: GoogleAuthCommand): Promise<GoogleAuthResult> {
 		const googleProfile = await this.googleIdentityProvider.authenticate(authorizationCode);
 		const authenticatedAt = new Date();
 

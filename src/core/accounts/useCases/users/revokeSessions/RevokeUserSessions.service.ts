@@ -16,7 +16,7 @@ import {
 	toAdministrationActor,
 } from '@/core/accounts/helpers/userAdministration.helpers';
 import { authorizeUserAdministration } from '@/core/accounts/helpers/userAdministrationAudit.helpers';
-import { RevokeUserSessions } from './revokeUserSessions.dtos';
+import { RevokeUserSessionsCommand } from './revokeUserSessions.dtos';
 import { enqueueUserSessionsRevokedBestEffort } from '@/core/accounts/helpers/revokeUserSessionsNotification.helpers';
 import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
 import { invalidateUserSessions } from '@/core/accounts/helpers/sessionInvalidation.helpers';
@@ -32,7 +32,7 @@ export class RevokeUserSessionsService {
 		private userAdministrationPolicy = new UserAdministrationPolicy(),
 	) {}
 
-	async execute({ id, reason, actor, administrativeContext }: RevokeUserSessions): Promise<void> {
+	async execute({ id, reason, actor, administrativeContext }: RevokeUserSessionsCommand): Promise<void> {
 		const eventContext = administrativeContext ?? { origin: AdministrativeEventOrigins.api };
 		const updatedTarget = await this.transactionManager.withTransaction(async () => {
 			const persistedActor = await findRequiredAdministrationUser(

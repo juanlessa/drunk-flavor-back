@@ -1,4 +1,4 @@
-import { Signin } from './signin.dtos';
+import { SigninCommand } from './signin.dtos';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
 import { UnauthorizedError } from '@/shared/error/error.lib';
@@ -12,7 +12,7 @@ export class SigninService {
 		private hashProvider: IHashProvider,
 	) {}
 
-	async execute({ email, password }: Signin) {
+	async execute({ email, password }: SigninCommand) {
 		const user = await this.usersRepository.findByEmail(email);
 		const credential = user ? await this.credentialsRepository.findByUserId(user.id) : null;
 

@@ -16,7 +16,7 @@ import { IEngagementModule } from '@/core/engagement/public';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { Roles } from '@/shared/accessControl/roles';
-import { DeleteProfile } from './deleteProfile.dtos';
+import { DeleteProfileCommand } from './deleteProfile.dtos';
 import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
 
 export class DeleteProfileService {
@@ -33,7 +33,7 @@ export class DeleteProfileService {
 		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
 	) {}
 
-	async execute({ id, administrativeContext }: DeleteProfile): Promise<void> {
+	async execute({ id, administrativeContext }: DeleteProfileCommand): Promise<void> {
 		const context = administrativeContext ?? { origin: AdministrativeEventOrigins.api };
 		const closedUser = await this.transactionManager.withTransaction(async () => {
 			const user = await this.usersRepository.findById(id);

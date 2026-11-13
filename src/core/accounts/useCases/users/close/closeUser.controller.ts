@@ -2,10 +2,10 @@ import { AdministrativeEventOrigins } from '@/core/accounts/constants/administra
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { resolveCloseUserService } from './closeUser.container';
-import { CloseUserReqBody, CloseUserReqParams } from './closeUser.dtos';
+import { CloseUserReqBody, CloseUserReqParam } from './closeUser.dtos';
 
 export const closeUserController: Controller<{
-	Params: CloseUserReqParams;
+	Params: CloseUserReqParam;
 	Body: CloseUserReqBody;
 }> = async (request, reply) => {
 	const { id } = request.params;

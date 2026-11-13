@@ -9,4 +9,4 @@ const sessionVersionMarkerStore = resolveSessionVersionMarkerStore();
 
 const updateProfileService = new UpdateProfileService(usersRepository, transactionManager, sessionVersionMarkerStore);
 
-export const resolveUpdateUpdateProfileService = () => updateProfileService;
+export const resolveUpdateProfileService = () => updateProfileService;

@@ -5,7 +5,7 @@ import { acceptOwnershipTransferSchema } from './acceptOwnershipTransfer.schema'
 
 export type AcceptOwnershipTransferReqBody = z.infer<typeof acceptOwnershipTransferSchema>;
 
-export type AcceptOwnershipTransfer = {
+export type AcceptOwnershipTransferCommand = {
 	token: string;
 	actor: Actor;
 	administrativeContext?: AdministrativeEventContext;

@@ -3,6 +3,6 @@ import { googleAuthSchema } from './googleAuth.schema';
 
 export type GoogleAuthReqBody = z.infer<typeof googleAuthSchema>;
 
-export type GoogleAuth = {
+export type GoogleAuthCommand = {
 	authorizationCode: string;
 };

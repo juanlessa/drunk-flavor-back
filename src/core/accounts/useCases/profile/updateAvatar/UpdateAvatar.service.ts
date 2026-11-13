@@ -2,7 +2,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { BadRequestError, NotFoundError } from '@/shared/error/error.lib';
 import { generateStoredFileName, getManagedStoredFileName, isSupportedFileType } from '@/shared/helpers/file.helpers';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
-import { UpdateAvatarDTO } from './updateAvatar.dtos';
+import { UpdateAvatarCommand } from './updateAvatar.dtos';
 
 export class UpdateAvatarService {
 	constructor(
@@ -10,7 +10,7 @@ export class UpdateAvatarService {
 		private storageProvider: IStorageProvider,
 	) {}
 
-	async execute({ userId, fileStream, mimetype }: UpdateAvatarDTO): Promise<void> {
+	async execute({ userId, fileStream, mimetype }: UpdateAvatarCommand): Promise<void> {
 		if (!isSupportedFileType('image', mimetype)) {
 			throw new BadRequestError('apiResponses.profile.invalidAvatarFileType', {
 				path: 'UpdateAvatar.service.1',

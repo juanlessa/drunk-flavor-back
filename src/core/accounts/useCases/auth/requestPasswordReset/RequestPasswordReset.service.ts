@@ -8,7 +8,7 @@ import { NotFoundError, ConflictError } from '@/shared/error/error.lib';
 import { MAIL_SENDERS } from '@/shared/constants/mailer.constants';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { CLIENT_PAGE_PATHS } from '@/shared/constants/client.constants';
-import { RequestPasswordReset } from './requestPasswordReset.dtos';
+import { RequestPasswordResetCommand } from './requestPasswordReset.dtos';
 import { env } from '@/env';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 
@@ -22,7 +22,7 @@ export class RequestPasswordResetService {
 		private templateProvider: ITemplateProvider,
 	) {}
 
-	async execute({ email }: RequestPasswordReset) {
+	async execute({ email }: RequestPasswordResetCommand) {
 		const user = await this.usersRepository.findByEmail(email);
 		if (!user) {
 			throw new NotFoundError('apiResponses.users.notFound', { path: 'RequestPasswordReset.service.1' });

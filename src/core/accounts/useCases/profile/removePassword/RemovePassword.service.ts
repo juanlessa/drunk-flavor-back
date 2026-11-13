@@ -5,7 +5,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
 import { ConflictError, NotFoundError } from '@/shared/error/error.lib';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
-import { RemovePassword, RemovePasswordResult } from './removePassword.dtos';
+import { RemovePasswordCommand, RemovePasswordResult } from './removePassword.dtos';
 
 /**
  * Removes the password from an account. The account must keep another way to sign in, which today is a connected
@@ -20,7 +20,7 @@ export class RemovePasswordService {
 		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
 	) {}
 
-	async execute({ userId }: RemovePassword): Promise<RemovePasswordResult> {
+	async execute({ userId }: RemovePasswordCommand): Promise<RemovePasswordResult> {
 		return this.transactionManager.withTransaction(async () => {
 			const user = await this.usersRepository.findById(userId);
 			if (!user) {

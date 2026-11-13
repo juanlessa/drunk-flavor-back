@@ -1,4 +1,4 @@
-export type RefreshToken = {
+export type RefreshTokenCommand = {
 	userId: string;
 	sessionVersion: number;
 };

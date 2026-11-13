@@ -2,10 +2,10 @@ import { AdministrativeEventOrigins } from '@/core/accounts/constants/administra
 import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { resolveRevokeUserSessionsService } from './revokeUserSessions.container';
-import { RevokeUserSessionsReqBody, RevokeUserSessionsReqParams } from './revokeUserSessions.dtos';
+import { RevokeUserSessionsReqBody, RevokeUserSessionsReqParam } from './revokeUserSessions.dtos';
 
 export const revokeUserSessionsController: Controller<{
-	Params: RevokeUserSessionsReqParams;
+	Params: RevokeUserSessionsReqParam;
 	Body: RevokeUserSessionsReqBody;
 }> = async (request, reply) => {
 	const { id } = request.params;

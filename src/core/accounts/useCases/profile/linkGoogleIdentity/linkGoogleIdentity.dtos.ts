@@ -4,7 +4,7 @@ import { linkGoogleIdentitySchema } from './linkGoogleIdentity.schema';
 
 export type LinkGoogleIdentityReqBody = z.infer<typeof linkGoogleIdentitySchema>;
 
-export type LinkGoogleIdentity = {
+export type LinkGoogleIdentityCommand = {
 	userId: string;
 	authorizationCode: string;
 };

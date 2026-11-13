@@ -6,7 +6,7 @@ import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
-import { ConfirmPassword } from './confirmPassword.dtos';
+import { ConfirmPasswordCommand } from './confirmPassword.dtos';
 import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
 import { invalidateUserSessions } from '@/core/accounts/helpers/sessionInvalidation.helpers';
 
@@ -22,7 +22,7 @@ export class ConfirmPasswordService {
 		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
 	) {}
 
-	async execute({ token, password }: ConfirmPassword): Promise<void> {
+	async execute({ token, password }: ConfirmPasswordCommand): Promise<void> {
 		const tokenHash = this.cryptoProvider.hashToken(token);
 		const initialTokenRecord = await this.tokensRepository.findByTokenHash(tokenHash);
 		if (!initialTokenRecord) {

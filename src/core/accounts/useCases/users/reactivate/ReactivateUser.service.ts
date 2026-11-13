@@ -4,7 +4,7 @@ import { UserAdministrationPolicy, UserStatusChangeOutcomes } from '@/core/accou
 import { IAdministrativeEventsRepository } from '@/core/accounts/repositories/IAdministrativeEvents.repository';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
-import { ReactivateUser } from './reactivateUser.dtos';
+import { ReactivateUserCommand } from './reactivateUser.dtos';
 import {
 	authorizeUserAdministration,
 	resolveAdministrativeEventContext,
@@ -25,7 +25,7 @@ export class ReactivateUserService {
 		private userAdministrationPolicy = new UserAdministrationPolicy(),
 	) {}
 
-	async execute({ id, reason, actor, administrativeContext }: ReactivateUser): Promise<void> {
+	async execute({ id, reason, actor, administrativeContext }: ReactivateUserCommand): Promise<void> {
 		const eventContext = resolveAdministrativeEventContext(administrativeContext);
 
 		await this.transactionManager.withTransaction(async () => {

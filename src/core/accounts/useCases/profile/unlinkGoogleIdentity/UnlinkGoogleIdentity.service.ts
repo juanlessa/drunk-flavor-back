@@ -6,7 +6,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
 import { ConflictError, NotFoundError } from '@/shared/error/error.lib';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
-import { UnlinkGoogleIdentity, UnlinkGoogleIdentityResult } from './unlinkGoogleIdentity.dtos';
+import { UnlinkGoogleIdentityCommand, UnlinkGoogleIdentityResult } from './unlinkGoogleIdentity.dtos';
 
 /**
  * Disconnects Google from an account. The account must keep another way to sign in, which today is the password, so
@@ -22,7 +22,7 @@ export class UnlinkGoogleIdentityService {
 		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
 	) {}
 
-	async execute({ userId }: UnlinkGoogleIdentity): Promise<UnlinkGoogleIdentityResult> {
+	async execute({ userId }: UnlinkGoogleIdentityCommand): Promise<UnlinkGoogleIdentityResult> {
 		return this.transactionManager.withTransaction(async () => {
 			const user = await this.usersRepository.findById(userId);
 			if (!user) {

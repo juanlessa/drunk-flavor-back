@@ -1,6 +1,6 @@
 import { User } from '@/core/accounts/entities/user.entity';
 
-export type UnlinkGoogleIdentity = {
+export type UnlinkGoogleIdentityCommand = {
 	userId: string;
 };
 

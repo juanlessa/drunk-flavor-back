@@ -1,7 +1,7 @@
 import { IdentityProvider } from '@/core/accounts/entities/identity.entity';
 import { UserView } from '@/core/accounts/mappers/user.mappers';
 
-export type GetProfile = {
+export type GetProfileCommand = {
 	id: string;
 };
 

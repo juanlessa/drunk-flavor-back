@@ -2,7 +2,7 @@ import { ICredentialsRepository } from '@/core/accounts/repositories/ICredential
 import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.repository';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { GetProfile, ProfileView } from './getProfile.dtos';
+import { GetProfileCommand, ProfileView } from './getProfile.dtos';
 import { toUserView } from '@/core/accounts/mappers/user.mappers';
 
 export class GetProfileService {
@@ -12,7 +12,7 @@ export class GetProfileService {
 		private identitiesRepository: IIdentitiesRepository,
 	) {}
 
-	async execute({ id }: GetProfile): Promise<ProfileView> {
+	async execute({ id }: GetProfileCommand): Promise<ProfileView> {
 		const user = await this.usersRepository.findById(id);
 		if (!user) {
 			throw new NotFoundError('apiResponses.users.notFound', { path: 'GetProfile.service' });

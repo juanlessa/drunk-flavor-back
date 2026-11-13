@@ -3,6 +3,6 @@ import { requestPasswordResetSchema } from './requestPasswordReset.schema';
 
 export type RequestPasswordResetReqBody = z.infer<typeof requestPasswordResetSchema>;
 
-export type RequestPasswordReset = {
+export type RequestPasswordResetCommand = {
 	email: string;
 };

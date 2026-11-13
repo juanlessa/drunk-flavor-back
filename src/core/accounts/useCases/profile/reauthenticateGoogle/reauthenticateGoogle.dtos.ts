@@ -3,7 +3,7 @@ import { reauthenticateGoogleSchema } from './reauthenticateGoogle.schema';
 
 export type ReauthenticateGoogleReqBody = z.infer<typeof reauthenticateGoogleSchema>;
 
-export type ReauthenticateGoogle = {
+export type ReauthenticateGoogleCommand = {
 	userId: string;
 	authorizationCode: string;
 };

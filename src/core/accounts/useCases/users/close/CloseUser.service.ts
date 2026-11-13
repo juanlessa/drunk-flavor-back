@@ -15,7 +15,7 @@ import {
 	findRequiredAdministrationUser,
 	toAdministrationActor,
 } from '@/core/accounts/helpers/userAdministration.helpers';
-import { CloseUser } from './closeUser.dtos';
+import { CloseUserCommand } from './closeUser.dtos';
 import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
 
 export class CloseUserService {
@@ -33,7 +33,7 @@ export class CloseUserService {
 		private userAdministrationPolicy = new UserAdministrationPolicy(),
 	) {}
 
-	async execute({ id, reason, actor, administrativeContext }: CloseUser): Promise<void> {
+	async execute({ id, reason, actor, administrativeContext }: CloseUserCommand): Promise<void> {
 		const context = administrativeContext ?? { origin: AdministrativeEventOrigins.api };
 		const closedUser = await this.transactionManager.withTransaction(async () => {
 			const persistedActor = await findRequiredAdministrationUser(

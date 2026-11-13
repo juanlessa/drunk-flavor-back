@@ -6,7 +6,7 @@ import { ITokensRepository } from '@/core/accounts/repositories/ITokens.reposito
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { ICredentialsRepository } from '@/core/accounts/repositories/ICredentials.repository';
 import { ConflictError } from '@/shared/error/error.lib';
-import { Signup } from './signup.dtos';
+import { SignupCommand } from './signup.dtos';
 import { env } from '@/env';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
@@ -31,7 +31,7 @@ export class SignupService {
 		private emailQueueProvider: IEmailQueueProvider,
 	) {}
 
-	async execute({ name, surname, email, password }: Signup): Promise<void> {
+	async execute({ name, surname, email, password }: SignupCommand): Promise<void> {
 		const existingUser = await this.usersRepository.findByEmail(email);
 		if (existingUser && existingUser.status === UserStatuses['active']) {
 			throw new ConflictError('apiResponses.users.alreadyExist', {

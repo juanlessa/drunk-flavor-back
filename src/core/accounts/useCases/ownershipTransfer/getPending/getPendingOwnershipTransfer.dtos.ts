@@ -1,6 +1,6 @@
 import { Actor } from '@/shared/accessControl/actor.types';
 
-export type GetPendingOwnershipTransfer = {
+export type GetPendingOwnershipTransferCommand = {
 	actor: Actor;
 };
 

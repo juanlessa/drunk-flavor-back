@@ -1,7 +1,7 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { UserAdministrationPolicy } from '@/core/accounts/policies/UserAdministration.policy';
 import { toUserView } from '@/core/accounts/mappers/user.mappers';
-import { ListUsers } from './listUsers.dtos';
+import { ListUsersCommand } from './listUsers.dtos';
 import { authorizeUserAdministration } from '@/core/accounts/helpers/userAdministrationAudit.helpers';
 import {
 	findRequiredAdministrationUser,
@@ -14,7 +14,7 @@ export class ListUsersService {
 		private userAdministrationPolicy = new UserAdministrationPolicy(),
 	) {}
 
-	async execute({ query = {}, actor, administrativeContext }: ListUsers) {
+	async execute({ query = {}, actor, administrativeContext }: ListUsersCommand) {
 		const persistedActor = await findRequiredAdministrationUser(
 			this.usersRepository,
 			actor.id,

@@ -3,7 +3,7 @@ import { findRequiredAdministrationUser } from '@/core/accounts/helpers/userAdmi
 import { IOwnershipTransferInvitationsRepository } from '@/core/accounts/repositories/IOwnershipTransferInvitations.repository';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { Roles } from '@/shared/accessControl/roles';
-import { GetPendingOwnershipTransfer, PendingOwnershipTransfer } from './getPendingOwnershipTransfer.dtos';
+import { GetPendingOwnershipTransferCommand, PendingOwnershipTransfer } from './getPendingOwnershipTransfer.dtos';
 
 export class GetPendingOwnershipTransferService {
 	constructor(
@@ -16,7 +16,7 @@ export class GetPendingOwnershipTransferService {
 	 * An invitation is hidden from any actor other than the active owner who created it, matching resend and cancel.
 	 * Expired invitations are still returned so the owner can resend or cancel them.
 	 */
-	async execute({ actor }: GetPendingOwnershipTransfer): Promise<PendingOwnershipTransfer | null> {
+	async execute({ actor }: GetPendingOwnershipTransferCommand): Promise<PendingOwnershipTransfer | null> {
 		const invitation = await this.invitationsRepository.findSingleton();
 		if (!invitation) return null;
 

@@ -3,7 +3,7 @@ import { ICredentialsRepository } from '@/core/accounts/repositories/ICredential
 import { BadRequestError, UnauthorizedError } from '@/shared/error/error.lib';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
-import { UpdatePassword, UpdatePasswordResult } from './updatePassword.dtos';
+import { UpdatePasswordCommand, UpdatePasswordResult } from './updatePassword.dtos';
 import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
 import { invalidateUserSessions } from '@/core/accounts/helpers/sessionInvalidation.helpers';
 
@@ -16,7 +16,7 @@ export class UpdatePasswordService {
 		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
 	) {}
 
-	async execute({ id, currentPassword, newPassword }: UpdatePassword): Promise<UpdatePasswordResult> {
+	async execute({ id, currentPassword, newPassword }: UpdatePasswordCommand): Promise<UpdatePasswordResult> {
 		return this.transactionManager.withTransaction(async () => {
 			const user = await this.usersRepository.findById(id);
 			const credential = user ? await this.credentialsRepository.findByUserId(user.id) : null;

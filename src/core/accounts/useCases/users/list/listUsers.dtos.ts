@@ -6,7 +6,7 @@ import { AdministrativeEventContext } from '@/core/accounts/entities/administrat
 
 export type ListUsersReqQuery = z.infer<typeof listUsersQuerySchema>;
 
-export type ListUsers = {
+export type ListUsersCommand = {
 	query?: QueryParams;
 	actor: Actor;
 	administrativeContext?: AdministrativeEventContext;

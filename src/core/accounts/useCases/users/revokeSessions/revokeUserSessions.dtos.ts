@@ -3,12 +3,12 @@ import { AdministrativeEventContext } from '@/core/accounts/entities/administrat
 import { Actor } from '@/shared/accessControl/actor.types';
 import { revokeUserSessionsBodySchema, revokeUserSessionsParamsSchema } from './revokeUserSessions.schema';
 
-export type RevokeUserSessionsReqParams = z.infer<typeof revokeUserSessionsParamsSchema>;
+export type RevokeUserSessionsReqParam = z.infer<typeof revokeUserSessionsParamsSchema>;
 export type RevokeUserSessionsReqBody = z.infer<typeof revokeUserSessionsBodySchema>;
 
 export type RevokeUserSessionsActor = Actor & { sessionVersion: number };
 
-export type RevokeUserSessions = {
+export type RevokeUserSessionsCommand = {
 	id: string;
 	reason: string;
 	actor: RevokeUserSessionsActor;

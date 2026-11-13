@@ -5,7 +5,7 @@ import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.
 import { UnauthorizedError } from '@/shared/error/error.lib';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { IGoogleIdentityProvider } from '@/shared/providers/googleAuth/IGoogleIdentityProvider';
-import { GoogleReauthenticationResult, ReauthenticateGoogle } from './reauthenticateGoogle.dtos';
+import { GoogleReauthenticationResult, ReauthenticateGoogleCommand } from './reauthenticateGoogle.dtos';
 import {
 	RECENT_AUTHENTICATION_WINDOW_MS,
 	REAUTHENTICATION_CLOCK_SKEW_MS,
@@ -19,7 +19,7 @@ export class ReauthenticateGoogleService {
 		private dateProvider: IDateProvider,
 	) {}
 
-	async execute({ userId, authorizationCode }: ReauthenticateGoogle): Promise<GoogleReauthenticationResult> {
+	async execute({ userId, authorizationCode }: ReauthenticateGoogleCommand): Promise<GoogleReauthenticationResult> {
 		const googleIdentity = await this.googleIdentityProvider.authenticate(authorizationCode);
 		const user = await this.usersRepository.findById(userId);
 		const identity = await this.identitiesRepository.findByProviderSub(
