@@ -57,7 +57,7 @@ export const deleteAccountData = async ({
 	drinksModule,
 	sessionVersionMarkerStore,
 }: DeleteAccountDataOptions): Promise<void> => {
-	await engagementModule.deleteCommentsByUser(user.id);
+	await engagementModule.deleteCommentsByUser({ userId: user.id });
 	// The catalog the user contributed to is kept, without the user as its creator (the account holds the personal data).
 	await drinksModule.clearCreatorByUser({ userId: user.id });
 	await credentialsRepository.deleteByUserId(user.id);

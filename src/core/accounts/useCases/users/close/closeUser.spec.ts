@@ -94,7 +94,7 @@ describe('Close User', () => {
 		await service.execute({ id: createdUser.id, actor: admin, reason });
 
 		expect(await usersRepository.findById(createdUser.id)).toBeNull();
-		expect(engagementModule.deleteCommentsByUser).toHaveBeenCalledWith(createdUser.id);
+		expect(engagementModule.deleteCommentsByUser).toHaveBeenCalledWith({ userId: createdUser.id });
 		expect(drinksModule.clearCreatorByUser).toHaveBeenCalledWith({ userId: createdUser.id });
 		expect(administrativeEventsRepository.collection).toEqual([
 			expect.objectContaining({
@@ -144,7 +144,7 @@ describe('Close User', () => {
 		expect(await tokensRepository.findByUserId(userId)).toHaveLength(0);
 		expect(await credentialsRepository.findByUserId(userId)).toBeNull();
 		expect(await identitiesRepository.findByUserId(userId)).toHaveLength(0);
-		expect(engagementModule.deleteCommentsByUser).toHaveBeenCalledWith(userId);
+		expect(engagementModule.deleteCommentsByUser).toHaveBeenCalledWith({ userId });
 	});
 
 	it('does not close the owner', async () => {

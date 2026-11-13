@@ -1,10 +1,13 @@
-import { resolveCommentsRepository } from '@/core/engagement/infra/mongo/container';
 import { EngagementModule } from './EngagementModule';
 import { IEngagementModule } from './IEngagementModule';
+import { resolveDeleteCommentsByUserService } from './deleteCommentsByUser/deleteCommentsByUser.container';
 
-const engagementModule: IEngagementModule = new EngagementModule(resolveCommentsRepository());
+const deleteCommentsByUserService = resolveDeleteCommentsByUserService();
+
+const engagementModule: IEngagementModule = new EngagementModule(deleteCommentsByUserService);
 
 export const resolveEngagementModule = (): IEngagementModule => engagementModule;
 
 export { EngagementModule } from './EngagementModule';
 export type { IEngagementModule } from './IEngagementModule';
+export type { DeleteCommentsByUser } from './deleteCommentsByUser/deleteCommentsByUser.dtos';

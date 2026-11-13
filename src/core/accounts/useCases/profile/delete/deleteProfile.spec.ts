@@ -76,7 +76,7 @@ describe('Delete Profile', () => {
 		const findDeledProfile = await usersRepository.findById(createdUser.id);
 
 		expect(findDeledProfile).toBeNull();
-		expect(engagementModule.deleteCommentsByUser).toHaveBeenCalledWith(createdUser.id);
+		expect(engagementModule.deleteCommentsByUser).toHaveBeenCalledWith({ userId: createdUser.id });
 		expect(drinksModule.clearCreatorByUser).toHaveBeenCalledWith({ userId: createdUser.id });
 		expect(administrativeEventsRepository.collection).toEqual([
 			expect.objectContaining({

@@ -1,3 +1,6 @@
+import { DeleteCommentsByUser } from './deleteCommentsByUser/deleteCommentsByUser.dtos';
+
 export interface IEngagementModule {
-	deleteCommentsByUser(userId: string): Promise<number>;
+	/** Deletes every comment written by the user; returns how many were removed. */
+	deleteCommentsByUser(data: DeleteCommentsByUser): Promise<number>;
 }

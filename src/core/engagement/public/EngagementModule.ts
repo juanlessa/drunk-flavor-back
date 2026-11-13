@@ -1,10 +1,11 @@
-import { ICommentsRepository } from '@/core/engagement/repositories/IComments.repository';
 import { IEngagementModule } from './IEngagementModule';
+import { DeleteCommentsByUser } from './deleteCommentsByUser/deleteCommentsByUser.dtos';
+import { DeleteCommentsByUserService } from './deleteCommentsByUser/DeleteCommentsByUser.service';
 
 export class EngagementModule implements IEngagementModule {
-	constructor(private commentsRepository: ICommentsRepository) {}
+	constructor(private deleteCommentsByUserService: DeleteCommentsByUserService) {}
 
-	deleteCommentsByUser(userId: string): Promise<number> {
-		return this.commentsRepository.deleteByUser(userId);
+	deleteCommentsByUser(data: DeleteCommentsByUser): Promise<number> {
+		return this.deleteCommentsByUserService.execute(data);
 	}
 }
