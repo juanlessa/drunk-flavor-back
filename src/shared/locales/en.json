@@ -236,6 +236,12 @@
 			"invalidValue": "Value must be an integer between 1 and 5",
 			"forbidden": "You are not allowed to perform this action on this rating"
 		},
+		"favorites": {
+			"requiredDrinkId": "Drink ID is required",
+			"invalidDrinkIdFormat": "Invalid drink ID format",
+			"invalidCursor": "Invalid cursor",
+			"limitReached": "You have reached the maximum number of favorites"
+		},
 		"comments": {
 			"notFound": "Comment not found",
 			"requiredId": "ID is required",

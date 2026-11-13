@@ -204,6 +204,21 @@ always scopes to the caller. Ownership for update and delete is evaluated agains
 - Only the resource owner may update a rating.
 - The resource owner or an Owner/Admin actor may delete a rating.
 
+#### Favorites
+
+Favorites are always the caller's own: every route lives under `/me` and acts on the authenticated user, so there are no
+conditional rules and no concrete subject. Adding and removing are idempotent (`204` whether or not the favorite already
+existed). All routes also require a complete profile, like ratings. `GET /me/favorites` is paginated by an opaque
+`cursor` (not `page`), and `GET /me/favorites/ids` returns only the drink ids, to mark drinks in a list. A user can have
+at most 1000 favorites (`MAX_FAVORITES_PER_USER`): adding a new one past that returns `409`, while re-adding an existing
+one stays `204`.
+
+|                                                               | Owner | Admin | Partner | Member | Anonymous |
+| ------------------------------------------------------------- | :---: | :---: | :-----: | :----: | :-------: |
+| Add favorite (`PUT /me/favorites/:drinkId`)                   |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+| Remove favorite (`DELETE /me/favorites/:drinkId`)             |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+| List favorites (`GET /me/favorites`, `GET /me/favorites/ids`) |  ✅   |  ✅   |   ✅    |   ✅   |    ❌     |
+
 #### Auth (public)
 
 Authentication endpoints are unauthenticated: they are reachable by anyone (Anonymous).

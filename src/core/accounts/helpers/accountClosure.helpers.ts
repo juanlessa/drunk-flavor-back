@@ -15,6 +15,7 @@ import { logger } from '@/shared/providers/logger';
 import {
 	clearCatalogAuthorshipJob,
 	deleteCommentsJob,
+	deleteFavoritesJob,
 	deleteStorageFileJob,
 } from '@/shared/providers/queue/cleanup/cleanupJobs';
 import { enqueueCleanupJobs } from '@/shared/providers/queue/cleanup/enqueueCleanupJobs.helpers';
@@ -75,8 +76,8 @@ export const deleteAccountData = async ({
 /**
  * Enqueues the cleanup that must follow an account closure but does not need to finish before the
  * response: detaching the user from the catalog (the catalog they contributed to is kept, without
- * the user as its creator, because the account holds the personal data), deleting their comments
- * and removing their stored avatar.
+ * the user as its creator, because the account holds the personal data), deleting their comments and
+ * favorites and removing their stored avatar.
  *
  * Runs after the closure transaction has committed, so a rolled-back closure never schedules cleanup.
  */
@@ -90,6 +91,7 @@ export const enqueueAccountClosureCleanup = async (
 		[
 			clearCatalogAuthorshipJob(user.id),
 			deleteCommentsJob(user.id),
+			deleteFavoritesJob(user.id),
 			...(avatarName ? [deleteStorageFileJob(avatarName)] : []),
 		],
 		{ userId: user.id },

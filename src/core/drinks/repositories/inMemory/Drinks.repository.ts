@@ -83,6 +83,10 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 		return this.collection.find((record) => record.id === id) ?? null;
 	}
 
+	async findByIds(ids: string[]): Promise<Drink[]> {
+		return this.collection.filter((record) => ids.includes(record.id));
+	}
+
 	async findAll(query: QueryParams): Promise<Drink[]> {
 		let found = [...this.collection];
 		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);

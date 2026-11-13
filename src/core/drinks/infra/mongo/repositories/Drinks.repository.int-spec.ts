@@ -426,6 +426,18 @@ describe('DrinksRepository (integration)', () => {
 			await expect(repository.delete(invalidId)).rejects.toBeInstanceOf(NotFoundError);
 		});
 
+		it('finds the drinks that exist among the given ids, ignoring ids that match nothing', async () => {
+			const first = await repository.create(buildDrink({ en: 'Caipirinha', pt: 'Caipirinha BR' }));
+			const second = await repository.create(buildDrink({ en: 'Mojito', pt: 'Mojito BR' }));
+			await repository.create(buildDrink({ en: 'Daiquiri', pt: 'Daiquiri BR' }));
+
+			const found = await repository.findByIds([first.id, second.id, new ObjectId().toString(), invalidId]);
+
+			expect(found.map((drink) => drink.id).sort()).toEqual([first.id, second.id].sort());
+			expect(found[0] as Record<string, unknown>).not.toHaveProperty('__v');
+			await expect(repository.findByIds([])).resolves.toEqual([]);
+		});
+
 		it('returns null for an id that is valid but does not exist', async () => {
 			expect(await repository.findById(new ObjectId().toString())).toBeNull();
 		});

@@ -117,6 +117,15 @@ export class DrinksRepository implements IDrinksRepository {
 		return document ? DrinkMapper.toDomain(document) : null;
 	}
 
+	async findByIds(ids: string[]): Promise<Drink[]> {
+		const objectIds = ids.map((id) => DrinkMapper.toObjectId(id)).filter((id): id is Types.ObjectId => id !== null);
+		if (objectIds.length === 0) return [];
+		const documents = await DrinkModel.find({ _id: { $in: objectIds } })
+			.lean<DrinkPersistence[]>()
+			.exec();
+		return documents.map(DrinkMapper.toDomain);
+	}
+
 	async findAll(query: QueryParams): Promise<Drink[]> {
 		const persistenceQuery = DrinkMapper.toPersistenceQuery(query);
 		const documents = await buildQuery<DrinkPersistence>(persistenceQuery, DrinkModel, {

@@ -22,6 +22,7 @@ export const permissions: Record<Role, PermissionsByRole> = {
 	admin(user, { can }) {
 		can('manage', ['Category', 'Unit', 'Ingredient', 'Drink']);
 		can(['create', 'list', 'get', 'delete'], ['Comment', 'Rating']);
+		can(['create', 'list', 'delete'], 'Favorite');
 		can('moderate', 'Comment');
 		can('update', ['Comment', 'Rating'], { userId: { $eq: user.id } });
 
@@ -41,6 +42,7 @@ export const permissions: Record<Role, PermissionsByRole> = {
 		can(['update', 'delete'], [...CATALOG_SUBJECTS], { createdBy: { $eq: user.id } });
 		can(['create', 'list', 'get'], 'Comment');
 		can(['create', 'list', 'get'], 'Rating');
+		can(['create', 'list', 'delete'], 'Favorite');
 		can(['update', 'delete'], 'Comment', { userId: { $eq: user.id } });
 		can(['update', 'delete'], 'Rating', { userId: { $eq: user.id } });
 	},
@@ -51,6 +53,7 @@ export const permissions: Record<Role, PermissionsByRole> = {
 		can(['list', 'get'], 'Drink');
 		can(['create', 'list', 'get'], 'Comment');
 		can(['create', 'list', 'get'], 'Rating');
+		can(['create', 'list', 'delete'], 'Favorite');
 		can(['update', 'delete'], 'Comment', { userId: { $eq: user.id } });
 		can(['update', 'delete'], 'Rating', { userId: { $eq: user.id } });
 	},

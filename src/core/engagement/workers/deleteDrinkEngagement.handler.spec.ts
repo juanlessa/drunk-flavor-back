@@ -7,7 +7,7 @@ vi.mock('@/shared/providers/logger', () => ({
 
 describe('makeDeleteDrinkEngagementHandler', () => {
 	it('should delete the engagement of the removed drink', async () => {
-		const deleteEngagementByDrink = vi.fn().mockResolvedValue({ comments: 2, ratings: 1 });
+		const deleteEngagementByDrink = vi.fn().mockResolvedValue({ comments: 2, ratings: 1, favorites: 3 });
 		await makeDeleteDrinkEngagementHandler({ deleteEngagementByDrink })({ drinkId: 'drink-1' });
 		expect(deleteEngagementByDrink).toHaveBeenCalledWith({ drinkId: 'drink-1' });
 	});

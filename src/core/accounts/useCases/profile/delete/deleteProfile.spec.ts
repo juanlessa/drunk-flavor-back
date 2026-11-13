@@ -149,7 +149,7 @@ describe('Delete Profile', () => {
 		expect(cleanupQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 
-	it('enqueues the catalog and comment cleanup after deleting the profile', async () => {
+	it('enqueues the catalog, comment and favorite cleanup after deleting the profile', async () => {
 		const createdUser = await usersRepository.create(userData);
 		await service.execute({ id: createdUser.id });
 		expect(cleanupQueueProvider.addMock).toHaveBeenCalledWith(
@@ -161,6 +161,11 @@ describe('Delete Profile', () => {
 			CLEANUP_JOB_NAMES.deleteComments,
 			{ userId: createdUser.id },
 			{ deduplicationKey: `delete-comments-${createdUser.id}` },
+		);
+		expect(cleanupQueueProvider.addMock).toHaveBeenCalledWith(
+			CLEANUP_JOB_NAMES.deleteFavorites,
+			{ userId: createdUser.id },
+			{ deduplicationKey: `delete-favorites-${createdUser.id}` },
 		);
 	});
 

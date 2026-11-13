@@ -9,6 +9,7 @@ export type StorageFileCleanupJobData = { fileName: string };
 export type CleanupJobDataMap = {
 	[CLEANUP_JOB_NAMES.clearCatalogAuthorship]: UserCleanupJobData;
 	[CLEANUP_JOB_NAMES.deleteComments]: UserCleanupJobData;
+	[CLEANUP_JOB_NAMES.deleteFavorites]: UserCleanupJobData;
 	[CLEANUP_JOB_NAMES.deleteDrinkEngagement]: DrinkCleanupJobData;
 	[CLEANUP_JOB_NAMES.deleteStorageFile]: StorageFileCleanupJobData;
 };

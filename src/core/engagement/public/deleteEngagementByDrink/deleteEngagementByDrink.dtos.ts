@@ -5,4 +5,5 @@ export type DeleteEngagementByDrink = {
 export type DeleteEngagementByDrinkResult = {
 	comments: number;
 	ratings: number;
+	favorites: number;
 };

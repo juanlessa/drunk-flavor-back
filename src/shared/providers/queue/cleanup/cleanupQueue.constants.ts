@@ -5,6 +5,7 @@
 export const CLEANUP_JOB_NAMES = {
 	clearCatalogAuthorship: 'account.clear-catalog-authorship',
 	deleteComments: 'account.delete-comments',
+	deleteFavorites: 'account.delete-favorites',
 	deleteDrinkEngagement: 'drink.delete-engagement',
 	deleteStorageFile: 'storage.delete-file',
 } as const;

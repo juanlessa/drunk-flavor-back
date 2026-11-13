@@ -16,6 +16,8 @@ export interface IDrinksRepository {
 	delete(id: string): Promise<Drink>;
 	findByName(data: FindDrinkByName): Promise<Drink | null>;
 	findById(id: string): Promise<Drink | null>;
+	/** The drinks that exist among the given ids, in no particular order; ids that match no drink are omitted. */
+	findByIds(ids: string[]): Promise<Drink[]>;
 	findAll(query: QueryParams): Promise<Drink[]>;
 	/** Like `findAll`, with the records created by `userId` first and the others after, each group in the order of the query. */
 	findAllOwnedFirst(query: QueryParams, userId: string): Promise<Drink[]>;

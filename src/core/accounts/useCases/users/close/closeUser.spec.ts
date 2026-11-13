@@ -165,7 +165,7 @@ describe('Close User', () => {
 		expect(await usersRepository.findById(admin.id)).toBeNull();
 	});
 
-	it('enqueues the catalog and comment cleanup after closing the account', async () => {
+	it('enqueues the catalog, comment and favorite cleanup after closing the account', async () => {
 		const createdUser = await usersRepository.create(userData);
 		await service.execute({ id: createdUser.id, actor: admin, reason });
 		expect(cleanupQueueProvider.addMock).toHaveBeenCalledWith(
@@ -178,7 +178,12 @@ describe('Close User', () => {
 			{ userId: createdUser.id },
 			{ deduplicationKey: `delete-comments-${createdUser.id}` },
 		);
-		expect(cleanupQueueProvider.addMock).toHaveBeenCalledTimes(2);
+		expect(cleanupQueueProvider.addMock).toHaveBeenCalledWith(
+			CLEANUP_JOB_NAMES.deleteFavorites,
+			{ userId: createdUser.id },
+			{ deduplicationKey: `delete-favorites-${createdUser.id}` },
+		);
+		expect(cleanupQueueProvider.addMock).toHaveBeenCalledTimes(3);
 	});
 
 	it('enqueues the removal of a server-managed avatar', async () => {
@@ -219,6 +224,6 @@ describe('Close User', () => {
 		cleanupQueueProvider.addMock.mockRejectedValueOnce(new Error('queue unavailable'));
 		await expect(service.execute({ id: createdUser.id, actor: admin, reason })).resolves.toBeUndefined();
 		expect(await usersRepository.findById(createdUser.id)).toBeNull();
-		expect(cleanupQueueProvider.addMock).toHaveBeenCalledTimes(2);
+		expect(cleanupQueueProvider.addMock).toHaveBeenCalledTimes(3);
 	});
 });

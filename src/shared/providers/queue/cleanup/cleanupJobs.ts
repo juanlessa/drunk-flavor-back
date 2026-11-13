@@ -26,6 +26,12 @@ export const deleteCommentsJob = (userId: string): CleanupJobRequest => ({
 	deduplicationKey: `delete-comments-${userId}`,
 });
 
+export const deleteFavoritesJob = (userId: string): CleanupJobRequest => ({
+	name: CLEANUP_JOB_NAMES.deleteFavorites,
+	data: { userId },
+	deduplicationKey: `delete-favorites-${userId}`,
+});
+
 export const deleteDrinkEngagementJob = (drinkId: string): CleanupJobRequest => ({
 	name: CLEANUP_JOB_NAMES.deleteDrinkEngagement,
 	data: { drinkId },

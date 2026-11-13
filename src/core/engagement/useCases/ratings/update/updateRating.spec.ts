@@ -17,6 +17,7 @@ const owner: Actor = { id: ownerId, role: Roles.member };
 const foreign: Actor = { id: new ObjectId().toString(), role: Roles.member };
 const drinksModule: IDrinksModule = {
 	findDrinkById: vi.fn().mockResolvedValue(null),
+	findDrinksByIds: vi.fn().mockResolvedValue([]),
 	applyRatingDelta: vi.fn().mockResolvedValue({ average: 2, count: 1 }),
 	clearCreatorByUser: vi.fn().mockResolvedValue(0),
 };
