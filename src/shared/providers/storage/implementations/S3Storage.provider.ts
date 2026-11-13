@@ -1,6 +1,6 @@
 import { IStorageProvider } from '../IStorage.provider';
 import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { env } from '@/env';
+import type { FlatStorageSchema } from '@/env/storage';
 import { logger } from '@/shared/providers/logger';
 import { UploadFileOptions } from '../storage.dtos';
 
@@ -9,16 +9,16 @@ export class S3StorageProvider implements IStorageProvider {
 	private readonly BUCKET_NAME: string;
 	private readonly PUBLIC_URL: string;
 
-	constructor() {
-		this.BUCKET_NAME = env.AWS_S3_BUCKET_NAME;
-		this.PUBLIC_URL = env.AWS_S3_PUBLIC_URL;
+	constructor(config: FlatStorageSchema) {
+		this.BUCKET_NAME = config.AWS_S3_BUCKET_NAME;
+		this.PUBLIC_URL = config.AWS_S3_PUBLIC_URL;
 
 		this.s3Client = new S3Client({
-			region: env.AWS_DEFAULT_REGION || 'auto',
-			endpoint: env.AWS_S3_ENDPOINT,
+			region: config.AWS_DEFAULT_REGION || 'auto',
+			endpoint: config.AWS_S3_ENDPOINT,
 			credentials: {
-				accessKeyId: env.AWS_ACCESS_KEY_ID,
-				secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+				accessKeyId: config.AWS_ACCESS_KEY_ID,
+				secretAccessKey: config.AWS_SECRET_ACCESS_KEY,
 			},
 		});
 	}

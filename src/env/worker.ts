@@ -7,6 +7,7 @@ import { z } from 'zod/v4';
  */
 export const workerSchema = z.object({
 	EMAIL_WORKER_CONCURRENCY: z.coerce.number().int().min(1).default(5),
+	CLEANUP_WORKER_CONCURRENCY: z.coerce.number().int().min(1).default(2),
 });
 
 export type WorkerSchema = z.infer<typeof workerSchema>;

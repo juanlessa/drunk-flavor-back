@@ -18,12 +18,10 @@ import { IdentityProviders } from '@/core/accounts/constants/identity.constants'
 import { env } from '@/env';
 import { OwnerManagementRequiresTransferError } from '@/core/accounts/errors/user.errors';
 import { Roles } from '@/shared/accessControl/roles';
-import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
-import { MockStorageProvider } from '@/shared/providers/storage/implementations/MockStorage.provider';
+import { CLEANUP_JOB_NAMES } from '@/shared/providers/queue/cleanup/cleanupQueue.constants';
+import { MockCleanupQueueProvider } from '@/shared/providers/queue/cleanup/implementations/MockCleanupQueue.provider';
 import { AdministrativeEventsRepositoryInMemory } from '@/core/accounts/repositories/inMemory/AdministrativeEvents.repository';
 import { AdministrativeEventActions } from '@/core/accounts/constants/administrativeEvent.constants';
-import { IDrinksModule } from '@/core/drinks/public';
-import { IEngagementModule } from '@/core/engagement/public';
 import { SessionVersionMarkerStoreInMemory } from '@/core/accounts/stores/inMemory/SessionVersionMarker.store';
 
 let cryptoProvider: NodeCryptoProvider;
@@ -31,10 +29,8 @@ let usersRepository: IUsersRepository;
 let tokensRepository: ITokensRepository;
 let credentialsRepository: ICredentialsRepository;
 let identitiesRepository: IIdentitiesRepository;
-let storageProvider: IStorageProvider;
+let cleanupQueueProvider: MockCleanupQueueProvider;
 let administrativeEventsRepository: AdministrativeEventsRepositoryInMemory;
-let engagementModule: IEngagementModule;
-let drinksModule: IDrinksModule;
 let service: DeleteProfileService;
 
 const userData = createUserFactory();
@@ -46,29 +42,21 @@ describe('Delete Profile', () => {
 		tokensRepository = new TokensRepositoryInMemory();
 		credentialsRepository = new CredentialsRepositoryInMemory();
 		identitiesRepository = new IdentitiesRepositoryInMemory();
-		storageProvider = new MockStorageProvider();
+		cleanupQueueProvider = new MockCleanupQueueProvider();
 		administrativeEventsRepository = new AdministrativeEventsRepositoryInMemory();
-		engagementModule = { deleteCommentsByUser: vi.fn().mockResolvedValue(0) };
-		drinksModule = {
-			findDrinkById: vi.fn(),
-			applyRatingDelta: vi.fn(),
-			clearCreatorByUser: vi.fn().mockResolvedValue(0),
-		};
 		service = new DeleteProfileService(
 			usersRepository,
 			tokensRepository,
 			credentialsRepository,
 			identitiesRepository,
 			new FakeTransactionManager(),
-			storageProvider,
 			administrativeEventsRepository,
-			engagementModule,
-			drinksModule,
 			new SessionVersionMarkerStoreInMemory(),
+			cleanupQueueProvider,
 		);
 	});
 
-	it('deletes the profile, its comments, and records the closure', async () => {
+	it('deletes the profile and records the closure', async () => {
 		const createdUser = await usersRepository.create(userData);
 
 		await service.execute({ id: createdUser.id });
@@ -76,8 +64,6 @@ describe('Delete Profile', () => {
 		const findDeledProfile = await usersRepository.findById(createdUser.id);
 
 		expect(findDeledProfile).toBeNull();
-		expect(engagementModule.deleteCommentsByUser).toHaveBeenCalledWith({ userId: createdUser.id });
-		expect(drinksModule.clearCreatorByUser).toHaveBeenCalledWith({ userId: createdUser.id });
 		expect(administrativeEventsRepository.collection).toEqual([
 			expect.objectContaining({
 				actorId: createdUser.id,
@@ -124,7 +110,7 @@ describe('Delete Profile', () => {
 		expect(await identitiesRepository.findByUserId(userId)).toHaveLength(0);
 	});
 
-	it('deletes a server-managed avatar after the account transaction succeeds', async () => {
+	it('enqueues the removal of a server-managed avatar after the account transaction succeeds', async () => {
 		const createdUser = await usersRepository.create(userData);
 		const userId = createdUser.id;
 		const avatarName = `0123456789abcdef0123456789abcdef-${userId}-avatar.png`;
@@ -132,10 +118,14 @@ describe('Delete Profile', () => {
 
 		await service.execute({ id: userId });
 
-		expect(storageProvider.deleteFile).toHaveBeenCalledWith(avatarName);
+		expect(cleanupQueueProvider.addMock).toHaveBeenCalledWith(
+			CLEANUP_JOB_NAMES.deleteStorageFile,
+			{ fileName: avatarName },
+			{ deduplicationKey: `delete-storage-file-${avatarName}` },
+		);
 	});
 
-	it('does not send an external provider avatar to storage deletion', async () => {
+	it('does not enqueue the removal of an external provider avatar', async () => {
 		const createdUser = await usersRepository.create({
 			...userData,
 			avatarUrl: 'https://accounts.example.com/avatar.png',
@@ -143,7 +133,11 @@ describe('Delete Profile', () => {
 
 		await service.execute({ id: createdUser.id });
 
-		expect(storageProvider.deleteFile).not.toHaveBeenCalled();
+		expect(cleanupQueueProvider.addMock).not.toHaveBeenCalledWith(
+			CLEANUP_JOB_NAMES.deleteStorageFile,
+			expect.anything(),
+			expect.anything(),
+		);
 	});
 
 	it('does not let the owner delete their own profile', async () => {
@@ -152,22 +146,33 @@ describe('Delete Profile', () => {
 		await expect(service.execute({ id: owner.id })).rejects.toBeInstanceOf(OwnerManagementRequiresTransferError);
 
 		expect(await usersRepository.findById(owner.id)).not.toBeNull();
-		expect(storageProvider.deleteFile).not.toHaveBeenCalled();
+		expect(cleanupQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 
-	it('does not touch the catalog when the profile does not exist', async () => {
-		await expect(service.execute({ id: new ObjectId().toString() })).rejects.toBeInstanceOf(NotFoundError);
-
-		expect(drinksModule.clearCreatorByUser).not.toHaveBeenCalled();
-	});
-
-	it('keeps the account and records no closure when the catalog cannot be anonymized', async () => {
+	it('enqueues the catalog and comment cleanup after deleting the profile', async () => {
 		const createdUser = await usersRepository.create(userData);
-		vi.mocked(drinksModule.clearCreatorByUser).mockRejectedValueOnce(new Error('catalog unavailable'));
+		await service.execute({ id: createdUser.id });
+		expect(cleanupQueueProvider.addMock).toHaveBeenCalledWith(
+			CLEANUP_JOB_NAMES.clearCatalogAuthorship,
+			{ userId: createdUser.id },
+			{ deduplicationKey: `clear-catalog-authorship-${createdUser.id}` },
+		);
+		expect(cleanupQueueProvider.addMock).toHaveBeenCalledWith(
+			CLEANUP_JOB_NAMES.deleteComments,
+			{ userId: createdUser.id },
+			{ deduplicationKey: `delete-comments-${createdUser.id}` },
+		);
+	});
 
-		await expect(service.execute({ id: createdUser.id })).rejects.toThrow('catalog unavailable');
+	it('does not enqueue any cleanup when the profile does not exist', async () => {
+		await expect(service.execute({ id: new ObjectId().toString() })).rejects.toBeInstanceOf(NotFoundError);
+		expect(cleanupQueueProvider.addMock).not.toHaveBeenCalled();
+	});
 
-		expect(await usersRepository.findById(createdUser.id)).not.toBeNull();
-		expect(administrativeEventsRepository.collection).toHaveLength(0);
+	it('keeps the deletion when a cleanup job cannot be enqueued', async () => {
+		const createdUser = await usersRepository.create(userData);
+		cleanupQueueProvider.addMock.mockRejectedValueOnce(new Error('queue unavailable'));
+		await expect(service.execute({ id: createdUser.id })).resolves.toBeUndefined();
+		expect(await usersRepository.findById(createdUser.id)).toBeNull();
 	});
 });

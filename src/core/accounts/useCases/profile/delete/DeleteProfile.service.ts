@@ -7,13 +7,11 @@ import { ITokensRepository } from '@/core/accounts/repositories/ITokens.reposito
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import {
 	assertAccountCanBeSelfClosed,
-	deleteAccountAvatar,
 	deleteAccountData,
+	enqueueAccountClosureCleanup,
 } from '@/core/accounts/helpers/accountClosure.helpers';
 import { NotFoundError } from '@/shared/error/error.lib';
-import { IDrinksModule } from '@/core/drinks/public';
-import { IEngagementModule } from '@/core/engagement/public';
-import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
+import { ICleanupQueueProvider } from '@/shared/providers/queue/cleanup/ICleanupQueue.provider';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { Roles } from '@/shared/accessControl/roles';
 import { DeleteProfileCommand } from './deleteProfile.dtos';
@@ -26,11 +24,9 @@ export class DeleteProfileService {
 		private credentialsRepository: ICredentialsRepository,
 		private identitiesRepository: IIdentitiesRepository,
 		private transactionManager: ITransactionManager,
-		private storageProvider: IStorageProvider,
 		private administrativeEventsRepository: IAdministrativeEventsRepository,
-		private engagementModule: IEngagementModule,
-		private drinksModule: IDrinksModule,
 		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
+		private cleanupQueueProvider: ICleanupQueueProvider,
 	) {}
 
 	async execute({ id, administrativeContext }: DeleteProfileCommand): Promise<void> {
@@ -54,13 +50,11 @@ export class DeleteProfileService {
 				identitiesRepository: this.identitiesRepository,
 				tokensRepository: this.tokensRepository,
 				administrativeEventsRepository: this.administrativeEventsRepository,
-				engagementModule: this.engagementModule,
-				drinksModule: this.drinksModule,
 				sessionVersionMarkerStore: this.sessionVersionMarkerStore,
 			});
 			return user;
 		});
 
-		await deleteAccountAvatar(closedUser, this.storageProvider);
+		await enqueueAccountClosureCleanup(closedUser, this.cleanupQueueProvider);
 	}
 }

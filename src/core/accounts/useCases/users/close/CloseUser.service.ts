@@ -5,11 +5,9 @@ import { ICredentialsRepository } from '@/core/accounts/repositories/ICredential
 import { IIdentitiesRepository } from '@/core/accounts/repositories/IIdentities.repository';
 import { ITokensRepository } from '@/core/accounts/repositories/ITokens.repository';
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
-import { IDrinksModule } from '@/core/drinks/public';
-import { IEngagementModule } from '@/core/engagement/public';
-import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
+import { ICleanupQueueProvider } from '@/shared/providers/queue/cleanup/ICleanupQueue.provider';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
-import { deleteAccountAvatar, deleteAccountData } from '@/core/accounts/helpers/accountClosure.helpers';
+import { deleteAccountData, enqueueAccountClosureCleanup } from '@/core/accounts/helpers/accountClosure.helpers';
 import { authorizeUserAdministration } from '@/core/accounts/helpers/userAdministrationAudit.helpers';
 import {
 	findRequiredAdministrationUser,
@@ -25,11 +23,9 @@ export class CloseUserService {
 		private identitiesRepository: IIdentitiesRepository,
 		private tokensRepository: ITokensRepository,
 		private administrativeEventsRepository: IAdministrativeEventsRepository,
-		private engagementModule: IEngagementModule,
-		private drinksModule: IDrinksModule,
 		private transactionManager: ITransactionManager,
-		private storageProvider: IStorageProvider,
 		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
+		private cleanupQueueProvider: ICleanupQueueProvider,
 		private userAdministrationPolicy = new UserAdministrationPolicy(),
 	) {}
 
@@ -63,13 +59,11 @@ export class CloseUserService {
 				identitiesRepository: this.identitiesRepository,
 				tokensRepository: this.tokensRepository,
 				administrativeEventsRepository: this.administrativeEventsRepository,
-				engagementModule: this.engagementModule,
-				drinksModule: this.drinksModule,
 				sessionVersionMarkerStore: this.sessionVersionMarkerStore,
 			});
 			return target;
 		});
 
-		await deleteAccountAvatar(closedUser, this.storageProvider);
+		await enqueueAccountClosureCleanup(closedUser, this.cleanupQueueProvider);
 	}
 }

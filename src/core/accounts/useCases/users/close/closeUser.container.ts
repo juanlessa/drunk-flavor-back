@@ -5,10 +5,8 @@ import {
 	resolveTokensRepository,
 	resolveUsersRepository,
 } from '@/core/accounts/infra/mongo/container';
-import { resolveDrinksModule } from '@/core/drinks/public';
-import { resolveEngagementModule } from '@/core/engagement/public';
 import { resolveTransactionManager } from '@/infrastructure/mongo/transactions';
-import { resolveStorageProvider } from '@/shared/providers/storage';
+import { resolveCleanupQueueProvider } from '@/shared/providers/queue/cleanup';
 import { CloseUserService } from './CloseUser.service';
 import { resolveSessionVersionMarkerStore } from '@/core/accounts/infra/redis/container';
 
@@ -17,11 +15,9 @@ const credentialsRepository = resolveCredentialsRepository();
 const identitiesRepository = resolveIdentitiesRepository();
 const tokensRepository = resolveTokensRepository();
 const administrativeEventsRepository = resolveAdministrativeEventsRepository();
-const engagementModule = resolveEngagementModule();
-const drinksModule = resolveDrinksModule();
 const transactionManager = resolveTransactionManager();
-const storageProvider = resolveStorageProvider();
 const sessionVersionMarkerStore = resolveSessionVersionMarkerStore();
+const cleanupQueueProvider = resolveCleanupQueueProvider();
 
 const closeUserService = new CloseUserService(
 	usersRepository,
@@ -29,11 +25,9 @@ const closeUserService = new CloseUserService(
 	identitiesRepository,
 	tokensRepository,
 	administrativeEventsRepository,
-	engagementModule,
-	drinksModule,
 	transactionManager,
-	storageProvider,
 	sessionVersionMarkerStore,
+	cleanupQueueProvider,
 );
 
 export const resolveCloseUserService = () => closeUserService;

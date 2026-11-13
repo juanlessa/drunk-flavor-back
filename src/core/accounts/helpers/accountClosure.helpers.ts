@@ -11,10 +11,9 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
 import { invalidateDeletedUserSessions } from '@/core/accounts/helpers/sessionInvalidation.helpers';
 import { getManagedStoredFileName } from '@/shared/helpers/file.helpers';
-import { IDrinksModule } from '@/core/drinks/public';
-import { IEngagementModule } from '@/core/engagement/public';
 import { logger } from '@/shared/providers/logger';
-import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
+import { CLEANUP_JOB_NAMES } from '@/shared/providers/queue/cleanup/cleanupQueue.constants';
+import { ICleanupQueueProvider } from '@/shared/providers/queue/cleanup/ICleanupQueue.provider';
 
 const closableStatuses: readonly User['status'][] = [
 	UserStatuses.active,
@@ -38,8 +37,6 @@ type DeleteAccountDataOptions = {
 	identitiesRepository: IIdentitiesRepository;
 	tokensRepository: ITokensRepository;
 	administrativeEventsRepository: IAdministrativeEventsRepository;
-	engagementModule: IEngagementModule;
-	drinksModule: IDrinksModule;
 	sessionVersionMarkerStore: ISessionVersionMarkerStore;
 };
 
@@ -53,13 +50,8 @@ export const deleteAccountData = async ({
 	identitiesRepository,
 	tokensRepository,
 	administrativeEventsRepository,
-	engagementModule,
-	drinksModule,
 	sessionVersionMarkerStore,
 }: DeleteAccountDataOptions): Promise<void> => {
-	await engagementModule.deleteCommentsByUser({ userId: user.id });
-	// The catalog the user contributed to is kept, without the user as its creator (the account holds the personal data).
-	await drinksModule.clearCreatorByUser({ userId: user.id });
 	await credentialsRepository.deleteByUserId(user.id);
 	await identitiesRepository.deleteByUserId(user.id);
 	await tokensRepository.deleteByUserId(user.id);
@@ -75,15 +67,61 @@ export const deleteAccountData = async ({
 	});
 };
 
-export const deleteAccountAvatar = async (user: User, storageProvider: IStorageProvider): Promise<void> => {
-	const avatarName = getManagedStoredFileName(user.avatarUrl, user.id, 'avatar');
-	if (!avatarName) {
-		return;
+/**
+ * Enqueues the cleanup that must follow an account closure but does not need to finish before the
+ * response: detaching the user from the catalog (the catalog they contributed to is kept, without
+ * the user as its creator, because the account holds the personal data), deleting their comments
+ * and removing their stored avatar.
+ *
+ * Runs after the closure transaction has committed, so a rolled-back closure never schedules
+ * cleanup. Each job is enqueued independently and a failure is logged without failing the
+ * closure, which has already happened. The jobs are idempotent and deduplicated by user, so
+ * enqueueing them again is safe.
+ */
+export const enqueueAccountClosureCleanup = async (
+	user: User,
+	cleanupQueueProvider: ICleanupQueueProvider,
+): Promise<void> => {
+	const userId = user.id;
+	const avatarName = getManagedStoredFileName(user.avatarUrl, userId, 'avatar');
+	const enqueues: Array<{ jobName: string; enqueue: () => Promise<void> }> = [
+		{
+			jobName: CLEANUP_JOB_NAMES.clearCatalogAuthorship,
+			enqueue: () =>
+				cleanupQueueProvider.add(
+					CLEANUP_JOB_NAMES.clearCatalogAuthorship,
+					{ userId },
+					{ deduplicationKey: `clear-catalog-authorship-${userId}` },
+				),
+		},
+		{
+			jobName: CLEANUP_JOB_NAMES.deleteComments,
+			enqueue: () =>
+				cleanupQueueProvider.add(
+					CLEANUP_JOB_NAMES.deleteComments,
+					{ userId },
+					{ deduplicationKey: `delete-comments-${userId}` },
+				),
+		},
+	];
+	if (avatarName) {
+		enqueues.push({
+			jobName: CLEANUP_JOB_NAMES.deleteStorageFile,
+			enqueue: () =>
+				cleanupQueueProvider.add(
+					CLEANUP_JOB_NAMES.deleteStorageFile,
+					{ fileName: avatarName },
+					{ deduplicationKey: `delete-storage-file-${avatarName}` },
+				),
+		});
 	}
-
-	try {
-		await storageProvider.deleteFile(avatarName);
-	} catch (error) {
-		logger.error(error, 'Unable to delete the account avatar after account closure');
-	}
+	const results = await Promise.allSettled(enqueues.map(({ enqueue }) => enqueue()));
+	results.forEach((result, index) => {
+		if (result.status === 'rejected') {
+			logger.error(
+				{ err: result.reason as unknown, userId, jobName: enqueues[index].jobName },
+				'Unable to enqueue account closure cleanup',
+			);
+		}
+	});
 };
