@@ -1,6 +1,7 @@
 import { resolveDrinksModule } from '@/core/drinks/public';
 import { makeClearCatalogAuthorshipHandler } from '@/core/drinks/workers/clearCatalogAuthorship.handler';
 import { resolveEngagementModule } from '@/core/engagement/public';
+import { makeDeleteDrinkEngagementHandler } from '@/core/engagement/workers/deleteDrinkEngagement.handler';
 import { makeDeleteUserCommentsHandler } from '@/core/engagement/workers/deleteUserComments.handler';
 import { parseWorkerEnv } from '@/env/worker';
 import { createBullMQWorker } from '@/infrastructure/bullmq/workers/createBullMQWorker';
@@ -21,6 +22,7 @@ export const cleanupWorkerRegistration: IWorkerRegistration = {
 			handlers: {
 				[CLEANUP_JOB_NAMES.clearCatalogAuthorship]: makeClearCatalogAuthorshipHandler(resolveDrinksModule()),
 				[CLEANUP_JOB_NAMES.deleteComments]: makeDeleteUserCommentsHandler(resolveEngagementModule()),
+				[CLEANUP_JOB_NAMES.deleteDrinkEngagement]: makeDeleteDrinkEngagementHandler(resolveEngagementModule()),
 				[CLEANUP_JOB_NAMES.deleteStorageFile]: makeDeleteStorageFileHandler(resolveStorageProvider()),
 			},
 			concurrency: parseWorkerEnv().CLEANUP_WORKER_CONCURRENCY,

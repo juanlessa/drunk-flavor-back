@@ -18,15 +18,15 @@ import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { DrinksRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Drinks.repository';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
-import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
-import { MockStorageProvider } from '@/shared/providers/storage/implementations/MockStorage.provider';
+import { MockCleanupQueueProvider } from '@/shared/providers/queue/cleanup/implementations/MockCleanupQueue.provider';
+import { CLEANUP_JOB_NAMES } from '@/shared/providers/queue/cleanup/cleanupQueue.constants';
 import { Drink } from '@/core/drinks/entities/drink.entity';
 
 let categoriesRepository: ICategoriesRepository;
 let ingredientsRepository: IIngredientsRepository;
 let unitsRepository: IUnitsRepository;
 let drinksRepository: IDrinksRepository;
-let storageProvider: IStorageProvider;
+let cleanupQueueProvider: MockCleanupQueueProvider;
 let service: DeleteDrinkService;
 
 const { translations: categoryTranslations } = createCategoryFactory();
@@ -46,8 +46,8 @@ describe('Delete Drink', () => {
 		ingredientsRepository = new IngredientsRepositoryInMemory();
 		unitsRepository = new UnitsRepositoryInMemory();
 		drinksRepository = new DrinksRepositoryInMemory();
-		storageProvider = new MockStorageProvider();
-		service = new DeleteDrinkService(drinksRepository, storageProvider);
+		cleanupQueueProvider = new MockCleanupQueueProvider();
+		service = new DeleteDrinkService(drinksRepository, cleanupQueueProvider);
 
 		createdCategory = await categoriesRepository.create(
 			withCreator({
@@ -88,7 +88,16 @@ describe('Delete Drink', () => {
 		await expect(service.execute(withActor({ id: nonexistentId }))).rejects.toBeInstanceOf(NotFoundError);
 	});
 
-	it('should be able to delete the cover and thumbnail during delete a drink', async () => {
+	it('should enqueue the engagement cleanup of the deleted drink', async () => {
+		await service.execute(withActor({ id: createdDrink.id }));
+		expect(cleanupQueueProvider.addMock).toHaveBeenCalledWith(
+			CLEANUP_JOB_NAMES.deleteDrinkEngagement,
+			{ drinkId: createdDrink.id },
+			{ deduplicationKey: `delete-drink-engagement-${createdDrink.id}` },
+		);
+	});
+
+	it('should enqueue the removal of the cover and thumbnail when deleting a drink', async () => {
 		await drinksRepository.update(
 			withEditor({
 				id: createdDrink.id,
@@ -96,11 +105,34 @@ describe('Delete Drink', () => {
 				thumbnail: { name: 'thumbnailFile.jpeg', mimetype: 'image/jpeg', url: '' },
 			}),
 		);
-
 		await service.execute(withActor({ id: createdDrink.id }));
+		expect(cleanupQueueProvider.addMock).toHaveBeenCalledWith(
+			CLEANUP_JOB_NAMES.deleteStorageFile,
+			{ fileName: 'coverFile.png' },
+			{ deduplicationKey: 'delete-storage-file-coverFile.png' },
+		);
+		expect(cleanupQueueProvider.addMock).toHaveBeenCalledWith(
+			CLEANUP_JOB_NAMES.deleteStorageFile,
+			{ fileName: 'thumbnailFile.jpeg' },
+			{ deduplicationKey: 'delete-storage-file-thumbnailFile.jpeg' },
+		);
+	});
 
-		const found = await drinksRepository.findById(createdDrink.id);
+	it('should not enqueue any file removal when the drink has no files', async () => {
+		await service.execute(withActor({ id: createdDrink.id }));
+		expect(cleanupQueueProvider.addMock).toHaveBeenCalledTimes(1);
+	});
 
-		expect(storageProvider.deleteFile).toBeCalledTimes(2);
+	it('should keep the deletion when a cleanup job cannot be enqueued', async () => {
+		cleanupQueueProvider.addMock.mockRejectedValueOnce(new Error('queue unavailable'));
+		await expect(service.execute(withActor({ id: createdDrink.id }))).resolves.toBeUndefined();
+		expect(await drinksRepository.findById(createdDrink.id)).toBeNull();
+	});
+
+	it('should not enqueue any cleanup when the drink does not exist', async () => {
+		await expect(service.execute(withActor({ id: new ObjectId().toString() }))).rejects.toBeInstanceOf(
+			NotFoundError,
+		);
+		expect(cleanupQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 });

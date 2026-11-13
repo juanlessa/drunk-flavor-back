@@ -18,6 +18,8 @@ import { DrinksRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Dr
 import { Drink } from '@/core/drinks/entities/drink.entity';
 import { UpdateDrinkThumbnailService } from './UpdateDrinkThumbnail.service';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
+import { MockCleanupQueueProvider } from '@/shared/providers/queue/cleanup/implementations/MockCleanupQueue.provider';
+import { CLEANUP_JOB_NAMES } from '@/shared/providers/queue/cleanup/cleanupQueue.constants';
 import { MockStorageProvider } from '@/shared/providers/storage/implementations/MockStorage.provider';
 import { Readable } from 'node:stream';
 import { hasFileExtension } from '@/shared/helpers/file.helpers';
@@ -28,6 +30,7 @@ let ingredientsRepository: IIngredientsRepository;
 let unitsRepository: IUnitsRepository;
 let drinksRepository: IDrinksRepository;
 let storageProvider: IStorageProvider;
+let cleanupQueueProvider: MockCleanupQueueProvider;
 let service: UpdateDrinkThumbnailService;
 
 const { translations: categoryTranslations } = createCategoryFactory();
@@ -59,7 +62,8 @@ describe('Update Drink', () => {
 		unitsRepository = new UnitsRepositoryInMemory();
 		drinksRepository = new DrinksRepositoryInMemory();
 		storageProvider = new MockStorageProvider();
-		service = new UpdateDrinkThumbnailService(drinksRepository, storageProvider);
+		cleanupQueueProvider = new MockCleanupQueueProvider();
+		service = new UpdateDrinkThumbnailService(drinksRepository, storageProvider, cleanupQueueProvider);
 
 		const category = await categoriesRepository.create(
 			withCreator({ translations: categoryTranslations, isAlcoholic: false }),
@@ -135,24 +139,66 @@ describe('Update Drink', () => {
 		).rejects.toBeInstanceOf(NotFoundError);
 	});
 
-	it('should be able to delete the existing drink thumbnail during the update', async () => {
+	const previousName = 'previous-thumbnail-file.png';
+	const updateCommand = () =>
+		withActor({
+			drinkId: createdDrink.id,
+			name: fileName,
+			mimetype: fileMimetype,
+			fileStream: mockedFileStream,
+		});
+
+	it('should enqueue the removal of the previous thumbnail once the new one is in place', async () => {
 		await drinksRepository.update(
 			withEditor({
 				id: createdDrink.id,
-				thumbnail: { name: fileMimetype, mimetype: fileMimetype, url: '' },
+				thumbnail: { name: previousName, mimetype: fileMimetype, url: '' },
 			}),
 		);
+		await service.execute(updateCommand());
+		expect(cleanupQueueProvider.addMock).toHaveBeenCalledWith(
+			CLEANUP_JOB_NAMES.deleteStorageFile,
+			{ fileName: previousName },
+			{ deduplicationKey: `delete-storage-file-${previousName}` },
+		);
+		expect(storageProvider.deleteFile).not.toHaveBeenCalled();
+	});
 
-		await service.execute(
-			withActor({
-				drinkId: createdDrink.id,
-				name: fileName,
-				mimetype: fileMimetype,
-				fileStream: mockedFileStream,
+	it('should not enqueue any removal when there was no previous thumbnail', async () => {
+		await service.execute(updateCommand());
+		expect(cleanupQueueProvider.addMock).not.toHaveBeenCalled();
+	});
+
+	it('should keep the previous thumbnail and enqueue the removal of the new file when the update fails', async () => {
+		await drinksRepository.update(
+			withEditor({
+				id: createdDrink.id,
+				thumbnail: { name: previousName, mimetype: fileMimetype, url: '' },
 			}),
 		);
+		vi.spyOn(drinksRepository, 'update').mockRejectedValueOnce(new Error('database unavailable'));
+		await expect(service.execute(updateCommand())).rejects.toThrow('database unavailable');
+		const stored = (await drinksRepository.findById(createdDrink.id)) as Drink;
+		expect(stored.thumbnail?.name).toBe(previousName);
+		expect(cleanupQueueProvider.addMock).toHaveBeenCalledTimes(1);
+		expect(cleanupQueueProvider.addMock).toHaveBeenCalledWith(
+			CLEANUP_JOB_NAMES.deleteStorageFile,
+			{ fileName: expect.stringMatching(/^[0-9a-f]{32}-.*-thumbnail\.png$/) as string },
+			expect.anything(),
+		);
+	});
 
-		expect(storageProvider.deleteFile).toHaveBeenCalledTimes(1);
+	it('should keep the update when the removal of the previous thumbnail cannot be enqueued', async () => {
+		await drinksRepository.update(
+			withEditor({
+				id: createdDrink.id,
+				thumbnail: { name: previousName, mimetype: fileMimetype, url: '' },
+			}),
+		);
+		cleanupQueueProvider.addMock.mockRejectedValueOnce(new Error('queue unavailable'));
+		await expect(service.execute(updateCommand())).resolves.toBeUndefined();
+		const stored = (await drinksRepository.findById(createdDrink.id)) as Drink;
+		expect(stored.thumbnail?.name).not.toBe(previousName);
 	});
 
 	it('should set the file extension from the mime type regardless of the uploaded name', async () => {

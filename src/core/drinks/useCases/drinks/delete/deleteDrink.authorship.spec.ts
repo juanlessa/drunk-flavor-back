@@ -7,7 +7,8 @@ import { DrinksRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Dr
 import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Ingredients.repository';
 import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Units.repository';
 import { Roles } from '@/shared/accessControl/roles';
-import { MockStorageProvider } from '@/shared/providers/storage/implementations/MockStorage.provider';
+import { MockCleanupQueueProvider } from '@/shared/providers/queue/cleanup/implementations/MockCleanupQueue.provider';
+import { CLEANUP_JOB_NAMES } from '@/shared/providers/queue/cleanup/cleanupQueue.constants';
 import { ForbiddenError, NotFoundError } from '@/shared/error/error.lib';
 import { DeleteDrinkService } from './DeleteDrink.service';
 
@@ -15,7 +16,7 @@ const creatorId = '66b0000000000000000000a1';
 const cover = { name: 'cover.png', mimetype: 'image/png', url: '' };
 
 let drinksRepository: DrinksRepositoryInMemory;
-let storageProvider: MockStorageProvider;
+let cleanupQueueProvider: MockCleanupQueueProvider;
 let service: DeleteDrinkService;
 let drink: Drink;
 
@@ -23,8 +24,8 @@ describe('Delete Drink: authorship', () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 		drinksRepository = new DrinksRepositoryInMemory();
-		storageProvider = new MockStorageProvider();
-		service = new DeleteDrinkService(drinksRepository, storageProvider);
+		cleanupQueueProvider = new MockCleanupQueueProvider();
+		service = new DeleteDrinkService(drinksRepository, cleanupQueueProvider);
 		({ drink } = await seedDrink(
 			{
 				categoriesRepository: new CategoriesRepositoryInMemory(),
@@ -41,7 +42,11 @@ describe('Delete Drink: authorship', () => {
 		await service.execute(withActor({ id: drink.id }, actorWithRole(role)));
 
 		expect(await drinksRepository.findById(drink.id)).toBeNull();
-		expect(storageProvider.deleteFile).toHaveBeenCalledWith(cover.name);
+		expect(cleanupQueueProvider.addMock).toHaveBeenCalledWith(
+			CLEANUP_JOB_NAMES.deleteStorageFile,
+			{ fileName: cover.name },
+			{ deduplicationKey: `delete-storage-file-${cover.name}` },
+		);
 	});
 
 	it('lets a partner delete a drink they created', async () => {
@@ -56,7 +61,7 @@ describe('Delete Drink: authorship', () => {
 		);
 
 		expect(await drinksRepository.findById(drink.id)).not.toBeNull();
-		expect(storageProvider.deleteFile).not.toHaveBeenCalled();
+		expect(cleanupQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 
 	it('does not let a partner delete a drink whose creator closed the account', async () => {
