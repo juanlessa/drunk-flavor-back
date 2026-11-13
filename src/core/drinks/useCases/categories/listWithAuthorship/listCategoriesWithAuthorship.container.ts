@@ -1,6 +1,8 @@
 import { resolveCategoriesRepository } from '@/core/drinks/infra/mongo/container';
 import { ListCategoriesWithAuthorshipService } from './ListCategoriesWithAuthorship.service';
 
-const listCategoriesWithAuthorshipService = new ListCategoriesWithAuthorshipService(resolveCategoriesRepository());
+const categoriesRepository = resolveCategoriesRepository();
+
+const listCategoriesWithAuthorshipService = new ListCategoriesWithAuthorshipService(categoriesRepository);
 
 export const resolveListCategoriesWithAuthorshipService = () => listCategoriesWithAuthorshipService;

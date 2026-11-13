@@ -6,4 +6,5 @@ const drinksRepository = resolveDrinksRepository();
 const storageProvider = resolveStorageProvider();
 
 const updateDrinkThumbnailService = new UpdateDrinkThumbnailService(drinksRepository, storageProvider);
+
 export const resolveUpdateDrinkThumbnailService = () => updateDrinkThumbnailService;

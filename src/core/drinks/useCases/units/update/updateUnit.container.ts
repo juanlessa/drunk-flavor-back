@@ -1,5 +1,8 @@
 import { resolveUnitsRepository } from '@/core/drinks/infra/mongo/container';
 import { UpdateUnitService } from './UpdateUnit.service';
 
-const updateUnitService = new UpdateUnitService(resolveUnitsRepository());
+const unitsRepository = resolveUnitsRepository();
+
+const updateUnitService = new UpdateUnitService(unitsRepository);
+
 export const resolveUpdateUnitService = () => updateUnitService;

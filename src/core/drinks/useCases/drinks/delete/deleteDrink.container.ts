@@ -6,4 +6,5 @@ const drinksRepository = resolveDrinksRepository();
 const storageProvider = resolveStorageProvider();
 
 const deleteDrinkService = new DeleteDrinkService(drinksRepository, storageProvider);
+
 export const resolveDeleteDrinkService = () => deleteDrinkService;

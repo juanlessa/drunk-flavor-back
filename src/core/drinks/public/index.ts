@@ -4,10 +4,14 @@ import { resolveApplyRatingDeltaService } from './applyRatingDelta/applyRatingDe
 import { resolveClearCreatorByUserService } from './clearCreatorByUser/clearCreatorByUser.container';
 import { resolveFindDrinkByIdService } from './findDrinkById/findDrinkById.container';
 
+const findDrinkByIdService = resolveFindDrinkByIdService();
+const applyRatingDeltaService = resolveApplyRatingDeltaService();
+const clearCreatorByUserService = resolveClearCreatorByUserService();
+
 const drinksModule: IDrinksModule = new DrinksModule(
-	resolveFindDrinkByIdService(),
-	resolveApplyRatingDeltaService(),
-	resolveClearCreatorByUserService(),
+	findDrinkByIdService,
+	applyRatingDeltaService,
+	clearCreatorByUserService,
 );
 
 export const resolveDrinksModule = (): IDrinksModule => drinksModule;

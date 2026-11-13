@@ -6,4 +6,5 @@ const drinksRepository = resolveDrinksRepository();
 const storageProvider = resolveStorageProvider();
 
 const updateDrinkCoverService = new UpdateDrinkCoverService(drinksRepository, storageProvider);
+
 export const resolveUpdateDrinkCoverService = () => updateDrinkCoverService;

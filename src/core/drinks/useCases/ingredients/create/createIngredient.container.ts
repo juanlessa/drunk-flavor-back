@@ -5,8 +5,8 @@ import {
 } from '@/core/drinks/infra/mongo/container';
 import { CreateIngredientService } from './CreateIngredient.service';
 
-const categoriesRepository = resolveCategoriesRepository();
 const ingredientsRepository = resolveIngredientsRepository();
+const categoriesRepository = resolveCategoriesRepository();
 const unitsRepository = resolveUnitsRepository();
 
 const createIngredientService = new CreateIngredientService(
@@ -14,4 +14,5 @@ const createIngredientService = new CreateIngredientService(
 	categoriesRepository,
 	unitsRepository,
 );
+
 export const resolveCreateIngredientService = () => createIngredientService;
