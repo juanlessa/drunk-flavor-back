@@ -1,11 +1,9 @@
 import { env } from '@/env';
 import { logger } from '@/shared/providers/logger';
 import { app, startApp } from '@/infrastructure/fastify/app';
-import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
-import { RedisConnection } from '@/infrastructure/redis/RedisConnection';
-import { BullMQConnection } from '@/infrastructure/bullmq/BullMQConnection';
-import { createGracefulShutdown } from '@/infrastructure/server/gracefulShutdown';
-import { createStartup } from '@/infrastructure/server/startup';
+import { bullmqConnection, mongoConnection, redisConnection } from '@/infrastructure/process/connections';
+import { createGracefulShutdown } from '@/infrastructure/process/createGracefulShutdown';
+import { createStartup } from '@/infrastructure/process/createStartup';
 
 logger.info(`env file successfully loaded for ${env.NODE_ENV}`);
 
@@ -14,13 +12,11 @@ process.on('unhandledRejection', (err) => {
 	process.exit(1);
 });
 
+const connections = [mongoConnection, redisConnection, bullmqConnection];
+
 const startup = createStartup({
-	startConnections: [
-		{ name: 'Mongo', start: () => MongoConnection.Instance.start() },
-		{ name: 'Redis', start: () => RedisConnection.Instance.start() },
-		{ name: 'BullMQ', start: () => BullMQConnection.Instance.start() },
-	],
-	startServer: () => startApp(),
+	startConnections: connections,
+	startProcessing: () => startApp(),
 	signalReady: () => process.send?.('ready'),
 });
 
@@ -30,12 +26,8 @@ startup().catch((err) => {
 });
 
 const closeServer = createGracefulShutdown({
-	closeServer: () => app.close(),
-	closeConnections: [
-		{ name: 'Mongo', stop: () => MongoConnection.Instance.stop() },
-		{ name: 'Redis', stop: () => RedisConnection.Instance.stop() },
-		{ name: 'BullMQ', stop: () => BullMQConnection.Instance.stop() },
-	],
+	drain: () => app.close(),
+	closeConnections: connections,
 });
 
 for (const signal of ['SIGINT', 'SIGTERM']) {

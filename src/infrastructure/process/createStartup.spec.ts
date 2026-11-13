@@ -1,23 +1,23 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createStartup } from './startup';
+import { createStartup } from './createStartup';
 
 describe('createStartup', () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
 	});
 
-	it('should open the connections before starting the server', async () => {
+	it('should open the connections before starting to process', async () => {
 		const order: string[] = [];
 		const connectionStart = vi.fn(async () => {
 			order.push('connection');
 		});
-		const startServer = vi.fn(async () => {
+		const startProcessing = vi.fn(async () => {
 			order.push('server');
 		});
 
 		const startup = createStartup({
 			startConnections: [{ name: 'Mongo', start: connectionStart }],
-			startServer,
+			startProcessing,
 		});
 
 		await startup();
@@ -25,9 +25,9 @@ describe('createStartup', () => {
 		expect(order).toEqual(['connection', 'server']);
 	});
 
-	it('should signal readiness only after the server has started', async () => {
+	it('should signal readiness only after processing has started', async () => {
 		const order: string[] = [];
-		const startServer = vi.fn(async () => {
+		const startProcessing = vi.fn(async () => {
 			order.push('server');
 		});
 		const signalReady = vi.fn(() => {
@@ -36,7 +36,7 @@ describe('createStartup', () => {
 
 		const startup = createStartup({
 			startConnections: [{ name: 'Mongo', start: vi.fn(async () => {}) }],
-			startServer,
+			startProcessing,
 			signalReady,
 		});
 
@@ -63,7 +63,7 @@ describe('createStartup', () => {
 				{ name: 'Redis', start: makeStart() },
 				{ name: 'BullMQ', start: makeStart() },
 			],
-			startServer: vi.fn(async () => {}),
+			startProcessing: vi.fn(async () => {}),
 		});
 
 		await startup();
@@ -71,8 +71,8 @@ describe('createStartup', () => {
 		expect(maxConcurrent).toBeGreaterThan(1);
 	});
 
-	it('should reject and not start the server when a connection fails', async () => {
-		const startServer = vi.fn(async () => {});
+	it('should reject and not start processing when a connection fails', async () => {
+		const startProcessing = vi.fn(async () => {});
 		const signalReady = vi.fn();
 		const failure = new Error('mongo down');
 
@@ -85,22 +85,22 @@ describe('createStartup', () => {
 					}),
 				},
 			],
-			startServer,
+			startProcessing,
 			signalReady,
 		});
 
 		await expect(startup()).rejects.toThrow('mongo down');
-		expect(startServer).not.toHaveBeenCalled();
+		expect(startProcessing).not.toHaveBeenCalled();
 		expect(signalReady).not.toHaveBeenCalled();
 	});
 
-	it('should reject and not signal readiness when the server fails to start', async () => {
+	it('should reject and not signal readiness when processing fails to start', async () => {
 		const signalReady = vi.fn();
 		const failure = new Error('listen EADDRINUSE');
 
 		const startup = createStartup({
 			startConnections: [{ name: 'Mongo', start: vi.fn(async () => {}) }],
-			startServer: vi.fn(async () => {
+			startProcessing: vi.fn(async () => {
 				throw failure;
 			}),
 			signalReady,

@@ -44,7 +44,6 @@ jobs:
                   npm run typecheck
                   npm test
                   npm run build
-                  npm run worker:build
                   npm prune --omit=dev
                   printf 'aarch64\n' > BUILD_ARCH
 

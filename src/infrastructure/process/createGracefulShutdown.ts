@@ -1,34 +1,21 @@
 import { logger } from '@/shared/providers/logger';
 
-/**
- * Maximum time the graceful shutdown is allowed to take before the process is
- * force-exited with a non-zero code. Draining cannot be guaranteed past this
- * deadline, so it exists only as a safety net against a hung shutdown.
- */
 export const SHUTDOWN_TIMEOUT_MS = 10_000;
+export const WORKER_SHUTDOWN_TIMEOUT_MS = 30_000;
 
 export interface GracefulShutdownDependencies {
-	/** Drains the HTTP server: stops accepting connections and waits for in-flight requests. */
-	closeServer: () => Promise<void>;
-	/** Independent datastore/queue connections to close after the server has drained. */
+	drain: () => Promise<void>;
 	closeConnections: Array<{ name: string; stop: () => Promise<void> }>;
+	timeoutMs?: number;
 }
 
-/**
- * Builds an idempotent, time-bounded signal handler that drains the HTTP server
- * before closing the datastore/queue connections.
- *
- * Order matters: the server is closed first so in-flight requests can still use
- * the connections while they finish, then the independent connections are closed
- * concurrently.
- */
 export const createGracefulShutdown = (deps: GracefulShutdownDependencies) => {
-	const { closeServer, closeConnections } = deps;
+	const { drain, closeConnections, timeoutMs = SHUTDOWN_TIMEOUT_MS } = deps;
 	let isShuttingDown = false;
 
 	const runShutdown = async (): Promise<void> => {
-		// Stop accepting new traffic and let in-flight requests drain first.
-		await closeServer();
+		// Stop accepting new work and let in-flight work drain first.
+		await drain();
 
 		// The connections are independent of each other, so close them concurrently.
 		const results = await Promise.allSettled(closeConnections.map((connection) => connection.stop()));
@@ -52,8 +39,8 @@ export const createGracefulShutdown = (deps: GracefulShutdownDependencies) => {
 		let deadline: ReturnType<typeof setTimeout> | undefined;
 		const timeout = new Promise<never>((_, reject) => {
 			deadline = setTimeout(() => {
-				reject(new Error(`Graceful shutdown timed out after ${SHUTDOWN_TIMEOUT_MS}ms`));
-			}, SHUTDOWN_TIMEOUT_MS);
+				reject(new Error(`Graceful shutdown timed out after ${timeoutMs}ms`));
+			}, timeoutMs);
 			// Do not let the timer keep the event loop alive on its own.
 			deadline.unref?.();
 		});
