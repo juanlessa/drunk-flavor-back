@@ -5,9 +5,9 @@ import { GetUserAdministrativeCapabilitiesReqParams } from './getUserAdministrat
 export const getUserAdministrativeCapabilitiesController: Controller<{
 	Params: GetUserAdministrativeCapabilitiesReqParams;
 }> = async (request, reply) => {
-	const capabilities = await resolveGetUserAdministrativeCapabilitiesService().execute({
-		id: request.params.id,
-		actor: { id: request.user.id, role: request.user.role },
-	});
+	const { id } = request.params;
+	const actor = { id: request.user.id, role: request.user.role };
+	const service = resolveGetUserAdministrativeCapabilitiesService();
+	const capabilities = await service.execute({ id, actor });
 	return reply.send(capabilities);
 };

@@ -5,10 +5,10 @@ import {
 } from '@/core/accounts/infra/mongo/container';
 import { GetProfileService } from './GetProfile.service';
 
-const getProfileService = new GetProfileService(
-	resolveUsersRepository(),
-	resolveCredentialsRepository(),
-	resolveIdentitiesRepository(),
-);
+const usersRepository = resolveUsersRepository();
+const credentialsRepository = resolveCredentialsRepository();
+const identitiesRepository = resolveIdentitiesRepository();
+
+const getProfileService = new GetProfileService(usersRepository, credentialsRepository, identitiesRepository);
 
 export const resolveGetProfileService = () => getProfileService;

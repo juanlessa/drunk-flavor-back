@@ -5,13 +5,20 @@ import { resolveTemplateProvider } from '@/shared/providers/template';
 import { RevokeUserSessionsService } from './RevokeUserSessions.service';
 import { resolveSessionVersionMarkerStore } from '@/core/accounts/infra/redis/container';
 
-const service = new RevokeUserSessionsService(
-	resolveUsersRepository(),
-	resolveTransactionManager(),
-	resolveAdministrativeEventsRepository(),
-	resolveTemplateProvider(),
-	resolveEmailQueueProvider(),
-	resolveSessionVersionMarkerStore(),
+const usersRepository = resolveUsersRepository();
+const transactionManager = resolveTransactionManager();
+const administrativeEventsRepository = resolveAdministrativeEventsRepository();
+const templateProvider = resolveTemplateProvider();
+const emailQueueProvider = resolveEmailQueueProvider();
+const sessionVersionMarkerStore = resolveSessionVersionMarkerStore();
+
+const revokeUserSessionsService = new RevokeUserSessionsService(
+	usersRepository,
+	transactionManager,
+	administrativeEventsRepository,
+	templateProvider,
+	emailQueueProvider,
+	sessionVersionMarkerStore,
 );
 
-export const resolveRevokeUserSessionsService = () => service;
+export const resolveRevokeUserSessionsService = () => revokeUserSessionsService;

@@ -7,12 +7,18 @@ import { resolveSessionVersionMarkerStore } from '@/core/accounts/infra/redis/co
 import { resolveTransactionManager } from '@/infrastructure/mongo/transactions';
 import { UnlinkGoogleIdentityService } from './UnlinkGoogleIdentity.service';
 
-const service = new UnlinkGoogleIdentityService(
-	resolveUsersRepository(),
-	resolveIdentitiesRepository(),
-	resolveCredentialsRepository(),
-	resolveTransactionManager(),
-	resolveSessionVersionMarkerStore(),
+const usersRepository = resolveUsersRepository();
+const identitiesRepository = resolveIdentitiesRepository();
+const credentialsRepository = resolveCredentialsRepository();
+const transactionManager = resolveTransactionManager();
+const sessionVersionMarkerStore = resolveSessionVersionMarkerStore();
+
+const unlinkGoogleIdentityService = new UnlinkGoogleIdentityService(
+	usersRepository,
+	identitiesRepository,
+	credentialsRepository,
+	transactionManager,
+	sessionVersionMarkerStore,
 );
 
-export const resolveUnlinkGoogleIdentityService = () => service;
+export const resolveUnlinkGoogleIdentityService = () => unlinkGoogleIdentityService;

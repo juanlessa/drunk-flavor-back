@@ -9,9 +9,12 @@ export const acceptOwnershipTransferController: Controller<{ Body: AcceptOwnersh
 	request,
 	reply,
 ) => {
-	await resolveAcceptOwnershipTransferService().execute({
-		token: request.body.token,
-		actor: { id: request.user.id, role: request.user.role },
+	const { token } = request.body;
+	const actor = { id: request.user.id, role: request.user.role };
+	const service = resolveAcceptOwnershipTransferService();
+	await service.execute({
+		token,
+		actor,
 		administrativeContext: { origin: AdministrativeEventOrigins.api, requestId: request.id },
 	});
 	await signOut(request, reply);

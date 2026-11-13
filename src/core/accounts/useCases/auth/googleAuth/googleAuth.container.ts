@@ -14,4 +14,5 @@ const googleAuthService = new GoogleAuthService(
 	identitiesRepository,
 	transactionManager,
 );
+
 export const resolveGoogleAuthService = () => googleAuthService;

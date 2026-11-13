@@ -9,12 +9,11 @@ import { UpdatePasswordReqBody } from './updatePassword.dtos';
 import { resolveUpdatePasswordService } from './updatePassword.container';
 
 export const updatePasswordController: Controller<{ Body: UpdatePasswordReqBody }> = async (request, reply) => {
+	const { currentPassword, newPassword } = request.body;
+	const { id } = request.user;
+	const service = resolveUpdatePasswordService();
 	try {
-		const { user } = await resolveUpdatePasswordService().execute({
-			id: request.user.id,
-			currentPassword: request.body.currentPassword,
-			newPassword: request.body.newPassword,
-		});
+		const { user } = await service.execute({ id, currentPassword, newPassword });
 		logReauthenticationSucceeded(request, 'password');
 		await rotateAuthenticationSession(request, reply, user);
 	} catch (error) {

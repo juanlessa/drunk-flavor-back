@@ -21,11 +21,11 @@ export const reauthenticateGoogleController: Controller<{ Body: ReauthenticateGo
 		});
 	}
 
+	const { code } = request.body;
+	const { id } = request.user;
+	const service = resolveReauthenticateGoogleService();
 	try {
-		const result = await resolveReauthenticateGoogleService().execute({
-			userId: request.user.id,
-			authorizationCode: request.body.code,
-		});
+		const result = await service.execute({ userId: id, authorizationCode: code });
 
 		request.session.set(AUTH_SESSION, {
 			...session,

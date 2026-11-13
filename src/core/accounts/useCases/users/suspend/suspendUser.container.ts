@@ -3,11 +3,16 @@ import { resolveTransactionManager } from '@/infrastructure/mongo/transactions';
 import { SuspendUserService } from './SuspendUser.service';
 import { resolveSessionVersionMarkerStore } from '@/core/accounts/infra/redis/container';
 
+const usersRepository = resolveUsersRepository();
+const transactionManager = resolveTransactionManager();
+const administrativeEventsRepository = resolveAdministrativeEventsRepository();
+const sessionVersionMarkerStore = resolveSessionVersionMarkerStore();
+
 const suspendUserService = new SuspendUserService(
-	resolveUsersRepository(),
-	resolveTransactionManager(),
-	resolveAdministrativeEventsRepository(),
-	resolveSessionVersionMarkerStore(),
+	usersRepository,
+	transactionManager,
+	administrativeEventsRepository,
+	sessionVersionMarkerStore,
 );
 
 export const resolveSuspendUserService = () => suspendUserService;

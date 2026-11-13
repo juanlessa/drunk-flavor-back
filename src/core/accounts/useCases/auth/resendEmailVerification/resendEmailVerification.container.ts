@@ -5,10 +5,10 @@ import { resolveTemplateProvider } from '@/shared/providers/template';
 import { resolveEmailQueueProvider } from '@/shared/providers/queue/email';
 import { ResendEmailVerificationService } from './ResendEmailVerification.service';
 
-const dateProvider = resolveDateProvider();
-const cryptoProvider = resolveCryptoProvider();
 const usersRepository = resolveUsersRepository();
 const tokensRepository = resolveTokensRepository();
+const dateProvider = resolveDateProvider();
+const cryptoProvider = resolveCryptoProvider();
 const templateProvider = resolveTemplateProvider();
 const emailQueueProvider = resolveEmailQueueProvider();
 
@@ -20,4 +20,5 @@ const resendEmailVerificationService = new ResendEmailVerificationService(
 	templateProvider,
 	emailQueueProvider,
 );
+
 export const resolveResendEmailVerificationService = () => resendEmailVerificationService;

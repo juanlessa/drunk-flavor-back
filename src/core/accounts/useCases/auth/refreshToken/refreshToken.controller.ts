@@ -13,11 +13,9 @@ export const refreshTokenController: Controller = async (request, reply) => {
 		throw error;
 	}
 
+	const { id, sessionVersion } = request.user;
 	const service = resolveRefreshTokenService();
-	const user = await service.execute({
-		userId: request.user.id,
-		sessionVersion: request.user.sessionVersion,
-	});
+	const user = await service.execute({ userId: id, sessionVersion });
 	const tokenPayload = toJwtUserPayload(user);
 	const accessToken = await reply.jwtSign(tokenPayload, { sign: { sub: user.id } });
 

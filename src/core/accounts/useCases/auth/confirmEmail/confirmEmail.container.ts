@@ -5,11 +5,12 @@ import { resolveCryptoProvider } from '@/shared/providers/cryptography';
 import { resolveTransactionManager } from '@/infrastructure/mongo/transactions';
 import { resolveSessionVersionMarkerStore } from '@/core/accounts/infra/redis/container';
 
-const dateProvider = resolveDateProvider();
-const cryptoProvider = resolveCryptoProvider();
 const usersRepository = resolveUsersRepository();
 const tokensRepository = resolveTokensRepository();
+const dateProvider = resolveDateProvider();
+const cryptoProvider = resolveCryptoProvider();
 const transactionManager = resolveTransactionManager();
+const sessionVersionMarkerStore = resolveSessionVersionMarkerStore();
 
 const confirmEmailService = new ConfirmEmailService(
 	usersRepository,
@@ -17,6 +18,7 @@ const confirmEmailService = new ConfirmEmailService(
 	dateProvider,
 	cryptoProvider,
 	transactionManager,
-	resolveSessionVersionMarkerStore(),
+	sessionVersionMarkerStore,
 );
+
 export const resolveConfirmEmailService = () => confirmEmailService;

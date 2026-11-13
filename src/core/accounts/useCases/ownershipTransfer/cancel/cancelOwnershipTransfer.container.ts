@@ -6,11 +6,16 @@ import {
 import { resolveTransactionManager } from '@/infrastructure/mongo/transactions';
 import { CancelOwnershipTransferService } from './CancelOwnershipTransfer.service';
 
-const service = new CancelOwnershipTransferService(
-	resolveUsersRepository(),
-	resolveOwnershipTransferInvitationsRepository(),
-	resolveAdministrativeEventsRepository(),
-	resolveTransactionManager(),
+const usersRepository = resolveUsersRepository();
+const ownershipTransferInvitationsRepository = resolveOwnershipTransferInvitationsRepository();
+const administrativeEventsRepository = resolveAdministrativeEventsRepository();
+const transactionManager = resolveTransactionManager();
+
+const cancelOwnershipTransferService = new CancelOwnershipTransferService(
+	usersRepository,
+	ownershipTransferInvitationsRepository,
+	administrativeEventsRepository,
+	transactionManager,
 );
 
-export const resolveCancelOwnershipTransferService = () => service;
+export const resolveCancelOwnershipTransferService = () => cancelOwnershipTransferService;

@@ -8,11 +8,14 @@ export const reactivateUserController: Controller<{
 	Params: ReactivateUserReqParams;
 	Body: ReactivateUserReqBody;
 }> = async (request, reply) => {
+	const { id } = request.params;
+	const { reason } = request.body;
+	const actor = { id: request.user.id, role: request.user.role };
 	const service = resolveReactivateUserService();
 	await service.execute({
-		id: request.params.id,
-		reason: request.body.reason,
-		actor: { id: request.user.id, role: request.user.role },
+		id,
+		reason,
+		actor,
 		administrativeContext: { origin: AdministrativeEventOrigins.api, requestId: request.id },
 	});
 

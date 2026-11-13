@@ -8,15 +8,18 @@ export const revokeUserSessionsController: Controller<{
 	Params: RevokeUserSessionsReqParams;
 	Body: RevokeUserSessionsReqBody;
 }> = async (request, reply) => {
+	const { id } = request.params;
+	const { reason } = request.body;
+	const actor = {
+		id: request.user.id,
+		role: request.user.role,
+		sessionVersion: request.user.sessionVersion,
+	};
 	const service = resolveRevokeUserSessionsService();
 	await service.execute({
-		id: request.params.id,
-		reason: request.body.reason,
-		actor: {
-			id: request.user.id,
-			role: request.user.role,
-			sessionVersion: request.user.sessionVersion,
-		},
+		id,
+		reason,
+		actor,
 		administrativeContext: { origin: AdministrativeEventOrigins.api, requestId: request.id },
 	});
 
