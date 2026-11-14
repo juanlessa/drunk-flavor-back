@@ -78,8 +78,9 @@ export type FindDrinkByName = DeepPartial<Translations<{ name: string }>>;
 export type DrinkMatchMaxMissingValue = (typeof DrinkMatchMaxMissing)[number];
 
 /**
- * Finds the drinks that can be made, or nearly, with the ingredients a person has. Only the required ingredients of
- * a drink count (the optional ones and the garnishes do not), and the drink must use at least one of `ingredientIds`.
+ * Finds the drinks that can be made, or nearly, with the ingredients a person has. The drink must use at least one of
+ * `ingredientIds` as an ingredient, optional or not (never as a garnish). Only the required ingredients count as
+ * missing: a drink can be made without the optional ones.
  */
 export type FindDrinksByIngredients = {
 	ingredientIds: string[];

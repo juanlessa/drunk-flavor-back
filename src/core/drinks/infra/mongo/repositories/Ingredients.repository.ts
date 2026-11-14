@@ -157,10 +157,12 @@ export class IngredientsRepository implements IIngredientsRepository {
 		return documents.map(IngredientMapper.toDomain);
 	}
 
-	async findAll(query: QueryParams): Promise<Ingredient[]> {
+	async findAll(query: QueryParams, onlyIds?: string[]): Promise<Ingredient[]> {
 		const persistenceQuery = IngredientMapper.toPersistenceQuery(query);
+		const objectIds = onlyIds?.map(IngredientMapper.toObjectId).filter((id) => id !== null);
 		const documents = await buildQuery<IngredientPersistence>(persistenceQuery, IngredientModel, {
 			collation: getSortCollation(persistenceQuery.sort),
+			...(objectIds && { filter: { _id: { $in: objectIds } } }),
 		})
 			.lean<IngredientPersistence[]>()
 			.exec();

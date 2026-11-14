@@ -74,8 +74,8 @@ export class IngredientsRepositoryInMemory implements IIngredientsRepository {
 		return this.collection.filter((record) => ids.includes(record.id));
 	}
 
-	async findAll(query: QueryParams): Promise<Ingredient[]> {
-		let found = [...this.collection];
+	async findAll(query: QueryParams, onlyIds?: string[]): Promise<Ingredient[]> {
+		let found = onlyIds ? this.collection.filter(({ id }) => onlyIds.includes(id)) : [...this.collection];
 		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);
 		if (query.sort) found = sortItemsByFields(found, query.sort);
 		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);

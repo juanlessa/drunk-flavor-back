@@ -6,7 +6,10 @@ import { createIngredientSchema } from '@/core/drinks/useCases/ingredients/creat
 import { createIngredientController } from '@/core/drinks/useCases/ingredients/create/CreateIngredient.controller';
 import { getIngredientSchema } from '@/core/drinks/useCases/ingredients/get/getIngredient.schema';
 import { getIngredientController } from '@/core/drinks/useCases/ingredients/get/getIngredient.controller';
-import { listIngredientsSchema } from '@/core/drinks/useCases/ingredients/list/listIngredients.schema';
+import {
+	listIngredientsQuerySchema,
+	listIngredientsSchema,
+} from '@/core/drinks/useCases/ingredients/list/listIngredients.schema';
 import { listIngredientsController } from '@/core/drinks/useCases/ingredients/list/listIngredients.controller';
 import { updateIngredientSchema } from '@/core/drinks/useCases/ingredients/update/updateIngredient.schema';
 import { updateIngredientController } from '@/core/drinks/useCases/ingredients/update/updateIngredient.controller';
@@ -56,7 +59,7 @@ const routes: Routes = (server) => {
 	server.withTypeProvider<ZodTypeProvider>().get(
 		'/ingredients/me',
 		{
-			schema: { tags: ['Ingredients'], querystring: listIngredientsSchema },
+			schema: { tags: ['Ingredients'], querystring: listIngredientsQuerySchema },
 			preValidation: [
 				verifyAndRenewToken,
 				enforceCompleteProfile,

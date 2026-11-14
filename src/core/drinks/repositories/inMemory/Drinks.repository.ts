@@ -15,7 +15,12 @@ import {
 	buildTranslationsSearchKeys,
 	createNameSearchMatchers,
 } from '@/core/drinks/helpers/searchKeys.helpers';
-import { getMissingIngredientIds, getRequiredIngredientIds } from '@/core/drinks/helpers/drinkMatch.helpers';
+import {
+	countOptionalIngredientsAvailable,
+	getAllIngredientIds,
+	getMissingIngredientIds,
+	getRequiredIngredientIds,
+} from '@/core/drinks/helpers/drinkMatch.helpers';
 import { getRatingScore } from '@/core/drinks/helpers/ratingScore.helpers';
 import { compareTranslationsName } from '@/core/drinks/helpers/translations.helpers';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
@@ -110,18 +115,26 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 	}: FindDrinksByIngredients): Promise<DrinkIngredientMatch[]> {
 		const available = new Set(ingredientIds);
 		const matches = this.collection
-			.map((drink, position) => ({ drink, position, required: getRequiredIngredientIds(drink.ingredients) }))
-			// At least one required ingredient must be one the person has, whatever `maxMissing` is.
-			.filter(({ required }) => required.some((id) => available.has(id)))
-			.map(({ required, ...match }) => ({
+			.map((drink, position) => ({
+				drink,
+				position,
+				all: getAllIngredientIds(drink.ingredients),
+				required: getRequiredIngredientIds(drink.ingredients),
+			}))
+			// At least one ingredient, optional or not, must be one the person has, whatever `maxMissing` is.
+			.filter(({ all }) => all.some((id) => available.has(id)))
+			.map(({ all, required, ...match }) => ({
 				...match,
+				optionalAvailable: countOptionalIngredientsAvailable(all, required, available),
 				missingIngredientIds: getMissingIngredientIds(required, available),
 			}))
 			.filter(({ missingIngredientIds }) => maxMissing === 'any' || missingIngredientIds.length <= maxMissing)
-			// The most complete first, then the best rated, then the newest (the last one stored).
+			// The most complete first, then the one that uses more of the optional ingredients the person has, then the
+			// best rated, then the newest (the last one stored).
 			.sort(
 				(a, b) =>
 					a.missingIngredientIds.length - b.missingIngredientIds.length ||
+					b.optionalAvailable - a.optionalAvailable ||
 					this.ratingScoreOf(b.drink) - this.ratingScoreOf(a.drink) ||
 					b.position - a.position,
 			)
@@ -132,6 +145,9 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 		return paginateItems(matches, limit, page);
 	}
 
+	async findIngredientIdsInUse(): Promise<string[]> {
+		return [...new Set(this.collection.flatMap(({ ingredients }) => getAllIngredientIds(ingredients)))];
+	}
 	async applyRatingDelta({ drinkId, countDelta, sumDelta }: ApplyRatingDelta): Promise<DrinkRatingSummary> {
 		const record = this.collection.find((drink) => drink.id === drinkId);
 		if (!record) throw this.notFound('rating projection update');

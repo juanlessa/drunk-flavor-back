@@ -6,11 +6,11 @@ export const listIngredientsController: Controller<{ Querystring: ListIngredient
 	request,
 	reply,
 ) => {
-	const { limit, page, search, sort } = request.query;
+	const { limit, page, search, sort, inUse } = request.query;
 
 	const service = resolveListIngredientsService();
 
-	const ingredients = await service.execute({ query: { limit, page, search, sort } });
+	const ingredients = await service.execute({ query: { limit, page, search, sort }, inUse });
 
 	return reply.send(ingredients);
 };

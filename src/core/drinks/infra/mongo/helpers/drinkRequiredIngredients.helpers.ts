@@ -14,3 +14,15 @@ export const getRequiredIngredientObjectIds = (
 	}
 	return [...unique.values()];
 };
+
+/**
+ * The ids of every ingredient of a persisted drink, optional or not, with no repeats. The garnishes are not part of
+ * the lines it receives. It is what `ingredient_ids` stores: the ingredients a person can pick to find the drink.
+ */
+export const getIngredientObjectIds = (
+	lines: ReadonlyArray<{ ingredient: { _id: Types.ObjectId } }>,
+): Types.ObjectId[] => {
+	const unique = new Map<string, Types.ObjectId>();
+	for (const { ingredient } of lines) unique.set(ingredient._id.toHexString(), ingredient._id);
+	return [...unique.values()];
+};

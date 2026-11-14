@@ -6,4 +6,5 @@ export type ListIngredientsReqQuery = z.infer<typeof listIngredientsSchema>;
 
 export type ListIngredientsCommand = {
 	query?: QueryParams;
+	inUse?: boolean;
 };

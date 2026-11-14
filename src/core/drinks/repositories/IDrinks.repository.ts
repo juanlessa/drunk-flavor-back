@@ -23,10 +23,8 @@ export interface IDrinksRepository {
 	findAllOwnedFirst(query: QueryParams, userId: string): Promise<Drink[]>;
 	/** Removes the user as creator and last editor of the records, which stay as they are. Returns how many were touched. */
 	clearCreatorByUser(userId: string): Promise<number>;
-	/**
-	 * The drinks that use at least one of the given ingredients and miss no more than `maxMissing` of their required
-	 * ingredients, the most complete first and, among those, the best rated.
-	 */
+
 	findByIngredients(input: FindDrinksByIngredients): Promise<DrinkIngredientMatch[]>;
+	findIngredientIdsInUse(): Promise<string[]>;
 	applyRatingDelta(input: ApplyRatingDelta): Promise<DrinkRatingSummary>;
 }

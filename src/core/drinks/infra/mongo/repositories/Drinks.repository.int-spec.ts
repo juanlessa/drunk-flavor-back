@@ -554,10 +554,12 @@ describe('DrinksRepository (integration)', () => {
 	describeFindByIngredientsContract(() => repository);
 
 	describe('search by ingredients, on Mongo', () => {
-		const rawRequiredIds = async (id: string) => {
+		const rawIds = async (id: string, field: 'required_ingredient_ids' | 'ingredient_ids') => {
 			const raw = await DrinkModel.collection.findOne({ _id: new ObjectId(id) });
-			return (raw?.['required_ingredient_ids'] as ObjectId[] | undefined)?.map((value) => value.toHexString());
+			return (raw?.[field] as ObjectId[] | undefined)?.map((value) => value.toHexString());
 		};
+		const rawRequiredIds = (id: string) => rawIds(id, 'required_ingredient_ids');
+		const rawIngredientIds = (id: string) => rawIds(id, 'ingredient_ids');
 		const gin = { ...buildIngredient(), translations: { en: { name: 'Gin' }, pt: { name: 'Gin' } } };
 		const lime = buildIngredient();
 		const sugar = { ...buildIngredient(), translations: { en: { name: 'Sugar' }, pt: { name: 'Açúcar' } } };
@@ -592,9 +594,8 @@ describe('DrinksRepository (integration)', () => {
 			);
 
 			expect(await rawRequiredIds(created.id)).toEqual([sugar.id]);
-			expect(await repository.findByIngredients({ ingredientIds: [gin.id, lime.id], maxMissing: 'any' })).toEqual(
-				[],
-			);
+			expect(await rawIngredientIds(created.id)).toEqual([sugar.id, gin.id]);
+			expect(await repository.findByIngredients({ ingredientIds: [lime.id], maxMissing: 'any' })).toEqual([]);
 			expect(
 				(await repository.findByIngredients({ ingredientIds: [sugar.id], maxMissing: 0 })).map(
 					({ drink }) => drink.id,
@@ -622,6 +623,8 @@ describe('DrinksRepository (integration)', () => {
 			for (const drink of [created, byId, byName, listed]) {
 				expect(drink).not.toHaveProperty('requiredIngredientIds');
 				expect(drink).not.toHaveProperty('required_ingredient_ids');
+				expect(drink).not.toHaveProperty('ingredientIds');
+				expect(drink).not.toHaveProperty('ingredient_ids');
 			}
 		});
 
@@ -632,11 +635,33 @@ describe('DrinksRepository (integration)', () => {
 			const [match] = await repository.findByIngredients({ ingredientIds: [gin.id], maxMissing: 'any' });
 
 			expect(match?.drink).toMatchObject({ avgRating: 4, ratingsCount: 1 });
-			for (const field of ['ratingsSum', 'ratings_sum', 'searchKeys', 'search_keys', 'requiredIngredientIds']) {
+			for (const field of [
+				'ratingsSum',
+				'ratings_sum',
+				'searchKeys',
+				'search_keys',
+				'requiredIngredientIds',
+				'ingredientIds',
+				'ingredient_ids',
+			]) {
 				expect(match?.drink).not.toHaveProperty(field);
 			}
 		});
 
+		it('lists the ids of the ingredients in use once, optional ones included and the garnishes left out', async () => {
+			const bitters = buildIngredient();
+			await repository.create({
+				...recipe('Gimlet', [gin, lime], [sugar]),
+				garnishes: [{ ingredient: bitters, amount: { type: 'none' } }],
+			});
+			await repository.create(recipe('Gin sour', [gin, sugar]));
+			expect((await repository.findIngredientIdsInUse()).sort()).toEqual([gin.id, lime.id, sugar.id].sort());
+		});
+		it('stops listing an ingredient once the drinks that used it are deleted', async () => {
+			const created = await repository.create(recipe('Gimlet', [gin, lime]));
+			await repository.delete(created.id);
+			expect(await repository.findIngredientIdsInUse()).toEqual([]);
+		});
 		it('returns nothing when an ingredient id is not a valid ObjectId', async () => {
 			await repository.create(recipe('Gimlet', [gin, lime]));
 

@@ -21,7 +21,7 @@ import { RATING_PRIOR_MEAN, RATING_PRIOR_WEIGHT } from '@/core/drinks/constants/
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 import { PipelineStage, QueryFilter, Types } from 'mongoose';
 import { DRINK_UNIQUE_INDEXES, DrinkModel, DrinkPersistence } from '../entities/drink.model';
-import { getRequiredIngredientObjectIds } from '../helpers/drinkRequiredIngredients.helpers';
+import { getIngredientObjectIds, getRequiredIngredientObjectIds } from '../helpers/drinkRequiredIngredients.helpers';
 import { CREATED_BY_FIELD, clearAuthorshipByUser, omitAuthorshipDeep } from '../helpers/authorship.helpers';
 import { findByTranslatedName, getSortCollation } from '../helpers/translations.helpers';
 import { DrinkMapper } from '../mappers/drink.mapper';
@@ -41,6 +41,7 @@ export class DrinksRepository implements IDrinksRepository {
 				...persistenceData,
 				updated_by: persistenceData.created_by,
 				search_keys: buildTranslationsSearchKeys(persistenceData.translations, NAME_SEARCH_FIELDS),
+				ingredient_ids: getIngredientObjectIds(persistenceData.ingredients ?? []),
 				required_ingredient_ids: getRequiredIngredientObjectIds(persistenceData.ingredients ?? []),
 			});
 			return DrinkMapper.toDomain(document);
@@ -60,6 +61,7 @@ export class DrinksRepository implements IDrinksRepository {
 		const update = toMongoUpdateSet(persistenceData);
 		// The recipe is replaced as a whole, so the ids that the search by ingredients matches on follow it.
 		if (persistenceData.ingredients) {
+			update['ingredient_ids'] = getIngredientObjectIds(persistenceData.ingredients);
 			update['required_ingredient_ids'] = getRequiredIngredientObjectIds(persistenceData.ingredients);
 		}
 		if (persistenceData.translations) {
@@ -165,24 +167,40 @@ export class DrinksRepository implements IDrinksRepository {
 		if (available.length === 0 || !hasOnlyValidIds) return [];
 
 		const pipeline: PipelineStage[] = [
-			// At least one required ingredient must be one the person has. This is the step the index serves, and it
-			// holds for every `maxMissing`, so a drink with nothing in common is never a candidate.
-			{ $match: { required_ingredient_ids: { $in: available } } },
+			// At least one ingredient of the drink, optional or not, must be one the person has. This is the step the
+			// index serves, and it holds for every `maxMissing`, so a drink with nothing in common is never a candidate.
+			{ $match: { ingredient_ids: { $in: available } } },
+			// Only the required ingredients count as missing: the drink can be made without the optional ones.
 			{ $addFields: { missing_ingredient_ids: { $setDifference: ['$required_ingredient_ids', available] } } },
 			{ $addFields: { missing_count: { $size: '$missing_ingredient_ids' } } },
 			...(maxMissing === 'any' ? [] : [{ $match: { missing_count: { $lte: maxMissing } } }]),
-			// The most complete first, then the best rated by the rating score (many good ratings above a single
-			// perfect one, as in the drinks list); `_id` keeps the pages stable.
-			{ $sort: { missing_count: 1, rating_score: -1, _id: -1 } },
+			{
+				$addFields: {
+					optional_available_count: {
+						$size: {
+							$setIntersection: [
+								{ $setDifference: ['$ingredient_ids', '$required_ingredient_ids'] },
+								available,
+							],
+						},
+					},
+				},
+			},
+			// The most complete first, then the one that uses more of the optional ingredients the person has, then the
+			// best rated by the rating score (many good ratings above a single perfect one, as in the drinks list);
+			// `_id` keeps the pages stable.
+			{ $sort: { missing_count: 1, optional_available_count: -1, rating_score: -1, _id: -1 } },
 			{ $skip: (page - 1) * limit },
 			{ $limit: limit },
 			{
 				$project: {
 					search_keys: 0,
+					ingredient_ids: 0,
 					required_ingredient_ids: 0,
 					ratings_sum: 0,
 					rating_score: 0,
 					missing_count: 0,
+					optional_available_count: 0,
 				},
 			},
 		];
@@ -195,6 +213,11 @@ export class DrinksRepository implements IDrinksRepository {
 		}));
 	}
 
+	async findIngredientIdsInUse(): Promise<string[]> {
+		// A distinct over the indexed `ingredient_ids`; drinks saved before the field existed are not in it.
+		const ids = (await DrinkModel.distinct('ingredient_ids').exec()) as unknown as Types.ObjectId[];
+		return ids.map((id) => id.toHexString());
+	}
 	async applyRatingDelta({ drinkId, countDelta, sumDelta }: ApplyRatingDelta): Promise<DrinkRatingSummary> {
 		const filter: QueryFilter<DrinkPersistence> = { _id: drinkId };
 		if (countDelta < 0) filter.ratings_count = { $gte: -countDelta };
