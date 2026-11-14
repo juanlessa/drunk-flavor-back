@@ -356,12 +356,21 @@ describe('DrinksRepository (integration)', () => {
 	describe('search keys', () => {
 		const rawSearchKeys = async (id: string) =>
 			(await DrinkModel.findById(id).select('+search_keys').lean())?.search_keys;
+		const rawSearchTiers = async (id: string) =>
+			(await DrinkModel.findById(id).select('+search_tiers').lean())?.search_tiers;
 
 		it('are built from the names of both languages and are not exposed on the drink', async () => {
 			const created = await repository.create(buildDrink({ en: 'Pina colada', pt: 'Piña colada' }));
 
-			expect(await rawSearchKeys(created.id)).toEqual(['pina', 'colada']);
+			// The name, then the name of the ingredient, then the name of its category.
+			expect(await rawSearchKeys(created.id)).toEqual(['pina', 'colada', 'lime', 'limao', 'syrup', 'xarope']);
+			expect(await rawSearchTiers(created.id)).toEqual([
+				['pina', 'colada'],
+				['lime', 'limao'],
+				['syrup', 'xarope'],
+			]);
 			expect(created).not.toHaveProperty('searchKeys');
+			expect(created).not.toHaveProperty('search_tiers');
 			expect(await repository.findById(created.id)).not.toHaveProperty('searchKeys');
 		});
 
@@ -370,9 +379,126 @@ describe('DrinksRepository (integration)', () => {
 
 			await repository.update(withEditor({ id: created.id, translations: { en: { name: 'Cosmopolitan' } } }));
 
+			const [nameKeys] = (await rawSearchTiers(created.id)) ?? [];
+			expect(nameKeys).toEqual(['cosmopolitan', 'mojito', 'br']);
+			expect(await rawSearchKeys(created.id)).toEqual(
+				expect.arrayContaining(['cosmopolitan', 'mojito', 'br', 'lime', 'syrup']),
+			);
+		});
+
+		it('are recalculated when the recipe changes, from what its lines stored of the ingredients', async () => {
+			const created = await repository.create(buildDrink({ en: 'Mojito', pt: 'Mojito BR' }));
+			const gin = { ...buildIngredient(), translations: { en: { name: 'Gin' }, pt: { name: 'Gin' } } };
+
+			await repository.update(withEditor({ id: created.id, ingredients: [createDrinkIngredientFactory(gin)] }));
+
+			expect(await rawSearchTiers(created.id)).toEqual([['mojito', 'br'], ['gin'], ['syrup', 'xarope']]);
+		});
+
+		it('do not search the garnishes', async () => {
+			const mint = { ...buildIngredient(), translations: { en: { name: 'Mint' }, pt: { name: 'Hortelã' } } };
+
+			const created = await repository.create({
+				...buildDrink({ en: 'Smash', pt: 'Smash' }),
+				garnishes: [{ ingredient: mint, amount: { type: 'none' as const } }],
+			});
+
 			const keys = (await rawSearchKeys(created.id)) ?? [];
-			expect(keys).toEqual(expect.arrayContaining(['cosmopolitan', 'mojito', 'br']));
-			expect(keys).toHaveLength(3);
+			expect(keys).toContain('lime'); // the ingredient of the recipe
+			expect(keys).not.toContain('mint');
+			expect(keys).not.toContain('hortela');
+		});
+
+		describe('ranking the search', () => {
+			const withIngredient = (name: string, category: string): Ingredient => ({
+				...buildIngredient(),
+				translations: { en: { name }, pt: { name } },
+				category: { ...buildCategory(), translations: { en: { name: category }, pt: { name: category } } },
+			});
+			const drink = (name: string, ingredient: Ingredient): CreateDrink => ({
+				...buildDrink({ en: name, pt: name }),
+				ingredients: [createDrinkIngredientFactory(ingredient)],
+			});
+			const names = async (query: Parameters<DrinksRepository['findAll']>[0]) =>
+				(await repository.findAll(query)).map(({ translations }) => translations.en.name);
+
+			beforeEach(async () => {
+				// Created from the least to the most relevant one, so the order of the creation is not the order of the rank.
+				await repository.create(drink('Spritz', withIngredient('Prosecco', 'Gin family')));
+				await repository.create(drink('Negroni', withIngredient('Gin', 'Spirit')));
+				await repository.create(drink('Gin Fizz', withIngredient('Soda', 'Mixer')));
+				await repository.create(drink('Aviation', withIngredient('Gin', 'Spirit')));
+			});
+
+			it('lists the matches of the name, then of the ingredient, then of the category of the ingredient', async () => {
+				expect(await names({ search: { name: 'gin' } })).toEqual(['Gin Fizz', 'Negroni', 'Aviation', 'Spritz']);
+			});
+
+			it('breaks the ties between the matches of a tier with the sort of the query', async () => {
+				expect(await names({ search: { name: 'gin' }, sort: { 'translations.en.name': 1 } })).toEqual([
+					'Gin Fizz',
+					'Aviation',
+					'Negroni',
+					'Spritz',
+				]);
+				expect(await names({ search: { name: 'gin' }, sort: { 'translations.en.name': -1 } })).toEqual([
+					'Gin Fizz',
+					'Negroni',
+					'Aviation',
+					'Spritz',
+				]);
+			});
+
+			it('ranks a drink as the worst tier of the words of the term', async () => {
+				await repository.create(drink('Gin Sour', withIngredient('Lemon', 'Spirit')));
+
+				// Every word has to match, and a drink ranks as its worst word: here "spirit", in the category (3).
+				expect(await names({ search: { name: 'gin spirit' } })).toEqual(['Negroni', 'Aviation', 'Gin Sour']);
+				expect(await names({ search: { name: 'gin' } })).toEqual([
+					'Gin Fizz',
+					'Gin Sour',
+					'Negroni',
+					'Aviation',
+					'Spritz',
+				]);
+				expect(await names({ search: { name: 'neg spirit' } })).toEqual(['Negroni']);
+			});
+
+			it('pages the ranked list', async () => {
+				const page1 = await names({ search: { name: 'gin' }, limit: 2, page: 1 });
+				const page2 = await names({ search: { name: 'gin' }, limit: 2, page: 2 });
+
+				expect([...page1, ...page2]).toEqual(['Gin Fizz', 'Negroni', 'Aviation', 'Spritz']);
+			});
+
+			it('keeps the owned drinks first and ranks inside each group', async () => {
+				const owner = 'owner-1';
+				const mine = await repository.create({
+					...drink('Gimlet', withIngredient('Soda', 'Gin family')),
+					createdBy: owner,
+				});
+
+				const found = await repository.findAllOwnedFirst({ search: { name: 'gin' } }, owner);
+
+				expect(found.map(({ id }) => id)[0]).toBe(mine.id);
+				expect(found.slice(1).map(({ translations }) => translations.en.name)).toEqual([
+					'Gin Fizz',
+					'Negroni',
+					'Aviation',
+					'Spritz',
+				]);
+			});
+
+			it('does not expose the fields of the search nor the ones the database keeps to itself', async () => {
+				const [first] = await repository.findAll({ search: { name: 'gin' } });
+
+				expect(first).not.toHaveProperty('_search_rank');
+				expect(first).not.toHaveProperty('search_keys');
+				expect(first).not.toHaveProperty('search_tiers');
+				expect(first).not.toHaveProperty('ingredient_ids');
+				expect(first).not.toHaveProperty('rating_score');
+				expect(first).not.toHaveProperty('ratingScore');
+			});
 		});
 
 		it('are left alone by an update that does not change the names', async () => {

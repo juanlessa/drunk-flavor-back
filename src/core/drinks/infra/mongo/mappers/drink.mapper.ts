@@ -20,6 +20,7 @@ const PERSISTENCE_ONLY_FIELDS: ReadonlySet<string> = new Set([
 	'ratings_sum',
 	'rating_score',
 	'search_keys',
+	'search_tiers',
 	'ingredient_ids',
 	'required_ingredient_ids',
 ]);

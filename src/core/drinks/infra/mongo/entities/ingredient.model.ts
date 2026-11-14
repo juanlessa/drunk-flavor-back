@@ -34,6 +34,8 @@ const ingredientSchemaDefinition = {
 	kind: { type: String, enum: Object.values(IngredientKinds), required: true, default: IngredientKinds.generic },
 	brand: { type: String, required: false },
 	search_keys: { type: [String], default: undefined, select: false },
+	// The same keys by relevance: the name, then the description and brand, then the name of the category.
+	search_tiers: { type: [[String]], default: undefined, select: false },
 	// Who created the record (set once, never changed) and who changed it last. Both are removed when that account is closed.
 	created_by: { type: String, required: false, immutable: true },
 	updated_by: { type: String, required: false },
@@ -47,6 +49,7 @@ export type IngredientPersistence = {
 	kind: IngredientKind;
 	brand?: string;
 	search_keys?: string[];
+	search_tiers?: string[][];
 	created_by?: string;
 	updated_by?: string;
 	created_at: Date;

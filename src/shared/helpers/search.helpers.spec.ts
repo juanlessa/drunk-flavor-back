@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	buildSearchKeys,
+	getSearchRank,
 	matchesSearchTerm,
 	normalizeSearchText,
 	tokenizeSearchTerm,
@@ -54,6 +55,33 @@ describe('tokenizeSearchTerm', () => {
 
 	it('returns no tokens for a blank term', () => {
 		expect(tokenizeSearchTerm('  ')).toEqual([]);
+	});
+});
+
+describe('getSearchRank', () => {
+	const tiers = [['licor', 'gin'], ['laranja'], ['destilado']];
+
+	it.each([
+		{ term: 'lic', expected: 1 },
+		{ term: 'lara', expected: 2 },
+		{ term: 'dest', expected: 3 },
+		{ term: 'licor lar', expected: 2 },
+		{ term: 'lar destilado licor', expected: 3 },
+		{ term: 'licor de gin', expected: 1 },
+	])('ranks "$term" as tier $expected (the worst of its words)', ({ term, expected }) => {
+		expect(getSearchRank(tiers, term)).toBe(expected);
+	});
+
+	it('is null when a word is in no tier', () => {
+		expect(getSearchRank(tiers, 'licor xyz')).toBeNull();
+	});
+
+	it('is the best rank for a term without searchable words', () => {
+		expect(getSearchRank(tiers, '   ')).toBe(1);
+	});
+
+	it('ignores accents and case like the search keys do', () => {
+		expect(getSearchRank([['limao']], 'LIMÃO')).toBe(1);
 	});
 });
 

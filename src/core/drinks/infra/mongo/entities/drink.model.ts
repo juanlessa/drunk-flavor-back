@@ -74,6 +74,8 @@ const drinkSchemaDefinition = {
 	cover: { type: FileMetadataSchema, default: undefined },
 	thumbnail: { type: FileMetadataSchema, default: undefined },
 	search_keys: { type: [String], default: undefined, select: false },
+	// The same keys by relevance: the name, then the name of the ingredients, then the name of their categories.
+	search_tiers: { type: [[String]], default: undefined, select: false },
 	ingredient_ids: { type: [Schema.Types.ObjectId], default: undefined, select: false },
 	required_ingredient_ids: { type: [Schema.Types.ObjectId], default: undefined, select: false },
 	ingredients: { type: [DrinkIngredientSchema], required: true },
@@ -122,6 +124,7 @@ export type DrinkPersistence = {
 	cover?: FileMetadata;
 	thumbnail?: FileMetadata;
 	search_keys?: string[];
+	search_tiers?: string[][];
 	ingredient_ids?: Types.ObjectId[];
 	required_ingredient_ids?: Types.ObjectId[];
 	ingredients: DrinkIngredientPersistence[];

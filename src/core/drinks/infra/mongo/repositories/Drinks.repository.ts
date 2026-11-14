@@ -9,11 +9,10 @@ import {
 } from '@/core/drinks/dtos/drink.dtos';
 import { Drink } from '@/core/drinks/entities/drink.entity';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
-import { buildQuery, findOwnedFirst } from '@/infrastructure/mongo/helpers/query.helpers';
+import { findOwnedFirst, findPage } from '@/infrastructure/mongo/helpers/query.helpers';
 import { toMongoUpdateSet } from '@/infrastructure/mongo/helpers/mapper.helpers';
 import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
-import { SEARCH_KEYS_FIELD } from '@/infrastructure/mongo/constants/search.constants';
-import { NAME_SEARCH_FIELDS, buildTranslationsSearchKeys } from '@/core/drinks/helpers/searchKeys.helpers';
+import { buildDrinkSearchTiers } from '@/core/drinks/helpers/searchKeys.helpers';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
@@ -23,6 +22,7 @@ import { PipelineStage, QueryFilter, Types } from 'mongoose';
 import { DRINK_UNIQUE_INDEXES, DrinkModel, DrinkPersistence } from '../entities/drink.model';
 import { getIngredientObjectIds, getRequiredIngredientObjectIds } from '../helpers/drinkRequiredIngredients.helpers';
 import { CREATED_BY_FIELD, clearAuthorshipByUser, omitAuthorshipDeep } from '../helpers/authorship.helpers';
+import { toSearchFields } from '../helpers/searchFields.helpers';
 import { findByTranslatedName, getSortCollation } from '../helpers/translations.helpers';
 import { DrinkMapper } from '../mappers/drink.mapper';
 
@@ -40,7 +40,9 @@ export class DrinksRepository implements IDrinksRepository {
 			const document = await DrinkModel.create({
 				...persistenceData,
 				updated_by: persistenceData.created_by,
-				search_keys: buildTranslationsSearchKeys(persistenceData.translations, NAME_SEARCH_FIELDS),
+				...toSearchFields(
+					buildDrinkSearchTiers(persistenceData.translations, persistenceData.ingredients ?? []),
+				),
 				ingredient_ids: getIngredientObjectIds(persistenceData.ingredients ?? []),
 				required_ingredient_ids: getRequiredIngredientObjectIds(persistenceData.ingredients ?? []),
 			});
@@ -64,15 +66,24 @@ export class DrinksRepository implements IDrinksRepository {
 			update['ingredient_ids'] = getIngredientObjectIds(persistenceData.ingredients);
 			update['required_ingredient_ids'] = getRequiredIngredientObjectIds(persistenceData.ingredients);
 		}
-		if (persistenceData.translations) {
+		// The keys come from the name and the recipe, so a change of either rebuilds them. What the recipe line stored of
+		// an ingredient is searched, which is how a rename of it that the drink did not follow is fixed by its next update.
+		if (persistenceData.translations || persistenceData.ingredients) {
 			const current = await DrinkModel.findById(objectId)
-				.select('translations')
-				.lean<Pick<DrinkPersistence, 'translations'>>()
+				.select('translations ingredients')
+				.lean<Pick<DrinkPersistence, 'translations' | 'ingredients'>>()
 				.exec();
 			if (!current) throw this.notFound('update');
-			update[SEARCH_KEYS_FIELD] = buildTranslationsSearchKeys(
-				deepUpdate(persistenceData.translations, current.translations),
-				NAME_SEARCH_FIELDS,
+			Object.assign(
+				update,
+				toSearchFields(
+					buildDrinkSearchTiers(
+						persistenceData.translations
+							? deepUpdate(persistenceData.translations, current.translations)
+							: current.translations,
+						persistenceData.ingredients ?? current.ingredients,
+					),
+				),
 			);
 		}
 		let document: DrinkPersistence | null;
@@ -130,11 +141,10 @@ export class DrinksRepository implements IDrinksRepository {
 
 	async findAll(query: QueryParams): Promise<Drink[]> {
 		const persistenceQuery = DrinkMapper.toPersistenceQuery(query);
-		const documents = await buildQuery<DrinkPersistence>(persistenceQuery, DrinkModel, {
+		const documents = await findPage<DrinkPersistence>(persistenceQuery, DrinkModel, {
 			collation: getSortCollation(persistenceQuery.sort),
-		})
-			.lean<DrinkPersistence[]>()
-			.exec();
+			ranked: true,
+		});
 		return documents.map(DrinkMapper.toDomain);
 	}
 
@@ -147,6 +157,7 @@ export class DrinksRepository implements IDrinksRepository {
 			CREATED_BY_FIELD,
 			{
 				collation: getSortCollation(persistenceQuery.sort),
+				ranked: true,
 			},
 		);
 		return documents.map(DrinkMapper.toDomain);

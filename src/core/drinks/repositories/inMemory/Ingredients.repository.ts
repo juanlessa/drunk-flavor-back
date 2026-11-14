@@ -4,10 +4,10 @@ import { CreateIngredient, FindIngredientByName, UpdateIngredient } from '@/core
 import { IngredientKinds } from '@/core/drinks/constants/ingredient.constants';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import {
-	INGREDIENT_SEARCH_FIELDS,
-	INGREDIENT_SEARCH_OPTIONS,
-	buildTranslationsSearchKeys,
+	buildIngredientSearchTiers,
 	createNameSearchMatchers,
+	flattenSearchTiers,
+	rankByNameSearch,
 } from '@/core/drinks/helpers/searchKeys.helpers';
 import { compareTranslationsName } from '@/core/drinks/helpers/translations.helpers';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
@@ -18,9 +18,10 @@ import { Languages, Language } from '@/core/drinks/types/translations';
 import { filterItemsBySearchCriteria, paginateItems, sortItemsByFields } from '@/shared/helpers/query.helpers';
 import { QueryParams } from '@/shared/types/query.types';
 
-const searchMatchers = createNameSearchMatchers<Ingredient>((item) =>
-	buildTranslationsSearchKeys(item.translations, INGREDIENT_SEARCH_FIELDS, [item.brand], INGREDIENT_SEARCH_OPTIONS),
-);
+const getSearchTiers = (item: Ingredient) =>
+	buildIngredientSearchTiers(item.translations, item.brand, item.category.translations);
+
+const searchMatchers = createNameSearchMatchers<Ingredient>((item) => flattenSearchTiers(getSearchTiers(item)));
 
 export class IngredientsRepositoryInMemory implements IIngredientsRepository {
 	collection: Ingredient[] = [];
@@ -78,6 +79,7 @@ export class IngredientsRepositoryInMemory implements IIngredientsRepository {
 		let found = onlyIds ? this.collection.filter(({ id }) => onlyIds.includes(id)) : [...this.collection];
 		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);
 		if (query.sort) found = sortItemsByFields(found, query.sort);
+		found = rankByNameSearch(found, query.search?.name, getSearchTiers);
 		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
 	}
 
@@ -85,6 +87,7 @@ export class IngredientsRepositoryInMemory implements IIngredientsRepository {
 		let found = [...this.collection];
 		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);
 		if (query.sort) found = sortItemsByFields(found, query.sort);
+		found = rankByNameSearch(found, query.search?.name, getSearchTiers);
 		found = prioritizeCreator(found, userId);
 		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
 	}

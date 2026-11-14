@@ -11,9 +11,10 @@ import {
 } from '@/core/drinks/dtos/drink.dtos';
 import { Drink } from '@/core/drinks/entities/drink.entity';
 import {
-	NAME_SEARCH_FIELDS,
-	buildTranslationsSearchKeys,
+	buildDrinkSearchTiers,
 	createNameSearchMatchers,
+	flattenSearchTiers,
+	rankByNameSearch,
 } from '@/core/drinks/helpers/searchKeys.helpers';
 import {
 	countOptionalIngredientsAvailable,
@@ -30,9 +31,9 @@ import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { filterItemsBySearchCriteria, paginateItems, sortItemsByFields } from '@/shared/helpers/query.helpers';
 import { QueryParams } from '@/shared/types/query.types';
 
-const searchMatchers = createNameSearchMatchers<Drink>((item) =>
-	buildTranslationsSearchKeys(item.translations, NAME_SEARCH_FIELDS),
-);
+const getSearchTiers = (item: Drink) => buildDrinkSearchTiers(item.translations, item.ingredients);
+
+const searchMatchers = createNameSearchMatchers<Drink>((item) => flattenSearchTiers(getSearchTiers(item)));
 
 export class DrinksRepositoryInMemory implements IDrinksRepository {
 	collection: Drink[] = [];
@@ -96,6 +97,7 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 		let found = [...this.collection];
 		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);
 		if (query.sort) found = this.sort(found, query.sort);
+		found = rankByNameSearch(found, query.search?.name, getSearchTiers);
 		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
 	}
 
@@ -103,6 +105,7 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 		let found = [...this.collection];
 		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);
 		if (query.sort) found = this.sort(found, query.sort);
+		found = rankByNameSearch(found, query.search?.name, getSearchTiers);
 		found = prioritizeCreator(found, userId);
 		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
 	}
