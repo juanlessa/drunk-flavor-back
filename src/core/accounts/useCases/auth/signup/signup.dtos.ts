@@ -3,7 +3,7 @@ import { signupSchema } from './signup.schema';
 
 export type CreateUserReqBody = z.infer<typeof signupSchema>;
 
-export type Signup = {
+export type SignupCommand = {
 	name: string;
 	surname: string;
 	email: string;

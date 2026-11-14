@@ -236,6 +236,12 @@
 			"invalidValue": "O valor deve ser um inteiro entre 1 e 5",
 			"forbidden": "Você não tem permissão para realizar esta ação nesta avaliação"
 		},
+		"favorites": {
+			"requiredDrinkId": "O ID do drink é obrigatório",
+			"invalidDrinkIdFormat": "Formato de ID de drink inválido",
+			"invalidCursor": "Cursor inválido",
+			"limitReached": "Você atingiu o número máximo de favoritos"
+		},
 		"comments": {
 			"notFound": "Comentário não encontrado",
 			"requiredId": "O ID é obrigatório",

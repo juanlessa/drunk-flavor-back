@@ -66,7 +66,10 @@ describe('Public reads of the catalog', () => {
 	describe.each([
 		['units', () => new ListUnitsService(repositories.unitsRepository)],
 		['categories', () => new ListCategoriesService(repositories.categoriesRepository)],
-		['ingredients', () => new ListIngredientsService(repositories.ingredientsRepository)],
+		[
+			'ingredients',
+			() => new ListIngredientsService(repositories.ingredientsRepository, repositories.drinksRepository),
+		],
 		['drinks', () => new ListDrinksService(repositories.drinksRepository, storageProvider)],
 	] as const)('listing the %s', (_name, makeService) => {
 		it('does not show who created or last edited them', async () => {

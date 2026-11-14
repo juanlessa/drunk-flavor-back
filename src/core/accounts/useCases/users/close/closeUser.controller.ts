@@ -2,17 +2,20 @@ import { AdministrativeEventOrigins } from '@/core/accounts/constants/administra
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { resolveCloseUserService } from './closeUser.container';
-import { CloseUserReqBody, CloseUserReqParams } from './closeUser.dtos';
+import { CloseUserReqBody, CloseUserReqParam } from './closeUser.dtos';
 
 export const closeUserController: Controller<{
-	Params: CloseUserReqParams;
+	Params: CloseUserReqParam;
 	Body: CloseUserReqBody;
 }> = async (request, reply) => {
+	const { id } = request.params;
+	const { reason } = request.body;
+	const actor = { id: request.user.id, role: request.user.role };
 	const service = resolveCloseUserService();
 	await service.execute({
-		id: request.params.id,
-		reason: request.body.reason,
-		actor: { id: request.user.id, role: request.user.role },
+		id,
+		reason,
+		actor,
 		administrativeContext: { origin: AdministrativeEventOrigins.api, requestId: request.id },
 	});
 

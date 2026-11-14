@@ -3,6 +3,6 @@ import { resendEmailVerificationSchema } from './resendEmailVerification.schema'
 
 export type ResendEmailVerificationReqBody = z.infer<typeof resendEmailVerificationSchema>;
 
-export type ResendEmailVerification = {
+export type ResendEmailVerificationCommand = {
 	email: string;
 };

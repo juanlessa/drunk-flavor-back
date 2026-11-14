@@ -4,6 +4,7 @@ import { z } from 'zod/v4';
 
 export type ListIngredientsReqQuery = z.infer<typeof listIngredientsSchema>;
 
-export type ListIngredientsDTO = {
+export type ListIngredientsCommand = {
 	query?: QueryParams;
+	inUse?: boolean;
 };

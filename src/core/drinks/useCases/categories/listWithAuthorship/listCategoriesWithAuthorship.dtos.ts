@@ -4,4 +4,4 @@ import { z } from 'zod/v4';
 import { listCategoriesQuerySchema } from '../list/listCategories.schema';
 
 export type ListCategoriesWithAuthorshipReqQuery = z.infer<typeof listCategoriesQuerySchema>;
-export type ListCategoriesWithAuthorshipDTO = { query?: QueryParams; actor: Actor };
+export type ListCategoriesWithAuthorshipCommand = { query?: QueryParams; actor: Actor };

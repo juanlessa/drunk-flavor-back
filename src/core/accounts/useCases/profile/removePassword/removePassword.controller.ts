@@ -4,7 +4,9 @@ import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { resolveRemovePasswordService } from './removePassword.container';
 
 export const removePasswordController: Controller = async (request, reply) => {
-	const { user } = await resolveRemovePasswordService().execute({ userId: request.user.id });
+	const { id } = request.user;
+	const service = resolveRemovePasswordService();
+	const { user } = await service.execute({ userId: id });
 	await rotateAuthenticationSession(request, reply, user);
 	return reply.status(HTTP_STATUS.no_content).send();
 };

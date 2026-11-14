@@ -8,10 +8,13 @@ export const requestOwnershipTransferController: Controller<{ Body: RequestOwner
 	request,
 	reply,
 ) => {
-	await resolveRequestOwnershipTransferService().execute({
-		targetUserId: request.body.targetUserId,
-		reason: request.body.reason,
-		actor: { id: request.user.id, role: request.user.role },
+	const { targetUserId, reason } = request.body;
+	const actor = { id: request.user.id, role: request.user.role };
+	const service = resolveRequestOwnershipTransferService();
+	await service.execute({
+		targetUserId,
+		reason,
+		actor,
 		administrativeContext: { origin: AdministrativeEventOrigins.api, requestId: request.id },
 	});
 	return reply.status(HTTP_STATUS.no_content).send();

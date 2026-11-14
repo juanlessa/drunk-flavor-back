@@ -4,6 +4,6 @@ import { z } from 'zod/v4';
 
 export type ListCategoriesReqQuery = z.infer<typeof listCategoriesQuerySchema>;
 
-export type ListCategoriesDTO = {
+export type ListCategoriesCommand = {
 	query?: QueryParams;
 };

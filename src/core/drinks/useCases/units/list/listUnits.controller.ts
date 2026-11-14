@@ -4,6 +4,7 @@ import { ListUnitsReqQuery } from './listUnits.dtos';
 
 export const listUnitsController: Controller<{ Querystring: ListUnitsReqQuery }> = async (request, reply) => {
 	const { limit, page, search, sort } = request.query;
-	const units = await resolveListUnitsService().execute({ query: { limit, page, search, sort } });
+	const service = resolveListUnitsService();
+	const units = await service.execute({ query: { limit, page, search, sort } });
 	return reply.send(units);
 };

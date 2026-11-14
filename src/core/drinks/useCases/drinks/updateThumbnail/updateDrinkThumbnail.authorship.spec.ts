@@ -8,6 +8,8 @@ import { IngredientsRepositoryInMemory } from '@/core/drinks/repositories/inMemo
 import { UnitsRepositoryInMemory } from '@/core/drinks/repositories/inMemory/Units.repository';
 import { Roles } from '@/shared/accessControl/roles';
 import { Readable } from 'node:stream';
+import { MockCleanupQueueProvider } from '@/shared/providers/queue/cleanup/implementations/MockCleanupQueue.provider';
+import { CLEANUP_JOB_NAMES } from '@/shared/providers/queue/cleanup/cleanupQueue.constants';
 import { MockStorageProvider } from '@/shared/providers/storage/implementations/MockStorage.provider';
 import { BadRequestError, ForbiddenError, NotFoundError } from '@/shared/error/error.lib';
 import { UpdateDrinkThumbnailService } from './UpdateDrinkThumbnail.service';
@@ -23,6 +25,7 @@ const file = {
 
 let drinksRepository: DrinksRepositoryInMemory;
 let storageProvider: MockStorageProvider;
+let cleanupQueueProvider: MockCleanupQueueProvider;
 let service: UpdateDrinkThumbnailService;
 let drink: Drink;
 
@@ -31,7 +34,8 @@ describe('UpdateDrinkThumbnail: authorship', () => {
 		vi.clearAllMocks();
 		drinksRepository = new DrinksRepositoryInMemory();
 		storageProvider = new MockStorageProvider();
-		service = new UpdateDrinkThumbnailService(drinksRepository, storageProvider);
+		cleanupQueueProvider = new MockCleanupQueueProvider();
+		service = new UpdateDrinkThumbnailService(drinksRepository, storageProvider, cleanupQueueProvider);
 		({ drink } = await seedDrink(
 			{
 				categoriesRepository: new CategoriesRepositoryInMemory(),
@@ -69,7 +73,7 @@ describe('UpdateDrinkThumbnail: authorship', () => {
 
 		expect(await drinksRepository.findById(drink.id)).toEqual(drink);
 		expect(storageProvider.uploadFile).not.toHaveBeenCalled();
-		expect(storageProvider.deleteFile).not.toHaveBeenCalled();
+		expect(cleanupQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 
 	it('does not let a member change the thumbnail of a drink, not even one that has their id as creator', async () => {

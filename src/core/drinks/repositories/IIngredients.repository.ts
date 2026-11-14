@@ -8,7 +8,8 @@ export interface IIngredientsRepository {
 	delete(id: string): Promise<Ingredient>;
 	findByName(data: FindIngredientByName): Promise<Ingredient | null>;
 	findById(id: string): Promise<Ingredient | null>;
-	findAll(query: QueryParams): Promise<Ingredient[]>;
+	/** With `onlyIds`, only the ingredients among those ids are listed, and the search, sort and pagination apply to them. */
+	findAll(query: QueryParams, onlyIds?: string[]): Promise<Ingredient[]>;
 	/** Like `findAll`, with the records created by `userId` first and the others after, each group in the order of the query. */
 	findAllOwnedFirst(query: QueryParams, userId: string): Promise<Ingredient[]>;
 	/** Removes the user as creator and last editor of the records, which stay as they are. Returns how many were touched. */

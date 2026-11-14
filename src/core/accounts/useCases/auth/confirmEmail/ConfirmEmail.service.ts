@@ -4,7 +4,7 @@ import { ITokensRepository } from '@/core/accounts/repositories/ITokens.reposito
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
-import { ConfirmEmail } from './confirmEmail.dtos';
+import { ConfirmEmailCommand } from './confirmEmail.dtos';
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
 import { invalidateUserSessions } from '@/core/accounts/helpers/sessionInvalidation.helpers';
@@ -19,7 +19,7 @@ export class ConfirmEmailService {
 		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
 	) {}
 
-	async execute({ token }: ConfirmEmail) {
+	async execute({ token }: ConfirmEmailCommand) {
 		const tokenHash = this.cryptoProvider.hashToken(token);
 
 		const tokenRecord = await this.tokensRepository.findByTokenHash(tokenHash);

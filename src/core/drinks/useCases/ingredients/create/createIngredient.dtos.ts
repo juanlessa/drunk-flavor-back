@@ -5,8 +5,8 @@ import { Actor } from '@/shared/accessControl/actor.types';
 import { createIngredientSchema } from './createIngredient.schema';
 
 export type CreateIngredientReqBody = z.infer<typeof createIngredientSchema>;
-/** The data of an ingredient as it arrives from the API, before the service resolves the category and the units. */
-export type CreateIngredientInput = {
+
+export type CreateIngredientCommand = {
 	translations: Translations<IngredientTranslation>;
 	categoryId: string;
 	/** Allowed units in display order; empty means not measurable. */
@@ -14,6 +14,5 @@ export type CreateIngredientInput = {
 	/** Defaults to `generic` when omitted. */
 	kind?: IngredientKind;
 	brand?: string;
+	actor: Actor;
 };
-
-export type CreateIngredientDTO = CreateIngredientInput & { actor: Actor };

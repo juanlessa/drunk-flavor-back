@@ -1,4 +1,6 @@
 import {
+	ApplyRatingDelta,
+	DrinkRatingSummary,
 	CreateDrink,
 	DrinkIngredientMatch,
 	FindDrinkByName,
@@ -7,12 +9,10 @@ import {
 } from '@/core/drinks/dtos/drink.dtos';
 import { Drink } from '@/core/drinks/entities/drink.entity';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
-import { buildQuery, findOwnedFirst } from '@/infrastructure/mongo/helpers/query.helpers';
+import { findOwnedFirst, findPage } from '@/infrastructure/mongo/helpers/query.helpers';
 import { toMongoUpdateSet } from '@/infrastructure/mongo/helpers/mapper.helpers';
 import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
-import type { ApplyRatingDelta, DrinkRatingSummary } from '@/core/drinks/public/IDrinksModule';
-import { SEARCH_KEYS_FIELD } from '@/infrastructure/mongo/constants/search.constants';
-import { NAME_SEARCH_FIELDS, buildTranslationsSearchKeys } from '@/core/drinks/helpers/searchKeys.helpers';
+import { buildDrinkSearchTiers } from '@/core/drinks/helpers/searchKeys.helpers';
 import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
@@ -20,8 +20,9 @@ import { RATING_PRIOR_MEAN, RATING_PRIOR_WEIGHT } from '@/core/drinks/constants/
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 import { PipelineStage, QueryFilter, Types } from 'mongoose';
 import { DRINK_UNIQUE_INDEXES, DrinkModel, DrinkPersistence } from '../entities/drink.model';
-import { getRequiredIngredientObjectIds } from '../helpers/drinkRequiredIngredients.helpers';
+import { getIngredientObjectIds, getRequiredIngredientObjectIds } from '../helpers/drinkRequiredIngredients.helpers';
 import { CREATED_BY_FIELD, clearAuthorshipByUser, omitAuthorshipDeep } from '../helpers/authorship.helpers';
+import { toSearchFields } from '../helpers/searchFields.helpers';
 import { findByTranslatedName, getSortCollation } from '../helpers/translations.helpers';
 import { DrinkMapper } from '../mappers/drink.mapper';
 
@@ -39,7 +40,10 @@ export class DrinksRepository implements IDrinksRepository {
 			const document = await DrinkModel.create({
 				...persistenceData,
 				updated_by: persistenceData.created_by,
-				search_keys: buildTranslationsSearchKeys(persistenceData.translations, NAME_SEARCH_FIELDS),
+				...toSearchFields(
+					buildDrinkSearchTiers(persistenceData.translations, persistenceData.ingredients ?? []),
+				),
+				ingredient_ids: getIngredientObjectIds(persistenceData.ingredients ?? []),
 				required_ingredient_ids: getRequiredIngredientObjectIds(persistenceData.ingredients ?? []),
 			});
 			return DrinkMapper.toDomain(document);
@@ -59,17 +63,27 @@ export class DrinksRepository implements IDrinksRepository {
 		const update = toMongoUpdateSet(persistenceData);
 		// The recipe is replaced as a whole, so the ids that the search by ingredients matches on follow it.
 		if (persistenceData.ingredients) {
+			update['ingredient_ids'] = getIngredientObjectIds(persistenceData.ingredients);
 			update['required_ingredient_ids'] = getRequiredIngredientObjectIds(persistenceData.ingredients);
 		}
-		if (persistenceData.translations) {
+		// The keys come from the name and the recipe, so a change of either rebuilds them. What the recipe line stored of
+		// an ingredient is searched, which is how a rename of it that the drink did not follow is fixed by its next update.
+		if (persistenceData.translations || persistenceData.ingredients) {
 			const current = await DrinkModel.findById(objectId)
-				.select('translations')
-				.lean<Pick<DrinkPersistence, 'translations'>>()
+				.select('translations ingredients')
+				.lean<Pick<DrinkPersistence, 'translations' | 'ingredients'>>()
 				.exec();
 			if (!current) throw this.notFound('update');
-			update[SEARCH_KEYS_FIELD] = buildTranslationsSearchKeys(
-				deepUpdate(persistenceData.translations, current.translations),
-				NAME_SEARCH_FIELDS,
+			Object.assign(
+				update,
+				toSearchFields(
+					buildDrinkSearchTiers(
+						persistenceData.translations
+							? deepUpdate(persistenceData.translations, current.translations)
+							: current.translations,
+						persistenceData.ingredients ?? current.ingredients,
+					),
+				),
 			);
 		}
 		let document: DrinkPersistence | null;
@@ -116,13 +130,21 @@ export class DrinksRepository implements IDrinksRepository {
 		return document ? DrinkMapper.toDomain(document) : null;
 	}
 
-	async findAll(query: QueryParams): Promise<Drink[]> {
-		const persistenceQuery = DrinkMapper.toPersistenceQuery(query);
-		const documents = await buildQuery<DrinkPersistence>(persistenceQuery, DrinkModel, {
-			collation: getSortCollation(persistenceQuery.sort),
-		})
+	async findByIds(ids: string[]): Promise<Drink[]> {
+		const objectIds = ids.map((id) => DrinkMapper.toObjectId(id)).filter((id): id is Types.ObjectId => id !== null);
+		if (objectIds.length === 0) return [];
+		const documents = await DrinkModel.find({ _id: { $in: objectIds } })
 			.lean<DrinkPersistence[]>()
 			.exec();
+		return documents.map(DrinkMapper.toDomain);
+	}
+
+	async findAll(query: QueryParams): Promise<Drink[]> {
+		const persistenceQuery = DrinkMapper.toPersistenceQuery(query);
+		const documents = await findPage<DrinkPersistence>(persistenceQuery, DrinkModel, {
+			collation: getSortCollation(persistenceQuery.sort),
+			ranked: true,
+		});
 		return documents.map(DrinkMapper.toDomain);
 	}
 
@@ -135,6 +157,7 @@ export class DrinksRepository implements IDrinksRepository {
 			CREATED_BY_FIELD,
 			{
 				collation: getSortCollation(persistenceQuery.sort),
+				ranked: true,
 			},
 		);
 		return documents.map(DrinkMapper.toDomain);
@@ -155,24 +178,40 @@ export class DrinksRepository implements IDrinksRepository {
 		if (available.length === 0 || !hasOnlyValidIds) return [];
 
 		const pipeline: PipelineStage[] = [
-			// At least one required ingredient must be one the person has. This is the step the index serves, and it
-			// holds for every `maxMissing`, so a drink with nothing in common is never a candidate.
-			{ $match: { required_ingredient_ids: { $in: available } } },
+			// At least one ingredient of the drink, optional or not, must be one the person has. This is the step the
+			// index serves, and it holds for every `maxMissing`, so a drink with nothing in common is never a candidate.
+			{ $match: { ingredient_ids: { $in: available } } },
+			// Only the required ingredients count as missing: the drink can be made without the optional ones.
 			{ $addFields: { missing_ingredient_ids: { $setDifference: ['$required_ingredient_ids', available] } } },
 			{ $addFields: { missing_count: { $size: '$missing_ingredient_ids' } } },
 			...(maxMissing === 'any' ? [] : [{ $match: { missing_count: { $lte: maxMissing } } }]),
-			// The most complete first, then the best rated by the rating score (many good ratings above a single
-			// perfect one, as in the drinks list); `_id` keeps the pages stable.
-			{ $sort: { missing_count: 1, rating_score: -1, _id: -1 } },
+			{
+				$addFields: {
+					optional_available_count: {
+						$size: {
+							$setIntersection: [
+								{ $setDifference: ['$ingredient_ids', '$required_ingredient_ids'] },
+								available,
+							],
+						},
+					},
+				},
+			},
+			// The most complete first, then the one that uses more of the optional ingredients the person has, then the
+			// best rated by the rating score (many good ratings above a single perfect one, as in the drinks list);
+			// `_id` keeps the pages stable.
+			{ $sort: { missing_count: 1, optional_available_count: -1, rating_score: -1, _id: -1 } },
 			{ $skip: (page - 1) * limit },
 			{ $limit: limit },
 			{
 				$project: {
 					search_keys: 0,
+					ingredient_ids: 0,
 					required_ingredient_ids: 0,
 					ratings_sum: 0,
 					rating_score: 0,
 					missing_count: 0,
+					optional_available_count: 0,
 				},
 			},
 		];
@@ -185,6 +224,11 @@ export class DrinksRepository implements IDrinksRepository {
 		}));
 	}
 
+	async findIngredientIdsInUse(): Promise<string[]> {
+		// A distinct over the indexed `ingredient_ids`; drinks saved before the field existed are not in it.
+		const ids = (await DrinkModel.distinct('ingredient_ids').exec()) as unknown as Types.ObjectId[];
+		return ids.map((id) => id.toHexString());
+	}
 	async applyRatingDelta({ drinkId, countDelta, sumDelta }: ApplyRatingDelta): Promise<DrinkRatingSummary> {
 		const filter: QueryFilter<DrinkPersistence> = { _id: drinkId };
 		if (countDelta < 0) filter.ratings_count = { $gte: -countDelta };

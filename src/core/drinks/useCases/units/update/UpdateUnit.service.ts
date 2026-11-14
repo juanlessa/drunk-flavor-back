@@ -3,12 +3,12 @@ import { assertUnitIngredientName } from '@/core/drinks/helpers/unit.helpers';
 import { mapToTranslationsName } from '@/core/drinks/mappers/translations.mappers';
 import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
 import { NotFoundError, ConflictError } from '@/shared/error/error.lib';
-import { UpdateUnitDTO } from './updateUnit.dtos';
+import { UpdateUnitCommand } from './updateUnit.dtos';
 
 export class UpdateUnitService {
 	constructor(private unitsRepository: IUnitsRepository) {}
 
-	async execute({ actor, ...data }: UpdateUnitDTO): Promise<void> {
+	async execute({ actor, ...data }: UpdateUnitCommand): Promise<void> {
 		const unit = await this.unitsRepository.findById(data.id);
 		if (!unit) throw new NotFoundError('apiResponses.units.notFound', { path: 'UpdateUnit.service' });
 		assertCanChangeUnit('update', unit, actor, 'UpdateUnit.service.forbidden');

@@ -159,6 +159,8 @@ describe('IngredientsRepository (integration)', () => {
 	describe('kind, brand, description and units', () => {
 		const rawSearchKeys = async (id: string) =>
 			(await IngredientModel.findById(id).select('+search_keys').lean())?.search_keys;
+		const rawSearchTiers = async (id: string) =>
+			(await IngredientModel.findById(id).select('+search_tiers').lean())?.search_tiers;
 
 		const createDescribed = () =>
 			repository.create(
@@ -395,7 +397,35 @@ describe('IngredientsRepository (integration)', () => {
 					}),
 				);
 
-				expect(await rawSearchKeys(created.id)).toEqual(['rum']);
+				// Only the name and the category (from the builder) are left.
+				expect(await rawSearchKeys(created.id)).toEqual(['rum', 'syrup', 'xarope']);
+				expect(await rawSearchTiers(created.id)).toEqual([['rum'], [], ['syrup', 'xarope']]);
+			});
+
+			it('are split by relevance: the name, the description and brand, the category', async () => {
+				const created = await createDescribed();
+
+				const [nameKeys, describedKeys, categoryKeys] = (await rawSearchTiers(created.id)) ?? [];
+
+				expect(nameKeys).toEqual(expect.arrayContaining(['gabriela']));
+				expect(describedKeys).toEqual(
+					expect.arrayContaining(['clove', 'cinnamon', 'cachaca', 'cravo', 'canela']),
+				);
+				expect(categoryKeys).toEqual(['syrup', 'xarope']);
+			});
+
+			it('are recalculated when the category changes', async () => {
+				const created = await createDescribed();
+				const category = {
+					...buildCategory(),
+					translations: { en: { name: 'Bitters' }, pt: { name: 'Amargo' } },
+				};
+
+				await repository.update(withEditor({ id: created.id, category }));
+
+				const [, , categoryKeys] = (await rawSearchTiers(created.id)) ?? [];
+				expect(categoryKeys).toEqual(['bitters', 'amargo']);
+				expect(await rawSearchKeys(created.id)).not.toContain('syrup');
 			});
 
 			it('are recalculated by a brand-only update', async () => {
@@ -475,6 +505,75 @@ describe('IngredientsRepository (integration)', () => {
 					'Água de coco',
 					'Água',
 				]);
+			});
+		});
+
+		describe('ranking the search by name', () => {
+			const create = (name: string, extra: Partial<CreateIngredient> = {}, category = 'Mixer') =>
+				repository.create({
+					...buildIngredient({ en: name, pt: name }),
+					category: { ...buildCategory(), translations: { en: { name: category }, pt: { name: category } } },
+					...extra,
+				});
+			const orange = async (query: Parameters<IngredientsRepository['findAll']>[0], onlyIds?: string[]) =>
+				(await repository.findAll(query, onlyIds)).map(({ translations }) => translations.en.name);
+
+			beforeEach(async () => {
+				await IngredientModel.deleteMany({});
+				// Created from the least to the most relevant one, so the order of the creation is not the order of the rank.
+				await create('Bitter', {}, 'Orange family');
+				await create('Curaçao', {
+					translations: {
+						en: { name: 'Curaçao', description: 'Bitter orange peel' },
+						pt: { name: 'Curaçao' },
+					},
+				});
+				await create('Cointreau', { kind: 'branded', brand: 'Orange Co' });
+				await create('Orange juice');
+				await create('Orange');
+			});
+
+			it('lists the matches of the name, then of the description or brand, then of the category', async () => {
+				expect(await orange({ search: { name: 'orange' } })).toEqual([
+					'Orange juice',
+					'Orange',
+					'Curaçao',
+					'Cointreau',
+					'Bitter',
+				]);
+			});
+
+			it('breaks the ties between the matches of a tier with the sort of the query', async () => {
+				expect(await orange({ search: { name: 'orange' }, sort: { 'translations.en.name': 1 } })).toEqual([
+					'Orange',
+					'Orange juice',
+					'Cointreau',
+					'Curaçao',
+					'Bitter',
+				]);
+			});
+
+			it('ranks an ingredient as the worst tier of the words of the term', async () => {
+				// "Curaçao" has both words in the description (2); "Bitter" has "bitter" in the name (1) but "orange" only
+				// in the category (3), so it ranks 3.
+				expect(await orange({ search: { name: 'bitter orange' } })).toEqual(['Curaçao', 'Bitter']);
+			});
+
+			it('ranks only the ingredients that are asked for', async () => {
+				const [orangeJuice] = await IngredientModel.find({ 'translations.en.name': 'Orange juice' }).lean();
+				const [bitter] = await IngredientModel.find({ 'translations.en.name': 'Bitter' }).lean();
+
+				expect(
+					await orange({ search: { name: 'orange' } }, [bitter._id.toString(), orangeJuice._id.toString()]),
+				).toEqual(['Orange juice', 'Bitter']);
+			});
+
+			it('does not expose the fields of the search', async () => {
+				const [first] = await repository.findAll({ search: { name: 'orange' } });
+
+				expect(first).not.toHaveProperty('_search_rank');
+				expect(first).not.toHaveProperty('search_keys');
+				expect(first).not.toHaveProperty('search_tiers');
 			});
 		});
 

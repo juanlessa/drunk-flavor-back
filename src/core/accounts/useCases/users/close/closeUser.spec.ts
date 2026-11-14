@@ -22,10 +22,9 @@ import { env } from '@/env';
 import { Actor } from '@/shared/accessControl/actor.types';
 import { Roles } from '@/shared/accessControl/roles';
 import { ForbiddenError, NotFoundError } from '@/shared/error/error.lib';
-import { IDrinksModule } from '@/core/drinks/public';
-import { IEngagementModule } from '@/core/engagement/public';
+import { CLEANUP_JOB_NAMES } from '@/shared/providers/queue/cleanup/cleanupQueue.constants';
+import { MockCleanupQueueProvider } from '@/shared/providers/queue/cleanup/implementations/MockCleanupQueue.provider';
 import { NodeCryptoProvider } from '@/shared/providers/cryptography/implementations/NodeCrypto.provider';
-import { MockStorageProvider } from '@/shared/providers/storage/implementations/MockStorage.provider';
 import { FakeTransactionManager } from '@/shared/transactions/fakes/FakeTransactionManager';
 import { CloseUserService } from './CloseUser.service';
 import { SessionVersionMarkerStoreInMemory } from '@/core/accounts/stores/inMemory/SessionVersionMarker.store';
@@ -35,9 +34,7 @@ let tokensRepository: ITokensRepository;
 let credentialsRepository: ICredentialsRepository;
 let identitiesRepository: IIdentitiesRepository;
 let administrativeEventsRepository: AdministrativeEventsRepositoryInMemory;
-let engagementModule: IEngagementModule;
-let drinksModule: IDrinksModule;
-let storageProvider: MockStorageProvider;
+let cleanupQueueProvider: MockCleanupQueueProvider;
 let service: CloseUserService;
 
 const cryptoProvider = new NodeCryptoProvider();
@@ -67,24 +64,16 @@ describe('Close User', () => {
 		credentialsRepository = new CredentialsRepositoryInMemory();
 		identitiesRepository = new IdentitiesRepositoryInMemory();
 		administrativeEventsRepository = new AdministrativeEventsRepositoryInMemory();
-		engagementModule = { deleteCommentsByUser: vi.fn().mockResolvedValue(0) };
-		drinksModule = {
-			findDrinkById: vi.fn(),
-			applyRatingDelta: vi.fn(),
-			clearCreatorByUser: vi.fn().mockResolvedValue(0),
-		};
-		storageProvider = new MockStorageProvider();
+		cleanupQueueProvider = new MockCleanupQueueProvider();
 		service = new CloseUserService(
 			usersRepository,
 			credentialsRepository,
 			identitiesRepository,
 			tokensRepository,
 			administrativeEventsRepository,
-			engagementModule,
-			drinksModule,
 			new FakeTransactionManager(),
-			storageProvider,
 			new SessionVersionMarkerStoreInMemory(),
+			cleanupQueueProvider,
 		);
 	});
 
@@ -94,8 +83,6 @@ describe('Close User', () => {
 		await service.execute({ id: createdUser.id, actor: admin, reason });
 
 		expect(await usersRepository.findById(createdUser.id)).toBeNull();
-		expect(engagementModule.deleteCommentsByUser).toHaveBeenCalledWith(createdUser.id);
-		expect(drinksModule.clearCreatorByUser).toHaveBeenCalledWith(createdUser.id);
 		expect(administrativeEventsRepository.collection).toEqual([
 			expect.objectContaining({
 				actorId: admin.id,
@@ -122,7 +109,7 @@ describe('Close User', () => {
 		expect(await usersRepository.findById(createdUser.id)).not.toBeNull();
 	});
 
-	it('removes authentication data while preserving ratings outside the closure module', async () => {
+	it('removes authentication data', async () => {
 		const createdUser = await usersRepository.create(userData);
 		const userId = createdUser.id;
 		await tokensRepository.create({
@@ -144,7 +131,6 @@ describe('Close User', () => {
 		expect(await tokensRepository.findByUserId(userId)).toHaveLength(0);
 		expect(await credentialsRepository.findByUserId(userId)).toBeNull();
 		expect(await identitiesRepository.findByUserId(userId)).toHaveLength(0);
-		expect(engagementModule.deleteCommentsByUser).toHaveBeenCalledWith(userId);
 	});
 
 	it('does not close the owner', async () => {
@@ -179,25 +165,65 @@ describe('Close User', () => {
 		expect(await usersRepository.findById(admin.id)).toBeNull();
 	});
 
-	it('does not touch the catalog when the actor may not close the user', async () => {
+	it('enqueues the catalog, comment and favorite cleanup after closing the account', async () => {
 		const createdUser = await usersRepository.create(userData);
+		await service.execute({ id: createdUser.id, actor: admin, reason });
+		expect(cleanupQueueProvider.addMock).toHaveBeenCalledWith(
+			CLEANUP_JOB_NAMES.clearCatalogAuthorship,
+			{ userId: createdUser.id },
+			{ deduplicationKey: `clear-catalog-authorship-${createdUser.id}` },
+		);
+		expect(cleanupQueueProvider.addMock).toHaveBeenCalledWith(
+			CLEANUP_JOB_NAMES.deleteComments,
+			{ userId: createdUser.id },
+			{ deduplicationKey: `delete-comments-${createdUser.id}` },
+		);
+		expect(cleanupQueueProvider.addMock).toHaveBeenCalledWith(
+			CLEANUP_JOB_NAMES.deleteFavorites,
+			{ userId: createdUser.id },
+			{ deduplicationKey: `delete-favorites-${createdUser.id}` },
+		);
+		expect(cleanupQueueProvider.addMock).toHaveBeenCalledTimes(3);
+	});
 
+	it('enqueues the removal of a server-managed avatar', async () => {
+		const createdUser = await usersRepository.create(userData);
+		const avatarName = `0123456789abcdef0123456789abcdef-${createdUser.id}-avatar.png`;
+		await usersRepository.update({ id: createdUser.id, avatarUrl: `https://cdn.example.com/${avatarName}` });
+		await service.execute({ id: createdUser.id, actor: admin, reason });
+		expect(cleanupQueueProvider.addMock).toHaveBeenCalledWith(
+			CLEANUP_JOB_NAMES.deleteStorageFile,
+			{ fileName: avatarName },
+			{ deduplicationKey: `delete-storage-file-${avatarName}` },
+		);
+	});
+
+	it('does not enqueue the removal of an external provider avatar', async () => {
+		const createdUser = await usersRepository.create({
+			...userData,
+			avatarUrl: 'https://accounts.example.com/avatar.png',
+		});
+		await service.execute({ id: createdUser.id, actor: admin, reason });
+		expect(cleanupQueueProvider.addMock).not.toHaveBeenCalledWith(
+			CLEANUP_JOB_NAMES.deleteStorageFile,
+			expect.anything(),
+			expect.anything(),
+		);
+	});
+
+	it('does not enqueue any cleanup when the actor may not close the user', async () => {
+		const createdUser = await usersRepository.create(userData);
 		await expect(service.execute({ id: createdUser.id, actor: member, reason })).rejects.toBeInstanceOf(
 			ForbiddenError,
 		);
-
-		expect(drinksModule.clearCreatorByUser).not.toHaveBeenCalled();
+		expect(cleanupQueueProvider.addMock).not.toHaveBeenCalled();
 	});
 
-	it('keeps the account and records no closure when the catalog cannot be anonymized', async () => {
+	it('keeps the closure when a cleanup job cannot be enqueued', async () => {
 		const createdUser = await usersRepository.create(userData);
-		vi.mocked(drinksModule.clearCreatorByUser).mockRejectedValueOnce(new Error('catalog unavailable'));
-
-		await expect(service.execute({ id: createdUser.id, actor: admin, reason })).rejects.toThrow(
-			'catalog unavailable',
-		);
-
-		expect(await usersRepository.findById(createdUser.id)).not.toBeNull();
-		expect(administrativeEventsRepository.collection).toHaveLength(0);
+		cleanupQueueProvider.addMock.mockRejectedValueOnce(new Error('queue unavailable'));
+		await expect(service.execute({ id: createdUser.id, actor: admin, reason })).resolves.toBeUndefined();
+		expect(await usersRepository.findById(createdUser.id)).toBeNull();
+		expect(cleanupQueueProvider.addMock).toHaveBeenCalledTimes(3);
 	});
 });

@@ -5,4 +5,5 @@ const drinksRepository = resolveDrinksRepository();
 const ingredientsRepository = resolveIngredientsRepository();
 
 const createDrinkService = new CreateDrinkService(drinksRepository, ingredientsRepository);
+
 export const resolveCreateDrinkService = () => createDrinkService;

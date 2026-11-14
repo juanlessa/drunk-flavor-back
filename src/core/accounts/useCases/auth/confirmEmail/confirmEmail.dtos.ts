@@ -3,6 +3,6 @@ import { confirmEmailSchema } from './confirmEmail.schema';
 
 export type ConfirmEmailReqBody = z.infer<typeof confirmEmailSchema>;
 
-export type ConfirmEmail = {
+export type ConfirmEmailCommand = {
 	token: string;
 };

@@ -5,24 +5,29 @@ import {
 	resolveTokensRepository,
 	resolveUsersRepository,
 } from '@/core/accounts/infra/mongo/container';
-import { resolveDrinksModule } from '@/core/drinks/public';
-import { resolveEngagementModule } from '@/core/engagement/public';
 import { resolveTransactionManager } from '@/infrastructure/mongo/transactions';
-import { resolveStorageProvider } from '@/shared/providers/storage';
+import { resolveCleanupQueueProvider } from '@/shared/providers/queue/cleanup';
 import { DeleteProfileService } from './DeleteProfile.service';
 import { resolveSessionVersionMarkerStore } from '@/core/accounts/infra/redis/container';
 
+const usersRepository = resolveUsersRepository();
+const tokensRepository = resolveTokensRepository();
+const credentialsRepository = resolveCredentialsRepository();
+const identitiesRepository = resolveIdentitiesRepository();
+const transactionManager = resolveTransactionManager();
+const administrativeEventsRepository = resolveAdministrativeEventsRepository();
+const sessionVersionMarkerStore = resolveSessionVersionMarkerStore();
+const cleanupQueueProvider = resolveCleanupQueueProvider();
+
 const deleteProfileService = new DeleteProfileService(
-	resolveUsersRepository(),
-	resolveTokensRepository(),
-	resolveCredentialsRepository(),
-	resolveIdentitiesRepository(),
-	resolveTransactionManager(),
-	resolveStorageProvider(),
-	resolveAdministrativeEventsRepository(),
-	resolveEngagementModule(),
-	resolveDrinksModule(),
-	resolveSessionVersionMarkerStore(),
+	usersRepository,
+	tokensRepository,
+	credentialsRepository,
+	identitiesRepository,
+	transactionManager,
+	administrativeEventsRepository,
+	sessionVersionMarkerStore,
+	cleanupQueueProvider,
 );
 
 export const resolveDeleteProfileService = () => deleteProfileService;

@@ -8,7 +8,7 @@ import { Roles } from '@/shared/accessControl/roles';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
 import { findRequiredAdministrationUser } from '@/core/accounts/helpers/userAdministration.helpers';
 import { resolveAdministrativeEventContext } from '@/core/accounts/helpers/userAdministrationAudit.helpers';
-import { CancelOwnershipTransfer } from './cancelOwnershipTransfer.dtos';
+import { CancelOwnershipTransferCommand } from './cancelOwnershipTransfer.dtos';
 
 export class CancelOwnershipTransferService {
 	constructor(
@@ -18,7 +18,7 @@ export class CancelOwnershipTransferService {
 		private transactionManager: ITransactionManager,
 	) {}
 
-	async execute({ actor, administrativeContext }: CancelOwnershipTransfer): Promise<void> {
+	async execute({ actor, administrativeContext }: CancelOwnershipTransferCommand): Promise<void> {
 		const context = resolveAdministrativeEventContext(administrativeContext);
 		await this.transactionManager.withTransaction(async () => {
 			const invitation = await this.invitationsRepository.findSingleton();

@@ -1,8 +1,10 @@
-import { CreateIngredientInput } from '@/core/drinks/useCases/ingredients/create/createIngredient.dtos';
+import { CreateIngredientCommand } from '@/core/drinks/useCases/ingredients/create/createIngredient.dtos';
 import { Genders } from '@/shared/constants/gender.constants';
 import { DeepPartial } from '@/shared/types/utility.types';
 
-export const createIngredientFactory = (ingredient?: DeepPartial<CreateIngredientInput>): CreateIngredientInput => ({
+export const createIngredientFactory = (
+	ingredient?: DeepPartial<Omit<CreateIngredientCommand, 'actor'>>,
+): Omit<CreateIngredientCommand, 'actor'> => ({
 	translations: {
 		en: {
 			name: ingredient?.translations?.en?.name || 'Syrup',

@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { ObjectId } from 'mongodb';
 import {
-	DRINK_REQUIRED_INGREDIENT_IDS_INDEX,
+	DRINK_INGREDIENT_IDS_INDEX,
 	DRINK_CREATED_BY_INDEX,
 	DRINK_SEARCH_KEYS_INDEX,
 	DRINK_TRANSLATIONS_EN_NAME_UNIQUE_INDEX,
@@ -82,7 +82,7 @@ describe('DrinkModel (integration)', () => {
 				'_id_',
 				DRINK_CREATED_BY_INDEX,
 				DRINK_SEARCH_KEYS_INDEX,
-				DRINK_REQUIRED_INGREDIENT_IDS_INDEX,
+				DRINK_INGREDIENT_IDS_INDEX,
 				DRINK_TRANSLATIONS_EN_NAME_UNIQUE_INDEX,
 				DRINK_TRANSLATIONS_PT_NAME_UNIQUE_INDEX,
 			].sort(),

@@ -4,7 +4,7 @@ import { updatePasswordSchema } from './updatePassword.schema';
 
 export type UpdatePasswordReqBody = z.infer<typeof updatePasswordSchema>;
 
-export type UpdatePassword = {
+export type UpdatePasswordCommand = {
 	id: string;
 	currentPassword: string;
 	newPassword: string;

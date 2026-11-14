@@ -4,9 +4,12 @@ import {
 } from '@/core/accounts/infra/mongo/container';
 import { GetPendingOwnershipTransferService } from './GetPendingOwnershipTransfer.service';
 
-const service = new GetPendingOwnershipTransferService(
-	resolveUsersRepository(),
-	resolveOwnershipTransferInvitationsRepository(),
+const usersRepository = resolveUsersRepository();
+const ownershipTransferInvitationsRepository = resolveOwnershipTransferInvitationsRepository();
+
+const getPendingOwnershipTransferService = new GetPendingOwnershipTransferService(
+	usersRepository,
+	ownershipTransferInvitationsRepository,
 );
 
-export const resolveGetPendingOwnershipTransferService = () => service;
+export const resolveGetPendingOwnershipTransferService = () => getPendingOwnershipTransferService;

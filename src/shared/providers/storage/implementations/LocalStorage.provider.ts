@@ -2,13 +2,16 @@ import { IStorageProvider } from '../IStorage.provider';
 import fs from 'node:fs';
 import { UploadFileOptions } from '../storage.dtos';
 import { pipeline } from 'node:stream';
-import { STATIC_FILES_URL, STATIC_FOLDER_PATH } from '@/infrastructure/fastify/constants/static.constants';
+import { STATIC_FOLDER_PATH } from '../storage.constants';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { logger } from '@/shared/providers/logger';
 import { assertSafeFileName } from '@/shared/helpers/file.helpers';
 
 export class LocalStorageProvider implements IStorageProvider {
+	/** @param getFilesUrl Resolves the public base URL lazily, so processes that never build URLs need no API settings. */
+	constructor(private readonly getFilesUrl: () => string) {}
+
 	/**
 	 * Resolves a stored file name to an absolute path and asserts it stays inside the storage
 	 * root. This is the last line of defense against path traversal: even if an unsafe name
@@ -28,7 +31,7 @@ export class LocalStorageProvider implements IStorageProvider {
 	}
 
 	getFileURL(fileName: string): string {
-		return STATIC_FILES_URL.concat(fileName);
+		return this.getFilesUrl().concat(fileName);
 	}
 	async deleteFile(name: string): Promise<void> {
 		const filePath = this.resolveSafePath(name);
@@ -36,7 +39,12 @@ export class LocalStorageProvider implements IStorageProvider {
 		try {
 			await fs.promises.unlink(filePath);
 		} catch (error) {
+			// A file that is already gone is the desired end state, which keeps deletion idempotent.
+			if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+				return;
+			}
 			logger.error(error, 'error deleting the file');
+			throw error;
 		}
 	}
 

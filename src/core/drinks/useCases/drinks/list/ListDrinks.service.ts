@@ -1,6 +1,6 @@
 import { omitAuthorship } from '@/shared/helpers/authorship.helpers';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
-import { ListDrinksDTO } from './listDrinks.dtos';
+import { ListDrinksCommand } from './listDrinks.dtos';
 import { IStorageProvider } from '@/shared/providers/storage/IStorage.provider';
 
 export class ListDrinksService {
@@ -9,7 +9,7 @@ export class ListDrinksService {
 		private storageProvider: IStorageProvider,
 	) {}
 
-	async execute({ query = {} }: ListDrinksDTO) {
+	async execute({ query = {} }: ListDrinksCommand) {
 		const drinks = await this.drinksRepository.findAll(query);
 
 		const drinksWithImagesURL = drinks.map((d) => {

@@ -5,11 +5,16 @@ import { resolveFindUserByIdService } from './findUserById/findUserById.containe
 import { resolveValidateOngoingSessionService } from './validateOngoingSession/validateOngoingSession.container';
 import { resolveValidateSessionRenewalService } from './validateSessionRenewal/validateSessionRenewal.container';
 
+const findUserByIdService = resolveFindUserByIdService();
+const findPublicProfilesByIdsService = resolveFindPublicProfilesByIdsService();
+const validateOngoingSessionService = resolveValidateOngoingSessionService();
+const validateSessionRenewalService = resolveValidateSessionRenewalService();
+
 const accountsModule: IAccountsModule = new AccountsModule(
-	resolveFindUserByIdService(),
-	resolveFindPublicProfilesByIdsService(),
-	resolveValidateOngoingSessionService(),
-	resolveValidateSessionRenewalService(),
+	findUserByIdService,
+	findPublicProfilesByIdsService,
+	validateOngoingSessionService,
+	validateSessionRenewalService,
 );
 
 export const resolveAccountsModule = (): IAccountsModule => accountsModule;

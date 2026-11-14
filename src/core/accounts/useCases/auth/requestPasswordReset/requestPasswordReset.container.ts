@@ -5,12 +5,12 @@ import { resolveCryptoProvider } from '@/shared/providers/cryptography';
 import { RequestPasswordResetService } from './RequestPasswordReset.service';
 import { resolveDateProvider } from '@/shared/providers/date';
 
+const usersRepository = resolveUsersRepository();
+const tokensRepository = resolveTokensRepository();
 const dateProvider = resolveDateProvider();
 const cryptoProvider = resolveCryptoProvider();
 const emailQueueProvider = resolveEmailQueueProvider();
 const templateProvider = resolveTemplateProvider();
-const usersRepository = resolveUsersRepository();
-const tokensRepository = resolveTokensRepository();
 
 const requestPasswordResetService = new RequestPasswordResetService(
 	usersRepository,
@@ -20,4 +20,5 @@ const requestPasswordResetService = new RequestPasswordResetService(
 	emailQueueProvider,
 	templateProvider,
 );
+
 export const resolveRequestPasswordResetService = () => requestPasswordResetService;

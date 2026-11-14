@@ -12,11 +12,10 @@ export const updateAvatarController: Controller = async (request, reply) => {
 		});
 	}
 
-	await resolveUpdateAvatarService().execute({
-		userId: request.user.id,
-		fileStream: data.file,
-		mimetype: data.mimetype,
-	});
+	const { id } = request.user;
+	const { file, mimetype } = data;
+	const service = resolveUpdateAvatarService();
+	await service.execute({ userId: id, fileStream: file, mimetype });
 
 	return reply.status(HTTP_STATUS.no_content).send();
 };

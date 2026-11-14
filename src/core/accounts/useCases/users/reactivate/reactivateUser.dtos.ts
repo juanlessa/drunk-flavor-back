@@ -3,10 +3,10 @@ import { AdministrativeEventContext } from '@/core/accounts/entities/administrat
 import { Actor } from '@/shared/accessControl/actor.types';
 import { reactivateUserBodySchema, reactivateUserParamsSchema } from './reactivateUser.schema';
 
-export type ReactivateUserReqParams = z.infer<typeof reactivateUserParamsSchema>;
+export type ReactivateUserReqParam = z.infer<typeof reactivateUserParamsSchema>;
 export type ReactivateUserReqBody = z.infer<typeof reactivateUserBodySchema>;
 
-export type ReactivateUser = {
+export type ReactivateUserCommand = {
 	id: string;
 	reason: string;
 	actor: Actor;

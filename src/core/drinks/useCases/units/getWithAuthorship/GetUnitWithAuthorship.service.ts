@@ -1,4 +1,4 @@
-import { GetUnit } from '@/core/drinks/dtos/unit.dtos';
+import { GetUnitWithAuthorshipCommand } from './getUnitWithAuthorship.dtos';
 import { IUnitsRepository } from '@/core/drinks/repositories/IUnits.repository';
 import { NotFoundError } from '@/shared/error/error.lib';
 
@@ -9,7 +9,7 @@ import { NotFoundError } from '@/shared/error/error.lib';
 export class GetUnitWithAuthorshipService {
 	constructor(private unitsRepository: IUnitsRepository) {}
 
-	async execute({ id }: GetUnit) {
+	async execute({ id }: GetUnitWithAuthorshipCommand) {
 		const unit = await this.unitsRepository.findById(id);
 		if (!unit) {
 			throw new NotFoundError('apiResponses.units.notFound', { path: 'GetUnitWithAuthorship.service' });

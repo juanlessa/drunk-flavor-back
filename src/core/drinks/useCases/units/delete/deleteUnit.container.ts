@@ -1,5 +1,8 @@
 import { resolveUnitsRepository } from '@/core/drinks/infra/mongo/container';
 import { DeleteUnitService } from './DeleteUnit.service';
 
-const deleteUnitService = new DeleteUnitService(resolveUnitsRepository());
+const unitsRepository = resolveUnitsRepository();
+
+const deleteUnitService = new DeleteUnitService(unitsRepository);
+
 export const resolveDeleteUnitService = () => deleteUnitService;

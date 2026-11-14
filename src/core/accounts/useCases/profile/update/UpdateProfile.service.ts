@@ -2,7 +2,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { UserStatuses } from '@/core/accounts/constants/user.constants';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
-import { UpdateProfile, UpdateProfileResult } from './updateProfile.dtos';
+import { UpdateProfileCommand, UpdateProfileResult } from './updateProfile.dtos';
 import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
 import { invalidateUserSessions } from '@/core/accounts/helpers/sessionInvalidation.helpers';
 
@@ -13,7 +13,7 @@ export class UpdateProfileService {
 		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
 	) {}
 
-	async execute({ id, name, surname }: UpdateProfile): Promise<UpdateProfileResult> {
+	async execute({ id, name, surname }: UpdateProfileCommand): Promise<UpdateProfileResult> {
 		const user = await this.usersRepository.findById(id);
 		if (!user) {
 			throw new NotFoundError('apiResponses.users.notFound', { path: 'UpdateProfile.service' });

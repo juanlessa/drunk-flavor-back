@@ -1,9 +1,9 @@
 import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { resolveUpdateDrinkThumbnailService } from './updateDrinkThumbnail.container';
-import { UpdateDrinkThumbnailReqParams } from './updateDrinkThumbnail.dtos';
+import { UpdateDrinkThumbnailReqParam } from './updateDrinkThumbnail.dtos';
 
-export const updateDrinkThumbnailController: Controller<{ Params: UpdateDrinkThumbnailReqParams }> = async (
+export const updateDrinkThumbnailController: Controller<{ Params: UpdateDrinkThumbnailReqParam }> = async (
 	request,
 	reply,
 ) => {

@@ -1,11 +1,13 @@
 import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { resolveGetUnitWithAuthorshipService } from './getUnitWithAuthorship.container';
-import { GetUnitWithAuthorshipReqParams } from './getUnitWithAuthorship.dtos';
+import { GetUnitWithAuthorshipReqParam } from './getUnitWithAuthorship.dtos';
 
-export const getUnitWithAuthorshipController: Controller<{ Params: GetUnitWithAuthorshipReqParams }> = async (
+export const getUnitWithAuthorshipController: Controller<{ Params: GetUnitWithAuthorshipReqParam }> = async (
 	request,
 	reply,
 ) => {
-	const unit = await resolveGetUnitWithAuthorshipService().execute(request.params);
+	const { id } = request.params;
+	const service = resolveGetUnitWithAuthorshipService();
+	const unit = await service.execute({ id });
 	return reply.send(unit);
 };

@@ -202,6 +202,7 @@ describe('Drink domain persistence mappers', () => {
 			ratings_sum: 8,
 			rating_score: 23 / 7,
 			search_keys: ['negroni'],
+			ingredient_ids: [new Types.ObjectId()],
 			required_ingredient_ids: [new Types.ObjectId()],
 		} as DrinkPersistence;
 
@@ -216,6 +217,7 @@ describe('Drink domain persistence mappers', () => {
 			'searchKeys',
 			'search_keys',
 			'requiredIngredientIds',
+			'ingredientIds',
 		]) {
 			expect(drink).not.toHaveProperty(field);
 		}

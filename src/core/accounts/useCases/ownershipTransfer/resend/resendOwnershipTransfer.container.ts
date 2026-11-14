@@ -12,17 +12,28 @@ import { resolveEmailQueueProvider } from '@/shared/providers/queue/email';
 import { resolveTemplateProvider } from '@/shared/providers/template';
 import { ResendOwnershipTransferService } from './ResendOwnershipTransfer.service';
 
-const service = new ResendOwnershipTransferService(
-	resolveUsersRepository(),
-	resolveCredentialsRepository(),
-	resolveIdentitiesRepository(),
-	resolveOwnershipTransferInvitationsRepository(),
-	resolveAdministrativeEventsRepository(),
-	resolveCryptoProvider(),
-	resolveDateProvider(),
-	resolveTransactionManager(),
-	resolveTemplateProvider(),
-	resolveEmailQueueProvider(),
+const usersRepository = resolveUsersRepository();
+const credentialsRepository = resolveCredentialsRepository();
+const identitiesRepository = resolveIdentitiesRepository();
+const ownershipTransferInvitationsRepository = resolveOwnershipTransferInvitationsRepository();
+const administrativeEventsRepository = resolveAdministrativeEventsRepository();
+const cryptoProvider = resolveCryptoProvider();
+const dateProvider = resolveDateProvider();
+const transactionManager = resolveTransactionManager();
+const templateProvider = resolveTemplateProvider();
+const emailQueueProvider = resolveEmailQueueProvider();
+
+const resendOwnershipTransferService = new ResendOwnershipTransferService(
+	usersRepository,
+	credentialsRepository,
+	identitiesRepository,
+	ownershipTransferInvitationsRepository,
+	administrativeEventsRepository,
+	cryptoProvider,
+	dateProvider,
+	transactionManager,
+	templateProvider,
+	emailQueueProvider,
 );
 
-export const resolveResendOwnershipTransferService = () => service;
+export const resolveResendOwnershipTransferService = () => resendOwnershipTransferService;

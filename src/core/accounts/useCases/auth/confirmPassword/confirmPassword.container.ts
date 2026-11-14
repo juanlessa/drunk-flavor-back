@@ -9,12 +9,14 @@ import { resolveCryptoProvider, resolveHashProvider } from '@/shared/providers/c
 import { resolveTransactionManager } from '@/infrastructure/mongo/transactions';
 import { resolveSessionVersionMarkerStore } from '@/core/accounts/infra/redis/container';
 
-const dateProvider = resolveDateProvider();
-const hashProvider = resolveHashProvider();
-const cryptoProvider = resolveCryptoProvider();
 const usersRepository = resolveUsersRepository();
 const tokensRepository = resolveTokensRepository();
 const credentialsRepository = resolveCredentialsRepository();
+const dateProvider = resolveDateProvider();
+const hashProvider = resolveHashProvider();
+const cryptoProvider = resolveCryptoProvider();
+const transactionManager = resolveTransactionManager();
+const sessionVersionMarkerStore = resolveSessionVersionMarkerStore();
 
 const confirmPasswordService = new ConfirmPasswordService(
 	usersRepository,
@@ -23,7 +25,8 @@ const confirmPasswordService = new ConfirmPasswordService(
 	dateProvider,
 	hashProvider,
 	cryptoProvider,
-	resolveTransactionManager(),
-	resolveSessionVersionMarkerStore(),
+	transactionManager,
+	sessionVersionMarkerStore,
 );
+
 export const resolveConfirmPasswordService = () => confirmPasswordService;

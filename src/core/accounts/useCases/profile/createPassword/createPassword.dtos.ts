@@ -4,7 +4,7 @@ import { createPasswordSchema } from './createPassword.schema';
 
 export type CreatePasswordReqBody = z.infer<typeof createPasswordSchema>;
 
-export type CreatePassword = {
+export type CreatePasswordCommand = {
 	userId: string;
 	password: string;
 };

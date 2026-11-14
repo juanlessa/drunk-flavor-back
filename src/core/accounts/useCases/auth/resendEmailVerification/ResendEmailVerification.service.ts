@@ -6,7 +6,7 @@ import { NotFoundError, ConflictError } from '@/shared/error/error.lib';
 import { ICryptoProvider } from '@/shared/providers/cryptography/ICrypto.provider';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { env } from '@/env';
-import { ResendEmailVerification } from './resendEmailVerification.dtos';
+import { ResendEmailVerificationCommand } from './resendEmailVerification.dtos';
 import { ITemplateProvider } from '@/shared/providers/template/ITemplate.provider';
 import { IEmailQueueProvider } from '@/shared/providers/queue/email/IEmailQueue.provider';
 import { EMAIL_JOB_NAMES } from '@/shared/providers/queue/email/emailQueue.constants';
@@ -23,7 +23,7 @@ export class ResendEmailVerificationService {
 		private emailQueueProvider: IEmailQueueProvider,
 	) {}
 
-	async execute({ email }: ResendEmailVerification): Promise<void> {
+	async execute({ email }: ResendEmailVerificationCommand): Promise<void> {
 		const user = await this.usersRepository.findByEmail(email);
 		if (!user) {
 			throw new NotFoundError('apiResponses.users.notFound', {

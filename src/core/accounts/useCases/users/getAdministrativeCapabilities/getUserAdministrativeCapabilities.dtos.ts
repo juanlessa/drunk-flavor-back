@@ -15,9 +15,9 @@ export const UserAdministrativeCapabilityActions = {
 export type UserAdministrativeCapabilityAction =
 	(typeof UserAdministrativeCapabilityActions)[keyof typeof UserAdministrativeCapabilityActions];
 
-export type GetUserAdministrativeCapabilitiesReqParams = z.infer<typeof getUserAdministrativeCapabilitiesSchema>;
+export type GetUserAdministrativeCapabilitiesReqParam = z.infer<typeof getUserAdministrativeCapabilitiesSchema>;
 
-export type GetUserAdministrativeCapabilities = {
+export type GetUserAdministrativeCapabilitiesCommand = {
 	id: string;
 	actor: Actor;
 };

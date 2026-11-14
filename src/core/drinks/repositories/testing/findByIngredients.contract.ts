@@ -103,7 +103,7 @@ export const describeFindByIngredientsContract = (getRepository: () => IDrinksRe
 				},
 			);
 
-			it('does not count the optional ingredients and the garnishes of a drink as ingredients the person has', async () => {
+			it('finds a drink by an optional ingredient, but not by a garnish', async () => {
 				const byOptional = await getRepository().findByIngredients({
 					ingredientIds: ids(lime),
 					maxMissing: 'any',
@@ -112,11 +112,17 @@ export const describeFindByIngredientsContract = (getRepository: () => IDrinksRe
 					ingredientIds: ids(bitters),
 					maxMissing: 'any',
 				});
-
-				expect(namesOf(byOptional)).not.toContain('Plain gin');
+				expect(namesOf(byOptional)).toContain('Plain gin');
 				expect(namesOf(byGarnish)).toEqual(['Gin fizz']);
 			});
-
+			it('does not make a drink complete when the person only has its optional ingredient', async () => {
+				const matches = await getRepository().findByIngredients({ ingredientIds: ids(lime), maxMissing: 0 });
+				expect(namesOf(matches)).not.toContain('Plain gin');
+				const [plainGin] = (
+					await getRepository().findByIngredients({ ingredientIds: ids(lime), maxMissing: 'any' })
+				).filter(({ drink }) => drink.translations.en.name === 'Plain gin');
+				expect(plainGin?.missingIngredientIds).toEqual(ids(gin));
+			});
 			it('does not count the optional ingredients and the garnishes of a drink as missing', async () => {
 				const matches = await getRepository().findByIngredients({ ingredientIds: ids(gin), maxMissing: 0 });
 
@@ -203,6 +209,38 @@ export const describeFindByIngredientsContract = (getRepository: () => IDrinksRe
 				expect(namesOf(matches)).toEqual(['Rated', 'Newer', 'Older', 'Needs beta']);
 			});
 
+			it('puts first, among drinks missing the same, the one that uses more of the optional ingredients the person has', async () => {
+				const foam = buildIngredient('Ginger foam');
+				const mint = buildIngredient('Mint');
+				const best = await createDrink('Best rated', [required(alpha), optional(mint)]);
+				await createDrink('Uses both optionals', [required(alpha), optional(foam), optional(mint)]);
+				await createDrink('Uses one optional', [required(alpha), optional(foam)]);
+				await getRepository().applyRatingDelta({ drinkId: best.id, countDelta: 1, sumDelta: 5 });
+				const matches = await getRepository().findByIngredients({
+					ingredientIds: ids(alpha, foam, mint),
+					maxMissing: 0,
+				});
+				expect(namesOf(matches)).toEqual(['Uses both optionals', 'Best rated', 'Uses one optional']);
+			});
+			it('finds a drink by an optional ingredient that is not required by any other line', async () => {
+				const foam = buildIngredient('Ginger foam');
+				await createDrink('Ginger sour', [required(alpha), optional(foam)]);
+				const byFoam = await getRepository().findByIngredients({ ingredientIds: ids(foam), maxMissing: 'any' });
+				const complete = await getRepository().findByIngredients({
+					ingredientIds: ids(foam, alpha),
+					maxMissing: 0,
+				});
+				expect(byFoam.map(({ missingIngredientIds }) => missingIngredientIds)).toEqual([ids(alpha)]);
+				expect(namesOf(complete)).toEqual(['Ginger sour']);
+			});
+			it('counts an ingredient that is required in one line and optional in another as required', async () => {
+				await createDrink('Twice', [required(alpha), optional(alpha), required(beta)]);
+				const matches = await getRepository().findByIngredients({
+					ingredientIds: ids(alpha),
+					maxMissing: 'any',
+				});
+				expect(matches.map(({ missingIngredientIds }) => missingIngredientIds)).toEqual([ids(beta)]);
+			});
 			it('ranks many good ratings above a single perfect one among drinks missing the same', async () => {
 				const single = await createDrink('Single perfect', [required(alpha)]);
 				const many = await createDrink('Many good', [required(alpha)]);

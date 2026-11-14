@@ -5,7 +5,7 @@ import { ConflictError, NotFoundError, UnauthorizedError } from '@/shared/error/
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
 import { IGoogleIdentityProvider } from '@/shared/providers/googleAuth/IGoogleIdentityProvider';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
-import { LinkGoogleIdentity, LinkGoogleIdentityResult } from './linkGoogleIdentity.dtos';
+import { LinkGoogleIdentityCommand, LinkGoogleIdentityResult } from './linkGoogleIdentity.dtos';
 import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
 import { invalidateUserSessions } from '@/core/accounts/helpers/sessionInvalidation.helpers';
 
@@ -19,7 +19,7 @@ export class LinkGoogleIdentityService {
 		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
 	) {}
 
-	async execute({ userId, authorizationCode }: LinkGoogleIdentity): Promise<LinkGoogleIdentityResult> {
+	async execute({ userId, authorizationCode }: LinkGoogleIdentityCommand): Promise<LinkGoogleIdentityResult> {
 		const googleIdentity = await this.googleIdentityProvider.authenticate(authorizationCode);
 		if (googleIdentity.isEmailVerified !== true) {
 			throw new UnauthorizedError('apiResponses.auth.googleEmailNotVerified', {

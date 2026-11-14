@@ -3,7 +3,7 @@ import { signinSchema } from './signin.schema';
 
 export type SigninReqBody = z.infer<typeof signinSchema>;
 
-export type Signin = {
+export type SigninCommand = {
 	email: string;
 	password: string;
 };

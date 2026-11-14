@@ -4,7 +4,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { UnauthorizedError } from '@/shared/error/error.lib';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { IDateProvider } from '@/shared/providers/date/IDateProvider';
-import { PasswordReauthenticationResult, ReauthenticatePassword } from './reauthenticatePassword.dtos';
+import { PasswordReauthenticationResult, ReauthenticatePasswordCommand } from './reauthenticatePassword.dtos';
 
 export class ReauthenticatePasswordService {
 	constructor(
@@ -14,7 +14,7 @@ export class ReauthenticatePasswordService {
 		private dateProvider: IDateProvider,
 	) {}
 
-	async execute({ userId, password }: ReauthenticatePassword): Promise<PasswordReauthenticationResult> {
+	async execute({ userId, password }: ReauthenticatePasswordCommand): Promise<PasswordReauthenticationResult> {
 		const user = await this.usersRepository.findById(userId);
 		const credential = user ? await this.credentialsRepository.findByUserId(userId) : null;
 		const passwordHash = credential?.passwordHash ?? (await this.hashProvider.getDummyHash());

@@ -1,9 +1,9 @@
 import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { resolveGetUserService } from './getUser.container';
-import { GetUserSchemaReqParams } from './getUser.dtos';
+import { GetUserSchemaReqParam } from './getUser.dtos';
 import { AdministrativeEventOrigins } from '@/core/accounts/constants/administrativeEvent.constants';
 
-export const getUserController: Controller<{ Params: GetUserSchemaReqParams }> = async (request, reply) => {
+export const getUserController: Controller<{ Params: GetUserSchemaReqParam }> = async (request, reply) => {
 	const { id } = request.params;
 
 	const actor = { id: request.user.id, role: request.user.role };

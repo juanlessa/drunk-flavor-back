@@ -1,7 +1,12 @@
 import { resolveUsersRepository } from '@/core/accounts/infra/mongo/container';
+import { resolveCleanupQueueProvider } from '@/shared/providers/queue/cleanup';
 import { resolveStorageProvider } from '@/shared/providers/storage';
 import { UpdateAvatarService } from './UpdateAvatar.service';
 
-const service = new UpdateAvatarService(resolveUsersRepository(), resolveStorageProvider());
+const usersRepository = resolveUsersRepository();
+const storageProvider = resolveStorageProvider();
+const cleanupQueueProvider = resolveCleanupQueueProvider();
 
-export const resolveUpdateAvatarService = () => service;
+const updateAvatarService = new UpdateAvatarService(usersRepository, storageProvider, cleanupQueueProvider);
+
+export const resolveUpdateAvatarService = () => updateAvatarService;

@@ -1,4 +1,4 @@
-import { CreateDrinkDTO } from '@/core/drinks/useCases/drinks/create/createDrink.dtos';
+import { CreateDrinkCommand } from '@/core/drinks/useCases/drinks/create/createDrink.dtos';
 import { resolveCreateDrinkService } from '@/core/drinks/useCases/drinks/create/createDrink.container';
 import { DrinkGarnishInput, DrinkIngredientInput } from '@/core/drinks/dtos/drink.dtos';
 import { PreparationPlan } from '@/core/drinks/modules/preparation';
@@ -315,7 +315,7 @@ const resolvePlanRefs = (value: unknown): unknown => {
 	return value;
 };
 
-const toCreateDrink = (drink: SeedDrink): Omit<CreateDrinkDTO, 'actor'> => ({
+const toCreateDrink = (drink: SeedDrink): Omit<CreateDrinkCommand, 'actor'> => ({
 	translations: { en: { name: drink.names.en }, pt: { name: drink.names.pt } },
 	ingredients: drink.ingredients.map((line): DrinkIngredientInput => ({
 		ingredientId: resolveIngredientId(line.ingredient),

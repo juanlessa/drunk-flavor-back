@@ -1,6 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { clearCreatorFromRecords, keepCreator, prioritizeCreator } from '@/core/drinks/helpers/creator.helpers';
 import {
+	ApplyRatingDelta,
+	DrinkRatingSummary,
 	CreateDrink,
 	DrinkIngredientMatch,
 	FindDrinkByName,
@@ -9,14 +11,19 @@ import {
 } from '@/core/drinks/dtos/drink.dtos';
 import { Drink } from '@/core/drinks/entities/drink.entity';
 import {
-	NAME_SEARCH_FIELDS,
-	buildTranslationsSearchKeys,
+	buildDrinkSearchTiers,
 	createNameSearchMatchers,
+	flattenSearchTiers,
+	rankByNameSearch,
 } from '@/core/drinks/helpers/searchKeys.helpers';
-import { getMissingIngredientIds, getRequiredIngredientIds } from '@/core/drinks/helpers/drinkMatch.helpers';
+import {
+	countOptionalIngredientsAvailable,
+	getAllIngredientIds,
+	getMissingIngredientIds,
+	getRequiredIngredientIds,
+} from '@/core/drinks/helpers/drinkMatch.helpers';
 import { getRatingScore } from '@/core/drinks/helpers/ratingScore.helpers';
 import { compareTranslationsName } from '@/core/drinks/helpers/translations.helpers';
-import type { ApplyRatingDelta, DrinkRatingSummary } from '@/core/drinks/public/IDrinksModule';
 import { IDrinksRepository } from '@/core/drinks/repositories/IDrinks.repository';
 import { DEFAULT_QUERY_PARAMS } from '@/shared/constants/query.constants';
 import { NotFoundError } from '@/shared/error/error.lib';
@@ -24,9 +31,9 @@ import { deepUpdate } from '@/shared/helpers/deepUpdate.helper';
 import { filterItemsBySearchCriteria, paginateItems, sortItemsByFields } from '@/shared/helpers/query.helpers';
 import { QueryParams } from '@/shared/types/query.types';
 
-const searchMatchers = createNameSearchMatchers<Drink>((item) =>
-	buildTranslationsSearchKeys(item.translations, NAME_SEARCH_FIELDS),
-);
+const getSearchTiers = (item: Drink) => buildDrinkSearchTiers(item.translations, item.ingredients);
+
+const searchMatchers = createNameSearchMatchers<Drink>((item) => flattenSearchTiers(getSearchTiers(item)));
 
 export class DrinksRepositoryInMemory implements IDrinksRepository {
 	collection: Drink[] = [];
@@ -82,10 +89,15 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 		return this.collection.find((record) => record.id === id) ?? null;
 	}
 
+	async findByIds(ids: string[]): Promise<Drink[]> {
+		return this.collection.filter((record) => ids.includes(record.id));
+	}
+
 	async findAll(query: QueryParams): Promise<Drink[]> {
 		let found = [...this.collection];
 		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);
 		if (query.sort) found = this.sort(found, query.sort);
+		found = rankByNameSearch(found, query.search?.name, getSearchTiers);
 		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
 	}
 
@@ -93,6 +105,7 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 		let found = [...this.collection];
 		if (query.search) found = filterItemsBySearchCriteria(found, query.search, searchMatchers);
 		if (query.sort) found = this.sort(found, query.sort);
+		found = rankByNameSearch(found, query.search?.name, getSearchTiers);
 		found = prioritizeCreator(found, userId);
 		return paginateItems(found, query.limit || DEFAULT_QUERY_PARAMS.limit, query.page || DEFAULT_QUERY_PARAMS.page);
 	}
@@ -105,18 +118,26 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 	}: FindDrinksByIngredients): Promise<DrinkIngredientMatch[]> {
 		const available = new Set(ingredientIds);
 		const matches = this.collection
-			.map((drink, position) => ({ drink, position, required: getRequiredIngredientIds(drink.ingredients) }))
-			// At least one required ingredient must be one the person has, whatever `maxMissing` is.
-			.filter(({ required }) => required.some((id) => available.has(id)))
-			.map(({ required, ...match }) => ({
+			.map((drink, position) => ({
+				drink,
+				position,
+				all: getAllIngredientIds(drink.ingredients),
+				required: getRequiredIngredientIds(drink.ingredients),
+			}))
+			// At least one ingredient, optional or not, must be one the person has, whatever `maxMissing` is.
+			.filter(({ all }) => all.some((id) => available.has(id)))
+			.map(({ all, required, ...match }) => ({
 				...match,
+				optionalAvailable: countOptionalIngredientsAvailable(all, required, available),
 				missingIngredientIds: getMissingIngredientIds(required, available),
 			}))
 			.filter(({ missingIngredientIds }) => maxMissing === 'any' || missingIngredientIds.length <= maxMissing)
-			// The most complete first, then the best rated, then the newest (the last one stored).
+			// The most complete first, then the one that uses more of the optional ingredients the person has, then the
+			// best rated, then the newest (the last one stored).
 			.sort(
 				(a, b) =>
 					a.missingIngredientIds.length - b.missingIngredientIds.length ||
+					b.optionalAvailable - a.optionalAvailable ||
 					this.ratingScoreOf(b.drink) - this.ratingScoreOf(a.drink) ||
 					b.position - a.position,
 			)
@@ -127,6 +148,9 @@ export class DrinksRepositoryInMemory implements IDrinksRepository {
 		return paginateItems(matches, limit, page);
 	}
 
+	async findIngredientIdsInUse(): Promise<string[]> {
+		return [...new Set(this.collection.flatMap(({ ingredients }) => getAllIngredientIds(ingredients)))];
+	}
 	async applyRatingDelta({ drinkId, countDelta, sumDelta }: ApplyRatingDelta): Promise<DrinkRatingSummary> {
 		const record = this.collection.find((drink) => drink.id === drinkId);
 		if (!record) throw this.notFound('rating projection update');

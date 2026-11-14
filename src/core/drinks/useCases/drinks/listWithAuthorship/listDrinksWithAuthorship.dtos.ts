@@ -4,4 +4,4 @@ import { z } from 'zod/v4';
 import { listDrinksSchema } from '../list/listDrinks.schema';
 
 export type ListDrinksWithAuthorshipReqQuery = z.infer<typeof listDrinksSchema>;
-export type ListDrinksWithAuthorshipDTO = { query?: QueryParams; actor: Actor };
+export type ListDrinksWithAuthorshipCommand = { query?: QueryParams; actor: Actor };

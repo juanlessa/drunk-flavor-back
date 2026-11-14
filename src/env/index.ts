@@ -48,10 +48,7 @@ const EMPTY_REDIS_CONNECTION_KEYS: Omit<FlatRedisSchema, 'REDIS_MODE' | 'REDIS_C
 };
 
 /** Queue (BullMQ) Redis connection keys backfilled when `REDIS_MODE` is `managed`. */
-const EMPTY_BULLMQ_CONNECTION_KEYS: Omit<
-	FlatBullmqSchema,
-	'REDIS_MODE' | 'BULLMQ_REDIS_CONNECT_TIMEOUT_MS' | 'EMAIL_WORKER_CONCURRENCY'
-> = {
+const EMPTY_BULLMQ_CONNECTION_KEYS: Omit<FlatBullmqSchema, 'REDIS_MODE' | 'BULLMQ_REDIS_CONNECT_TIMEOUT_MS'> = {
 	BULLMQ_REDIS_HOST: 'localhost',
 	BULLMQ_REDIS_PORT: 6379,
 	BULLMQ_REDIS_USERNAME: '',
@@ -168,10 +165,7 @@ const parseEnv = (source: NodeJS.ProcessEnv = process.env): Env => {
 				}
 			: EMPTY_REDIS_CONNECTION_KEYS;
 
-	const bullmqConnectionKeys: Omit<
-		FlatBullmqSchema,
-		'REDIS_MODE' | 'BULLMQ_REDIS_CONNECT_TIMEOUT_MS' | 'EMAIL_WORKER_CONCURRENCY'
-	> =
+	const bullmqConnectionKeys: Omit<FlatBullmqSchema, 'REDIS_MODE' | 'BULLMQ_REDIS_CONNECT_TIMEOUT_MS'> =
 		bullmq.REDIS_MODE === 'external'
 			? {
 					BULLMQ_REDIS_HOST: bullmq.BULLMQ_REDIS_HOST,
@@ -204,7 +198,6 @@ const parseEnv = (source: NodeJS.ProcessEnv = process.env): Env => {
 		...redisConnectionKeys,
 		// Connection options are present in both BullMQ branches.
 		BULLMQ_REDIS_CONNECT_TIMEOUT_MS: bullmq.BULLMQ_REDIS_CONNECT_TIMEOUT_MS,
-		EMAIL_WORKER_CONCURRENCY: bullmq.EMAIL_WORKER_CONCURRENCY,
 		...bullmqConnectionKeys,
 	};
 };

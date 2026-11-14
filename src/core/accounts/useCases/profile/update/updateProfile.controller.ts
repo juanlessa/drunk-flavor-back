@@ -4,13 +4,13 @@ import { AUTH_SESSION } from '@/infrastructure/fastify/constants/session.constan
 import { AUTH_COOKIE, AUTH_COOKIE_OPTIONS } from '@/infrastructure/fastify/constants/cookie.constants';
 import { toJwtUserPayload } from '@/infrastructure/fastify/helpers/jwt.helpers';
 import { UpdateUserProfileReqBody } from './updateProfile.dtos';
-import { resolveUpdateUpdateProfileService } from './updateProfile.container';
+import { resolveUpdateProfileService } from './updateProfile.container';
 
 export const updateProfileController: Controller<{ Body: UpdateUserProfileReqBody }> = async (request, reply) => {
 	const { name, surname } = request.body;
 	const { id } = request.user;
 
-	const service = resolveUpdateUpdateProfileService();
+	const service = resolveUpdateProfileService();
 	const { user } = await service.execute({ id, name, surname });
 	const tokenPayload = toJwtUserPayload(user);
 	const accessToken = await reply.jwtSign(tokenPayload, { sign: { sub: user.id } });

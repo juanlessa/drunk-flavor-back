@@ -14,7 +14,7 @@ import {
 	toAdministrationActor,
 } from '@/core/accounts/helpers/userAdministration.helpers';
 import {
-	GetUserAdministrativeCapabilities,
+	GetUserAdministrativeCapabilitiesCommand,
 	UserAdministrativeCapabilities,
 	UserAdministrativeCapabilityActions,
 } from './getUserAdministrativeCapabilities.dtos';
@@ -43,7 +43,7 @@ export class GetUserAdministrativeCapabilitiesService {
 		private userAdministrationPolicy = new UserAdministrationPolicy(),
 	) {}
 
-	async execute({ id, actor }: GetUserAdministrativeCapabilities): Promise<UserAdministrativeCapabilities> {
+	async execute({ id, actor }: GetUserAdministrativeCapabilitiesCommand): Promise<UserAdministrativeCapabilities> {
 		const [persistedActor, target] = await Promise.all([
 			findRequiredAdministrationUser(
 				this.usersRepository,

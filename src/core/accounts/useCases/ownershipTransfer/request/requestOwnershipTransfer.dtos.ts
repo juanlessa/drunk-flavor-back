@@ -5,7 +5,7 @@ import { requestOwnershipTransferSchema } from './requestOwnershipTransfer.schem
 
 export type RequestOwnershipTransferReqBody = z.infer<typeof requestOwnershipTransferSchema>;
 
-export type RequestOwnershipTransfer = {
+export type RequestOwnershipTransferCommand = {
 	targetUserId: string;
 	reason: string;
 	actor: Actor;

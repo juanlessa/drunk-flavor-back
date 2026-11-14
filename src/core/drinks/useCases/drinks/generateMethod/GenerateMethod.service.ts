@@ -3,7 +3,7 @@ import { toPreparationFieldError } from '@/core/drinks/mappers/preparationIssue.
 import { buildMethod } from '@/core/drinks/modules/preparation';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 import { FieldValidationError } from '@/shared/error/error.lib';
-import { GenerateMethodDTO, GenerateMethodResult } from './generateMethod.dtos';
+import { GenerateMethodCommand, GenerateMethodResult } from './generateMethod.dtos';
 
 const path = 'GenerateMethod.service';
 
@@ -14,7 +14,7 @@ const path = 'GenerateMethod.service';
 export class GenerateMethodService {
 	constructor(private ingredientsRepository: IIngredientsRepository) {}
 
-	async execute({ ingredients, garnishes = [], preparation }: GenerateMethodDTO): Promise<GenerateMethodResult> {
+	async execute({ ingredients, garnishes = [], preparation }: GenerateMethodCommand): Promise<GenerateMethodResult> {
 		const recipe = await resolveDrinkRecipe(this.ingredientsRepository, { ingredients, garnishes }, path);
 
 		const result = buildMethod(recipe, preparation);

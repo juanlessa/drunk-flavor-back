@@ -13,9 +13,17 @@ const sortSchema = z.object({
 	...generateTranslationsFieldSchema(ingredientTranslationSchema, ['name'], sortOrderSchema).shape,
 });
 
-export const listIngredientsSchema = z.object({
+/** What every ingredient listing accepts. */
+export const listIngredientsQuerySchema = z.object({
 	limit: limitSchema,
 	page: pageSchema,
 	search: stringifiedJSONSchema(searchSchema).optional(),
 	sort: stringifiedJSONSchema(sortSchema).optional(),
+});
+
+export const listIngredientsSchema = listIngredientsQuerySchema.extend({
+	inUse: z
+		.enum(['true', 'false'])
+		.transform((value) => value === 'true')
+		.optional(),
 });

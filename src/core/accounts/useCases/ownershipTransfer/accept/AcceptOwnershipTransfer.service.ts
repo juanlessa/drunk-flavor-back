@@ -20,7 +20,7 @@ import {
 	assertOwnershipTransferInvitationCurrent,
 	enqueueOwnershipTransferChangedBestEffort,
 } from '@/core/accounts/helpers/ownershipTransfer.helpers';
-import { AcceptOwnershipTransfer } from './acceptOwnershipTransfer.dtos';
+import { AcceptOwnershipTransferCommand } from './acceptOwnershipTransfer.dtos';
 import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
 import { invalidateUserSessions } from '@/core/accounts/helpers/sessionInvalidation.helpers';
 
@@ -44,7 +44,7 @@ export class AcceptOwnershipTransferService {
 		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
 	) {}
 
-	async execute({ token, actor, administrativeContext }: AcceptOwnershipTransfer): Promise<void> {
+	async execute({ token, actor, administrativeContext }: AcceptOwnershipTransferCommand): Promise<void> {
 		const tokenHash = this.cryptoProvider.hashToken(token);
 		const context = resolveAdministrativeEventContext(administrativeContext);
 

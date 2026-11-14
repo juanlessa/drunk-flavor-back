@@ -4,6 +4,7 @@ import { CategorySubject } from '../subjects/category';
 import { IngredientSubject } from '../subjects/ingredient';
 import { DrinkSubject } from '../subjects/drink';
 import { CommentSubject } from '../subjects/comment';
+import { FavoriteSubject } from '../subjects/favorite';
 import { RatingSubject } from '../subjects/rating';
 import { UnitSubject } from '../subjects/unit';
 
@@ -14,6 +15,7 @@ type AppAbilities =
 	| DrinkSubject
 	| CommentSubject
 	| RatingSubject
+	| FavoriteSubject
 	| UnitSubject
 	| ['manage', 'all'];
 

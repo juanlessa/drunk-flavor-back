@@ -3,7 +3,7 @@ import { confirmPasswordSchema } from './confirmPassword.schema';
 
 export type ConfirmPasswordReqBody = z.infer<typeof confirmPasswordSchema>;
 
-export type ConfirmPassword = {
+export type ConfirmPasswordCommand = {
 	token: string;
 	password: string;
 };

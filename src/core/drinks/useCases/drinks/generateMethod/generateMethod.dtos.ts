@@ -7,7 +7,7 @@ import { generateMethodSchema } from './generateMethod.schema';
 
 export type GenerateMethodReqBody = z.infer<typeof generateMethodSchema>;
 
-export type GenerateMethodDTO = {
+export type GenerateMethodCommand = {
 	ingredients: DrinkIngredientInput[];
 	/** Defaults to no garnishes when omitted. */
 	garnishes?: DrinkGarnishInput[];

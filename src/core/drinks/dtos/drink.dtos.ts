@@ -73,21 +73,14 @@ export type UpdateDrinkThumbnail = {
 	thumbnail: string;
 };
 
-export type DeleteDrink = {
-	id: string;
-};
-
-export type GetDrink = {
-	id: string;
-};
-
 export type FindDrinkByName = DeepPartial<Translations<{ name: string }>>;
 
 export type DrinkMatchMaxMissingValue = (typeof DrinkMatchMaxMissing)[number];
 
 /**
- * Finds the drinks that can be made, or nearly, with the ingredients a person has. Only the required ingredients of
- * a drink count (the optional ones and the garnishes do not), and the drink must use at least one of `ingredientIds`.
+ * Finds the drinks that can be made, or nearly, with the ingredients a person has. The drink must use at least one of
+ * `ingredientIds` as an ingredient, optional or not (never as a garnish). Only the required ingredients count as
+ * missing: a drink can be made without the optional ones.
  */
 export type FindDrinksByIngredients = {
 	ingredientIds: string[];
@@ -101,4 +94,18 @@ export type FindDrinksByIngredients = {
 export type DrinkIngredientMatch = {
 	drink: Drink;
 	missingIngredientIds: string[];
+};
+
+export type RatingCountDelta = -1 | 0 | 1;
+
+/** A change to the rating tally of a drink: how many ratings it gains or loses and how much the sum moves. */
+export type ApplyRatingDelta = {
+	drinkId: string;
+	countDelta: RatingCountDelta;
+	sumDelta: number;
+};
+
+export type DrinkRatingSummary = {
+	average: number;
+	count: number;
 };

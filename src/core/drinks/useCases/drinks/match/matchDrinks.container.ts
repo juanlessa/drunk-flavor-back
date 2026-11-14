@@ -4,6 +4,7 @@ import { MatchDrinksService } from './MatchDrinks.service';
 
 const drinksRepository = resolveDrinksRepository();
 const storageProvider = resolveStorageProvider();
+
 const matchDrinksService = new MatchDrinksService(drinksRepository, storageProvider);
 
 export const resolveMatchDrinksService = () => matchDrinksService;

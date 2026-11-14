@@ -6,7 +6,7 @@ import { Actor } from '@/shared/accessControl/actor.types';
 import { updateUnitSchema } from './updateUnit.schema';
 
 export type UpdateUnitReqBody = z.infer<typeof updateUnitSchema>;
-export type UpdateUnitDTO = {
+export type UpdateUnitCommand = {
 	id: string;
 	translations: Translations<UnitTranslation>;
 	symbol?: string | null;

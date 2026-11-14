@@ -3,7 +3,7 @@ import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository
 import { ConflictError, NotFoundError } from '@/shared/error/error.lib';
 import { IHashProvider } from '@/shared/providers/cryptography/IHash.provider';
 import { ITransactionManager } from '@/shared/transactions/ITransactionManager';
-import { CreatePassword, CreatePasswordResult } from './createPassword.dtos';
+import { CreatePasswordCommand, CreatePasswordResult } from './createPassword.dtos';
 import { ISessionVersionMarkerStore } from '@/core/accounts/stores/ISessionVersionMarker.store';
 import { invalidateUserSessions } from '@/core/accounts/helpers/sessionInvalidation.helpers';
 
@@ -16,7 +16,7 @@ export class CreatePasswordService {
 		private sessionVersionMarkerStore: ISessionVersionMarkerStore,
 	) {}
 
-	async execute({ userId, password }: CreatePassword): Promise<CreatePasswordResult> {
+	async execute({ userId, password }: CreatePasswordCommand): Promise<CreatePasswordResult> {
 		const passwordHash = await this.hashProvider.hash(password);
 
 		return this.transactionManager.withTransaction(async () => {

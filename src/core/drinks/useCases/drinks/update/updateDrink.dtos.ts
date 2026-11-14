@@ -6,7 +6,7 @@ import { DrinkGarnishInput, DrinkIngredientInput, DrinkTranslationInput } from '
 import { updateDrinkSchema } from './updateDrink.schema';
 
 export type UpdateDrinkReqBody = z.infer<typeof updateDrinkSchema>;
-export type UpdateDrinkDTO = {
+export type UpdateDrinkCommand = {
 	id: string;
 	translations: Translations<DrinkTranslationInput>;
 	ingredients: DrinkIngredientInput[];

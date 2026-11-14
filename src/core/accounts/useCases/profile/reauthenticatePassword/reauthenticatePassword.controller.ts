@@ -21,11 +21,11 @@ export const reauthenticatePasswordController: Controller<{ Body: Reauthenticate
 		});
 	}
 
+	const { password } = request.body;
+	const { id } = request.user;
+	const service = resolveReauthenticatePasswordService();
 	try {
-		const result = await resolveReauthenticatePasswordService().execute({
-			userId: request.user.id,
-			password: request.body.password,
-		});
+		const result = await service.execute({ userId: id, password });
 		request.session.set(AUTH_SESSION, {
 			...session,
 			reauthenticatedAt: result.authenticatedAt.toISOString(),

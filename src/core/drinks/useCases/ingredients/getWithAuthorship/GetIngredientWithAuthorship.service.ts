@@ -1,4 +1,4 @@
-import { GetIngredient } from '@/core/drinks/dtos/ingredient.dtos';
+import { GetIngredientWithAuthorshipCommand } from './getIngredientWithAuthorship.dtos';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
 import { NotFoundError } from '@/shared/error/error.lib';
 
@@ -9,7 +9,7 @@ import { NotFoundError } from '@/shared/error/error.lib';
 export class GetIngredientWithAuthorshipService {
 	constructor(private ingredientsRepository: IIngredientsRepository) {}
 
-	async execute({ id }: GetIngredient) {
+	async execute({ id }: GetIngredientWithAuthorshipCommand) {
 		const ingredient = await this.ingredientsRepository.findById(id);
 		if (!ingredient) {
 			throw new NotFoundError('apiResponses.ingredients.notFound', {

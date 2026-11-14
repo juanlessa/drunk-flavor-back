@@ -7,12 +7,18 @@ import { resolveSessionVersionMarkerStore } from '@/core/accounts/infra/redis/co
 import { resolveTransactionManager } from '@/infrastructure/mongo/transactions';
 import { RemovePasswordService } from './RemovePassword.service';
 
-const service = new RemovePasswordService(
-	resolveUsersRepository(),
-	resolveIdentitiesRepository(),
-	resolveCredentialsRepository(),
-	resolveTransactionManager(),
-	resolveSessionVersionMarkerStore(),
+const usersRepository = resolveUsersRepository();
+const identitiesRepository = resolveIdentitiesRepository();
+const credentialsRepository = resolveCredentialsRepository();
+const transactionManager = resolveTransactionManager();
+const sessionVersionMarkerStore = resolveSessionVersionMarkerStore();
+
+const removePasswordService = new RemovePasswordService(
+	usersRepository,
+	identitiesRepository,
+	credentialsRepository,
+	transactionManager,
+	sessionVersionMarkerStore,
 );
 
-export const resolveRemovePasswordService = () => service;
+export const resolveRemovePasswordService = () => removePasswordService;

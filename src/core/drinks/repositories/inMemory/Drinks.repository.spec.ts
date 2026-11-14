@@ -188,6 +188,47 @@ describe('DrinksRepositoryInMemory', () => {
 		expect(sortedPage.map((drink) => drink.translations.en.name)).toEqual(['Alpha', 'Beta']);
 	});
 
+	it('ranks the search by name: the name, then the ingredients, then the category of the ingredients', async () => {
+		const withIngredient = (name: string, category: string): Ingredient => ({
+			...buildIngredient(),
+			translations: { en: { name }, pt: { name } },
+			category: { ...buildCategory(), translations: { en: { name: category }, pt: { name: category } } },
+		});
+		const drink = (name: string, ingredient: Ingredient) =>
+			repository.create(
+				withCreator({
+					translations: { en: { name, method: 'm' }, pt: { name, method: 'm' } },
+					ingredients: [createDrinkIngredientFactory(ingredient)],
+				}),
+			);
+		await drink('Spritz', withIngredient('Prosecco', 'Gin family'));
+		await drink('Negroni', withIngredient('Gin', 'Spirit'));
+		await drink('Gin Fizz', withIngredient('Soda', 'Mixer'));
+		const mine = await repository.create(
+			withCreator({
+				translations: { en: { name: 'Gimlet', method: 'm' }, pt: { name: 'Gimlet', method: 'm' } },
+				ingredients: [createDrinkIngredientFactory(withIngredient('Lime', 'Gin family'))],
+				createdBy: 'me',
+			}),
+		);
+
+		const names = (drinks: { translations: { en: { name: string } } }[]) =>
+			drinks.map(({ translations }) => translations.en.name);
+
+		expect(names(await repository.findAll({ search: { name: 'gin' } }))).toEqual([
+			'Gin Fizz',
+			'Negroni',
+			'Spritz',
+			'Gimlet',
+		]);
+		expect(names(await repository.findAllOwnedFirst({ search: { name: 'gin' } }, 'me'))).toEqual([
+			mine.translations.en.name,
+			'Gin Fizz',
+			'Negroni',
+			'Spritz',
+		]);
+	});
+
 	it('creates a drink without garnishes by default and keeps the ones given', async () => {
 		const ingredient = buildIngredient();
 		const plain = await repository.create(

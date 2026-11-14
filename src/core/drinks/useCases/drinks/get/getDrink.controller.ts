@@ -1,13 +1,13 @@
 import { Controller } from '@/infrastructure/fastify/types/fastify.types';
-import { GetDrinkReqParams } from './getDrink.dtos';
+import { GetDrinkReqParam } from './getDrink.dtos';
 import { resolveGetDrinkService } from './getDrink.container';
 
-export const getDrinkController: Controller<{ Params: GetDrinkReqParams }> = async (request, reply) => {
+export const getDrinkController: Controller<{ Params: GetDrinkReqParam }> = async (request, reply) => {
 	const { id } = request.params;
 
 	const service = resolveGetDrinkService();
 
-	const ingredient = await service.execute({ id });
+	const drink = await service.execute({ id });
 
-	return reply.send(ingredient);
+	return reply.send(drink);
 };

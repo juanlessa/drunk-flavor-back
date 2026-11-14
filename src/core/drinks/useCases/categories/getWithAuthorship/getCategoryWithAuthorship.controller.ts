@@ -1,11 +1,13 @@
 import { Controller } from '@/infrastructure/fastify/types/fastify.types';
 import { resolveGetCategoryWithAuthorshipService } from './getCategoryWithAuthorship.container';
-import { GetCategoryWithAuthorshipReqParams } from './getCategoryWithAuthorship.dtos';
+import { GetCategoryWithAuthorshipReqParam } from './getCategoryWithAuthorship.dtos';
 
-export const getCategoryWithAuthorshipController: Controller<{ Params: GetCategoryWithAuthorshipReqParams }> = async (
+export const getCategoryWithAuthorshipController: Controller<{ Params: GetCategoryWithAuthorshipReqParam }> = async (
 	request,
 	reply,
 ) => {
-	const category = await resolveGetCategoryWithAuthorshipService().execute(request.params);
+	const { id } = request.params;
+	const service = resolveGetCategoryWithAuthorshipService();
+	const category = await service.execute({ id });
 	return reply.send(category);
 };

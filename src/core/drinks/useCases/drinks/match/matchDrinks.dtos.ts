@@ -4,7 +4,7 @@ import { matchDrinksQuerySchema, matchDrinksSchema } from './matchDrinks.schema'
 
 export type MatchDrinksReqBody = z.infer<typeof matchDrinksSchema>;
 export type MatchDrinksReqQuery = z.infer<typeof matchDrinksQuerySchema>;
-export type MatchDrinksDTO = {
+export type MatchDrinksCommand = {
 	ingredientIds: string[];
 	maxMissing: DrinkMatchMaxMissingValue;
 	limit?: number;

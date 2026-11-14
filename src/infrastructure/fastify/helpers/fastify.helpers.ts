@@ -1,4 +1,5 @@
 import { env } from '@/env';
+import { buildAppUrl } from '@/shared/helpers/appUrl.helper';
 import { FastifyInstance } from 'fastify';
 import fastifyPlugin from 'fastify-plugin';
 
@@ -13,4 +14,4 @@ export const pluginGenerator = (callback: (server: FastifyInstance) => unknown) 
 	});
 };
 
-export const getAppURL = () => `http://${env.API_HOST}:${env.API_PORT}`;
+export const getAppURL = () => buildAppUrl(env);

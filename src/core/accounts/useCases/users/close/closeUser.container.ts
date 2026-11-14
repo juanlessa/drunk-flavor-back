@@ -5,24 +5,29 @@ import {
 	resolveTokensRepository,
 	resolveUsersRepository,
 } from '@/core/accounts/infra/mongo/container';
-import { resolveDrinksModule } from '@/core/drinks/public';
-import { resolveEngagementModule } from '@/core/engagement/public';
 import { resolveTransactionManager } from '@/infrastructure/mongo/transactions';
-import { resolveStorageProvider } from '@/shared/providers/storage';
+import { resolveCleanupQueueProvider } from '@/shared/providers/queue/cleanup';
 import { CloseUserService } from './CloseUser.service';
 import { resolveSessionVersionMarkerStore } from '@/core/accounts/infra/redis/container';
 
+const usersRepository = resolveUsersRepository();
+const credentialsRepository = resolveCredentialsRepository();
+const identitiesRepository = resolveIdentitiesRepository();
+const tokensRepository = resolveTokensRepository();
+const administrativeEventsRepository = resolveAdministrativeEventsRepository();
+const transactionManager = resolveTransactionManager();
+const sessionVersionMarkerStore = resolveSessionVersionMarkerStore();
+const cleanupQueueProvider = resolveCleanupQueueProvider();
+
 const closeUserService = new CloseUserService(
-	resolveUsersRepository(),
-	resolveCredentialsRepository(),
-	resolveIdentitiesRepository(),
-	resolveTokensRepository(),
-	resolveAdministrativeEventsRepository(),
-	resolveEngagementModule(),
-	resolveDrinksModule(),
-	resolveTransactionManager(),
-	resolveStorageProvider(),
-	resolveSessionVersionMarkerStore(),
+	usersRepository,
+	credentialsRepository,
+	identitiesRepository,
+	tokensRepository,
+	administrativeEventsRepository,
+	transactionManager,
+	sessionVersionMarkerStore,
+	cleanupQueueProvider,
 );
 
 export const resolveCloseUserService = () => closeUserService;

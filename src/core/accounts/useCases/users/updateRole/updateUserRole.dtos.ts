@@ -6,7 +6,7 @@ import { AdministrativeEventContext } from '@/core/accounts/entities/administrat
 
 export type UpdateUserRoleReqBody = z.infer<typeof updateUserRoleSchema>;
 
-export type UpdateUserRole = {
+export type UpdateUserRoleCommand = {
 	userId: string;
 	role: Role;
 	actor: Actor;

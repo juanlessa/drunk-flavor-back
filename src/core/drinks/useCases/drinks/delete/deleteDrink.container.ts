@@ -1,9 +1,10 @@
 import { resolveDrinksRepository } from '@/core/drinks/infra/mongo/container';
-import { resolveStorageProvider } from '@/shared/providers/storage';
+import { resolveCleanupQueueProvider } from '@/shared/providers/queue/cleanup';
 import { DeleteDrinkService } from './DeleteDrink.service';
 
 const drinksRepository = resolveDrinksRepository();
-const storageProvider = resolveStorageProvider();
+const cleanupQueueProvider = resolveCleanupQueueProvider();
 
-const deleteDrinkService = new DeleteDrinkService(drinksRepository, storageProvider);
+const deleteDrinkService = new DeleteDrinkService(drinksRepository, cleanupQueueProvider);
+
 export const resolveDeleteDrinkService = () => deleteDrinkService;

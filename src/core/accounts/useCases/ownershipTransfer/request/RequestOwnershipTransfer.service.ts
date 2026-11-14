@@ -27,7 +27,7 @@ import {
 	createOwnershipTransferExpiration,
 	enqueueOwnershipTransferInvitation,
 } from '@/core/accounts/helpers/ownershipTransfer.helpers';
-import { RequestOwnershipTransfer } from './requestOwnershipTransfer.dtos';
+import { RequestOwnershipTransferCommand } from './requestOwnershipTransfer.dtos';
 import { env } from '@/env';
 
 export class RequestOwnershipTransferService {
@@ -45,7 +45,12 @@ export class RequestOwnershipTransferService {
 		private userAdministrationPolicy = new UserAdministrationPolicy(),
 	) {}
 
-	async execute({ targetUserId, reason, actor, administrativeContext }: RequestOwnershipTransfer): Promise<void> {
+	async execute({
+		targetUserId,
+		reason,
+		actor,
+		administrativeContext,
+	}: RequestOwnershipTransferCommand): Promise<void> {
 		const token = await this.cryptoProvider.generateToken(env.VERIFICATION_TOKEN_SIZE);
 		const tokenHash = this.cryptoProvider.hashToken(token);
 		const context = resolveAdministrativeEventContext(administrativeContext);

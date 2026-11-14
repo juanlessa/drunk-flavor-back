@@ -5,10 +5,8 @@ import { resolveSessionVersionMarkerStore } from '@/core/accounts/infra/redis/co
 
 const usersRepository = resolveUsersRepository();
 const transactionManager = resolveTransactionManager();
+const sessionVersionMarkerStore = resolveSessionVersionMarkerStore();
 
-const updateProfileService = new UpdateProfileService(
-	usersRepository,
-	transactionManager,
-	resolveSessionVersionMarkerStore(),
-);
-export const resolveUpdateUpdateProfileService = () => updateProfileService;
+const updateProfileService = new UpdateProfileService(usersRepository, transactionManager, sessionVersionMarkerStore);
+
+export const resolveUpdateProfileService = () => updateProfileService;

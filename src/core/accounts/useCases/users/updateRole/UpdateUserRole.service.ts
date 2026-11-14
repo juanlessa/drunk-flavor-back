@@ -1,4 +1,4 @@
-import { UpdateUserRole } from './updateUserRole.dtos';
+import { UpdateUserRoleCommand } from './updateUserRole.dtos';
 import {
 	AdministrativeEventActions,
 	AdministrativeEventOrigins,
@@ -27,7 +27,7 @@ export class UpdateUserRoleService {
 		private userAdministrationPolicy = new UserAdministrationPolicy(),
 	) {}
 
-	async execute({ userId, role, actor, administrativeContext }: UpdateUserRole): Promise<void> {
+	async execute({ userId, role, actor, administrativeContext }: UpdateUserRoleCommand): Promise<void> {
 		const eventContext = resolveAdministrativeEventContext(administrativeContext);
 
 		await this.transactionManager.withTransaction(async () => {

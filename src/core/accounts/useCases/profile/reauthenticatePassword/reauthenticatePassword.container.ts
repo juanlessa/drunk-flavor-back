@@ -3,11 +3,16 @@ import { resolveHashProvider } from '@/shared/providers/cryptography';
 import { resolveDateProvider } from '@/shared/providers/date';
 import { ReauthenticatePasswordService } from './ReauthenticatePassword.service';
 
-const service = new ReauthenticatePasswordService(
-	resolveUsersRepository(),
-	resolveCredentialsRepository(),
-	resolveHashProvider(),
-	resolveDateProvider(),
+const usersRepository = resolveUsersRepository();
+const credentialsRepository = resolveCredentialsRepository();
+const hashProvider = resolveHashProvider();
+const dateProvider = resolveDateProvider();
+
+const reauthenticatePasswordService = new ReauthenticatePasswordService(
+	usersRepository,
+	credentialsRepository,
+	hashProvider,
+	dateProvider,
 );
 
-export const resolveReauthenticatePasswordService = () => service;
+export const resolveReauthenticatePasswordService = () => reauthenticatePasswordService;

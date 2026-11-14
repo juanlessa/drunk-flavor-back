@@ -113,3 +113,24 @@ export const buildSearchKeys = (
  */
 export const matchesSearchTerm = (searchKeys: readonly string[], term: string): boolean =>
 	tokenizeSearchTerm(term).every((token) => searchKeys.some((key) => key.startsWith(token)));
+
+/**
+ * Ranks how well a document answers a search term, given its search keys split by relevance tiers (the first tier is
+ * the most relevant). Every word of the term must be the prefix of a key of some tier. A word ranks as the first tier
+ * that has it, and the document ranks as its worst word, so a lower rank is a better one.
+ * Returns `null` when a word is in none of the tiers, and `1` for a term without searchable words.
+ *
+ * @example
+ * getSearchRank([['licor'], ['laranja']], 'lic'); // 1
+ * getSearchRank([['licor'], ['laranja']], 'licor lar'); // 2
+ * getSearchRank([['licor'], ['laranja']], 'licor xyz'); // null
+ */
+export const getSearchRank = (tiers: readonly (readonly string[])[], term: string): number | null => {
+	let rank = 1;
+	for (const token of tokenizeSearchTerm(term)) {
+		const tierIndex = tiers.findIndex((keys) => keys.some((key) => key.startsWith(token)));
+		if (tierIndex < 0) return null;
+		rank = Math.max(rank, tierIndex + 1);
+	}
+	return rank;
+};

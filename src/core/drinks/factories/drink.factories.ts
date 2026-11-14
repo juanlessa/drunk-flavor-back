@@ -5,7 +5,7 @@ import { DrinkIngredientInput } from '@/core/drinks/dtos/drink.dtos';
 import { Drink, DrinkIngredient, DrinkTranslation } from '@/core/drinks/entities/drink.entity';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { Translations } from '@/core/drinks/types/translations';
-import { CreateDrinkDTO } from '../useCases/drinks/create/createDrink.dtos';
+import { CreateDrinkCommand } from '../useCases/drinks/create/createDrink.dtos';
 
 /**
  * Builds a drink ingredient request line with an exact amount. `unitId` defaults to the
@@ -42,10 +42,10 @@ export const createDrinkIngredientFactory = (
 });
 
 /** A create request whose translations always carry the method, as a hand-written drink does. */
-type CreateDrinkWithMethodDTO = Omit<CreateDrinkDTO, 'translations' | 'actor'> & {
+type CreateDrinkWithMethodCommand = Omit<CreateDrinkCommand, 'translations' | 'actor'> & {
 	translations: Translations<DrinkTranslation>;
 };
-export const createDrinkFactory = (drink?: DeepPartial<CreateDrinkDTO>): CreateDrinkWithMethodDTO => ({
+export const createDrinkFactory = (drink?: DeepPartial<CreateDrinkCommand>): CreateDrinkWithMethodCommand => ({
 	translations: {
 		en: {
 			name: drink?.translations?.en?.name || 'Tequila sunrise',
@@ -56,8 +56,8 @@ export const createDrinkFactory = (drink?: DeepPartial<CreateDrinkDTO>): CreateD
 			method: drink?.translations?.pt?.method || 'Modo de preparo ...',
 		},
 	},
-	ingredients: (drink?.ingredients ?? []) as CreateDrinkDTO['ingredients'],
-	garnishes: (drink?.garnishes ?? []) as NonNullable<CreateDrinkDTO['garnishes']>,
+	ingredients: (drink?.ingredients ?? []) as CreateDrinkCommand['ingredients'],
+	garnishes: (drink?.garnishes ?? []) as NonNullable<CreateDrinkCommand['garnishes']>,
 });
 
 export const createPersistedDrinkFactory = (drink?: DeepPartial<Drink>): Drink => ({

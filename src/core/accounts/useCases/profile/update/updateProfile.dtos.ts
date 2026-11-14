@@ -5,7 +5,7 @@ import { updateProfileSchema } from './updateProfile.schema';
 
 export type UpdateUserProfileReqBody = z.infer<typeof updateProfileSchema>;
 
-export type UpdateProfile = {
+export type UpdateProfileCommand = {
 	id: string;
 	name: string;
 	surname: string;

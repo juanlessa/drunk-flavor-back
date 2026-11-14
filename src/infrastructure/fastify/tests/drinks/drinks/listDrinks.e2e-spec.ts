@@ -8,6 +8,11 @@ import { IngredientModel } from '@/core/drinks/infra/mongo/entities/ingredient.m
 import { UnitModel } from '@/core/drinks/infra/mongo/entities/unit.model';
 import { DrinkModel } from '@/core/drinks/infra/mongo/entities/drink.model';
 import { createDrink } from '@/infrastructure/fastify/tests/drinks/helpers/drink.helpers';
+import { createCategory } from '@/infrastructure/fastify/tests/drinks/helpers/category.helpers';
+import { createUnit } from '@/infrastructure/fastify/tests/drinks/helpers/unit.helpers';
+import { withCreator } from '@/core/drinks/factories/authorship.factories';
+import { createDrinkIngredientFactory } from '@/core/drinks/factories/drink.factories';
+import { resolveDrinksRepository, resolveIngredientsRepository } from '@/core/drinks/infra/mongo/container';
 
 describe('List Drink', () => {
 	beforeAll(async () => {
@@ -31,5 +36,34 @@ describe('List Drink', () => {
 		const response = await request(app.server).get('/drinks').send();
 
 		expect(response.status).toBe(HTTP_STATUS.ok);
+	});
+
+	it('Should be able to search the drinks by name, the name matches first and then the ingredients', async () => {
+		const { category } = await createCategory();
+		const { unit } = await createUnit();
+		const createIngredient = (name: string) =>
+			resolveIngredientsRepository().create(
+				withCreator({ translations: { en: { name }, pt: { name } }, category, units: [unit] }),
+			);
+		const createNamedDrink = async (name: string, ingredientName: string) => {
+			const ingredient = await createIngredient(ingredientName);
+			return resolveDrinksRepository().create(
+				withCreator({
+					translations: { en: { name, method: 'Stir' }, pt: { name, method: 'Mexa' } },
+					ingredients: [createDrinkIngredientFactory(ingredient)],
+				}),
+			);
+		};
+		const byIngredient = await createNamedDrink('Negroni', 'Gin');
+		const byName = await createNamedDrink('Gin Fizz', 'Soda');
+		await createNamedDrink('Mojito', 'Rum');
+
+		const response = await request(app.server)
+			.get('/drinks')
+			.query({ search: JSON.stringify({ name: 'gin' }) })
+			.send();
+
+		expect(response.status).toBe(HTTP_STATUS.ok);
+		expect((response.body as { id: string }[]).map(({ id }) => id)).toEqual([byName.id, byIngredient.id]);
 	});
 });

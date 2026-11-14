@@ -3,9 +3,9 @@ import { updateDrinkThumbnailSchema } from './updateDrinkThumbnail.schema';
 import { Actor } from '@/shared/accessControl/actor.types';
 import { FileStream } from '@/infrastructure/fastify/types/multipart.types';
 
-export type UpdateDrinkThumbnailReqParams = z.infer<typeof updateDrinkThumbnailSchema>;
+export type UpdateDrinkThumbnailReqParam = z.infer<typeof updateDrinkThumbnailSchema>;
 
-export type UpdateDrinkThumbnailDTO = {
+export type UpdateDrinkThumbnailCommand = {
 	drinkId: string;
 	fileStream: FileStream;
 	mimetype: string;

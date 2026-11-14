@@ -6,20 +6,16 @@ import {
 } from '@/core/drinks/dtos/ingredient.dtos';
 import { Ingredient } from '@/core/drinks/entities/ingredient.entity';
 import { IIngredientsRepository } from '@/core/drinks/repositories/IIngredients.repository';
-import { buildQuery, findOwnedFirst } from '@/infrastructure/mongo/helpers/query.helpers';
+import { findOwnedFirst, findPage } from '@/infrastructure/mongo/helpers/query.helpers';
 import { toMongoUpdateSet } from '@/infrastructure/mongo/helpers/mapper.helpers';
 import { mapDuplicateKeyError } from '@/infrastructure/mongo/helpers/duplicateKey.helpers';
-import { SEARCH_KEYS_FIELD } from '@/infrastructure/mongo/constants/search.constants';
-import {
-	INGREDIENT_SEARCH_FIELDS,
-	INGREDIENT_SEARCH_OPTIONS,
-	buildTranslationsSearchKeys,
-} from '@/core/drinks/helpers/searchKeys.helpers';
+import { buildIngredientSearchTiers } from '@/core/drinks/helpers/searchKeys.helpers';
 import { Languages, Language } from '@/core/drinks/types/translations';
 import { NotFoundError } from '@/shared/error/error.lib';
 import { QueryParams } from '@/shared/types/query.types';
 import { INGREDIENT_UNIQUE_INDEXES, IngredientModel, IngredientPersistence } from '../entities/ingredient.model';
 import { CREATED_BY_FIELD, clearAuthorshipByUser, omitAuthorshipDeep } from '../helpers/authorship.helpers';
+import { toSearchFields } from '../helpers/searchFields.helpers';
 import { findByTranslatedName, getSortCollation } from '../helpers/translations.helpers';
 import { IngredientMapper } from '../mappers/ingredient.mapper';
 
@@ -66,11 +62,12 @@ export class IngredientsRepository implements IIngredientsRepository {
 			const document = await IngredientModel.create({
 				...persistenceData,
 				updated_by: persistenceData.created_by,
-				search_keys: buildTranslationsSearchKeys(
-					persistenceData.translations,
-					INGREDIENT_SEARCH_FIELDS,
-					[persistenceData.brand],
-					INGREDIENT_SEARCH_OPTIONS,
+				...toSearchFields(
+					buildIngredientSearchTiers(
+						persistenceData.translations,
+						persistenceData.brand,
+						persistenceData.category?.translations,
+					),
 				),
 			});
 			return IngredientMapper.toDomain(document);
@@ -87,17 +84,22 @@ export class IngredientsRepository implements IIngredientsRepository {
 		const persistenceData = withoutSnapshotAuthorship(IngredientMapper.toPersistence(data));
 		const update = toMongoUpdateSet(persistenceData);
 		const unsetFields = getUnsetFields(data);
-		if (persistenceData.translations || data.brand !== undefined) {
+		// The keys come from the translations, the brand and the category, so a change of any of them rebuilds them.
+		if (persistenceData.translations || data.brand !== undefined || persistenceData.category) {
 			const current = await IngredientModel.findById(objectId)
-				.select('translations brand')
-				.lean<Pick<IngredientPersistence, 'translations' | 'brand'>>()
+				.select('translations brand category')
+				.lean<Pick<IngredientPersistence, 'translations' | 'brand' | 'category'>>()
 				.exec();
 			if (!current) throw this.notFound('update');
-			update[SEARCH_KEYS_FIELD] = buildTranslationsSearchKeys(
-				mergeTranslations(current.translations, persistenceData.translations, unsetFields),
-				INGREDIENT_SEARCH_FIELDS,
-				[data.brand === undefined ? current.brand : (data.brand ?? undefined)],
-				INGREDIENT_SEARCH_OPTIONS,
+			Object.assign(
+				update,
+				toSearchFields(
+					buildIngredientSearchTiers(
+						mergeTranslations(current.translations, persistenceData.translations, unsetFields),
+						data.brand === undefined ? current.brand : (data.brand ?? undefined),
+						(persistenceData.category ?? current.category).translations,
+					),
+				),
 			);
 		}
 		let document: IngredientPersistence | null;
@@ -157,13 +159,14 @@ export class IngredientsRepository implements IIngredientsRepository {
 		return documents.map(IngredientMapper.toDomain);
 	}
 
-	async findAll(query: QueryParams): Promise<Ingredient[]> {
+	async findAll(query: QueryParams, onlyIds?: string[]): Promise<Ingredient[]> {
 		const persistenceQuery = IngredientMapper.toPersistenceQuery(query);
-		const documents = await buildQuery<IngredientPersistence>(persistenceQuery, IngredientModel, {
+		const objectIds = onlyIds?.map(IngredientMapper.toObjectId).filter((id) => id !== null);
+		const documents = await findPage<IngredientPersistence>(persistenceQuery, IngredientModel, {
 			collation: getSortCollation(persistenceQuery.sort),
-		})
-			.lean<IngredientPersistence[]>()
-			.exec();
+			ranked: true,
+			...(objectIds && { filter: { _id: { $in: objectIds } } }),
+		});
 		return documents.map(IngredientMapper.toDomain);
 	}
 
@@ -176,6 +179,7 @@ export class IngredientsRepository implements IIngredientsRepository {
 			CREATED_BY_FIELD,
 			{
 				collation: getSortCollation(persistenceQuery.sort),
+				ranked: true,
 			},
 		);
 		return documents.map(IngredientMapper.toDomain);

@@ -1,7 +1,7 @@
 import { IUsersRepository } from '@/core/accounts/repositories/IUsers.repository';
 import { UserAdministrationPolicy } from '@/core/accounts/policies/UserAdministration.policy';
 import { toUserView } from '@/core/accounts/mappers/user.mappers';
-import { GetUser } from './getUser.dtos';
+import { GetUserCommand } from './getUser.dtos';
 import { authorizeUserAdministration } from '@/core/accounts/helpers/userAdministrationAudit.helpers';
 import {
 	findRequiredAdministrationUser,
@@ -14,7 +14,7 @@ export class GetUserService {
 		private userAdministrationPolicy = new UserAdministrationPolicy(),
 	) {}
 
-	async execute({ id, actor, administrativeContext }: GetUser) {
+	async execute({ id, actor, administrativeContext }: GetUserCommand) {
 		const [persistedActor, target] = await Promise.all([
 			findRequiredAdministrationUser(this.usersRepository, actor.id, 'GetUser.service.actor'),
 			findRequiredAdministrationUser(this.usersRepository, id, 'GetUser.service.target'),
