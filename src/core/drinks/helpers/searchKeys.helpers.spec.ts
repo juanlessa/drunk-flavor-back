@@ -109,7 +109,7 @@ describe('buildIngredientSearchTiers', () => {
 		expect(tiers).toEqual([['lime', 'limao'], ['peel'], ['fruta']]);
 	});
 
-	it('works with the stored form, where the category keeps the same field names', () => {
+	it('leaves the tiers it has no data for empty', () => {
 		const tiers = buildIngredientSearchTiers({ en: { name: 'Rum' } }, undefined, undefined);
 
 		expect(tiers).toEqual([['rum'], [], []]);

@@ -38,6 +38,30 @@ describe('List Ingredients', () => {
 		expect(response.status).toBe(HTTP_STATUS.ok);
 	});
 
+	it('Should be able to search the ingredients by name, the name matches first and then the description', async () => {
+		const { category } = await createCategory();
+		const { unit } = await createUnit();
+		const create = (name: string, description?: string) =>
+			resolveIngredientsRepository().create(
+				withCreator({
+					translations: { en: { name, description }, pt: { name, description } },
+					category,
+					units: [unit],
+				}),
+			);
+		const byDescription = await create('Curaçao', 'Bitter orange peel');
+		const byName = await create('Orange');
+		await create('Lime');
+
+		const response = await request(app.server)
+			.get('/ingredients')
+			.query({ search: JSON.stringify({ name: 'orange' }) })
+			.send();
+
+		expect(response.status).toBe(HTTP_STATUS.ok);
+		expect((response.body as { id: string }[]).map(({ id }) => id)).toEqual([byName.id, byDescription.id]);
+	});
+
 	it('Should be able to list only the ingredients that some drink uses', async () => {
 		const { category } = await createCategory();
 		const { unit } = await createUnit();

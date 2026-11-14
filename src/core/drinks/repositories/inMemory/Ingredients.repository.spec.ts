@@ -268,4 +268,53 @@ describe('IngredientsRepositoryInMemory', () => {
 			expect(await find('laranja xyz')).toEqual([]);
 		});
 	});
+
+	describe('findAll ranked by name', () => {
+		const named = (en: string, extra: Partial<Parameters<IngredientsRepositoryInMemory['create']>[0]> = {}) =>
+			repository.create(
+				withCreator({
+					translations: { en: { name: en }, pt: { name: en } },
+					category: buildCategory(),
+					units: [buildUnit()],
+					...extra,
+				}),
+			);
+
+		it('lists the name matches, then the description and brand ones, then the category ones, and the sort breaks ties', async () => {
+			await named('Bitter', {
+				category: {
+					...buildCategory(),
+					translations: { en: { name: 'Orange family' }, pt: { name: 'Laranja' } },
+				},
+			});
+			await named('Cointreau', { kind: 'branded', brand: 'Orange Co' });
+			await named('Curaçao', {
+				translations: { en: { name: 'Curaçao', description: 'Orange peel' }, pt: { name: 'Curaçao' } },
+			});
+			await named('Orange');
+
+			const found = async (sort?: Record<string, 1 | -1>) =>
+				(await repository.findAll({ search: { name: 'orange' }, sort })).map(
+					({ translations }) => translations.en.name,
+				);
+
+			expect(await found()).toEqual(['Orange', 'Cointreau', 'Curaçao', 'Bitter']);
+			expect(await found({ 'translations.en.name': 1 })).toEqual(['Orange', 'Cointreau', 'Curaçao', 'Bitter']);
+			expect(await found({ 'translations.en.name': -1 })).toEqual(['Orange', 'Curaçao', 'Cointreau', 'Bitter']);
+		});
+
+		it('keeps the owned ingredients first and ranks inside each group', async () => {
+			await named('Orange', { createdBy: 'someone-else' });
+			const mine = await named('Orange peel syrup', { createdBy: 'me' });
+			await named('Cointreau', { kind: 'branded', brand: 'Orange Co', createdBy: 'me' });
+
+			const found = await repository.findAllOwnedFirst({ search: { name: 'orange' } }, 'me');
+
+			expect(found.map(({ translations }) => translations.en.name)).toEqual([
+				mine.translations.en.name,
+				'Cointreau',
+				'Orange',
+			]);
+		});
+	});
 });

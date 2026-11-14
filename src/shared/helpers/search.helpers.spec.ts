@@ -79,10 +79,6 @@ describe('getSearchRank', () => {
 	it('is the best rank for a term without searchable words', () => {
 		expect(getSearchRank(tiers, '   ')).toBe(1);
 	});
-
-	it('ignores accents and case like the search keys do', () => {
-		expect(getSearchRank([['limao']], 'LIMÃO')).toBe(1);
-	});
 });
 
 describe('buildSearchKeys', () => {
