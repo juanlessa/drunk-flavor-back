@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ObjectId } from 'mongodb';
 import request from 'supertest';
 import { app } from '@/infrastructure/fastify/app';
@@ -8,6 +8,7 @@ import { UserModel } from '@/core/accounts/infra/mongo/entities/user.model';
 import { resolveCommentsRepository, resolveRatingsRepository } from '@/core/engagement/infra/mongo/container';
 import { CommentModel } from '@/core/engagement/infra/mongo/entities/comment.model';
 import { RatingModel } from '@/core/engagement/infra/mongo/entities/rating.model';
+import { cleanupWorkerRegistration } from '@/infrastructure/workers/cleanup/cleanupWorker.registration';
 import { MongoConnection } from '@/infrastructure/mongo/MongoConnection';
 import { HTTP_STATUS } from '@/shared/constants/http.constants';
 import { Roles } from '@/shared/accessControl/roles';
@@ -15,12 +16,17 @@ import { AUTH_COOKIE } from '@/infrastructure/fastify/constants/cookie.constants
 import { AUTH_SESSION_COOKIE } from '@/infrastructure/fastify/constants/session.constants';
 import { createAndAuthenticateUser } from '@/infrastructure/fastify/tests/accounts/helpers/authentication.helpers';
 
+let cleanupWorker: ReturnType<typeof cleanupWorkerRegistration.start>;
+
 describe('Delete Profile', () => {
 	beforeAll(async () => {
 		await app.ready();
+		// The account cleanup runs in the worker process in production, so the test runs the same worker.
+		cleanupWorker = cleanupWorkerRegistration.start();
 	});
 
 	afterAll(async () => {
+		await cleanupWorker.close();
 		await app.close();
 	});
 
@@ -57,7 +63,9 @@ describe('Delete Profile', () => {
 			]),
 		);
 		expect(await UserModel.findById(user.id).lean()).toBeNull();
-		expect(await commentsRepository.findById(comment.id)).toBeNull();
+		await vi.waitFor(async () => expect(await commentsRepository.findById(comment.id)).toBeNull(), {
+			timeout: 10000,
+		});
 		expect(await ratingsRepository.findById(rating.id)).toMatchObject({ userId: user.id, value: 5 });
 		expect(
 			await AdministrativeEventModel.findOne({ action: AdministrativeEventActions.userClosed }).lean(),
