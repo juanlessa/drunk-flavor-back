@@ -13,6 +13,12 @@
 			"matchUpdateTypes": ["minor", "patch"],
 			"groupName": "dev dependencies (non-major)",
 			"automerge": true
+		},
+		{
+			"description": "Update the MongoDB driver and Mongoose together so the lockfile keeps a single driver copy (duplicate-key detection relies on instanceof MongoServerError)",
+			"matchPackageNames": ["mongodb", "mongoose"],
+			"groupName": "mongodb and mongoose",
+			"automerge": false
 		}
 	]
 }
