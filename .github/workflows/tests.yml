@@ -1,0 +1,122 @@
+name: testing flow
+on:
+    pull_request:
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+# Scoped to the minimum needed to post a coverage comment on the pull request.
+permissions:
+    contents: read
+    pull-requests: write
+jobs:
+    unit:
+        name: lint, typecheck and unit tests
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - name: Git checkout
+              uses: actions/checkout@v7
+            - name: Use Node.js from .nvmrc
+              uses: actions/setup-node@v7
+              with:
+                  node-version-file: '.nvmrc'
+                  cache: npm
+            - name: Install dependencies
+              run: npm ci
+            - name: Format check
+              run: npm run format:check
+            - name: Lint
+              run: npm run lint
+            - name: Typecheck
+              run: npm run typecheck
+            # Renovate PRs only change dependencies, so they skip coverage collection.
+            - name: Unit tests
+              if: ${{ startsWith(github.head_ref, 'renovate/') }}
+              run: npm test
+            # Besides the normal output, store a blob report (with coverage) so the coverage job
+            # can merge unit and integration results without running the tests again.
+            - name: Unit tests with coverage
+              if: ${{ !startsWith(github.head_ref, 'renovate/') }}
+              run:
+                  npm test -- --coverage --coverage.reporter=text-summary --reporter=default --reporter=blob
+                  --outputFile.blob=blob-reports/unit.json
+            - name: Upload unit blob report
+              if: ${{ !cancelled() && !startsWith(github.head_ref, 'renovate/') }}
+              uses: actions/upload-artifact@v7
+              with:
+                  name: blob-report-unit
+                  path: blob-reports/
+                  if-no-files-found: ignore
+                  retention-days: 1
+            - name: Dependency audit
+              continue-on-error: true
+              run: npm audit --audit-level=high
+    integration:
+        name: integration tests
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - name: Git checkout
+              uses: actions/checkout@v7
+            - name: Use Node.js from .nvmrc
+              uses: actions/setup-node@v7
+              with:
+                  node-version-file: '.nvmrc'
+                  cache: npm
+            - name: Install dependencies
+              run: npm ci
+            - name: Integration tests
+              if: ${{ startsWith(github.head_ref, 'renovate/') }}
+              run: npm run test:int
+            - name: Integration tests with coverage
+              if: ${{ !startsWith(github.head_ref, 'renovate/') }}
+              run:
+                  npm run test:int -- --coverage --coverage.reporter=text-summary --reporter=default --reporter=blob
+                  --outputFile.blob=blob-reports/integration.json
+            - name: Upload integration blob report
+              if: ${{ !cancelled() && !startsWith(github.head_ref, 'renovate/') }}
+              uses: actions/upload-artifact@v7
+              with:
+                  name: blob-report-integration
+                  path: blob-reports/
+                  if-no-files-found: ignore
+                  retention-days: 1
+    coverage:
+        name: merged coverage report (informational)
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        needs: [unit, integration]
+        # Renovate PRs skip coverage. Runs only when both test jobs passed, since a failed job has no blob report.
+        if:
+            ${{ !cancelled() && !startsWith(github.head_ref, 'renovate/') && needs.unit.result == 'success' &&
+            needs.integration.result == 'success' }}
+        steps:
+            - name: Git checkout
+              uses: actions/checkout@v7
+            - name: Use Node.js from .nvmrc
+              uses: actions/setup-node@v7
+              with:
+                  node-version-file: '.nvmrc'
+                  cache: npm
+            - name: Install dependencies
+              run: npm ci
+            - name: Download blob reports
+              uses: actions/download-artifact@v8
+              with:
+                  pattern: blob-report-*
+                  path: blob-reports
+                  merge-multiple: true
+            # Merges the stored results and coverage from both jobs. No test is executed again.
+            - name: Merge unit and integration coverage
+              continue-on-error: true
+              run: NODE_ENV=testing npx vitest run --merge-reports=blob-reports --coverage
+            - name: Report merged coverage on PR
+              uses: davelosert/vitest-coverage-report-action@v2
+              with:
+                  name: 'Merged coverage (unit + integration)'
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  vite-config-path: ./vitest.config.ts
+                  json-summary-path: ./coverage/coverage-summary.json
+                  json-final-path: ./coverage/coverage-final.json
+                  # Only the totals table; per-file details made the comment exceed GitHub's size limit.
+                  file-coverage-mode: none
