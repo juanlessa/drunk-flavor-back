@@ -16,6 +16,9 @@ jobs:
     report-coverage:
         name: merged coverage report (informational)
         runs-on: ubuntu-latest
+        timeout-minutes: 20
+        # Renovate PRs only change dependencies. Skipped jobs report success, so this is safe for required checks.
+        if: ${{ !startsWith(github.head_ref, 'renovate/') }}
 
         steps:
             - name: Git checkout
@@ -25,6 +28,7 @@ jobs:
               uses: actions/setup-node@v7
               with:
                   node-version-file: '.nvmrc'
+                  cache: npm
 
             - name: Install dependencies
               run: npm ci
