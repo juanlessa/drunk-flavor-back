@@ -36,7 +36,7 @@ services:
             - node-network
 
     mongodb:
-        image: mongodb/mongodb-atlas-local:8.3
+        image: mongodb/mongodb-atlas-local:9.0
         restart: always
         container_name: mongodb
         ports:
