@@ -55,7 +55,7 @@
 		"@fastify/swagger": "9.9.4",
 		"@fastify/swagger-ui": "6.1.4",
 		"bcrypt": "6.0.0",
-		"bullmq": "6.7.6",
+		"bullmq": "6.7.8",
 		"dayjs": "1.11.23",
 		"dotenv": "18.0.10",
 		"fastify": "5.12.8",
