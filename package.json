@@ -41,7 +41,7 @@
 		"seed:owner": "tsx seed/accounts/owner.ts"
 	},
 	"dependencies": {
-		"@aws-sdk/client-s3": "3.1173.0",
+		"@aws-sdk/client-s3": "3.1175.0",
 		"@casl/ability": "7.1.3",
 		"@fastify/accepts": "5.0.7",
 		"@fastify/cookie": "11.1.5",
