@@ -84,7 +84,7 @@
 		"@vitest/eslint-plugin": "1.6.28",
 		"ajv": "8.20.0",
 		"dotenv-cli": "11.1.0",
-		"eslint": "10.15.0",
+		"eslint": "10.16.0",
 		"eslint-config-prettier": "10.1.8",
 		"husky": "9.1.7",
 		"lint-staged": "17.6.2",
